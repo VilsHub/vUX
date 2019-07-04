@@ -1150,7 +1150,7 @@ ToBaseGridMultiple.centerVertically = function (targetElement, height){
 /****************************************************************/
 
 /****************************Writer******************************/
-function Writer(){
+function typeWriter(){
 	var PlainTextCounter = 0,	ParagraphTextCounter = 0,	ActiveParagraph = 0, self = this, n, callBackDelay=0, speed= [10,20];
 
 	this.writePlainText = function(con, text, fn){
