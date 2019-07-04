@@ -97,4 +97,4 @@ The first release ( ** v1.0.0 ** ), has the following features:
 
 ## Documentation ##
 
-The documentation for this framework will be provided soon, you can ** Watch **, this repo for further updates.
+The documentation for this framework will be provided soon, you may ** Watch **, this repo for further updates.
