@@ -1003,7 +1003,7 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 					}
 				}
 			}else{
-				progressObj.circularProgress.show(0, "Error "+Xreq.status);
+				progressObj.circularProgress.show(0, "Error "+FontXhr[index].status);
 			}
 		}else if(resourceType == "text"){
 			if(pageXhr[index].status == 200){
@@ -1023,7 +1023,7 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 				}
 			}else{
 				currentPrg = 0;
-				currentLbl = "Error "+Xreq.status
+				currentLbl = "Error "+pageXhr[index].status;
 				progressObj.circularProgress.show(currentPrg, currentLbl);
 			}
 		}

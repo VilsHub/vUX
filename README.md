@@ -7,16 +7,16 @@ vUX is strictly built on JavaScript and has no dependencies, other than a JavaSc
 
 ## Installation
 
-To use vUX, include the script ** vUX-x.y.z.js ** where ** x y z** represents the version. Example is shown below:
+To use vUX, include the script **vUX-x.y.z.js** where **x y z** represents the version. Example is shown below:
 
     <script src="vUX/vUX-0.1.0.js"></script>
 
-** Note **
+**Note**
 
 You can rename the JS file if you wish to.
 
 ## Features
-The first release ( ** v1.0.0 ** ), has the following features:
+The first release ( **v1.0.0** ), has the following features:
 - Custom timing for non CSS animation
 - Animated RGB to Gray scale converter and vice versa
 - Base grid height fixer for responsive element height
@@ -24,14 +24,14 @@ The first release ( ** v1.0.0 ** ), has the following features:
 - Real time resource(s) loader
 - Typewriter
 
-** Features to be included in v1.1.0 **
+**Features to be included in v1.1.0**
 
 - Modal creator
 - 5 Star rating creator
 - Date picker
 
 ## Demo
-** RGB to Gray Animator**
+**RGB to Gray Animator**
 
     //////// RGB To GRAY  ///////////
       //gets canvas element
@@ -49,8 +49,11 @@ The first release ( ** v1.0.0 ** ), has the following features:
     	}, 2000);
     ////////////////////////////////////////////
 
+**OUTPUT**
 
-** Gray to RGB Animator**
+![RGB to Gray Output](https://i.imgur.com/yFhhLAJ.gif)
+
+**Gray to RGB Animator**
 
     //////// RGB To GRAY  ///////////
       //gets canvas element
@@ -68,7 +71,12 @@ The first release ( ** v1.0.0 ** ), has the following features:
       }, 2000);
     ////////////////////////////////////////////
 
-** Animated rectangular border drawer **
+**OUTPUT**
+
+![Gray to RGB Output](https://imgur.com/gxxGDN1.gif)
+
+
+**Animated rectangular border drawer**
 
     //////// grid border rectangle  ///////////
       //gets canvas element
@@ -92,9 +100,13 @@ The first release ( ** v1.0.0 ** ), has the following features:
     	}, 2000);
     ////////////////////////////
 
+**OUTPUT**
 
-** More demo coming soon.....**
+![animated grid border](https://imgur.com/WVwgVVi.gif)
+
+
+**More demo coming soon.....**
 
 ## Documentation ##
 
-The documentation for this framework will be provided soon, you may ** Watch **, this repo for further updates.
+The documentation for this framework will be provided soon, you may **Watch**, this repo for further updates.
