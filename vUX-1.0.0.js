@@ -358,7 +358,6 @@ function imageManipulator(canvasObj, image){
 			if(validateNumber(value)){
 				width = value;
 			}
-
 		}
 	});
 	Object.defineProperty(this.dimension, "height", {
@@ -366,8 +365,10 @@ function imageManipulator(canvasObj, image){
 			if(validateNumber(value)){
 				height = value;
 			}
-
-		},
+		}
+	});
+	Object.defineProperty(this, "dimension", {
+		writable:false
 	});
 	/**************************************************************/
 
@@ -731,6 +732,7 @@ function gridBorderRectangle(){
 		}
 
 });
+Object.defineProperty(this, "animatedRectangle", {writable:false});
 	/*******************************************************************/
 }
 /****************************************************************/
