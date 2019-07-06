@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript framework v1.0.0
+ * vUX JavaScript framework v1.0.1
  * https://framework.vilshub.com/
  *
  *
