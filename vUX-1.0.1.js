@@ -11,7 +11,7 @@
 
 "use strict";
 
-/**************************Helper functions***********************/
+/*************************Helper functions***********************/
 function roundToDec(value, decimals) {
 	return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
 };
@@ -66,7 +66,7 @@ function validateArray(array, totalMember, type){
 						}
 					}
 			}else{
-				throw new Error("Incomplete member error: "+ totaMember +" memebers needed");
+				throw new Error("Incomplete member error: "+ totalMember +" memebers needed");
 			}
 		}else if (totalMember == -1){
 			var len = array.length;
@@ -102,17 +102,13 @@ function validateBoolean(boolean){
 	}
 };
 function validateObjectMember(object, propery){
-	var ObjArr = Object.keys(object);
-	for (var x = 0; x < ObjArr.length; x++){
-		if(ObjArr[x] == propery){
-			return true;
-		}else{
-			if (x == ObjArr.length-1){
-					var AllProperties =  ObjArr.toString();
-					var rplc = AllProperties.replace(/,/g, ", ");
-					throw new TypeError("Invlaid property specied, it should any of the follwing : " + rplc);
-			}
-		}
+	if(object.hasOwnProperty(propery)){
+		return true;
+	}else{
+		var ObjArr = Object.keys(object);
+		var AllProperties =  ObjArr.toString();
+		var rplc = AllProperties.replace(/,/g, ", ");
+		throw new TypeError("Invlaid property specified, it should be any of the follwing : " + rplc);
 	}
 }
 function validateElement (element){
@@ -136,9 +132,37 @@ function validateHTMLObject(HTMLCollection){
 			throw new TypeError("Invalid HTML Collection : HTML collection must be provide");
 	}
 }
-/*****************************************************************/
+function validateObjectLiteral(object){
+	if (object.__proto__.isPrototypeOf(new Object()) == true){
+		return true;
+	}else {
+		throw new TypeError("Type error : literal object needed");
+	}
+}
+function validateObjectMembers(object, ObjectBase){
+		var ObjArr = Object.keys(object);
+		for (var x = 0; x < ObjArr.length; x++){
+			if(ObjectBase.hasOwnProperty(ObjArr[x])){
 
-/*******************************Timing*****************************/
+			}else {
+					var ObjBArr = Object.keys(ObjectBase);
+					var AllProperties =  ObjBArr.toString();
+					var rplc = AllProperties.replace(/,/g, ", ");
+					throw new TypeError("Invlaid property specified, it should be any of the follwing : " + rplc);
+			}
+		}
+		return true;
+}
+function validateStringDigit(stringDigit){
+	if(/0-9/.test(stringDigit)){
+		return true;
+	}else {
+		return false;
+	};
+}
+/****************************************************************/
+
+/*****************************Timing*****************************/
 var timing = {
 	//time difference
 	timeFraction		: function(startTime, duration){
@@ -191,9 +215,9 @@ var timing = {
 		return 1 - (1 - Math.sin(Math.acos(1-timeFrac)));
 	}
 }
-/*****************************************************************/
+/****************************************************************/
 
-/***************************CSS Styler**************************/
+/***************************CSS Style getter***************************/
 var css = {
 	getStyles : function (element, property){
 					if(window.getComputedStyle){
@@ -205,7 +229,7 @@ var css = {
 					return propertyValue;
 				}
 }
-/***************************************************************/
+/****************************************************************/
 
 /*****************************Cross XHR creator******************/
 var ajax = {
@@ -223,7 +247,7 @@ var ajax = {
 }
 /****************************************************************/
 
-/*********************imageManipulator****************************/
+/*********************imageManipulator***************************/
 function imageManipulator(canvasObj, image){
 	var self = this, initRGB = [], maxGray = [], maxGrayControl = [], maximumLoop = 0, highestDifference =0, currentLoop = 0, initGray = [], maxRGB = [], maxRGBControl = [], speed = 0, diff=0, imageData, width=300, height=300;
 
@@ -868,12 +892,12 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 			}
 		}
 	});
+	Object.defineProperties(this, {
+		circularProgress:{
+			writable:false
+		}
+	});
 }
-Object.defineProperties(this, {
-	circularProgress:{
-		writable:false
-	}
-});
 /****************************************************************/
 
 
@@ -1151,7 +1175,7 @@ ToBaseGridMultiple.centerVertically = function (targetElement, height){
 }
 /****************************************************************/
 
-/****************************Writer******************************/
+/**************************TypeWriter****************************/
 function typeWriter(){
 	var PlainTextCounter = 0,	ParagraphTextCounter = 0,	ActiveParagraph = 0, self = this, n, callBackDelay=0, speed= [10,20];
 
@@ -1218,5 +1242,53 @@ function typeWriter(){
 			}
 		}
 	})
+}
+/****************************************************************/
+
+
+/************************ScreenBreakPoint************************/
+function ScreenBreakPoint(breakPoints){
+	validateObjectLiteral (breakPoints);
+
+	var screenMode = "";
+  var baseBeakPoints = {
+		large:1000,
+		medium: 600
+	}
+	validateObjectMembers(breakPoints, baseBeakPoints);
+
+	if(validateNumber(breakPoints["large"])){
+		baseBeakPoints.large = breakPoints["large"];
+	}
+	if(validateNumber(breakPoints["medium"])){
+		baseBeakPoints.large = breakPoints["medium"];
+	}
+	Object.defineProperties(this, {
+		screen : {
+			get:function(){
+				if(innerWidth > baseBeakPoints["large"]){
+					return {Mode:"large", actualSize:innerWidth};
+				}else if (innerWidth >= baseBeakPoints["medium"] && innerWidth < baseBeakPoints["large"]) {
+					return {Mode:"medium", actualSize:innerWidth};
+				}else {
+					return {Mode:"small", actualSize:innerWidth};
+				}
+			}
+		}
+	})
+}
+
+/****************************************************************/
+
+/***************************CSS Style getter***************************/
+function css(){};
+css.getStyle = function (element, property){
+					if(window.getComputedStyle){
+						var styleHandler = getComputedStyle(element, null);
+					}else{
+						var styleHandler = element.currentStyle;
+					}
+					var propertyValue = styleHandler[property];
+					return propertyValue;
 }
 /****************************************************************/
