@@ -28,70 +28,146 @@ function percentageToAngle(percentage, start){
 function getRandomInt(min, max){
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 };
-function validateNumber(number){
+function validateNumber(number, msg=null){
 	if (typeof number != "number"){
-		throw new TypeError("Please provide a real number");
+		if (msg != null){
+			throw new TypeError(msg);
+		}else{
+			throw new TypeError("Please provide a real number");
+		}
 	}else{
 		return true;
 	}
 };
-function validateString(string){
+function validateString(string, msg = null){
 	if (typeof string != "string"){
-		throw new TypeError("Please provide a string");
+		if (msg == null){
+			throw new TypeError("Please provide a string");
+		}else{
+			throw new TypeError(msg);
+		}
 	}else{
 		return true;
 	}
 };
-function validateArray(array, totalMember, type){
+function matchString(string, stringsArr, msg = null){
+	if (stringsArr.indexOf(string) != -1){
+		return true;
+	}else {
+		if(msg == null){
+			throw new TypeError("Invalid string value specified");
+		}else{
+			throw new TypeError(msg);
+		}
+	}
+}
+function matchNumbers(number, NumbersArr, msg = null){
+	if (NumbersArr.indexOf(number) != -1){
+		return true;
+	}else {
+		if(msg == null){
+			throw new TypeError("Invalid number value specified");
+		}else{
+			throw new TypeError(msg);
+		}
+	}
+}
+function validateArray(array, totalMember, type, id=null){
 	if (Array.isArray(array)){
-		if(totalMember != -1){
+		if(totalMember != -1){ //-1 = no specific length
 			if(array.length == totalMember){
 					for (var x = 0; x < totalMember; x++){
 						if(type == "string"){
-							if (validateString(array[x])){
+							if (id != null){
+								var msg = "Invalid datatype as member for "+ id+ " property  value, string array member needed";
+							}else{
+								var msg = null;
+							}
+							if (validateString(array[x], msg)){
 								if (x == totalMember-1){
 									return true;
 								}
-							}else{
-								throw new TypeError("Invlaid datatype as member");
 							}
 						}else if(type == "number"){
-							if (validateNumber(array[x])){
+							if (id != null){
+								var msg = "Invalid datatype as member for "+ id+ " property value, numeric array member needed";
+							}else{
+								var msg = null;
+							}
+							if (validateNumber(array[x], msg)){
 								if (x == totalMember-1){
 									return true;
 								}
-							}else{
-								throw new TypeError("Invlaid datatype as member");
 							}
+						}else if(type == "HTMLObject"){
+							if (id != null){
+								var msg = "Invalid datatype as member for "+ id+ " property value, HTMLElement array member needed";
+							}else{
+								var msg = null;
+							}
+							if (validateElement(array[x], msg)){
+								if (x == totalMember-1){
+									return true;
+								}
+							}
+						}else if(type == "mixed"){
+							return true;
 						}
 					}
 			}else{
-				throw new Error("Incomplete member error: "+ totalMember +" memebers needed");
+				if(id != null){
+					throw new Error("Incomplete member error: "+ totalMember +" member(s) needed for "+ id +" property");
+				}else{
+					throw new Error("Incomplete member error: "+ totalMember +" member(s) needed");
+				}
 			}
 		}else if (totalMember == -1){
 			var len = array.length;
 			for (var x = 0; x < len; x++){
 				if(type == "string"){
-					if (validateString(array[x])){
+					if (id != null){
+						var msg = "Invalid datatype as member for "+ id+ " property value, string array member needed";
+					}else{
+						var msg = null;
+					}
+					if (validateString(array[x], msg)){
 						if (x == len-1){
 							return true;
 						}
-					}else{
-						throw new TypeError("Invlaid datatype as member");
 					}
 				}else if(type == "number"){
-					if (validateNumber(array[x])){
+					if (id != null){
+						var msg = "Invalid datatype as member for "+ id+ " property value, numeric array member needed";
+					}else{
+						var msg = null;
+					}
+					if (validateNumber(array[x], msg)){
 						if (x == len-1){
 							return true;
 						}
-					}else{
-						throw new TypeError("Invlaid datatype as member");
 					}
+				}else if(type == "HTMLObject"){
+					if (id != null){
+						var msg = "Invalid datatype as member for "+ id+ " property value, HTMLElement array member needed";
+					}else{
+						var msg = null;
+					}
+					if (validateElement(array[x], msg)){
+						if (x == len-1){
+							return true;
+						}
+					}
+				}else if(type == "mixed"){
+					return true;
 				}
 			}
 		}
 	}else{
-		throw new TypeError("Please provide an array");
+		if (id != null){
+			throw new TypeError("Invalid datatype assigned for "+ id+ " property, value must be an array");
+		}else{
+			throw new TypeError("Please provide an array");
+		}
 	}
 };
 function validateBoolean(boolean){
@@ -111,11 +187,15 @@ function validateObjectMember(object, propery){
 		throw new TypeError("Invlaid property specified, it should be any of the follwing : " + rplc);
 	}
 }
-function validateElement (element){
+function validateElement (element,  msg = null){ //A single element
 	if (element instanceof Element){
 		return true;
 	}else{
-		throw new TypeError("Invalid HTML Element : HTML Element must be provide");
+		if(msg != null){
+			throw new TypeError(msg);
+		}else{
+			throw new TypeError("Invalid data type : HTML Element must be provide");
+		}
 	}
 }
 function validateFunction (fn){
@@ -125,7 +205,7 @@ function validateFunction (fn){
 		throw new TypeError("Invalid assigned data : Please provide a function need ");
 	}
 }
-function validateHTMLObject(HTMLCollection){
+function validateHTMLObject(HTMLCollection){ //Group of elements
 	if(Object.getPrototypeOf(HTMLCollection).constructor.name == "NodeList"){
 		return true;
 	}else{
@@ -900,7 +980,6 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 }
 /****************************************************************/
 
-
 /************************ResourceLoader**************************/
 function resourceLoader (canvasElement, canvasObj, progressObj){
 	//private members starts
@@ -1245,7 +1324,6 @@ function typeWriter(){
 }
 /****************************************************************/
 
-
 /************************ScreenBreakPoint************************/
 function ScreenBreakPoint(breakPoints){
 	validateObjectLiteral (breakPoints);
@@ -1277,10 +1355,9 @@ function ScreenBreakPoint(breakPoints){
 		}
 	})
 }
-
 /****************************************************************/
 
-/***************************CSS Style getter***************************/
+/************************CSS Style getter************************/
 function css(){};
 css.getStyle = function (element, property){
 					if(window.getComputedStyle){
@@ -1292,3 +1369,333 @@ css.getStyle = function (element, property){
 					return propertyValue;
 }
 /****************************************************************/
+
+/************************ListScroller****************************/
+function listScroller(container, listParent, listType){
+	validateElement(container, "An HTML element needed as list parent container");
+	validateElement(listParent, "List parent is not a valid HTML element");
+	validateString(listType, "listType must be a string identifying list element type. e.g. 'li', 'div'");
+	var windowResizeHandler = new browserResizeProperty();
+	var maxAdd = 0, remToAdd = 0, ini = 0, tabsBehindRight = 0,	tabsBehindLeft = 0,	extraSpace = 70,	remainingFrac =0, ready = 0, listening=0, diff=0, remAdded = 0, running=0;
+	var listPlane = "x", Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonClassName = "";
+	//Xbuttons[0] = left buttons, Xbuttons[1] = Right buttons
+	//scrollToLeftStatus : 1 => not started, 2 => started but not finished, 3 => finished;
+
+	function assignHandlers(){
+		//List Container
+		listParent.addEventListener("transitionend", function(e){
+			if (listPlane == "X" || listPlane == "x"){
+				if (tabsBehindLeft > 0){
+					Xbuttons[0].classList.remove(inactiveButtonClassName);
+					running=0;
+				}else if(tabsBehindLeft == 0 && remAdded > 0){
+					Xbuttons[0].classList.remove(inactiveButtonClassName);
+					running=0;
+				}else if(tabsBehindLeft == 0 && remAdded == 0){
+					Xbuttons[0].classList.add(inactiveButtonClassName);
+					running=0;
+				}
+
+
+				if(tabsBehindRight == 0 && remToAdd == 0){
+					Xbuttons[1].classList.add(inactiveButtonClassName);
+					running=0;
+				}else if(tabsBehindRight > 0){
+					Xbuttons[1].classList.remove(inactiveButtonClassName);
+					running=0;
+				}else if(tabsBehindRight == 0 && remToAdd > 0){
+					Xbuttons[1].classList.remove(inactiveButtonClassName);
+					running=0;
+				}
+			}else if (listPlane == "Y" || listPlane == "y") {
+
+			}
+		});
+
+		//button left
+		Xbuttons[0].addEventListener("click", function(e){
+			if (listening == 1){
+				if (running == 0){
+					running =1;
+					scrollToRight(e);
+				}
+			}
+		}, false);
+
+		//button Right
+		Xbuttons[1].addEventListener("click", function(e){
+			if (listening == 1){
+				if(running == 0){
+					running=1;
+					scrollToleft(e);
+				}
+			}
+		}, false);
+
+
+		//Browser
+		window.addEventListener("resize", function(){
+			if (listening == 1){
+				scrollFixer();
+			}
+		},false);
+
+	}
+	function computeValues(){
+			var containerSize = container.clientWidth;
+			var listParentSize = listParent.scrollWidth+extraSpace;
+
+			diff = (containerSize - listParentSize);
+
+	 		var AbsoluteDiff = diff *-1;
+	 		tabsBehindRight = parseInt(AbsoluteDiff/scrollSize);
+	 		remainingFrac =  AbsoluteDiff%scrollSize;
+	 		remToAdd = remainingFrac;
+	 		(AbsoluteDiff>scrollSize) ? maxAdd = scrollSize : maxAdd = AbsoluteDiff;
+
+	}
+	function addVitalStyles(){
+		if(listPlane == "x" || "X" ){
+			if (listening == 1){
+				listParent.style["display"] = "table";
+				listParent.style["width"] = "auto";
+				listParent.style["white-space"] = "nowrap";
+				listParent.style["transition"] = "left "+ effects[0]+"s "+effects[1]+", right "+effects[0]+"s " +effects[1];
+				var listItems = listParent.querySelectorAll(listType);
+				if (listItems.length > 0){
+					for (var list of listItems) {
+						list.style["display"] = "inline-block";
+					}
+					computeValues();
+					scrollStatus();
+				}else{
+					throw new Error("Setup error: No list item found, check the listType specified in the contructor");
+				}
+			}
+		}
+	}
+	function scrollToleft(e){
+		if (e.button == 0){
+			if (diff < 0){
+				var currentPosition = parseInt(css.getStyle(listParent, "left"), "px");
+				if(tabsBehindRight != 0){
+					maxAdd = scrollSize;
+					var newPostion = currentPosition - maxAdd;
+					listParent.style["left"] = newPostion+"px";
+					tabsBehindRight--;
+					tabsBehindLeft++;
+				}else if (tabsBehindRight == 0 && remToAdd > 0) {
+					newPostion = currentPosition - remainingFrac;
+					remToAdd = 0;
+					remAdded = remainingFrac;
+					listParent.style["left"] = newPostion+"px";
+				}
+			}
+		}
+	}
+	function scrollToRight(e){
+		if (e.button == 0){
+			var currentPosition = parseInt(css.getStyle(listParent, "left"), "px");
+			if(tabsBehindLeft != 0){
+				maxAdd = scrollSize;
+				var newPostion = currentPosition + maxAdd;
+				listParent.style["left"] = newPostion+"px";
+				tabsBehindRight++;
+				tabsBehindLeft--;
+			}else if (tabsBehindLeft == 0 && remAdded > 0) {
+				var newPostion = currentPosition + remainingFrac;
+				remAdded = 0;
+				remToAdd = remainingFrac;
+				listParent.style["left"] = newPostion+"px";
+			}
+		}
+	}
+	function scrollStatus(){
+		if (listPlane == "x" ||  "X" ){
+			if(listening == 1){ //started
+				var containerSize = container.clientWidth;
+				var listParentSize = listParent.scrollWidth+extraSpace;
+				if (containerSize < listParentSize){
+					Xbuttons[1].classList.remove(inactiveButtonClassName);
+				}
+			}
+		}else if (listPlane == "y" ||  "Y" ){
+
+		}
+	}
+	function scrollFixer(){
+		if(windowResizeHandler.mode == "expanded"){
+			var containerSize = container.clientWidth;
+			var listParentSize = listParent.scrollWidth+extraSpace;
+
+			diff = (containerSize - listParentSize);
+
+			if (diff < 0 && tabsBehindRight == 0 && remToAdd == 0){ //Expansion outside view area
+				Xbuttons[1].classList.add(inactiveButtonClassName);
+			}else if (diff < 0 && tabsBehindRight >= 0 && remToAdd > 0) { //Expansion within  view area
+				Xbuttons[1].classList.remove(inactiveButtonClassName);
+				var AbsoluteDiff = windowResizeHandler.change;
+		 		tabsBehindRight = tabsBehindRight - parseInt(AbsoluteDiff/scrollSize);
+				remainingFrac = AbsoluteDiff%scrollSize;
+		 		remToAdd = remToAdd - remainingFrac;
+				if (remToAdd > 0){
+					(AbsoluteDiff>scrollSize) ? maxAdd = scrollSize : maxAdd = AbsoluteDiff;
+				}else if(remToAdd <= 0){
+					remToAdd = 0;
+				}
+			}
+		}else if (windowResizeHandler.mode == "shrinked") {
+			if (diff < 0){
+				Xbuttons[1].classList.remove(inactiveButtonClassName);
+				var AbsoluteDiff = windowResizeHandler.change;
+		 		tabsBehindRight =  tabsBehindRight + parseInt(AbsoluteDiff/scrollSize);
+				remainingFrac = AbsoluteDiff%scrollSize;
+				if ((remToAdd + remainingFrac) >= scrollSize){
+					tabsBehindRight =  tabsBehindRight + parseInt(AbsoluteDiff/scrollSize);
+					remainingFrac = remainingFrac + (remToAdd + remainingFrac)%scrollSize;
+					remToAdd = remToAdd + remainingFrac;
+				}else{
+					remToAdd = remToAdd + remainingFrac;
+				}
+
+				if(tabsBehindRight >= 0){
+					maxAdd = scrollSize;
+				}else if (tabsBehindRight == 0 && remToAdd > 0) {
+					maxAdd = AbsoluteDiff;
+				}
+			}else{
+				Xbuttons[1].classList.add(inactiveButtonClassName);
+			}
+		}
+	};
+	this.initialize = function(){
+			if(listPlane == "x" || "X"){
+				if(Xbuttons.length == 0 ){
+					throw new Error("Setup error: Xbuttons not specified");
+				}
+			}else if(listPlane == "y" || "Y"){
+				if(Ybuttons.length == 0 ){
+					throw new Error("Setup error: Ybuttons not specified");
+				}
+			}
+			if(inactiveButtonClassName == ""){
+				throw new Error("Setup error: Buttons class not specified");
+			}
+			addVitalStyles();
+			assignHandlers();
+			ready=1;
+	};
+	this.runScroller = function (){
+		if(ready == 1){
+			listening = 1;
+
+			addVitalStyles();
+			scrollStatus();
+		}else {
+			throw new Error("Initialization incomplete, complete initialization 1st before executing 'runScroller()' method");
+		}
+	}
+	this.offScroller = function (){
+		if(ready == 1){
+			listening = 0;
+		}else {
+			throw new Error("Initialization incomplete, complete initialization 1st before executing 'runScroller()' method");
+		}
+	};
+	Object.defineProperties(this, {
+		listPlane:{
+			set: function(value){
+				if (validateString(value, "String needed as listPlane value")){
+					if(matchString(value, ["x", "y", "X", "Y"], "listPlane value can either be 'x' or 'y', case insensitive")){
+						listPlane = value;
+					}
+				}
+			}
+		},
+		Xbuttons: {
+			set:function(value){
+				if(validateArray(value, 2, "HTMLObject", "Xbuttons")){
+					Xbuttons = value;
+				}
+			}
+		},
+		Ybuttons: {
+			set:function(value){
+				if(validateArray(value, 2, "HTMLObject", "Ybuttons")){
+					Ybuttons = value;
+				}
+			}
+		},
+		scrollSize: {
+			set:function(value){
+				if(validateNumber(value, "Numeric value needed for scrollSize property")){
+					scrollSize = value;
+				}
+			}
+		},
+		extraSpace: {
+			set:function(value){
+				if(validateNumber(value, "Numeric value needed for extraSpace property")){
+					extraSpace = value;
+				}
+			}
+		},
+		// listening: {
+		// 	set:function(value){
+		// 		if(validateNumber(value, "Numeric value needed for listening property")){
+		// 			if (matchNumbers(value, [1,0], "listening property value can either be 1 or 0")){
+		// 				listening = value;
+		// 			}
+		// 		}
+		// 	}
+		// },
+		inactiveButtonClassName:{
+			set:function(value){
+				if(validateString(value, "String value needed for inactiveButtonClassName property")){
+					inactiveButtonClassName = value;
+				}
+			}
+		},
+		effects:{
+			set:function(value){
+				if(validateArray(value, 2, "mixed", "effects")){
+					if(validateNumber(value[0], "Effects array 1st element must be an numeric type, which represents the speed")){
+						if(validateString(value[1], "Effects array 2nd element must be a string type, which represents the effect (A CSS valid effect value e.g 'linear')")){
+							effects = value;
+						}
+					}
+				}
+			}
+		}
+	});
+}
+/****************************************************************/
+function browserResizeProperty(){
+	var currentSize = window.innerWidth, alter = 0, mode="null";
+	window.addEventListener("resize", function(){
+		if (window.innerWidth > currentSize){
+			var diff = window.innerWidth - currentSize;
+			alter = diff;
+			currentSize = window.innerWidth;
+			mode = "expanded";
+		}else{
+			var diff = currentSize - window.innerWidth;
+			alter = diff;
+			currentSize = window.innerWidth;
+			mode = "shrinked";
+		}
+	}, false);
+	Object.defineProperties(this, {
+		mode:{
+			get:function(){
+				return mode;
+			}
+		},
+		change:{
+			get: function(){
+				return alter;
+			}
+		}
+	})
+
+}
