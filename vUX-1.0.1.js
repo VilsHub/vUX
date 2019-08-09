@@ -73,6 +73,7 @@ function matchNumbers(number, NumbersArr, msg = null){
 	}
 }
 function validateArray(array, totalMember, type, id=null){
+	//id => property name
 	if (Array.isArray(array)){
 		if(totalMember != -1){ //-1 = no specific length
 			if(array.length == totalMember){
@@ -198,11 +199,16 @@ function validateElement (element,  msg = null){ //A single element
 		}
 	}
 }
-function validateFunction (fn){
+function validateFunction (fn, msg = null){
 	if (typeof fn == "function"){
 		return true;
 	}else{
-		throw new TypeError("Invalid assigned data : Please provide a function need ");
+		if (msg == null){
+			throw new TypeError("Invalid assigned data : Please provide a function");
+		}else{
+			throw new TypeError(msg);
+		}
+
 	}
 }
 function validateHTMLObject(HTMLCollection){ //Group of elements
@@ -239,6 +245,31 @@ function validateStringDigit(stringDigit){
 	}else {
 		return false;
 	};
+}
+function validateDimension(dimension, msg=null){
+	var matched = 0;
+	var units = [/[0-9\.]+px/,/[0-9\.]+%/, /[0-9\.]+pt/, /[0-9\.]+px/,/[0-9\.]+vh/, /[0-9\.]+vw/, /[0-9\.]+rem/, /[0-9\.]+em/];
+	for(var x =0; x<units.length; x++){
+		if(units[x].test(dimension)){
+			matched =1;
+			break;
+		}
+	}
+	if(matched == 1){
+		return true;
+	}else{
+		if(msg == null){
+			throw new Error("Unrecognized dimension specified");
+		}else{
+				throw new Error(msg);
+		}
+	}
+
+}
+function extractDimensionValue(dimension, unit){
+	var pattern = new RegExp(unit, "g") ;
+	var extract = dimension.replace(pattern, "");
+	return extract;
 }
 /****************************************************************/
 
@@ -1330,8 +1361,8 @@ function ScreenBreakPoint(breakPoints){
 
 	var screenMode = "";
   var baseBeakPoints = {
-		large:1000,
-		medium: 600
+		large:1000, //large start point
+		medium: 600 //medium start point
 	}
 	validateObjectMembers(breakPoints, baseBeakPoints);
 
@@ -1367,6 +1398,20 @@ css.getStyle = function (element, property){
 					}
 					var propertyValue = styleHandler[property];
 					return propertyValue;
+}
+/****************************************************************/
+
+/**********************Child index getter*********************/
+function child(){
+}
+child.getIndex = function(child){
+	var index = 0, n=0;
+	while(child){
+		child = child.previousElementSilbling;
+		n++;
+	}
+	index = n++;
+	return index;
 }
 /****************************************************************/
 
@@ -1670,6 +1715,8 @@ function listScroller(container, listParent, listType){
 	});
 }
 /****************************************************************/
+
+/*****************browserResizePropertyHandler*******************/
 function browserResizeProperty(){
 	var currentSize = window.innerWidth, alter = 0, mode="null";
 	window.addEventListener("resize", function(){
@@ -1699,3 +1746,442 @@ function browserResizeProperty(){
 	})
 
 }
+/****************************************************************/
+
+/********************Custom form component***********************/
+function customFormComponents(vWrapper){
+	var selOpen=0, selectDim=[], selected=0, arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
+	afterSelectionFn= function(){}, wrapperCustomStyle="", totalOptions = 0 ,selectFieldCustomStyle="", optionCustomStyle="", optionsContainerCustomStyle="", arrowConCustomStyle="";
+
+	/************************************************************************************/
+	//bgColors[a,b] a=> listBacgroundColor, b=> slectBackground
+	//fontColors[a,b] a=> listFontColor, b=> slectfontColor
+	//selectDim[a,b] a=> width of select cElement , b=> height of select cElemt
+	/************************************************************************************/
+
+	function selectOptions(listOptionCon){
+		var currentSelected = document.querySelector("."+vWrapper + " .optionsCon .selected");
+		var sfield = document.querySelector("."+vWrapper + " .sfield");
+		currentSelected.classList.remove("selected");
+		var currentHovered = document.querySelector("."+vWrapper + " .optionsCon .hovered");
+
+		//Select the clicked item
+		currentHovered.classList.add("selected");
+
+		//Add selected to select field
+		sfield.innerHTML = currentHovered.innerHTML;
+
+		//Hide listCon
+		listOptionCon.style["height"] = "0px";
+		selOpen = 0;
+		afterSelectionFn();
+	};
+	function hideList(listOptionCon){
+			var prevHovered = listOptionCon.querySelector(".hovered");
+			if (prevHovered != null){
+				//Remove to current
+				prevHovered.classList.remove("hovered");
+			}
+
+			//hide listOptionCon
+			listOptionCon.style["height"] = "0px";
+			selOpen = 0;
+	};
+	function hover(e, listOptionCon){
+		//Add to current
+		var prevHovered = listOptionCon.querySelector(".hovered");
+		if (prevHovered == null){
+			//Add to current
+			e.target.classList.add("hovered");
+		}else{
+			//Add to current
+			prevHovered.classList.remove("hovered");
+
+			//Add to current
+			e.target.classList.add("hovered");
+		}
+	}
+	function unhovered(e, listOptionCon){
+		var prevHovered = listOptionCon.querySelector(".hovered");
+		prevHovered.classList.remove("hovered");
+	}
+	function toggleOptionList(listOptionCon){
+		if (selOpen == 0){ //list closed
+			var listOptionsTotal = listOptionCon.childElementCount;
+			//show listOptionCon
+			listOptionCon.style["display"] = "block";
+			listOptionCon.scrollHeight;
+			var heightValue = extractDimensionValue(selectDim[1], "px");
+			listOptionCon.style["height"] = listOptionsTotal*heightValue+"px";
+			selOpen = 1;
+		}else if (selOpen == 1) {//list opened
+			var prevHovered = listOptionCon.querySelector(".hovered");
+			if (prevHovered != null){
+				//Remove to current
+				prevHovered.classList.remove("hovered");
+			}
+
+			//hide listOptionCon
+			listOptionCon.style["height"] = "0px";
+			selOpen = 0;
+		}
+	}
+	function scrollDown(listOptionCon){
+		var activieHovered = listOptionCon.querySelector(".hovered");
+		if (activieHovered != null){
+			if(scrollIni == 0){
+				var index = child.getIndex(activieHovered);
+				startIndex = index;
+				scrollIni = 1;
+			}
+			startIndex++;
+			if(startIndex > totalOptions){
+				startIndex = 1;
+			}
+			listOptionCon.querySelector(".option:nth-child("+startIndex+")").classList.add("hovered");
+
+			activieHovered.classList.remove("hovered");
+			if(startIndex > totalOptions){
+				startIndex = 0;
+			}
+		}else{
+			startIndex = 1;
+			scrollIni =1;
+			listOptionCon.querySelector(".option").classList.add("hovered");
+		}
+	}
+	function scrollUp(listOptionCon){
+		var activieHovered = listOptionCon.querySelector(".hovered");
+		if (activieHovered != null){
+			if(scrollIni == 0){
+				var index = child.getIndex(activieHovered);
+				startIndex = index;
+				scrollIni = 1;
+			}
+			startIndex--;
+			if(startIndex == 0){
+				startIndex = totalOptions;
+			}
+			activieHovered.classList.remove("hovered");
+			listOptionCon.querySelector(".option:nth-child("+startIndex+")").classList.add("hovered");
+
+
+		}else{
+			startIndex = totalOptions;
+			scrollIni =1;
+			listOptionCon.querySelector(".option:last-of-type").classList.add("hovered");
+		}
+	}
+	function createStyleSheet(){
+		var css = "."+vWrapper + " {width:"+selectDim[0]+"; height:"+selectDim[1]+";}";
+		css += "."+vWrapper + " .sfield {position:absolute; width:100%; height:100%; z-index:1; line-height:"+selectDim[1]+"; padding-left:5px; cursor:pointer; box-sizing: border-box; background-color:#ccc;}";
+		css += "."+vWrapper + " .optionsCon {position:absolute; width:100%; height:0px; z-index:2; top:100%; transition:height 0.2s linear; overflow-y:hidden; display:none}";
+		css += "."+vWrapper + " .optionsCon .option {position:static; width:100%; height:"+selectDim[1]+"; padding-left:5px; box-sizing:border-box; line-height:"+selectDim[1]+"; cursor:pointer; border-bottom:solid 1px #ccc;}";
+		css += "."+vWrapper + " .optionsCon .option:last-of-type {border-bottom:none!important;}";
+		css += "."+vWrapper + " .optionsCon .hovered {background-color:rgba(255, 255, 255, 0.3)}";
+		css += "."+vWrapper + " .optionsCon .selected {background-color:rgba(255, 255, 255, 0.5)}";
+		css += "."+vWrapper + " .arrowCon {width:"+selectDim[1]+"; height:100%; background-color:rgb(255, 255, 255); content:''; border-left:solid 1px black; position:absolute; right:0; top:0; box-sizing:border-box; z-index:5; cursor:pointer;}";
+		css += "."+vWrapper + " .arrowCon::before {position:absolute; left:0; top:0; width:100%; height:100%; text-align:center; line-height:"+selectDim[1]+"; transition: color 0.1s linear;}";
+		css += "."+vWrapper + " .arrowCon:hover::before {color:rgba(255, 255, 255, 0.3)!important;}";
+		css += "."+vWrapper + " .arrowCon:active::before {color:rgba(255, 255, 255, 0.6)!important;}";
+
+		if(arrowIconClose != ""){
+			css += "."+vWrapper + " .arrowCon::before {"+arrowIconClose+"}"
+		}
+		if(arrowIconOpen != ""){
+			css += "."+vWrapper + " .opened::before {"+arrowIconOpen+"}"
+		}
+
+		var styleElement = document.createElement("style");
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
+	}
+	function reCreateSelect (SelectElement){
+		//Set listType
+		if(SelectElement.getAttribute("multiple") != null){
+			//multipleSelection = true;
+			throw new Error("No support yet for multiple selection");
+		}else{
+			//multipleSelection = false;
+		}
+		//Wrapper Element
+		var wrapper = document.createElement("DIV");
+		wrapper.setAttribute("class", vWrapper);
+		wrapper.setAttribute("tabindex", "0");
+		if(wrapperCustomStyle != ""){
+			wrapper.style = wrapperCustomStyle;
+		}
+
+		//Select field
+		var selectField = document.createElement("DIV");
+		selectField.setAttribute("class", "sfield");
+		if(selectFieldCustomStyle != ""){
+			selectField.style = selectFieldCustomStyle;
+		}
+
+		//ArrowCon
+		var arrowCon = document.createElement("DIV");
+		arrowCon.setAttribute("class", "arrowCon");
+		if(arrowConCustomStyle != ""){
+			arrowCon.style = arrowConCustomStyle;
+		}
+
+		//selectOptions container
+		var optionsContainer = document.createElement("DIV");
+		optionsContainer.setAttribute("class", "optionsCon");
+		if(optionsContainerCustomStyle != ""){
+			optionsContainer.style = optionsContainerCustomStyle;
+		}
+
+		//TotalOptions
+		totalOptions = SelectElement.options.length;
+
+		//Add options to custom
+		for(var x=0;x<totalOptions; x++){
+			var options = document.createElement("DIV");
+			options.setAttribute("class", "option");
+			if(optionCustomStyle != ""){
+				options.style = optionCustomStyle;
+			}
+
+
+			//First select option
+			if (multipleSelection == false && defaultSet == false){
+					if (SelectElement.options[x].getAttribute ("selected") != null){//selected
+						options.classList.add("selected");
+						selectField.appendChild(document.createTextNode(SelectElement.options[x].innerHTML));
+						defaultSet = true;
+					}else if (SelectElement.options[x].getAttribute ("selected") == null && x == SelectElement.options.length-1) {
+						selectField.appendChild(document.createTextNode(SelectElement.options[0].innerHTML));
+						defaultSet = false;
+					}
+			}
+			options.appendChild(document.createTextNode(SelectElement.options[x].innerHTML));
+			optionsContainer.appendChild(options);
+		}
+
+
+
+		// //Apply Styles
+		createStyleSheet();
+
+		//Add selectField to wrapper
+		wrapper.append(selectField);
+
+		//Add arrowCon
+		wrapper.append(arrowCon);
+
+		//Add selectOptionsContainer to Wrapper
+		wrapper.append(optionsContainer);
+
+		//Add wrapper before target select;
+		var selectParent = SelectElement.parentNode;
+		selectParent.insertBefore(wrapper, SelectElement);
+
+
+		//Hide main select element
+		SelectElement.style["display"] = "none";
+
+		//Add default if no default specified
+		if (defaultSet == false){
+			var firstListOption = document.querySelector("."+vWrapper + " .optionsCon .option");
+			firstListOption.classList.add("selected");
+		}
+	}
+	function assignEventHandler(SelectElement){
+		var listParent = SelectElement.parentNode;
+		var listOptionCon = document.querySelector("."+vWrapper + " .optionsCon");
+		var arrowCon = document.querySelector("."+vWrapper + " .arrowCon");
+		listParent.addEventListener("click", function(e){
+			if (e.target.classList.contains("sfield") | e.target.classList.contains("arrowCon")){
+				toggleOptionList(listOptionCon);
+			}else if (e.target.classList.contains("option")) {
+				if (multipleSelection == false){
+					selectOptions(listOptionCon);
+				}
+			}
+		}, false);
+		document.body.addEventListener("click", function(e){
+			if (e.target.classList.contains("sfield") == false && e.target.classList.contains("arrowCon") == false && e.target.classList.contains("option") == false){
+				if (selOpen == 1) {//list opened
+					hideList(listOptionCon);
+				}
+			}
+		},false);
+		listOptionCon.addEventListener("transitionend", function(e){
+			if (selOpen == 1){
+				arrowCon.classList.add("opened");
+			}else if (selOpen == 0) {
+				arrowCon.classList.remove("opened");
+				listOptionCon.style["display"] = "none";
+			}
+		}, false);
+		listOptionCon.addEventListener("mouseover", function(e){
+			if(e.target.classList.contains("option")){
+				hover(e, listOptionCon);
+			}
+		}, false);
+		listOptionCon.addEventListener("mouseleave", function(e){
+			unhovered(e, listOptionCon);
+		}, false);
+		listParent.addEventListener("focusin", function (e){
+			if(e.target.classList.contains(vWrapper)){
+				if (selOpen == 0){
+					toggleOptionList(listOptionCon);
+				}
+			}
+		}, false);
+		listParent.addEventListener("focusout", function (e){
+			if(e.target.classList.contains(vWrapper)){
+				if (selOpen == 1){
+					toggleOptionList(listOptionCon);
+				}
+			}
+		}, false);
+		listParent.addEventListener("keydown", function (e){
+			if(e.target.classList.contains(vWrapper)){
+				if (selOpen == 1){
+					var handled = false, type=0;
+				  if (e.key !== undefined) {
+				    // Handle the event with KeyboardEvent.key and set handled true.
+						var targetKeyPressed = e.key;
+						handled = true;
+						type=1;
+
+				  } else if (e.keyIdentifier !== undefined) {
+				    // Handle the event with KeyboardEvent.keyIdentifier and set handled true.
+						var targetKeyPressed = e.keyIdentifier;
+						handled = true;
+						type=2;
+				  } else if (e.keyCode !== undefined) {
+				    // Handle the event with KeyboardEvent.keyCode and set handled true.
+						var targetKeyPressed = e.keyCode;
+						handled = true;
+						type=3;
+				  }
+
+
+				  if (handled) {
+				    // Suppress "double action" if event handled
+				    e.preventDefault();
+						if (type == 1){
+							if(e.key == "ArrowDown" | "Down"){
+								scrollDown(listOptionCon);
+							}else if (e.key == "ArrowUp" | "Up") {
+								scrollUp(listOptionCon);
+							}else if (e.key == "Enter") {
+								selectOptions(listOptionCon);
+							}
+						}else if(type == 2){
+
+						}else if(type == 3){
+
+						}
+				  }
+				}
+			}
+		}, false);
+	}
+	this.select = {
+		build: function(SelectElement){
+			validateElement(SelectElement, "A select element needed as argument for the 'build' method, non provided");
+			if(SelectElement.nodeName != "SELECT"){
+				throw new Error("A select element needed, please specify a valid select element");
+			}
+			if (selectDim.length == 0){
+				throw new Error("Setup imcomplete: list dimension needed, specify using the 'selectDimension' property");
+			}
+			reCreateSelect(SelectElement);
+			assignEventHandler(SelectElement);
+		}
+	};
+	Object.defineProperty(this, "select", {
+		writable:false
+	})
+	Object.defineProperties(this.select, {
+		build:{
+			writable:false
+		},
+		selected:{ //Checks if the options other than the default is selected
+			get:function(){
+				return selected;
+			}
+		},
+		afterSelectionFn : {//Function to call after selection
+			set:function(value){
+				if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
+					afterSelectionFn = value;
+				}
+			}
+		},
+		selectDimension:{
+			set:function(value){
+				if(validateArray(value, 2, "string", "selectDimension")){
+					if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'selectDimension' property")){
+						if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'selectDimension' property")){
+							selectDim = value;
+						}
+					}
+				}
+			},
+			get:function(){
+				return selectDim;
+			}
+		},
+		wrapperCustomStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'wrapperCustomStyle' property")){
+					wrapperCustomStyle = value;
+				}
+			}
+		},
+		selectFieldCustomStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'selectFieldCustomStyle' property")){
+					selectFieldCustomStyle = value;
+				}
+			}
+		},
+		arrowConCustomStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'arrowConCustomStyle' property")){
+					arrowConCustomStyle = value;
+				}
+			}
+		},
+		optionsContainerCustomStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'optionsContainerCustomStyle' property")){
+					optionsContainerCustomStyle = value;
+				}
+			}
+		},
+		optionCustomStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'optionCustomStyle' property")){
+					optionCustomStyle = value;
+				}
+			}
+		},
+		arrowIconClose:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'arrowIconClose' property")){
+					arrowIconClose = value;
+				}
+			}
+		},
+		arrowIconOpen:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'arrowIconOpen' property")){
+					arrowIconOpen = value;
+				}
+			}
+		}
+	})
+}
+/****************************************************************/
