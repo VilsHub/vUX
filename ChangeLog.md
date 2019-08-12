@@ -8,3 +8,5 @@
 - Added browser Resize Property handler
 - Added child element index getter
 - Added Custom form component builder
+  - Select input
+  - Radio input

@@ -1750,7 +1750,8 @@ function browserResizeProperty(){
 
 /********************Custom form component***********************/
 function customFormComponents(vWrapper){
-	var selOpen=0, selectDim=[], selected=0, arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+	var selOpen=0, selectDim=[], arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
 	afterSelectionFn= function(){}, wrapperCustomStyle="", totalOptions = 0 ,selectFieldCustomStyle="", optionCustomStyle="", optionsContainerCustomStyle="", arrowConCustomStyle="";
 
 	/************************************************************************************/
@@ -1759,14 +1760,21 @@ function customFormComponents(vWrapper){
 	//selectDim[a,b] a=> width of select cElement , b=> height of select cElemt
 	/************************************************************************************/
 
+	/*Custom select builder*/
 	function selectOptions(listOptionCon){
 		var currentSelected = document.querySelector("."+vWrapper + " .optionsCon .selected");
 		var sfield = document.querySelector("."+vWrapper + " .sfield");
 		currentSelected.classList.remove("selected");
 		var currentHovered = document.querySelector("."+vWrapper + " .optionsCon .hovered");
+		var mainSelect = document.querySelector("."+vWrapper).nextElementSibling;
 
 		//Select the clicked item
 		currentHovered.classList.add("selected");
+
+		//Assign selected value to main select element
+		mainSelect.value = currentHovered.getAttribute("value");
+
+
 
 		//Add selected to select field
 		sfield.innerHTML = currentHovered.innerHTML;
@@ -1945,6 +1953,8 @@ function customFormComponents(vWrapper){
 		for(var x=0;x<totalOptions; x++){
 			var options = document.createElement("DIV");
 			options.setAttribute("class", "option");
+			options.setAttribute("value", SelectElement.options[x].getAttribute("value"));
+
 			if(optionCustomStyle != ""){
 				options.style = optionCustomStyle;
 			}
@@ -1997,12 +2007,14 @@ function customFormComponents(vWrapper){
 		var listParent = SelectElement.parentNode;
 		var listOptionCon = document.querySelector("."+vWrapper + " .optionsCon");
 		var arrowCon = document.querySelector("."+vWrapper + " .arrowCon");
-		listParent.addEventListener("click", function(e){
-			if (e.target.classList.contains("sfield") | e.target.classList.contains("arrowCon")){
-				toggleOptionList(listOptionCon);
-			}else if (e.target.classList.contains("option")) {
-				if (multipleSelection == false){
-					selectOptions(listOptionCon);
+		listParent.addEventListener("mousedown", function(e){
+			if (e.button == 0){
+				if (e.target.classList.contains("sfield") | e.target.classList.contains("arrowCon")){
+					toggleOptionList(listOptionCon);
+				}else if (e.target.classList.contains("option")) {
+					if (multipleSelection == false){
+						selectOptions(listOptionCon);
+					}
 				}
 			}
 		}, false);
@@ -2107,11 +2119,6 @@ function customFormComponents(vWrapper){
 		build:{
 			writable:false
 		},
-		selected:{ //Checks if the options other than the default is selected
-			get:function(){
-				return selected;
-			}
-		},
 		afterSelectionFn : {//Function to call after selection
 			set:function(value){
 				if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
@@ -2128,9 +2135,6 @@ function customFormComponents(vWrapper){
 						}
 					}
 				}
-			},
-			get:function(){
-				return selectDim;
 			}
 		},
 		wrapperCustomStyle:{
@@ -2181,7 +2185,293 @@ function customFormComponents(vWrapper){
 					arrowIconOpen = value;
 				}
 			}
-		}
+		},
 	})
+	/****************************************************************/
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom radio builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+var RadioAfterSelectionFn=function(){}, radioDim =[], radioWrapperStyle="", radioButtonStyle="", selectedRadioStyle = "", deselectedRadioStyle ="", radioLabelStyle ="", groupAxis= "x", display="",
+mouseEffect = [];
+	/************************************************************************************/
+	//radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
+	//mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
+	/************************************************************************************/
+
+function radioStyleSheet(){
+
+		(groupAxis == "x" | "X")?display="inline-block":display="block";
+
+		var css = "."+vWrapper + " {width:auto; height:auto;display:"+display+"}";
+		css +=  "."+vWrapper + " .vRadioButtonCon {cursor:pointer;  box-sizing:border-box; width:"+radioDim[0]+"; border-radius:100%; height:"+radioDim[1]+"; border:solid 1px black; float:left; transition:all 0.2s linear; position:relative; overflow:hidden;}";
+		css +=  "."+vWrapper + " .vRadioButtonCon .select {background-color:black; position:absolute; top:0; left:0; width:100%; height:100%; border-radius:200%; z-index:1}";
+		css +=  "."+vWrapper + " .vRadioButtonCon .deselect {background-color:white; position:absolute; top:0; left:0; width:100%; height:100%; border-radius:200%; z-index:2}";
+		css +=  "."+vWrapper + " .label {width:auto; height:"+radioDim[1]+"; line-height:"+radioDim[1]+"; float:left; cursor:pointer;}";
+		css +=  "."+vWrapper + " .vRadioButtonCon:hover{"+mouseEffect[0]+";}";
+		css +=  "."+vWrapper + " .vRadioButtonCon .deselect:active{"+mouseEffect[1]+";}";
+
+		var styleElement = document.createElement("style");
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
 }
-/****************************************************************/
+function selectRadioButton(e, RadioElement){
+	var radioParent = RadioElement.parentNode;
+//	var me = new MouseEvent("click");
+	//Find previuos selected
+	var previousSelected = radioParent.querySelector("."+vWrapper+" .vRadioButtonCon[data-selectState='1']");
+
+
+
+	if (previousSelected != null){
+		var prevSelectBg = previousSelected.querySelector(".select");
+		var prevDeselectBg = previousSelected.querySelector(".deselect");
+		var mainpreviousSelected = radioParent.querySelector("."+vWrapper+" .vRadioButtonCon[data-selectState='1']").parentNode.nextElementSibling;
+	}
+	if (e.target.classList.contains("label") == false){
+		var currentSelectBg = e.target.parentNode.querySelector(".select");
+		var currentDeselectBg = e.target.parentNode.querySelector(".deselect");
+	}else{
+		var currentSelectBg = e.target.previousElementSibling.querySelector(".select");
+		var currentDeselectBg = e.target.previousElementSibling.querySelector(".deselect");
+	}
+
+
+	if(previousSelected != null){
+		//switch Bgs of previous
+		prevSelectBg.style["z-index"] = "1";
+		prevDeselectBg.style["z-index"] = "2";
+
+		//unset previous
+		//custom
+		previousSelected.setAttribute("data-selectState","0");
+
+		//main
+		previousSelected.parentNode.nextElementSibling.checked = false;
+
+
+
+
+		//set current
+		if (e.target.classList.contains("label") == false){
+			//custom
+			e.target.parentNode.setAttribute("data-selectState","1");
+
+			//main
+			e.target.parentNode.parentNode.nextElementSibling.checked = true;
+		}else{
+			//custom
+			e.target.previousElementSibling.setAttribute("data-selectState","1");
+
+			//main
+			e.target.parentNode.nextElementSibling.checked = true;
+		}
+
+		//switch Bgs of current
+		currentSelectBg.style["z-index"] = "2";
+		currentDeselectBg.style["z-index"] = "1";
+
+	}else{
+		//switch Bgs of current
+		currentSelectBg.style["z-index"] = "2";
+		currentDeselectBg.style["z-index"] = "1";
+
+		//set current
+		if (e.target.classList.contains("label") == false){
+			//custom
+			e.target.parentNode.setAttribute("data-selectState","1");
+
+			//main
+			e.target.parentNode.parentNode.nextElementSibling.checked = true;
+		}else{
+			//custom
+			e.target.previousElementSibling.setAttribute("data-selectState","1");
+
+			//main
+			e.target.parentNode.nextElementSibling.checked = true;
+		}
+	}
+}
+function reCreateRadio (RadioElement){
+	var radioWrapper = document.createElement("DIV");
+	var radioButtonCon = document.createElement("DIV");
+	var radioButtonConSelect = document.createElement("DIV");
+	var radioButtonConDeselect = document.createElement("DIV");
+	var radioLabel = document.createElement("DIV");
+	var mainRadioLabel = RadioElement.nextElementSibling;
+	//radioButton Wrapper
+	radioWrapper.setAttribute("class", vWrapper);
+
+	//Radio button
+	radioButtonCon.setAttribute("tabindex", "0");
+	radioButtonCon.setAttribute("class", "vRadioButtonCon");
+	radioButtonCon.setAttribute("data-selectState", "0");
+	radioButtonCon.setAttribute("id", RadioElement.getAttribute("id"));
+	radioButtonCon.setAttribute("value", RadioElement.getAttribute("value"));
+	radioButtonCon.setAttribute("name", RadioElement.getAttribute("name"));
+
+
+	//Radio button select
+	radioButtonConSelect.setAttribute("class", "select");
+
+	//Radio button deselect
+	radioButtonConDeselect.setAttribute("class", "deselect");
+
+	//Radio Label
+	radioLabel.setAttribute("class", "label");
+	radioLabel.setAttribute("data-for", mainRadioLabel.getAttribute("for"));
+  // main label content
+	var content = mainRadioLabel.innerHTML;
+	radioLabel.appendChild(document.createTextNode(content));
+
+
+	if(radioWrapperStyle != ""){
+		radioWrapper.style = radioWrapperStyle;
+	}
+
+	if(radioButtonStyle != ""){
+		radioButtonCon.style = radioButtonStyle;
+	}
+
+	if(selectedRadioStyle != ""){
+		radioButtonConSelect.style = selectedRadioStyle;
+	}
+
+	if(deselectedRadioStyle != ""){
+		radioButtonConDeselect.style = deselectedRadioStyle;
+	}
+
+	if(radioLabelStyle != ""){
+		radioLabel.style = radioLabelStyle;
+	}
+
+	radioButtonCon.appendChild(radioButtonConDeselect);
+	radioButtonCon.appendChild(radioButtonConSelect);
+	radioWrapper.appendChild(radioButtonCon);
+	radioWrapper.appendChild(radioLabel);
+
+
+	//Add wrapper before target select;
+	var radioParent = RadioElement.parentNode;
+	radioParent.insertBefore(radioWrapper, RadioElement);
+
+
+	//Hide main radio element
+	RadioElement.style["display"] = "none";
+
+	//Hide main radio label
+	RadioElement.parentNode.querySelector("label[for='"+RadioElement.getAttribute("id")+"']").style["display"] = "none";
+
+	// //Apply Styles
+	radioStyleSheet();
+}
+function assignRadioEventHanler(RadioElement){
+		var radioParent = RadioElement.parentNode;
+		radioParent.addEventListener("click", function(e){
+			if(e.target.nodeName == "DIV" && e.target.parentNode.getAttribute("id") == RadioElement.getAttribute("id")){
+				selectRadioButton(e, RadioElement);
+			}else if (e.target.nodeName == "DIV" && e.target.classList.contains("label") && e.target.getAttribute("data-for") == RadioElement.getAttribute("id")){
+				selectRadioButton(e, RadioElement);
+			}
+		}, false);
+}
+this.radio = {
+	build: function(RadioElement){
+		validateElement(RadioElement, "An input element needed as argument for the 'build' method, non provided");
+		if(RadioElement.nodeName != "INPUT" && RadioElement.getAttribute("type") != "radio"){
+			throw new Error("A radio input element needed, please specify a valid radio input element");
+		}
+		if (radioDim.length == 0){
+			throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioDimension' property");
+		}
+		reCreateRadio(RadioElement);
+		assignRadioEventHanler(RadioElement);
+	}
+
+
+}
+Object.defineProperty(this, "radio", {
+	writable:false
+});
+Object.defineProperties(this.radio, {
+	build:{
+		writable:false
+	},
+	afterSelectionFn : {//Function to call after selection
+		set:function(value){
+			if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
+				RadioAfterSelectionFn = value;
+			}
+		}
+	},
+	radioContainerDimension:{
+		set:function(value){
+			if(validateArray(value, 2, "string", "radioContainerDimension")){
+				if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'radioContainerDimension' property")){
+					if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'radioContainerDimension' property")){
+						radioDim = value;
+					}
+				}
+			}
+		}
+	},
+	wrapperStyle:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
+				radioWrapperStyle = value;
+			}
+		}
+	},
+	radioButtonStyle:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS styles needed for the 'radioButtonStyle' property")){
+				radioButtonStyle = value;
+			}
+		}
+	},
+	selectedRadioStyle:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS style(s) needed for the 'selectedRadioStyle' property")){
+				selectedRadioStyle = value;
+			}
+		}
+	},
+	deselectedRadioStyle:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS style(s) value needed for the 'deselectedRadioStyle' property")){
+				deselectedRadioStyle = value;
+			}
+		}
+	},
+	groupAxis:{
+		set:function(value){
+			if(validateString(value, "A string value needed for the 'groupAxis' property")){
+				if(value = "x" | "X" | "y" | "Y"){
+					groupAxis = value;
+				}else {
+					throw new Error("String value can either be 'x' or 'y' (Case insensitive)");
+				}
+			}
+		}
+	},
+	labelStyle:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property")){
+				radioLabelStyle = value;
+			}
+		}
+	},
+	mouseEffectStyle:{
+		set:function(value){
+			if(validateArray(value, 2, "string", "mouseEffectStyle")){
+				mouseEffect = value;
+			}
+		}
+	},
+})
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+}
