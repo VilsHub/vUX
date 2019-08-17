@@ -1,12 +1,19 @@
 # Changelog
 
-## v1.1.0
+## v2.0.0
+### Optimised
 - Protected all unprotected properties
 - Optimized codes
-- Added screen break points checker
-- Added universal style getter
-- Added browser Resize Property handler
-- Added child element index getter
-- Added Custom form component builder
+
+### Added
+- screen break points checker
+- universal style getter
+- browser Resize Property handler
+- child element index getter
+- Custom form component builder
   - Select input
   - Radio input
+- Form validator
+
+### Changed
+- Changed method call, from: 	Object.fixedRectangle.draw(CanvasObject, canvasElement) to Object.fixedRectangle.draw(canvasElement)

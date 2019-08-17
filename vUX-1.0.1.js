@@ -327,7 +327,6 @@ var timing = {
 	}
 }
 /****************************************************************/
-
 /***************************CSS Style getter***************************/
 var css = {
 	getStyles : function (element, property){
@@ -341,7 +340,6 @@ var css = {
 				}
 }
 /****************************************************************/
-
 /*****************************Cross XHR creator******************/
 var ajax = {
 	create : function () {
@@ -714,10 +712,11 @@ function gridBorderRectangle(){
 							}
 			},
 			draw : {
-				value: function(canObj, canvasElement){
-					validateElement (canvasElement);
+				value: function(canvasElement){
+					validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
 					canvasElement.width = canvasElement.scrollWidth;
 					canvasElement.height = canvasElement.scrollHeight;
+					var canObj = canvasElement.getContext("2d");
 
 					//Segment
 					canObj.setLineDash(FRsegment);
@@ -736,7 +735,8 @@ function gridBorderRectangle(){
 					canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
 					canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
 					canObj.stroke();
-				}
+				},
+				writable:false
 			}
 	});
 	/*******************************************************************/
@@ -810,11 +810,12 @@ function gridBorderRectangle(){
 							}
 			},
 			draw : {
-						value: function(canObj, canvasElement){
-							validateElement (canvasElement);
+						value: function(canvasElement){
+							validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
 							//Reset canvas size
 							canvasElement.width = canvasElement.scrollWidth;
 							canvasElement.height = canvasElement.scrollHeight;
+							var canObj = canvasElement.getContext("2d");
 
 							//Segment
 							canObj.setLineDash(ARsegment);
@@ -867,7 +868,8 @@ function gridBorderRectangle(){
 		}
 
 });
-Object.defineProperty(this, "animatedRectangle", {writable:false});
+	Object.defineProperty(this, "animatedRectangle", {writable:false});
+	Object.defineProperty(this, "fixedRectangle", {writable:false});
 	/*******************************************************************/
 }
 /****************************************************************/
@@ -1749,7 +1751,7 @@ function browserResizeProperty(){
 /****************************************************************/
 
 /********************Custom form component***********************/
-function customFormComponents(vWrapper){
+function customFormComponent(vWrapper){
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	var selOpen=0, selectDim=[], arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
 	afterSelectionFn= function(){}, wrapperCustomStyle="", totalOptions = 0 ,selectFieldCustomStyle="", optionCustomStyle="", optionsContainerCustomStyle="", arrowConCustomStyle="";
@@ -2187,7 +2189,6 @@ function customFormComponents(vWrapper){
 			}
 		},
 	})
-	/****************************************************************/
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom radio builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
@@ -2391,8 +2392,6 @@ this.radio = {
 		reCreateRadio(RadioElement);
 		assignRadioEventHanler(RadioElement);
 	}
-
-
 }
 Object.defineProperty(this, "radio", {
 	writable:false
@@ -2475,3 +2474,514 @@ Object.defineProperties(this.radio, {
 })
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 }
+/****************************************************************/
+
+/************************Form validator**************************/
+function formValidator(form){
+	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="";
+
+	//Create Element
+	function createMessageCon(messageConElement, messageType, location, message, inputVisualFields, maxSize){
+		//Validations
+		if (inputVisualFields != null){
+			validateArray(inputVisualFields, "-1" , "mixed", "'write' method argument 5 must be an array");
+
+			if (inputVisualFields.length == 1){
+				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
+				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
+				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
+			}else if(inputVisualFields.length == 2){
+				//1st element
+				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
+				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
+				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
+
+				//2nd element
+				if (inputVisualFields[1] != null){
+					validateString(inputVisualFields[1], "'write' method argument 5 array 2nd element must either be null or a string");
+					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
+					validateString(inputVisualFields[1], "A string representing placeholder id name is needed as array element 2 of the 'write' method argument 5 ");
+				}
+			}else if(inputVisualFields.length == 3){
+				//1st element
+				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
+				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
+				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
+
+				//2nd element
+				if (inputVisualFields[1] != null){
+					validateString(inputVisualFields[1], "'write' method argument 5 array 2nd element must either be null or a string");
+					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
+					validateString(inputVisualFields[1], "A string representing placeholder id name is needed as array element 2 of the 'write' method argument 5 ");
+				}
+
+				//3rd element
+				validateString(inputVisualFields[2], "'write' method argument 5 array 3rd element must be a string");
+			}
+		}
+
+		if (maxSize != null){
+			validateDimension(maxSize, "A string of valid CSS dimension needed as argument 6 for 'write' method");
+		}
+		//_______________________________________________________________________________________________________________
+
+		var checkExistence = messageConElement.querySelector(".vMsgBox");
+		if (checkExistence == null){
+			var messageBoxWrapper = document.createElement("DIV");
+
+			if(location == "left"){
+				if (messageType == "error"){
+					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft error le");
+				}else if (messageType == "warning") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft warning lw");
+				}else if (messageType == "success") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft success ls");
+				}
+
+				if(leftConStyle != ""){
+					if(inputVisualFields != null && inputVisualFields.length == 3){
+						messageBoxWrapper.setAttribute("style", leftConStyle+"; "+inputVisualFields[2]);
+					}else {
+						messageBoxWrapper.setAttribute("style", leftConStyle);
+					}
+				}else{
+					if(inputVisualFields != null && inputVisualFields.length == 3){
+						messageBoxWrapper.setAttribute("style", inputVisualFields[2]);
+					}
+				}
+			}else if (location == "right") {
+				if (messageType == "error"){
+					messageBoxWrapper.setAttribute("class", "vMsgBox vRight error re");
+				}else if (messageType == "warning") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vRight warning rw");
+				}else if (messageType == "success") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vRight success rs");
+				}
+
+				if(rightConStyle != ""){
+					if( inputVisualFields != null && inputVisualFields.length == 3){
+						messageBoxWrapper.setAttribute("style", rightConStyle+"; "+inputVisualFields[2]);
+					}else {
+						messageBoxWrapper.setAttribute("style", rightConStyle);
+					}
+				}else{
+					if( inputVisualFields != null && inputVisualFields.length == 3){
+						messageBoxWrapper.setAttribute("style", inputVisualFields[2]);
+					}
+				}
+			}else if (location == "bottom") {
+				if (messageType == "error"){
+					messageBoxWrapper.setAttribute("class", "vMsgBox vBottom error be");
+				}else if (messageType == "warning") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vBottom warning bw");
+				}else if (messageType == "success") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vBottom success bs");
+				}
+
+				if(bottomConStyle != ""){
+					messageBoxWrapper.setAttribute("style", bottomConStyle);
+				}
+			}
+
+			messageBoxWrapper.appendChild(document.createTextNode(message));
+			messageConElement.appendChild(messageBoxWrapper);
+			messageConElement.style["color"] = "transparent";
+
+			if (location == "left"){
+				var m = messageConElement.querySelector(".vLeft");
+				sendBehind(m, location, 15, maxSize);
+			}else if (location == "right") {
+			 	var m = messageConElement.querySelector(".vRight");
+				sendBehind(m, location, 15, maxSize);
+			}else if (location == "bottom") {
+				var	m = messageConElement.querySelector(".vBottom");
+				drop(m);
+			}
+		}else{
+			if(location == "left" || location == "right" ){
+				if (maxSize != null){
+					checkExistence.style["width"] = maxSize;
+					checkExistence.style["line-height"] = "23px";
+					checkExistence.style["white-space"] = "normal";
+				}else{
+					checkExistence.style["width"] = "auto";
+					checkExistence.style["white-space"] = "nowrap";
+					checkExistence.style["line-height"] = "250%";
+				}
+
+				checkExistence.style["text-align"] = "left";
+				checkExistence.style["height"] = "auto";
+				checkExistence.style["min-height"] = css.getStyle(checkExistence, "height");
+				checkExistence.innerHTML = message;
+			}
+		}
+
+
+		if(messageType == "error"){
+			if (inputVisualFields == null){
+				if (inputWrapperClass != ""){
+					var inputWrapper = messageConElement.querySelector("."+inputWrapperClass);
+					if(inputWrapper != null){
+						inputWrapper.classList.add("ierror");
+					}
+				}
+				if (placeholderClass != ""){
+					var placeholder = messageConElement.querySelector("."+placeholderClass);
+					if(placeholder != null){
+						placeholder.classList.add("lerror");
+					}
+				}
+			}else{
+				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
+				inputWrapper.classList.add("ierror");
+				if(inputVisualFields[1] != null){
+					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
+					placeholder.classList.add("lerror");
+				}
+			}
+		}
+	}
+
+	function clearMessage(messageConElement, location, inputVisualFields){
+			if (inputVisualFields != null){
+				validateArray(inputVisualFields, "2" , "mixed", "'write' method argument 5");
+
+				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
+				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
+				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
+
+				if (inputVisualFields[1] != null){
+					validateString(inputVisualFields[1], "'write' method argument 5 array 2nd element must either be null or a string");
+					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
+					validateString(inputVisualFields[1], "A string representing placeholder id name is needed as array element 2 of the 'write' method argument 5 ");
+				}
+			};
+			var checkExistence = messageConElement.querySelector(".vMsgBox");
+			if (checkExistence != null){
+
+				if(location  == "left" || location  == "right"){
+					if (checkExistence.classList.contains("vRight") || checkExistence.classList.contains("vLeft")){
+						checkExistence.classList.add("clear");
+						checkExistence.style["color"] = "transparent";
+						checkExistence.style["width"] = "0";
+					}else{
+						throw new Error("No left or right message found to clear, recheck 'clear()' method argument 2");
+					}
+				}else if (location  == "bottom") {
+					if (checkExistence.classList.contains("vBottom")){
+						checkExistence.classList.add("clear");
+						checkExistence.style["color"] = "transparent";
+						checkExistence.style["height"] = "0";
+					}else{
+						throw new Error("No bottom message found to clear, recheck 'clear()' method argument 2");
+					}
+				}
+
+				if (inputVisualFields == null){
+					if (inputWrapperClass != ""){
+						var inputWrapper = messageConElement.querySelector("."+inputWrapperClass);
+						if(inputWrapper != null){
+							inputWrapper.classList.remove("ierror");
+						}
+					}
+					if (placeholderClass != ""){
+						var placeholder = messageConElement.querySelector("."+placeholderClass);
+						if(placeholder != null){
+							placeholder.classList.remove("lerror");
+						}
+					}
+				}else{
+					var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
+					inputWrapper.classList.remove("ierror");
+					if(inputVisualFields[1] != null){
+						var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
+						placeholder.classList.remove("lerror");
+					}
+				}
+			}
+	}
+
+	//Attach event handler
+	function addEventhandler(form){
+		form.addEventListener("transitionend", function(e){
+			if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("error") && e.target.classList.contains("clear") == false){
+				e.target.style["color"] = "red";
+			}else if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("warning") && e.target.classList.contains("clear") == false){
+				e.target.style["color"] = "#e97514";
+			}else if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false){
+				e.target.style["color"] = "#2b9030";
+			}else if (e.target.classList.contains("vMsgBox")  && e.target.classList.contains("clear")){
+				e.target.parentNode.removeChild(e.target);
+			}
+		});
+	}
+
+	//create style styleSheet
+	function setStyleSheet(){
+		var css = " .vMsgBox {box-sizing:border-box; padding:0 10px 0 10px; text-align:center; white-space: nowrap; font-size:13px; line-height:250%; color:transparent; border-radius:5px;}";
+		css += " .vLeft, .vRight{width:auto; height:100%; position:absolute; top:0; transition:width 0.2s cubic-bezier(0,.81,.22,1);}";
+		css += " .vBottom{width:100%; height:auto; position:relative; transition:height 0.2s cubic-bezier(0,.81,.22,1);margin-bottom:10px; margin-top:18px;}";
+		css += " .vBottom::before{width:0px; height:0px; top:-11px; border-left: 8px solid transparent; border-right: 8px solid transparent; left:10px; z-index:10; content:''; position:absolute;}";
+		css += " .vLeft::before, .vRight::before{border-top: 8px solid transparent; border-bottom: 8px solid transparent;position:absolute; content:''; top:6px;  z-index:10;}";
+		css += " .vLeft::before{right:-11px;}";
+		css += " .vRight::before{left:-11px;}";
+		css += " .ierror{border:solid 1px #d82323!important; background-color: #bc949499!important;}";
+		css += " .iwarning{border:solid 1px #d82323!important; background-color: #bc949499!important;}";
+		css += " .isuccess{border:solid 1px #d82323!important; background-color: #2b9030!important;}";
+		css += " .lerror{color: #d82323!important;}";
+
+		css += " .error {background-color:#e3b4b4; border:solid 1px #d82323;}";
+		css += " .warning {background-color:#e3e1b4; border:solid 1px #e97514;}";
+		css += " .success {background-color:#c2e3b4; border:solid 1px #2b9030;}";
+
+		css += " .lw::before{ border-left:11px solid #e97514;}";
+		css += " .le::before{ border-left:11px solid #d82323;}";
+		css += " .ls::before{ border-left:11px solid #2b9030;}";
+
+		css += " .rw::before{ border-right:11px solid #e97514;}";
+		css += " .re::before{ border-right:11px solid #d82323;}";
+		css += " .rs::before{ border-right:11px solid #2b9030;}";
+
+		css += " .bw::before{ border-bottom:11px solid #e97514;}";
+		css += " .be::before{ border-bottom:11px solid #d82323;}";
+		css += " .bs::before{ border-bottom:11px solid #2b9030;}";
+		// css +=  "";
+		// css +=  "";
+		// css +=  "";
+
+		var styleElement = document.createElement("style");
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
+	}
+
+	//For right and left display
+	function sendBehind(element, direction, offset, maxSize){
+		var width = element.scrollWidth;
+		if(direction == "left"){
+			element.style["right"] = "calc(100% + "+offset+"px)";
+		}else if (direction == "right") {
+			element.style["left"] = "calc(100% + "+offset+"px)";
+		}
+
+		element.style["width"] = "0px";
+		element.scrollWidth;
+		if(maxSize != null){
+			element.style["width"] = maxSize;
+		}else{
+			element.style["width"] = width+"px";
+		}
+	}
+
+	//For bottom display
+	function drop(element){
+			var height = element.scrollHeight;
+			element.style["height"] = "0px";
+			element.scrollHeight;
+			element.style["height"] = height+"px";
+	}
+
+	/*Message*/
+	this.message = {
+		write: function(messageConElement, messageType, location, message, inputVisualFields=null, maxSize=null){
+			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
+			//(optinal) inputVisualFields [a,b, c] : a => inputWrapper, b => placeholder, c => custom top position for left|right location
+			//(optinal) maxSize: A valid dimension for messageBox, its height when location = bottom and width when location = left | right
+
+			if (initialized == true){
+				validateElement(messageConElement, "'write' method needs a valid HTML element as argument 1");
+				if(validateString(messageType, "'write' method needs a string as argument 2")){
+					if(!(messageType == "success" || messageType == "error" || messageType == "warning")){
+						throw new Error ("'write' method argument 2 must be string value of either: 'success', 'warning', or 'error'");
+					}
+				};
+				if(validateString(location, "'write' method needs a string as argument 3")){
+					if(!(location == "bottom" || location == "left" || location == "right")){
+						throw new Error ("'write' method argument 3 must be string value of either: 'bottom', 'left', or 'right'");
+					}
+				};
+				validateString(message, "'write' method needs a string (The message) as argument 4");
+
+				if(inputVisualFields == null && inputWrapperClass==""){
+						throw new Error("'write method'argument 5 and 'inputWrapperClass' property cannot be simultaneously emtpy, specify either 1");
+				}
+				if(inputVisualFields == null && placeholderClass==""){
+						throw new Error("'write method'argument 5 and 'placeholderClass' property cannot be simultaneously emtpy, specify either 1");
+				}
+				createMessageCon(messageConElement, messageType, location, message, inputVisualFields, maxSize);
+			}
+		},
+		clear: function(messageConElement, location, inputVisualFields=null){
+			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
+			//inputVisualFields [a,b] : a => inputWrapper, b => placeholder
+			if (initialized == true){
+				validateElement(messageConElement, "'write' method needs a valid HTML element as argument 1");
+				if(validateString(location, "'write' method needs a string as argument 3")){
+					if(!(location == "bottom" || location == "left" || location == "right")){
+						throw new Error ("'write' method argument 3 must be string value of either: 'bottom', 'left', or 'right'");
+					}
+				};
+				if(inputVisualFields == null && inputWrapperClass==""){
+						throw new Error("'write method'argument 5 and 'inputWrapperClass' property cannot be simultaneously emtpy, specify either 1");
+				}
+				if(inputVisualFields == null && placeholderClass==""){
+						throw new Error("'write method'argument 5 and 'placeholderClass' property cannot be simultaneously emtpy, specify either 1");
+				}
+
+				clearMessage(messageConElement, location, inputVisualFields);
+			}
+		}
+	}
+	/**********/
+
+
+	/*Initialize*/
+	this.initialize = function(){
+		setStyleSheet();
+		addEventhandler(form);
+		initialized =true;
+	}
+	/**********/
+
+	/*Config*/
+	this.config = {
+
+	}
+	/**********/
+
+	/*formatter*/
+	this.format = {
+		toCurrency : function (inputS, seperator){
+			validateNumber(inputS, "Numeric (Amount) value needed as argument 1, for 'toCurrency' method");
+			if	(validateString(seperator, "A string of lenght 1 (seperator) needed as argument 2, for 'toCurrency' method'")){
+				if(seperator.lenght > 2){
+					throw new Error("String lenght exceeded, string length must be <= 2, for 'toCurrency' method' 2nd argument");
+				}
+			};
+			var s = new String(inputS),	StringLen = s.length,	num = 0, start=0,	formatted = "",	points = [],	pointsRev = [],	rc =0;
+			if (StringLen > 3){
+				while((StringLen - 3) > 0){
+					StringLen = StringLen - 3;
+					points[num] = StringLen;
+					num++;
+				}
+				var res = s.split("");
+				for(var c=points.length-1;c>=0;c--){
+					pointsRev[rc] = points[c];
+					rc++;
+				}
+				for (var x = 0; x < res.length; x++){
+					if(x == pointsRev[start]){
+						formatted = formatted+seperator+res[x];
+						start++;
+					}else{
+						formatted = formatted+res[x];
+					}
+				}
+				return formatted;
+			}else{
+				return s;
+			}
+		},
+		roundToDec: function (value, decimals) {
+			validateNumber(value, "'roundToDec' method argument 1 must be numeric value");
+			validateNumber(decimals, "'roundToDec' method argument 2 must be numeric value");
+		  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+		}
+	}
+  /**********/
+
+	/*validator*/
+	this.validate = {
+		alpha: function(input){
+			var target = /^[A-Za-z]+$/.test(input); //checks for other characters except A-Za-z
+			return target;
+		},
+		alphaNumeric : function(input){
+			var target= /^[A-Za-z0-9]+$/.test(input); //checks for other characters except A-Za-z0-9
+			return target;
+		},
+		emailAddress : function(email){
+			var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{2,3}$/.test(email);//matches email address pattern
+			return email_filter;
+		}
+	}
+	/**********/
+
+
+	Object.defineProperties(this.validate, {
+		alpha:{
+			writable:false
+		},
+		alphaNumeric:{
+			writable:false
+		},
+		emailAddress:{
+			writable:false
+		}
+	});
+	Object.defineProperties(this.format, {
+		toCurrency:{writable:false}
+	});
+	Object.defineProperties(this.config, {
+		bottomConStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) needed for the 'bottomConStyle' property")){
+					bottomConStyle = value;
+				}
+			}
+		},
+		leftConStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) needed for the 'leftConStyle' property")){
+					leftConStyle = value;
+				}
+			}
+		},
+		rightConStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) needed for the 'rightConStyle' property")){
+					rightConStyle = value;
+				}
+			}
+		},
+		placeholderClass:{
+			set:function(value){
+				if(validateString(value, "A string needed for the 'placeholderClass' property")){
+					var elmentTest = document.querySelector("."+value);
+					if(elmentTest != null){
+						placeholderClass = value;
+					}else{
+						throw new Error("A string representing input placeholder class name needed as value for 'placeholderClass' property");
+					}
+				}
+			}
+		}, // Used if input placeholder is not specified in write method
+		inputWrapperClass:{
+			set:function(value){
+				if(validateString(value, "A string needed for the 'inputWrapperClass' property")){
+					var elmentTest = document.querySelector("."+value);
+					if(elmentTest != null){
+						inputWrapperClass = value;
+					}else{
+						throw new Error("A string representing input inputWrapperClass class name needed as value for 'inputWrapperClass' property");
+					}
+				}
+			}
+		} ///Used if input wrapper is not specified in write method
+	});
+	Object.defineProperties(this.message, {
+		write:{writable:false}
+	});
+
+	Object.defineProperty(this, "config", {writable:false});
+	Object.defineProperty(this, "format", {writable:false});
+	Object.defineProperty(this, "validate", {writable:false});
+	Object.defineProperty(this, "message", {writable:false});
+	Object.defineProperty(this, "initialize", {writable:false});
+}
+/****************************************************************/
