@@ -14,6 +14,8 @@
   - Select input
   - Radio input
 - Form validator
+- Modal display
+- window ScrollDown Handler
 
 ### Changed
 - Changed method call, from: 	Object.fixedRectangle.draw(CanvasObject, canvasElement) to Object.fixedRectangle.draw(canvasElement)

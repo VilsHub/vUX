@@ -178,14 +178,18 @@ function validateBoolean(boolean){
 		return true;
 	}
 };
-function validateObjectMember(object, propery){
+function validateObjectMember(object, propery, msg=null){
 	if(object.hasOwnProperty(propery)){
 		return true;
 	}else{
 		var ObjArr = Object.keys(object);
 		var AllProperties =  ObjArr.toString();
 		var rplc = AllProperties.replace(/,/g, ", ");
-		throw new TypeError("Invlaid property specified, it should be any of the follwing : " + rplc);
+		if(msg!=null){
+			throw new TypeError(msg+", it should be any of the follwings : " + rplc);
+		}else{
+			throw new TypeError("Invlaid property specified, it should be any of the follwings : " + rplc);
+		}
 	}
 }
 function validateElement (element,  msg = null){ //A single element
@@ -270,6 +274,46 @@ function extractDimensionValue(dimension, unit){
 	var pattern = new RegExp(unit, "g") ;
 	var extract = dimension.replace(pattern, "");
 	return extract;
+}
+function getDimensionOfHidden(element){
+	var height=0, prePos="", width=0;
+	prePos = css.getStyle(element, "position");
+	element.style["position"] = "absolute";
+	element.style["opacity"] = "0";
+	element.style["display"] = "block";
+	height = element.scrollHeight;
+	width = element.scrollWidth;
+	element.style["position"] = prePos;
+	element.style["opacity"] = "1";
+	element.style["display"] = "none";
+	return {
+		height:height,
+		width:width
+	};
+};
+function keyboardEventHanler(e){
+	var handled = false, type=0;
+	if (e.key !== undefined) {
+		// Handle the event with KeyboardEvent.key and set handled true.
+		var targetKeyPressed = e.key;
+		handled = true;
+		type=1;
+
+	} else if (e.keyIdentifier !== undefined) {
+		// Handle the event with KeyboardEvent.keyIdentifier and set handled true.
+		var targetKeyPressed = e.keyIdentifier;
+		handled = true;
+		type=2;
+	} else if (e.keyCode !== undefined) {
+		// Handle the event with KeyboardEvent.keyCode and set handled true.
+		var targetKeyPressed = e.keyCode;
+		handled = true;
+		type=3;
+	}
+	return {
+		type:type,
+		handled:handled,
+	}
 }
 /****************************************************************/
 
@@ -1414,6 +1458,43 @@ child.getIndex = function(child){
 	}
 	index = n++;
 	return index;
+}
+/****************************************************************/
+
+/**********************Child index getter*********************/
+function windowScrollDown(){
+	var iniSY = 0, state = {direction:"", change:0};
+	window.addEventListener("scroll", function(){
+		if(scrollY > iniSY){//scrolled down
+			state["change"] = scrollY - iniSY;
+			state["direction"] = "down";
+			iniSY = scrollY;
+		}else {
+			state["change"] = iniSY - scrollY;
+			state["direction"] = "up";
+			iniSY = scrollY;
+		}
+	},false);
+	Object.defineProperty(this, "query", {
+		get:function(){
+			return state;
+		}
+	});
+}
+windowScrollDown.query = function(totalHeight=null, ){
+	var TotalHeightBelow = totalHeight - window.innerHeight;
+	var remainingHeightBelow = totalHeight - (scrollY+window.innerHeight);
+	var state = "";
+	if(scrollY == TotalHeightBelow || scrollY == TotalHeightBelow-1){
+		state = "end";
+	}else{
+		state = "ON";
+	}
+	return {
+		TotalHeightBelow:TotalHeightBelow,
+		status:state,
+		remainingHeightBelow:remainingHeightBelow
+	}
 }
 /****************************************************************/
 
@@ -2745,9 +2826,6 @@ function formValidator(form){
 		css += " .bw::before{ border-bottom:11px solid #e97514;}";
 		css += " .be::before{ border-bottom:11px solid #d82323;}";
 		css += " .bs::before{ border-bottom:11px solid #2b9030;}";
-		// css +=  "";
-		// css +=  "";
-		// css +=  "";
 
 		var styleElement = document.createElement("style");
 		styleElement.setAttribute("type", "text/css");
@@ -2983,5 +3061,624 @@ function formValidator(form){
 	Object.defineProperty(this, "validate", {writable:false});
 	Object.defineProperty(this, "message", {writable:false});
 	Object.defineProperty(this, "initialize", {writable:false});
+}
+/****************************************************************/
+
+/****************************Modal*******************************/
+function modalDisplayer(){
+	var self=this, effectName="none", bodyOldPosition = "", mainFormCon = "", mainFormConInner="", overlayType="", colorOverlayStyle="", maxupScrollUpStop =0, totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, ModalHeight=0, ModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50, reachedBottom=0;
+	var effects ={
+		none:function(modal){
+			var newModal = document.createElement("DIV");
+			newModal.setAttribute("id", "newModal");
+			modalOn = true;
+			var modayBody = document.querySelector(".vModal");
+			var modalCon = modayBody.querySelector(".modalSpace");
+			ModalHeight = getDimensionOfHidden(modal)["height"];
+			ModalWidth = getDimensionOfHidden(modal)["width"];
+			positionVertically(modalCon, ModalHeight);
+			modalCon.appendChild(newModal);
+
+			//Call new modal
+			var newM = modalCon.querySelector("#newModal");
+
+			newM.innerHTML = modal.outerHTML;
+
+			//Store up main form content
+			mainFormConInner = modal.innerHTML;
+
+			var RecallOld = newM.querySelector("#"+modal.id);
+			RecallOld.style["display"] = "block";
+
+			//Tag old for resseting purpose
+			modal.setAttribute("class", "vOld");
+			modal.setAttribute("id", "vOld");
+			modal.innerHTML = "";
+
+			modayBody.classList.add("show");
+			openProcessor();
+		},
+		split:function(modal){
+			var newModal = document.createElement("DIV");
+			var effectsCon = document.createElement("DIV");
+			var leftEle = document.createElement("DIV");
+			var rightEle = document.createElement("DIV");
+			ModalHeight = getDimensionOfHidden(modal)["height"];
+			ModalWidth = getDimensionOfHidden(modal)["width"];
+			//left style
+			var lcss = "position:absolute;left:-200%; top:0; transition:left .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:auto; overflow:hidden;";
+			var rcss = "position:absolute;right:-200%; top:0; transition:right .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:auto; overflow:hidden;";
+
+			//EffectsCons attributes
+			effectsCon.setAttribute("style", "position:relative; width:"+ModalWidth+"px; height:"+ModalHeight+"px;");
+			effectsCon.setAttribute("id", "effectsCon");
+			effectsCon.setAttribute("class", "trans_in split");
+
+			//left and right style attribute
+			leftEle.setAttribute("id", "eleft");
+			leftEle.setAttribute("style", lcss);
+			leftEle.setAttribute("class", "effectE");
+			rightEle.setAttribute("style", rcss);
+			rightEle.setAttribute("id", "eright");
+			rightEle.setAttribute("class", "effectE");
+
+			newModal.setAttribute("id", "newModal");
+
+			modalOn = true;
+			var modayBody = document.querySelector(".vModal");
+			var modalCon = modayBody.querySelector(".modalSpace");
+
+			positionVertically(modalCon, ModalHeight);
+
+			//Append left and right to effectsCon
+			effectsCon.appendChild(leftEle);
+			effectsCon.appendChild(rightEle);
+
+			//Append effectsCon to modalSpace
+			modalCon.appendChild(newModal);
+			modalCon.appendChild(effectsCon);
+
+			//Call left and right effect box
+			var leftE = modalCon.querySelector("#eleft");
+			var rightE = modalCon.querySelector("#eright");
+
+			//insert main form to both left and right
+			leftE.innerHTML = modal.outerHTML;
+			rightE.innerHTML = modal.outerHTML;
+
+			//Store up main form content
+			mainFormCon = modal.outerHTML;
+			mainFormConInner = modal.innerHTML;
+
+			//Make inserted modal content in effect box visible
+			var RecallOld1 = leftE.querySelector("#"+modal.id);
+			RecallOld1.style["display"] = "block";
+			var RecallOld2 = rightE.querySelector("#"+modal.id);
+			RecallOld2.style["display"] = "block";
+			RecallOld2.style["transform"] = "translateX(-50%)";
+
+
+			//Tag old for resseting purpose
+			modal.setAttribute("class", "vOld");
+			modal.setAttribute("id", "vOld");
+			modal.innerHTML = "";
+
+			modayBody.classList.add("show");
+			leftE.scrollWidth;
+			rightE.scrollWidth;
+			leftE.style["left"] = "0%";
+			rightE.style["right"] = "0%";
+		},
+		flip: function(modal){
+			var newModal = document.createElement("DIV");
+			var effectsCon = document.createElement("DIV");
+			var flipper = document.createElement("DIV");
+			var flipperBGElement = document.createElement("DIV");
+			var flipperFormElement = document.createElement("DIV");
+
+			ModalHeight = getDimensionOfHidden(modal)["height"];
+			ModalWidth = getDimensionOfHidden(modal)["width"];
+			var mainFormBg = css.getStyle(modal, "background-color");
+
+			//Create Style for flipper
+			var flipperCSS = "transition:transform .6s linear 0s; width:100%; height:100%; transform-style:preserve-3d; backface-visibilty: hidden; ";
+
+			//flipperBGElement styles
+			flipperBGElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility: hidden; z-index:2; background-color:"+mainFormBg+";");
+			flipperBGElement.setAttribute("id", "fBG");
+			//flipperFormElement styles and other attributes
+			flipperFormElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility: hidden; z-index:1; transform:rotateX(-180deg);");
+			flipperFormElement.setAttribute("id", "flpform");
+			//Set attribute for effectsCon
+			effectsCon.setAttribute("style", "position:relative; width:"+ModalWidth+"px; height:"+ModalHeight+"px; perspective: 4000px;");
+			effectsCon.setAttribute("id", "effectsCon");
+			effectsCon.setAttribute("class", "trans_in flip");
+
+			//Set attributes for flipper
+			flipper.setAttribute("id", "flipper");
+			flipper.setAttribute("style", flipperCSS);
+
+
+			//Set attribute for newModal
+			newModal.setAttribute("id", "newModal");
+
+			modalOn = true;
+			var modayBody = document.querySelector(".vModal");
+			var modalCon = modayBody.querySelector(".modalSpace");
+
+			positionVertically(modalCon, ModalHeight);
+
+			//Append flipperBGElement and flipperFormElement to effectsCon
+			flipper.appendChild(flipperFormElement);
+			flipper.appendChild(flipperBGElement);
+
+			//Append flipper to effectsCon
+			effectsCon.appendChild(flipper);
+
+			//Append effectsCon and new modal to modalSpace
+			modalCon.appendChild(newModal);
+			modalCon.appendChild(effectsCon);
+
+			//Call flipperFormElement box
+			var flipperFormE = modalCon.querySelector("#flipper #flpform");
+
+			//insert main form to flipper
+			flipperFormE.innerHTML = modal.outerHTML;
+
+			//Store up main form content
+			mainFormCon = modal.outerHTML;
+			mainFormConInner = modal.innerHTML;
+
+			//Make inserted modal content in effect box visible
+			var RecallOld = flipper.querySelector("#"+modal.id);
+			RecallOld.style["display"] = "block";
+
+			//Tag old for resseting purpose
+			modal.setAttribute("class", "vOld");
+			modal.setAttribute("id", "vOld");
+			modal.innerHTML = "";
+
+			modayBody.classList.add("show");
+			RecallOld.style["display"] = "block";
+			RecallOld.scrollHeight;
+			flipper.style["transform"] = "rotateX(180deg)";
+			openProcessor();
+		},
+		box: function(modal){
+			var newModal = document.createElement("DIV");
+			var effectsCon = document.createElement("DIV");
+			var box = document.createElement("DIV");
+
+			ModalHeight = getDimensionOfHidden(modal)["height"];
+			ModalWidth = getDimensionOfHidden(modal)["width"];
+
+			//Set attribute for effectsCon
+			effectsCon.setAttribute("style", "position:relative; width:"+ModalWidth+"px; height:"+ModalHeight+"px;");
+			effectsCon.setAttribute("id", "effectsCon");
+			effectsCon.setAttribute("class", "trans_in box");
+
+			//Create Style and attributes for Box
+			var boxCSS = "position:absolute; transition:all .3s linear 0s; width:0%; height:0%; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); overflow:hidden";
+			box.setAttribute("style", boxCSS);
+			box.setAttribute("id", "Boxform");
+
+			//Set attribute for newModal
+			newModal.setAttribute("id", "newModal");
+
+			modalOn = true;
+			var modayBody = document.querySelector(".vModal");
+			var modalCon = modayBody.querySelector(".modalSpace");
+
+			positionVertically(modalCon, ModalHeight);
+
+			//Append Nox to effectsCon
+			effectsCon.appendChild(box);
+
+			//Append effectsCon and new modal to modalSpace
+			modalCon.appendChild(newModal);
+			modalCon.appendChild(effectsCon);
+
+			//Call Box Element
+			var BoxFormE = modalCon.querySelector("#Boxform");
+
+			//insert main form to Box
+			BoxFormE.innerHTML = modal.outerHTML;
+
+			//Store up main form content
+			mainFormCon = modal.outerHTML;
+			mainFormConInner = modal.innerHTML;
+
+			//Make inserted modal content in effect box visible
+			var RecallOld = BoxFormE.querySelector("#"+modal.id);
+			RecallOld.style["display"] = "block";
+
+			//Tag old for resseting purpose
+			modal.setAttribute("class", "vOld");
+			modal.setAttribute("id", "vOld");
+			modal.innerHTML = "";
+
+			modayBody.classList.add("show");
+			RecallOld.style["display"] = "block";
+			RecallOld.scrollHeight;
+			BoxFormE.style["width"] = "100%";
+			BoxFormE.style["height"] = "100%";
+
+			openProcessor();
+		}
+	};
+	var closeEffect ={
+		none:function(oldModal, currentModal){
+			var modalBody = document.querySelector(".vModal");
+			var modalCon = document.querySelector(".vModal .modalSpace");
+			var recallCurrent = document.querySelector(".vModal .modalSpace #newModal");
+			resetOldModalProperties(oldModal, currentModal);
+			modalCon.removeAttribute("style");
+
+			modalCon.removeChild(recallCurrent);
+			modalBody.classList.remove("show");
+			modalOn=false;
+			scrollable=false;
+			document.body.style["position"] = bodyOldPosition;
+			document.body.style["top"] = "0";
+			scrollTo(0, sY);
+			closeProcessor();
+		},
+		split:function(oldModal, currentModal){
+			var modalBody = document.querySelector(".vModal");
+			var modalCon = document.querySelector(".vModal .modalSpace");
+			var recallCurrent = document.querySelector(".vModal .modalSpace #newModal");
+			var effectsCon = modalCon.querySelector("#effectsCon");
+			var leftE = effectsCon.querySelector("#eleft");
+			var rightE = effectsCon.querySelector("#eright");
+
+			effectsCon.classList.remove("trans_in");
+			effectsCon.classList.add("trans_out");
+			effectsCon.style["display"] = "block";
+			recallCurrent.style["display"] = "none";
+
+			leftE.innerHTML = mainFormCon;
+			leftE.childNodes[0].style["display"] = "block";
+			leftE.style["transition"] = "left .4s cubic-bezier(.86,.01,.99,.48)";
+			leftE.scrollWidth;
+			leftE.style["left"] = "-200%";
+
+			rightE.innerHTML = mainFormCon;
+			rightE.childNodes[0].style["display"] = "block";
+			rightE.childNodes[0].style["transform"] = "translateX(-50%)";
+			rightE.style["transition"] = "right .4s cubic-bezier(.86,.01,.99,.48)";
+			rightE.scrollWidth;
+			rightE.style["right"] = "-200%";
+
+			resetOldModalProperties(oldModal, currentModal);
+			modalCon.removeChild(recallCurrent);
+		},
+		flip:function(oldModal, currentModal){
+			var modalBody = document.querySelector(".vModal");
+			var modalCon = document.querySelector(".vModal .modalSpace");
+			var recallCurrent = document.querySelector(".vModal .modalSpace #newModal");
+			var effectsCon = modalCon.querySelector("#effectsCon");
+			var flipper = effectsCon.querySelector("#flipper");
+			var flipperFormE = effectsCon.querySelector("#flpform");
+			var flipperBg = effectsCon.querySelector("#fBG");
+
+			flipper.style["transform"] = "rotateX(0deg)";
+
+
+			//Reinsert main form content in box and display
+			flipperFormE.innerHTML = mainFormCon;
+			flipperFormE.childNodes[0].style["display"] = "block";
+
+			//Modify Styles to fit in display
+			flipperFormE.style["transform"] = "rotateX(0deg)";
+			flipperFormE.style["z-index"] = "3";
+			flipperBg.style["transform"] = "rotateX(180deg)";
+
+			effectsCon.classList.remove("trans_in");
+			effectsCon.classList.add("trans_out");
+			effectsCon.style["display"] = "block";
+
+			flipper.scrollWidth;
+			flipper.style["transform"] = "rotateX(-180deg)";
+			resetOldModalProperties(oldModal, currentModal);
+			modalCon.removeChild(recallCurrent);
+		},
+		box:function(oldModal, currentModal){
+			var modalBody = document.querySelector(".vModal");
+			var modalCon = document.querySelector(".vModal .modalSpace");
+			var recallCurrent = document.querySelector(".vModal .modalSpace #newModal");
+			var effectsCon = modalCon.querySelector("#effectsCon");
+
+			var box = effectsCon.querySelector("#Boxform");
+
+			effectsCon.classList.remove("trans_in");
+			effectsCon.classList.add("trans_out");
+			effectsCon.style["display"] = "block";
+
+			//Reinsert main form content in box and display
+			box.innerHTML = mainFormCon;
+			box.childNodes[0].style["display"] = "block";
+
+			box.scrollWidth;
+			box.style["width"] = "0%";
+			box.style["height"] = "0%";
+			resetOldModalProperties(oldModal, currentModal);
+			modalCon.removeChild(recallCurrent);
+		}
+	}
+	function positionVertically(modal, height){
+		var browserHeight = window.innerHeight;
+		var diff = browserHeight - height;
+		sX= window.scrollX;
+		sY = window.scrollY;
+		modalHeigthBelow = ((paddingTop*2)+ModalHeight)-window.innerHeight;
+		if (diff < 100){
+			scrollable =true;
+			var heightBelow = windowScrollDown.query(parseInt(css.getStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
+			if (heightBelow >= modalHeigthBelow){
+				modal.style["top"] = "50px";
+				modal.style["transform"] = "translateY(0%) translateX(-50%)";
+				reachedBottom =0;
+			}else{
+				modalHeigthAbove = ((paddingTop*2)+ModalHeight)-window.innerHeight;
+				maxupScrollUpStop = scrollY - modalHeigthAbove;
+				var newTop = modalHeigthBelow-paddingTop;
+				modal.style["top"] = "-"+newTop+"px";
+				modal.style["transform"] = "translateY(0%) translateX(-50%)";
+				reachedBottom = 1;
+			}
+		}
+		if (modalOn == true){
+			bodyOldPosition = css.getStyle(document.body, "position");
+			document.body.style["position"] = "fixed";
+			document.body.style["top"] = "-"+sY+"px";
+		}
+	}
+	function releaseModal(e){
+			var modalBody = document.querySelector(".vModal");
+			var modalCon = document.querySelector(".vModal .modalSpace");
+			var OldModal = document.querySelector("#vOld");
+
+			modalCon.removeAttribute("style");
+			e.target.parentNode.classList.remove("trans_out");
+			modalCon.removeChild(modalCon.querySelector("#effectsCon"));
+			modalBody.classList.remove("show");
+
+			modalOn=false;
+			scrollable=false;
+			document.body.style["position"] = bodyOldPosition;
+			document.body.style["top"] = "0";
+			mainFormCon = "";
+			mainFormConInner="";
+			bodyOldPosition="";
+			scrollTo(0, sY);
+			closeProcessor();
+	}
+	function addEventhandler(){
+		var scrollHandler = new  windowScrollDown();
+		window.addEventListener("scroll", function(e){
+			if(scrollable == true){
+				//Scrolling
+				if((sY + modalHeigthBelow) - scrollY > 0){
+					var modal = document.querySelector(".vModal .modalSpace");
+					if(scrollY >= sY && reachedBottom == 0){
+						var diff = (sY+paddingTop)-scrollY;
+						modal.style['top'] = diff+"px";
+						endSy = scrollY;
+					}else if(scrollY < sY && reachedBottom == 0){//scroll up stop
+						modal.style['top'] = paddingTop+"px";
+						scrollTo(0, sY);
+					}else if (reachedBottom == 1){
+						if(scrollY > maxupScrollUpStop){
+							var currentTop = parseInt(css.getStyle(modal, "top"),"px");
+							if (scrollHandler.query["direction"] == "up"){
+							  var newTop = currentTop + scrollHandler.query["change"];
+								modal.style['top'] = newTop+"px";
+							}else if (scrollHandler.query["direction"] == "down") {
+								var newTop = currentTop - scrollHandler.query["change"];
+								modal.style['top'] = newTop+"px";
+							}
+						}else if (scrollY < maxupScrollUpStop) {
+							scrollTo(0, maxupScrollUpStop);
+							modal.style['top'] = paddingTop+"px";
+						}
+					}
+				}else {//scroll Down stop
+					scrollTo(0, endSy);
+				}
+			}
+		}, false)
+		document.body.addEventListener("keydown", function(e){
+			if(modalOn == true){
+				if (keyboardEventHanler(e)["handled"] == true){
+					if(e.key == "Escape"){
+						self.close();
+					}
+				}
+			}
+		},false);
+		document.body.addEventListener("transitionend", function(e){
+			var tin=0, tout=0;
+			if(modalOn == true){
+				if(e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("split")){
+					if(e.target.id == "eleft" || e.target.id == "eright" ){
+						tin++;
+					}
+					if(tin == 1){
+						e.target.innerHTML = "";
+						e.target.parentNode.style["display"] = "none";
+
+						//display main modal
+						var newM = document.querySelector(".vModal #newModal");
+
+						// insert main form to new formCon and display
+						newM.innerHTML = mainFormCon;
+						newM.style["display"] = "block";
+						newM.childNodes[0].style["display"] = "block";
+						openProcessor();
+					}
+				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("split")) {
+					if(e.target.id == "eleft" || e.target.id == "eright" ){
+						tout++;
+					}
+					if(tout == 1){
+						 releaseModal(e);
+					}
+				}else if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("flip")) {
+					//Remove effect modal
+					e.target.querySelector("#flpform").innerHTML = "";
+					e.target.parentNode.style["display"] = "none";
+
+					//Call new modal
+					var newM = document.querySelector(".vModal #newModal");
+
+					//insert main form to new formCon and display
+					newM.innerHTML = mainFormCon;
+					newM.style["display"] = "block";
+					newM.childNodes[0].style["display"] = "block";
+					openProcessor();
+				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("flip")) {
+					 releaseModal(e);
+				}else if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("box")){
+					//Remove effect modal
+					e.target.innerHTML = "";
+					e.target.parentNode.style["display"] = "none";
+
+					//display main modal
+					var newM = document.querySelector(".vModal #newModal");
+
+					// insert main form to new formCon and display
+					newM.innerHTML = mainFormCon;
+					newM.style["display"] = "block";
+					newM.childNodes[0].style["display"] = "block";
+					openProcessor();
+				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("box")) {
+					 releaseModal(e);
+				}
+			}
+		},false);
+	}
+	function resetOldModalProperties(oldModal, currentModal){
+		oldModal.setAttribute("id", currentModal.id);
+		oldModal.setAttribute("class", currentModal.getAttribute("class"));
+		oldModal.style["display"] = "none";
+		oldModal.innerHTML = mainFormConInner;
+	}
+	function createStyles(){
+		var css = " .vModal{position:absolute; top:0; width:100%; height:100vh; z-index:999; display:none}";
+		css += ".show {display:block}";
+		css += " .vModal .modalSpace {width:auto; height:auto; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); position:absolute;}";
+		var styleElement = document.createElement("style");
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
+	}
+	function createElements(){
+
+		//Create
+		var overlay = document.createElement("DIV");
+		var effectsCon = document.createElement("DIV");
+
+
+		//Set attributes
+		overlay.setAttribute("class", "vModal");
+		if (colorOverlayStyle != ""){
+			overlay.setAttribute("style", colorOverlayStyle );
+		}
+
+		effectsCon.setAttribute("class", "modalSpace");
+
+
+		//Append modal
+		//modalSpace to overlay
+		overlay.appendChild(effectsCon);
+
+		//Modal to document
+		document.body.appendChild(overlay);
+	};
+	this.config = {};
+	this.show = function(modal){
+		validateElement(modal,"'show()' method accepts a valid HTML element");
+		if(initialized==true){
+			sY = scrollY;
+			document.querySelector(".vModal").style["top"] = sY+"px";
+
+			//effect call
+			effects[effectName](modal);
+
+		}else{
+			throw new Error("Please initialize using the 'initialize()', before calling the 'show', method");
+		}
+	};
+	this.close = function(){
+		if (modalOn == true){
+			var modalParent = document.querySelector(".vModal");
+			var OldModal = document.querySelector("#vOld");
+			var currentModal = modalParent.querySelector("#newModal").childNodes[0];
+			closeEffect[effectName](OldModal, currentModal);
+		}
+	}
+	this.initialize = function(){
+		totalHeight = document.querySelector("html").scrollHeight;
+		createStyles();
+		createElements();
+		addEventhandler();
+		initialized = true;
+	}
+	Object.defineProperties(this, {
+		config:{writable:false},
+		show:{writable:false},
+		close:{writable:false},
+		initialize:{writable:false}
+	});
+	Object.defineProperties(this.config, {
+		effect:{
+			set:function(value){
+				if(validateObjectMember(effects, value, "Invalid effect type specified for the 'effect' property")){
+					effectName = value;
+				}
+			}
+		},
+		overlayType:{
+			set:function(value){
+				if(matchString(value, ["color", "image", "blur"], "Invalid overlay type specified for the 'overlayType' property, it should be one of the followings: 'color', 'blur', 'image'")){
+					overlayType = value;
+				}
+			}
+		},
+		colorOverlayStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) needed for the 'colorOverlayStyle' property")){
+					if (overlayType == "color"){
+						colorOverlayStyle = value
+					}else{
+						throw new Error("Overlay type must be set to 'color' before setting the 'colorOverlayStyle' property");
+					}
+
+				}
+			}
+		},
+		preProcessor:{
+			set:function(value){
+				validateFunction(value, "A function need as 'preProcessor' property value");
+				preProcessor = value;
+			}
+		},
+		openProcessor:{
+			set:function(value){
+				validateFunction(value, "A function need as 'openProcessor' property value");
+				openProcessor = value;
+			}
+		},
+		closeProcessor:{
+			set:function(value){
+				validateFunction(value, "A function need as 'closeProcessor' property value");
+				closeProcessor = value;
+			}
+		}
+	});
 }
 /****************************************************************/
