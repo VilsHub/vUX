@@ -1461,8 +1461,8 @@ child.getIndex = function(child){
 }
 /****************************************************************/
 
-/**********************Child index getter*********************/
-function windowScrollDown(){
+/********************Verticalal scroll handler*******************/
+function verticalScroll(){
 	var iniSY = 0, state = {direction:"", change:0};
 	window.addEventListener("scroll", function(){
 		if(scrollY > iniSY){//scrolled down
@@ -1481,7 +1481,7 @@ function windowScrollDown(){
 		}
 	});
 }
-windowScrollDown.query = function(totalHeight=null, ){
+verticalScroll.query = function(totalHeight=null){
 	var TotalHeightBelow = totalHeight - window.innerHeight;
 	var remainingHeightBelow = totalHeight - (scrollY+window.innerHeight);
 	var state = "";
@@ -3076,6 +3076,11 @@ function modalDisplayer(){
 			var modalCon = modayBody.querySelector(".modalSpace");
 			ModalHeight = getDimensionOfHidden(modal)["height"];
 			ModalWidth = getDimensionOfHidden(modal)["width"];
+
+			//Create and set newmodal style
+			var newModalCSS = "width:"+ModalWidth+"px; height:"+ModalHeight+"px;";
+			newModal.setAttribute("style", newModalCSS);
+
 			positionVertically(modalCon, ModalHeight);
 			modalCon.appendChild(newModal);
 
@@ -3106,8 +3111,8 @@ function modalDisplayer(){
 			ModalHeight = getDimensionOfHidden(modal)["height"];
 			ModalWidth = getDimensionOfHidden(modal)["width"];
 			//left style
-			var lcss = "position:absolute;left:-200%; top:0; transition:left .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:auto; overflow:hidden;";
-			var rcss = "position:absolute;right:-200%; top:0; transition:right .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:auto; overflow:hidden;";
+			var lcss = "position:absolute;left:-200%; top:0; transition:left .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:"+ModalHeight+"px; overflow:hidden;";
+			var rcss = "position:absolute;right:-200%; top:0; transition:right .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:"+ModalHeight+"px; overflow:hidden;";
 
 			//EffectsCons attributes
 			effectsCon.setAttribute("style", "position:relative; width:"+ModalWidth+"px; height:"+ModalHeight+"px;");
@@ -3142,21 +3147,17 @@ function modalDisplayer(){
 			var leftE = modalCon.querySelector("#eleft");
 			var rightE = modalCon.querySelector("#eright");
 
-			//insert main form to both left and right
+			//insert main form to both left and right effect box and make visible
 			leftE.innerHTML = modal.outerHTML;
+			leftE.childNodes[0].style["display"] = "block";
+			leftE.childNodes[0].style["left"] = "0px";
 			rightE.innerHTML = modal.outerHTML;
+			rightE.childNodes[0].style["display"] = "block";
+			rightE.childNodes[0].style["right"] = "0px";
 
 			//Store up main form content
 			mainFormCon = modal.outerHTML;
 			mainFormConInner = modal.innerHTML;
-
-			//Make inserted modal content in effect box visible
-			var RecallOld1 = leftE.querySelector("#"+modal.id);
-			RecallOld1.style["display"] = "block";
-			var RecallOld2 = rightE.querySelector("#"+modal.id);
-			RecallOld2.style["display"] = "block";
-			RecallOld2.style["transform"] = "translateX(-50%)";
-
 
 			//Tag old for resseting purpose
 			modal.setAttribute("class", "vOld");
@@ -3181,7 +3182,7 @@ function modalDisplayer(){
 			var mainFormBg = css.getStyle(modal, "background-color");
 
 			//Create Style for flipper
-			var flipperCSS = "transition:transform .6s linear 0s; width:100%; height:100%; transform-style:preserve-3d; backface-visibilty: hidden; ";
+			var flipperCSS = "transition:transform .6s linear 0s; width:100%; height:100%; transform-style:preserve-3d; backface-visibilty: hidden; transform:rotateX(0deg); ";
 
 			//flipperBGElement styles
 			flipperBGElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility: hidden; z-index:2; background-color:"+mainFormBg+";");
@@ -3221,17 +3222,15 @@ function modalDisplayer(){
 
 			//Call flipperFormElement box
 			var flipperFormE = modalCon.querySelector("#flipper #flpform");
+			var flipperEffectBox = modalCon.querySelector("#flipper");
 
-			//insert main form to flipper
+			//insert main form to flipper and make visible
 			flipperFormE.innerHTML = modal.outerHTML;
+			flipperFormE.childNodes[0].style["display"] = "block";
 
 			//Store up main form content
 			mainFormCon = modal.outerHTML;
 			mainFormConInner = modal.innerHTML;
-
-			//Make inserted modal content in effect box visible
-			var RecallOld = flipper.querySelector("#"+modal.id);
-			RecallOld.style["display"] = "block";
 
 			//Tag old for resseting purpose
 			modal.setAttribute("class", "vOld");
@@ -3239,9 +3238,9 @@ function modalDisplayer(){
 			modal.innerHTML = "";
 
 			modayBody.classList.add("show");
-			RecallOld.style["display"] = "block";
-			RecallOld.scrollHeight;
-			flipper.style["transform"] = "rotateX(180deg)";
+
+			flipperEffectBox.scrollHeight;
+			flipperEffectBox.style["transform"] = "rotateX(180deg)";
 			openProcessor();
 		},
 		box: function(modal){
@@ -3281,16 +3280,13 @@ function modalDisplayer(){
 			//Call Box Element
 			var BoxFormE = modalCon.querySelector("#Boxform");
 
-			//insert main form to Box
+			//insert main form to Box and make visible
 			BoxFormE.innerHTML = modal.outerHTML;
+			BoxFormE.childNodes[0].style["display"] = "block";
 
 			//Store up main form content
 			mainFormCon = modal.outerHTML;
 			mainFormConInner = modal.innerHTML;
-
-			//Make inserted modal content in effect box visible
-			var RecallOld = BoxFormE.querySelector("#"+modal.id);
-			RecallOld.style["display"] = "block";
 
 			//Tag old for resseting purpose
 			modal.setAttribute("class", "vOld");
@@ -3298,11 +3294,9 @@ function modalDisplayer(){
 			modal.innerHTML = "";
 
 			modayBody.classList.add("show");
-			RecallOld.style["display"] = "block";
-			RecallOld.scrollHeight;
+			BoxFormE.scrollHeight;
 			BoxFormE.style["width"] = "100%";
 			BoxFormE.style["height"] = "100%";
-
 			openProcessor();
 		}
 	};
@@ -3338,13 +3332,14 @@ function modalDisplayer(){
 
 			leftE.innerHTML = mainFormCon;
 			leftE.childNodes[0].style["display"] = "block";
+			leftE.childNodes[0].style["left"] = "0px";
 			leftE.style["transition"] = "left .4s cubic-bezier(.86,.01,.99,.48)";
 			leftE.scrollWidth;
 			leftE.style["left"] = "-200%";
 
 			rightE.innerHTML = mainFormCon;
 			rightE.childNodes[0].style["display"] = "block";
-			rightE.childNodes[0].style["transform"] = "translateX(-50%)";
+			rightE.childNodes[0].style["right"] = "0px";
 			rightE.style["transition"] = "right .4s cubic-bezier(.86,.01,.99,.48)";
 			rightE.scrollWidth;
 			rightE.style["right"] = "-200%";
@@ -3413,7 +3408,7 @@ function modalDisplayer(){
 		modalHeigthBelow = ((paddingTop*2)+ModalHeight)-window.innerHeight;
 		if (diff < 100){
 			scrollable =true;
-			var heightBelow = windowScrollDown.query(parseInt(css.getStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
+			var heightBelow = verticalScroll.query(parseInt(css.getStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
 			if (heightBelow >= modalHeigthBelow){
 				modal.style["top"] = "50px";
 				modal.style["transform"] = "translateY(0%) translateX(-50%)";
@@ -3454,7 +3449,7 @@ function modalDisplayer(){
 			closeProcessor();
 	}
 	function addEventhandler(){
-		var scrollHandler = new  windowScrollDown();
+		var scrollHandler = new  verticalScroll();
 		window.addEventListener("scroll", function(e){
 			if(scrollable == true){
 				//Scrolling
@@ -3509,7 +3504,8 @@ function modalDisplayer(){
 
 						//display main modal
 						var newM = document.querySelector(".vModal #newModal");
-
+						newM.style["width"] = ModalWidth+"px";
+						newM.style["height"] = ModalHeight+"px";
 						// insert main form to new formCon and display
 						newM.innerHTML = mainFormCon;
 						newM.style["display"] = "block";
@@ -3534,21 +3530,25 @@ function modalDisplayer(){
 					//insert main form to new formCon and display
 					newM.innerHTML = mainFormCon;
 					newM.style["display"] = "block";
+					newM.style["width"] = ModalWidth+"px";
+					newM.style["height"] = ModalHeight+"px";
 					newM.childNodes[0].style["display"] = "block";
 					openProcessor();
 				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("flip")) {
 					 releaseModal(e);
 				}else if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("box")){
-					//Remove effect modal
+					// //Remove effect modal
 					e.target.innerHTML = "";
 					e.target.parentNode.style["display"] = "none";
 
-					//display main modal
+					// //display main modal
 					var newM = document.querySelector(".vModal #newModal");
 
-					// insert main form to new formCon and display
+					// // insert main form to new formCon and display
 					newM.innerHTML = mainFormCon;
 					newM.style["display"] = "block";
+					newM.style["height"] = ModalHeight+"px";
+					newM.style["width"] = ModalWidth+"px";
 					newM.childNodes[0].style["display"] = "block";
 					openProcessor();
 				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("box")) {
