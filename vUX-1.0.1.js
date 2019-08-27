@@ -3066,7 +3066,7 @@ function formValidator(form){
 
 /****************************Modal*******************************/
 function modalDisplayer(){
-	var self=this, effectName="none", bodyOldPosition = "", mainFormCon = "", mainFormConInner="", overlayType="", colorOverlayStyle="", maxupScrollUpStop =0, totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, ModalHeight=0, ModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50, reachedBottom=0;
+	var self=this, effectName="none", bodyOldPosition = "", mainFormCon = "", closeButton=null, mainFormConInner="", overlayType="", colorOverlayStyle="", maxupScrollUpStop =0, totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, ModalHeight=0, ModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50, reachedBottom=0;
 	var effects ={
 		none:function(modal){
 			var newModal = document.createElement("DIV");
@@ -3556,6 +3556,13 @@ function modalDisplayer(){
 				}
 			}
 		},false);
+		if (closeButton != null){
+			document.body.addEventListener("click", function(e){
+				if (e.target.id == closeButton.id){
+					self.close();
+				}
+			})
+		}
 	}
 	function resetOldModalProperties(oldModal, currentModal){
 		oldModal.setAttribute("id", currentModal.id);
@@ -3661,12 +3668,6 @@ function modalDisplayer(){
 				}
 			}
 		},
-		preProcessor:{
-			set:function(value){
-				validateFunction(value, "A function need as 'preProcessor' property value");
-				preProcessor = value;
-			}
-		},
 		openProcessor:{
 			set:function(value){
 				validateFunction(value, "A function need as 'openProcessor' property value");
@@ -3677,6 +3678,17 @@ function modalDisplayer(){
 			set:function(value){
 				validateFunction(value, "A function need as 'closeProcessor' property value");
 				closeProcessor = value;
+			}
+		},
+		closeButton:{
+			set:function(value){
+				if(validateElement(value, "A valid HTML Element needed as 'closeButton' property, invalid HTML element specified")){
+					if(value.getAttribute("id") != null){
+						closeButton = value;
+					}else{
+						throw new Error("The specified close button element must have an id attribute set, please set and try again");
+					}
+				}
 			}
 		}
 	});
