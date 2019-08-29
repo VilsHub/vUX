@@ -1841,9 +1841,10 @@ function customFormComponent(vWrapper){
 	//bgColors[a,b] a=> listBacgroundColor, b=> slectBackground
 	//fontColors[a,b] a=> listFontColor, b=> slectfontColor
 	//selectDim[a,b] a=> width of select cElement , b=> height of select cElemt
+	//vWrapper => A custom name to give to the wrapper of the custom element
 	/************************************************************************************/
 
-	/*Custom select builder*/
+	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	function selectOptions(listOptionCon){
 		var currentSelected = document.querySelector("."+vWrapper + " .optionsCon .selected");
 		var sfield = document.querySelector("."+vWrapper + " .sfield");
@@ -1856,8 +1857,6 @@ function customFormComponent(vWrapper){
 
 		//Assign selected value to main select element
 		mainSelect.value = currentHovered.getAttribute("value");
-
-
 
 		//Add selected to select field
 		sfield.innerHTML = currentHovered.innerHTML;
@@ -1955,8 +1954,6 @@ function customFormComponent(vWrapper){
 			}
 			activieHovered.classList.remove("hovered");
 			listOptionCon.querySelector(".option:nth-child("+startIndex+")").classList.add("hovered");
-
-
 		}else{
 			startIndex = totalOptions;
 			scrollIni =1;
@@ -2058,8 +2055,6 @@ function customFormComponent(vWrapper){
 			optionsContainer.appendChild(options);
 		}
 
-
-
 		// //Apply Styles
 		createStyleSheet();
 
@@ -2075,7 +2070,6 @@ function customFormComponent(vWrapper){
 		//Add wrapper before target select;
 		var selectParent = SelectElement.parentNode;
 		selectParent.insertBefore(wrapper, SelectElement);
-
 
 		//Hide main select element
 		SelectElement.style["display"] = "none";
@@ -2303,7 +2297,6 @@ function radioStyleSheet(){
 }
 function selectRadioButton(e, RadioElement){
 	var radioParent = RadioElement.parentNode;
-//	var me = new MouseEvent("click");
 	//Find previuos selected
 	var previousSelected = radioParent.querySelector("."+vWrapper+" .vRadioButtonCon[data-selectState='1']");
 
@@ -2553,6 +2546,10 @@ Object.defineProperties(this.radio, {
 		}
 	},
 })
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom radio builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 }
 /****************************************************************/
