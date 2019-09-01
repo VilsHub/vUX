@@ -13,6 +13,7 @@
 - Custom form component builder
   - Select input
   - Radio input
+  - checkBox input
 - Form validator
 - Modal display
 - window vertical scroll Handler

@@ -171,9 +171,13 @@ function validateArray(array, totalMember, type, id=null){
 		}
 	}
 };
-function validateBoolean(boolean){
+function validateBoolean(boolean, msg=null){
 	if (typeof boolean != "boolean"){
-		throw new TypeError("Please provide a boolean to specify direction");
+		if(msg != null){
+			throw new TypeError(msg);
+		}else{
+			throw new TypeError("A boolean needed");
+		}
 	}else{
 		return true;
 	}
@@ -1834,7 +1838,7 @@ function browserResizeProperty(){
 /********************Custom form component***********************/
 function customFormComponent(vWrapper){
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-	var selOpen=0, selectDim=[], arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
+	var selOpen=0, self=this, selectDim=[], arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
 	afterSelectionFn= function(){}, wrapperCustomStyle="", totalOptions = 0 ,selectFieldCustomStyle="", optionCustomStyle="", optionsContainerCustomStyle="", arrowConCustomStyle="";
 
 	/************************************************************************************/
@@ -2214,37 +2218,37 @@ function customFormComponent(vWrapper){
 				}
 			}
 		},
-		wrapperCustomStyle:{
+		wrapperStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'wrapperCustomStyle' property")){
+				if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
 					wrapperCustomStyle = value;
 				}
 			}
 		},
-		selectFieldCustomStyle:{
+		selectFieldStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'selectFieldCustomStyle' property")){
+				if(validateString(value, "A string of valid CSS styles needed for the 'selectFieldStyle' property")){
 					selectFieldCustomStyle = value;
 				}
 			}
 		},
-		arrowConCustomStyle:{
+		arrowConStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'arrowConCustomStyle' property")){
+				if(validateString(value, "A string of valid CSS styles needed for the 'arrowConStyle' property")){
 					arrowConCustomStyle = value;
 				}
 			}
 		},
-		optionsContainerCustomStyle:{
+		optionsContainerStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'optionsContainerCustomStyle' property")){
+				if(validateString(value, "A string of valid CSS styles needed for the 'optionsContainerStyle' property")){
 					optionsContainerCustomStyle = value;
 				}
 			}
 		},
-		optionCustomStyle:{
+		optionStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'optionCustomStyle' property")){
+				if(validateString(value, "A string of valid CSS styles needed for the 'optionStyle' property")){
 					optionCustomStyle = value;
 				}
 			}
@@ -2461,7 +2465,7 @@ this.radio = {
 			throw new Error("A radio input element needed, please specify a valid radio input element");
 		}
 		if (radioDim.length == 0){
-			throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioDimension' property");
+			throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioButtonDimension' property");
 		}
 		reCreateRadio(RadioElement);
 		assignRadioEventHanler(RadioElement);
@@ -2481,9 +2485,9 @@ Object.defineProperties(this.radio, {
 			}
 		}
 	},
-	radioContainerDimension:{
+	radioButtonDimension:{
 		set:function(value){
-			if(validateArray(value, 2, "string", "radioContainerDimension")){
+			if(validateArray(value, 2, "string", "radioButtonDimension")){
 				if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'radioContainerDimension' property")){
 					if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'radioContainerDimension' property")){
 						radioDim = value;
@@ -2549,7 +2553,270 @@ Object.defineProperties(this.radio, {
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
-/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom radio builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom checkBox builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+var checkBoxAfterSelectionFn=function(){}, checkBoxDim =[], checkBoxWrapperStyle="", checkBoxStyle="", checkedCheckBoxIcon = "", uncheckedCheckBoxIcon ="", checkBoxLabelStyle ="", groupAxis= "x", display="",
+mouseEffect = [], styled=false, group=true, toggledElement=null;
+	/************************************************************************************/
+	//checkBoxDim[a,b] a=> width of checkBox cElement , b=> height of checkBox cElement
+	//mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
+	/************************************************************************************/
+
+function toggleCheckBox(e, checkBoxElement){
+
+	if (e.target.classList.contains("label") == true){
+		var checkBox = e.target.previousElementSibling;
+	}else{
+		var checkBox = e.target;
+	}
+
+	//toggle current
+	if(checkBox.classList.contains("checked")){
+		//toggle custom
+		checkBox.classList.remove("checked");
+		checkBox.classList.add("unchecked");
+
+		//set checkstate
+		//custom
+		if (e.target.classList.contains("label") == false){
+			e.target.setAttribute("data-checkState","0");
+		}else{
+			//custom
+			e.target.previousElementSibling.setAttribute("data-checkState","0");
+		}
+
+		//main
+		checkBoxElement.checked = false;
+	}else{
+
+			checkBox.classList.remove("unchecked");
+			checkBox.classList.add("checked");
+
+			//set checkstate
+			//custom
+			if (e.target.classList.contains("label") == false){
+				e.target.setAttribute("data-checkState","1");
+			}else{
+				//custom
+				e.target.previousElementSibling.setAttribute("data-checkState","1");
+			}
+
+			//main
+			checkBoxElement.checked = true;
+		}
+
+	//Set toggled element
+	toggledElement = checkBoxElement;
+	checkBoxAfterSelectionFn();
+};
+function checkBoxEventHandler(checkBoxElement){
+	document.body.addEventListener("click", function(e){
+		if(e.target.nodeName == "DIV" && e.target.getAttribute("id") == checkBoxElement.getAttribute("id")){
+			toggleCheckBox(e, checkBoxElement);
+		}else if (e.target.nodeName == "DIV" && e.target.classList.contains("label") && e.target.getAttribute("data-for") == checkBoxElement.getAttribute("id")){
+			toggleCheckBox(e, checkBoxElement);
+		}
+	}, false);
+}
+function checkBoxStyleSheet(){
+
+		(groupAxis == "x" | "X")?display="inline-block":display="block";
+
+		var css = "."+vWrapper + " {width:auto; height:auto;display:"+display+"}";
+		css +=  "."+vWrapper + " .vCheckBoxCon {cursor:pointer;  box-sizing:border-box; width:"+checkBoxDim[0]+"; height:"+checkBoxDim[1]+"; float:left; transition:all 0.2s linear; position:relative; overflow:hidden;}";
+		css +=  "."+vWrapper + " .vCheckBoxCon::before {overflow:hidden; box-sizing:border-box; position:absolute; left:0; top:0; width:100%; height:100%; text-align:center; line-height:"+checkBoxDim[1]+"; transition: color 0.1s linear;}";
+		css +=  "."+vWrapper + " .vCheckBoxCon:hover{"+mouseEffect[0]+";}";
+		css +=  "."+vWrapper + " .vCheckBoxCon:active{"+mouseEffect[1]+";}";
+
+		css +=  "."+vWrapper + " .label {position:static; width:auto; height:"+checkBoxDim[1]+"; line-height:"+checkBoxDim[1]+"; float:left; cursor:pointer;}";
+
+
+
+		if(uncheckedCheckBoxIcon != ""){
+			css += "."+vWrapper + " .unchecked::before {"+uncheckedCheckBoxIcon+"}";
+		}
+		if(checkedCheckBoxIcon != ""){
+			css += "."+vWrapper + " .checked::before {"+checkedCheckBoxIcon+"}";
+		}
+
+		var styleElement = document.createElement("style");
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
+}
+function reCreateCheckBox (checkBoxElement){
+	var checkBoxWrapper = document.createElement("DIV");
+	var checkBoxCon = document.createElement("DIV");
+	var checkBoxLabel = document.createElement("DIV");
+	var maincheckBoxLabel = checkBoxElement.nextElementSibling;
+
+	//checkBox Wrapper
+	checkBoxWrapper.setAttribute("class", vWrapper);
+
+	//checkBox
+	checkBoxCon.setAttribute("tabindex", "0");
+
+	if(checkBoxElement.getAttribute("checked") != null){
+		checkBoxCon.setAttribute("data-checkedState", "1");
+		checkBoxCon.setAttribute("class", "vCheckBoxCon checked");
+	}else{
+		checkBoxCon.setAttribute("data-checkedState", "0");
+		checkBoxCon.setAttribute("class", "vCheckBoxCon unchecked");
+	}
+	checkBoxCon.setAttribute("id", checkBoxElement.getAttribute("id"));
+	checkBoxCon.setAttribute("value", checkBoxElement.getAttribute("value"));
+	checkBoxCon.setAttribute("name", checkBoxElement.getAttribute("name"));
+
+	//checkBox Label
+	checkBoxLabel.setAttribute("class", "label");
+	checkBoxLabel.setAttribute("data-for", maincheckBoxLabel.getAttribute("for"));
+
+  // main label content
+	var content = maincheckBoxLabel.innerHTML;
+	checkBoxLabel.appendChild(document.createTextNode(content));
+
+	//Wrapper style
+	if(checkBoxWrapperStyle != ""){
+		checkBoxWrapper.style = checkBoxWrapperStyle;
+	}
+
+	if(checkBoxLabelStyle != ""){
+		checkBoxLabel.style = checkBoxLabelStyle;
+	}
+
+
+	checkBoxWrapper.appendChild(checkBoxCon);
+	checkBoxWrapper.appendChild(checkBoxLabel);
+
+
+	//Add wrapper before target select;
+	var checkBoxParent = checkBoxElement.parentNode;
+	checkBoxParent.insertBefore(checkBoxWrapper, checkBoxElement);
+
+
+	//Hide main radio element
+	checkBoxElement.style["display"] = "none";
+
+	//Hide main radio label
+	checkBoxElement.parentNode.querySelector("label[for='"+checkBoxElement.getAttribute("id")+"']").style["display"] = "none";
+}
+this.checkBox = {
+	build: function(checkBoxElement){
+		validateElement(checkBoxElement, "An input element needed as 1st argument for the 'build' method, non provided");
+		if(checkBoxElement.nodeName != "INPUT" && checkBoxElement.getAttribute("type") != "checkbox"){
+			throw new Error("A checkbox input element needed as 1st argument, please specify a valid checkbox input element");
+		}
+		if (checkBoxDim.length == 0){
+			throw new Error("Setup imcomplete: checkbox component dimension needed, specify using the 'checkBox.checkBoxDimension' property");
+		}
+		if(group == false){
+			//Create elements
+			reCreateCheckBox(checkBoxElement);
+			//Apply Styles
+			checkBoxStyleSheet();
+			checkBoxEventHandler(checkBoxElement)
+			styled = true;
+			// assignRadioEventHanler(checkBoxElement);
+		}else if (group == true) {
+			//Create elements
+			reCreateCheckBox(checkBoxElement);
+			checkBoxEventHandler(checkBoxElement);
+			if (styled == false){
+				//Apply Styles
+				checkBoxStyleSheet();
+				styled = true;
+			}
+		}
+	}
+}
+Object.defineProperty(this, "checkBox", {
+	writable:false
+});
+Object.defineProperties(this.checkBox, {
+	build:{
+		writable:false
+	},
+	afterSelectionFn : {//Function to call after selection
+		set:function(value){
+			if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
+				checkBoxAfterSelectionFn = value;
+			}
+		}
+	},
+	checkBoxDimension:{
+		set:function(value){
+			if(validateArray(value, 2, "string", "checkBox.checkBoxDimension")){
+				if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'checkBox.checkBoxDimension' property")){
+					if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'checkBox.checkBoxDimension' property")){
+						checkBoxDim = value;
+					}
+				}
+			}
+		}
+	},
+	wrapperStyle:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
+				checkBoxWrapperStyle = value;
+			}
+		}
+	},
+	checkedIcon:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS style(s) needed for the 'selectedCheckBoxStyle' property")){
+				checkedCheckBoxIcon = value;
+			}
+		}
+	},
+	uncheckedIcon:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS style(s) value needed for the 'deselectedCheckBoxStyle' property")){
+				uncheckedCheckBoxIcon = value;
+			}
+		}
+	},
+	groupAxis:{
+		set:function(value){
+			if(validateString(value, "A string value needed for the 'groupAxis' property")){
+				if(value = "x" | "X" | "y" | "Y"){
+					groupAxis = value;
+				}else {
+					throw new Error("String value can either be 'x' or 'y' (Case insensitive)");
+				}
+			}
+		}
+	},
+	labelStyle:{
+		set:function(value){
+			if(validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property")){
+				checkBoxLabelStyle = value;
+			}
+		}
+	},
+	mouseEffectStyle:{
+		set:function(value){
+			if(validateArray(value, 2, "string", "mouseEffectStyle")){
+				mouseEffect = value;
+			}
+		}
+	},
+	thisElement:{
+		get:function(){
+			return toggledElement;
+		}
+	},
+	group:{
+		set:function(){
+				if(validateBoolean(value, "A boolean needed as value for the 'checkBox.group' property")){
+					group = value;
+				}
+		}
+	},
+
+})
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 }
 /****************************************************************/
