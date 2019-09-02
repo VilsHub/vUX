@@ -1836,7 +1836,7 @@ function browserResizeProperty(){
 /****************************************************************/
 
 /********************Custom form component***********************/
-function customFormComponent(vWrapper){
+function customFormComponent(vWrapper=null){
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	var selOpen=0, self=this, selectDim=[], arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
 	afterSelectionFn= function(){}, wrapperCustomStyle="", totalOptions = 0 ,selectFieldCustomStyle="", optionCustomStyle="", optionsContainerCustomStyle="", arrowConCustomStyle="";
@@ -2271,24 +2271,28 @@ function customFormComponent(vWrapper){
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom radio builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-var RadioAfterSelectionFn=function(){}, radioDim =[], radioWrapperStyle="", radioButtonStyle="", selectedRadioStyle = "", deselectedRadioStyle ="", radioLabelStyle ="", groupAxis= "x", display="",
-mouseEffect = [];
+var radioDim =[], radioButtonStyle="", selectedIcon = "", deselectedIcon ="", radioLabelStyle ="",
+mouseEffect = [], parentCSSName= "", styled=false;
 	/************************************************************************************/
 	//radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
 	//mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
 	/************************************************************************************/
 
 function radioStyleSheet(){
+		var left = parseInt(extractDimensionValue(radioDim[0], "px"))+2;
+		var css = parentCSSName + " label {position:relative; cursor:pointer;}";
+		css +=  parentCSSName + " label::before {cursor:pointer; box-sizing:border-box; width:"+radioDim[0]+"; border-radius:100%; height:"+radioDim[1]+"; transition:all 0.2s linear; position:absolute; left:-"+left+"px; content:''}";
+		css +=  parentCSSName + " .selected::before {border:solid 1px white; background-color:purple}";
+		css +=  parentCSSName + " .deselected::before {border:solid 1px purple; background-color:white}";
+		css +=  parentCSSName + " .deselected::before:hover{"+mouseEffect[0]+";}";
+		css +=  parentCSSName + " .deselected:active::before{"+mouseEffect[1]+";}";
 
-		(groupAxis == "x" | "X")?display="inline-block":display="block";
-
-		var css = "."+vWrapper + " {width:auto; height:auto;display:"+display+"}";
-		css +=  "."+vWrapper + " .vRadioButtonCon {cursor:pointer;  box-sizing:border-box; width:"+radioDim[0]+"; border-radius:100%; height:"+radioDim[1]+"; border:solid 1px black; float:left; transition:all 0.2s linear; position:relative; overflow:hidden;}";
-		css +=  "."+vWrapper + " .vRadioButtonCon .select {background-color:black; position:absolute; top:0; left:0; width:100%; height:100%; border-radius:200%; z-index:1}";
-		css +=  "."+vWrapper + " .vRadioButtonCon .deselect {background-color:white; position:absolute; top:0; left:0; width:100%; height:100%; border-radius:200%; z-index:2}";
-		css +=  "."+vWrapper + " .label {width:auto; height:"+radioDim[1]+"; line-height:"+radioDim[1]+"; float:left; cursor:pointer;}";
-		css +=  "."+vWrapper + " .vRadioButtonCon:hover{"+mouseEffect[0]+";}";
-		css +=  "."+vWrapper + " .vRadioButtonCon .deselect:active{"+mouseEffect[1]+";}";
+		if(deselectedIcon != ""){
+			css += parentCSSName + "  .deselected::before {"+deselectedIcon+"}";
+		}
+		if(selectedIcon != ""){
+			css += parentCSSName + " .selected::before {"+selectedIcon+"}";
+		}
 
 		var styleElement = document.createElement("style");
 		styleElement.setAttribute("type", "text/css");
@@ -2299,175 +2303,54 @@ function radioStyleSheet(){
 		}
 		document.getElementsByTagName('head')[0].appendChild(styleElement);
 }
-function selectRadioButton(e, RadioElement){
-	var radioParent = RadioElement.parentNode;
-	//Find previuos selected
-	var previousSelected = radioParent.querySelector("."+vWrapper+" .vRadioButtonCon[data-selectState='1']");
+function toggleRadioButton(e, RadioElement){
+	var radioInputsParent = document.querySelector(parentCSSName);
 
-
+	//Find previous selected
+	var previousSelected = radioInputsParent.querySelector(".selected");
 
 	if (previousSelected != null){
-		var prevSelectBg = previousSelected.querySelector(".select");
-		var prevDeselectBg = previousSelected.querySelector(".deselect");
-		var mainpreviousSelected = radioParent.querySelector("."+vWrapper+" .vRadioButtonCon[data-selectState='1']").parentNode.nextElementSibling;
-	}
-	if (e.target.classList.contains("label") == false){
-		var currentSelectBg = e.target.parentNode.querySelector(".select");
-		var currentDeselectBg = e.target.parentNode.querySelector(".deselect");
-	}else{
-		var currentSelectBg = e.target.previousElementSibling.querySelector(".select");
-		var currentDeselectBg = e.target.previousElementSibling.querySelector(".deselect");
-	}
-
-
-	if(previousSelected != null){
-		//switch Bgs of previous
-		prevSelectBg.style["z-index"] = "1";
-		prevDeselectBg.style["z-index"] = "2";
-
-		//unset previous
-		//custom
-		previousSelected.setAttribute("data-selectState","0");
-
-		//main
-		previousSelected.parentNode.nextElementSibling.checked = false;
-
-
-
-
-		//set current
-		if (e.target.classList.contains("label") == false){
-			//custom
-			e.target.parentNode.setAttribute("data-selectState","1");
-
-			//main
-			e.target.parentNode.parentNode.nextElementSibling.checked = true;
-		}else{
-			//custom
-			e.target.previousElementSibling.setAttribute("data-selectState","1");
-
-			//main
-			e.target.parentNode.nextElementSibling.checked = true;
+		if(e.target.previousElementSibling.checked != true){
+			previousSelected.classList.remove("selected");
+			previousSelected.classList.add("deselected");
+			//
+			e.target.classList.remove("deselected");
+			e.target.classList.add("selected");
 		}
-
-		//switch Bgs of current
-		currentSelectBg.style["z-index"] = "2";
-		currentDeselectBg.style["z-index"] = "1";
-
 	}else{
-		//switch Bgs of current
-		currentSelectBg.style["z-index"] = "2";
-		currentDeselectBg.style["z-index"] = "1";
-
-		//set current
-		if (e.target.classList.contains("label") == false){
-			//custom
-			e.target.parentNode.setAttribute("data-selectState","1");
-
-			//main
-			e.target.parentNode.parentNode.nextElementSibling.checked = true;
-		}else{
-			//custom
-			e.target.previousElementSibling.setAttribute("data-selectState","1");
-
-			//main
-			e.target.parentNode.nextElementSibling.checked = true;
-		}
+		e.target.classList.remove("deselected");
+		e.target.classList.add("selected");
 	}
-}
-function reCreateRadio (RadioElement){
-	var radioWrapper = document.createElement("DIV");
-	var radioButtonCon = document.createElement("DIV");
-	var radioButtonConSelect = document.createElement("DIV");
-	var radioButtonConDeselect = document.createElement("DIV");
-	var radioLabel = document.createElement("DIV");
-	var mainRadioLabel = RadioElement.nextElementSibling;
-	//radioButton Wrapper
-	radioWrapper.setAttribute("class", vWrapper);
-
-	//Radio button
-	radioButtonCon.setAttribute("tabindex", "0");
-	radioButtonCon.setAttribute("class", "vRadioButtonCon");
-	radioButtonCon.setAttribute("data-selectState", "0");
-	radioButtonCon.setAttribute("id", RadioElement.getAttribute("id"));
-	radioButtonCon.setAttribute("value", RadioElement.getAttribute("value"));
-	radioButtonCon.setAttribute("name", RadioElement.getAttribute("name"));
-
-
-	//Radio button select
-	radioButtonConSelect.setAttribute("class", "select");
-
-	//Radio button deselect
-	radioButtonConDeselect.setAttribute("class", "deselect");
-
-	//Radio Label
-	radioLabel.setAttribute("class", "label");
-	radioLabel.setAttribute("data-for", mainRadioLabel.getAttribute("for"));
-  // main label content
-	var content = mainRadioLabel.innerHTML;
-	radioLabel.appendChild(document.createTextNode(content));
-
-
-	if(radioWrapperStyle != ""){
-		radioWrapper.style = radioWrapperStyle;
-	}
-
-	if(radioButtonStyle != ""){
-		radioButtonCon.style = radioButtonStyle;
-	}
-
-	if(selectedRadioStyle != ""){
-		radioButtonConSelect.style = selectedRadioStyle;
-	}
-
-	if(deselectedRadioStyle != ""){
-		radioButtonConDeselect.style = deselectedRadioStyle;
-	}
-
-	if(radioLabelStyle != ""){
-		radioLabel.style = radioLabelStyle;
-	}
-
-	radioButtonCon.appendChild(radioButtonConDeselect);
-	radioButtonCon.appendChild(radioButtonConSelect);
-	radioWrapper.appendChild(radioButtonCon);
-	radioWrapper.appendChild(radioLabel);
-
-
-	//Add wrapper before target select;
-	var radioParent = RadioElement.parentNode;
-	radioParent.insertBefore(radioWrapper, RadioElement);
-
-
-	//Hide main radio element
-	RadioElement.style["display"] = "none";
-
-	//Hide main radio label
-	RadioElement.parentNode.querySelector("label[for='"+RadioElement.getAttribute("id")+"']").style["display"] = "none";
-
-	// //Apply Styles
-	radioStyleSheet();
 }
 function assignRadioEventHanler(RadioElement){
-		var radioParent = RadioElement.parentNode;
-		radioParent.addEventListener("click", function(e){
-			if(e.target.nodeName == "DIV" && e.target.parentNode.getAttribute("id") == RadioElement.getAttribute("id")){
-				selectRadioButton(e, RadioElement);
-			}else if (e.target.nodeName == "DIV" && e.target.classList.contains("label") && e.target.getAttribute("data-for") == RadioElement.getAttribute("id")){
-				selectRadioButton(e, RadioElement);
-			}
+		var radioLabel = RadioElement.nextElementSibling;
+		radioLabel.addEventListener("click", function(e){
+			toggleRadioButton(e, RadioElement);
 		}, false);
 }
 this.radio = {
 	build: function(RadioElement){
 		validateElement(RadioElement, "An input element needed as argument for the 'build' method, non provided");
+		if (parentCSSName == ""){
+			throw new Error ("Setup error: No radio buttons parent specified, please specify using the 'radio.parentCSSName' property and try again");
+		}
 		if(RadioElement.nodeName != "INPUT" && RadioElement.getAttribute("type") != "radio"){
 			throw new Error("A radio input element needed, please specify a valid radio input element");
 		}
 		if (radioDim.length == 0){
 			throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioButtonDimension' property");
 		}
-		reCreateRadio(RadioElement);
+		if (styled == false){
+			//Apply Styles
+			radioStyleSheet();
+			styled = true;
+		}
+		RadioElement.style["opacity"] = "0";
+		if(RadioElement.checked == true){
+			RadioElement.nextElementSibling.classList.add("selected");
+		}else{
+			RadioElement.nextElementSibling.classList.add("deselected");
+		}
 		assignRadioEventHanler(RadioElement);
 	}
 }
@@ -2477,13 +2360,6 @@ Object.defineProperty(this, "radio", {
 Object.defineProperties(this.radio, {
 	build:{
 		writable:false
-	},
-	afterSelectionFn : {//Function to call after selection
-		set:function(value){
-			if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
-				RadioAfterSelectionFn = value;
-			}
-		}
 	},
 	radioButtonDimension:{
 		set:function(value){
@@ -2496,13 +2372,6 @@ Object.defineProperties(this.radio, {
 			}
 		}
 	},
-	wrapperStyle:{
-		set:function(value){
-			if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
-				radioWrapperStyle = value;
-			}
-		}
-	},
 	radioButtonStyle:{
 		set:function(value){
 			if(validateString(value, "A string of valid CSS styles needed for the 'radioButtonStyle' property")){
@@ -2510,28 +2379,17 @@ Object.defineProperties(this.radio, {
 			}
 		}
 	},
-	selectedRadioStyle:{
+	selectedIcon:{
 		set:function(value){
-			if(validateString(value, "A string of valid CSS style(s) needed for the 'selectedRadioStyle' property")){
-				selectedRadioStyle = value;
+			if(validateString(value, "A string of valid CSS style(s) needed for the 'selectedIcon' property")){
+				selectedIcon = value;
 			}
 		}
 	},
-	deselectedRadioStyle:{
+	deselectedIcon:{
 		set:function(value){
-			if(validateString(value, "A string of valid CSS style(s) value needed for the 'deselectedRadioStyle' property")){
-				deselectedRadioStyle = value;
-			}
-		}
-	},
-	groupAxis:{
-		set:function(value){
-			if(validateString(value, "A string value needed for the 'groupAxis' property")){
-				if(value = "x" | "X" | "y" | "Y"){
-					groupAxis = value;
-				}else {
-					throw new Error("String value can either be 'x' or 'y' (Case insensitive)");
-				}
+			if(validateString(value, "A string of valid CSS style(s) value needed for the 'deselectedIcon' property")){
+				deselectedIcon = value;
 			}
 		}
 	},
@@ -2539,6 +2397,18 @@ Object.defineProperties(this.radio, {
 		set:function(value){
 			if(validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property")){
 				radioLabelStyle = value;
+			}
+		}
+	},
+	parentCSSName:{
+		set:function(value){
+			if (validateString(value, "A string needed as value for 'parentCSSName' property")){
+				var testE = document.querySelector(value);
+				if (testE == null){
+					throw new Error("'parentCSSName' property value must be a string of valid CSS class or ID name")
+				}else{
+					parentCSSName = value;
+				}
 			}
 		}
 	},
