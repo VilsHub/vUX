@@ -2271,93 +2271,98 @@ function customFormComponent(vWrapper=null){
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom radio builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-var radioDim =[], radioButtonStyle="", selectedIcon = "", deselectedIcon ="", radioLabelStyle ="",
-mouseEffect = [], parentCSSName= "", styled=false;
+	var radioDim =[], radioButtonStyle="", selectedIcon = "", deselectedIcon ="", radioLabelStyle ="",
+	mouseEffect = [], parentCSSName= "", styled=false;
 	/************************************************************************************/
 	//radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
 	//mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
 	/************************************************************************************/
 
-function radioStyleSheet(){
-		var left = parseInt(extractDimensionValue(radioDim[0], "px"))+2;
-		var css = parentCSSName + " label {position:relative; cursor:pointer;}";
-		css +=  parentCSSName + " label::before {cursor:pointer; box-sizing:border-box; width:"+radioDim[0]+"; border-radius:100%; height:"+radioDim[1]+"; transition:all 0.2s linear; position:absolute; left:-"+left+"px; content:''}";
-		css +=  parentCSSName + " .selected::before {border:solid 1px white; background-color:purple}";
-		css +=  parentCSSName + " .deselected::before {border:solid 1px purple; background-color:white}";
-		css +=  parentCSSName + " .deselected::before:hover{"+mouseEffect[0]+";}";
-		css +=  parentCSSName + " .deselected:active::before{"+mouseEffect[1]+";}";
+	function radioStyleSheet(){
+			var left = parseInt(extractDimensionValue(radioDim[0], "px"))+2;
+			var css = parentCSSName + " label {position:relative; cursor:pointer;}";
+			css +=  parentCSSName + " label::before {cursor:pointer; box-sizing:border-box; width:"+radioDim[0]+"; border-radius:100%; height:"+radioDim[1]+"; transition:all 0.2s linear; position:absolute; left:-"+left+"px; content:''}";
+			css +=  parentCSSName + " .selected::before {border:solid 1px white; background-color:purple}";
+			css +=  parentCSSName + " .deselected::before {border:solid 1px purple; background-color:white}";
+			css +=  parentCSSName + " .deselected::before:hover{"+mouseEffect[0]+";}";
+			css +=  parentCSSName + " .deselected:active::before{"+mouseEffect[1]+";}";
 
-		if(deselectedIcon != ""){
-			css += parentCSSName + "  .deselected::before {"+deselectedIcon+"}";
-		}
-		if(selectedIcon != ""){
-			css += parentCSSName + " .selected::before {"+selectedIcon+"}";
-		}
+			if(deselectedIcon != ""){
+				css += parentCSSName + "  .deselected::before {"+deselectedIcon+"}";
+			}
+			if(selectedIcon != ""){
+				css += parentCSSName + " .selected::before {"+selectedIcon+"}";
+			}
 
-		var styleElement = document.createElement("style");
-		styleElement.setAttribute("type", "text/css");
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-		  styleElement.appendChild(document.createTextNode(css));
-		}
-		document.getElementsByTagName('head')[0].appendChild(styleElement);
-}
-function toggleRadioButton(e, RadioElement){
-	var radioInputsParent = document.querySelector(parentCSSName);
+			if(radioLabelStyle != ""){
+				css += parentCSSName + "label {"+radioLabelStyle+"}";
+			}
 
-	//Find previous selected
-	var previousSelected = radioInputsParent.querySelector(".selected");
+			var styleElement = document.createElement("style");
+			styleElement.setAttribute("type", "text/css");
+			if (styleElement.styleSheet) {
+				styleElement.styleSheet.cssText = css;
+			} else {
+			  styleElement.appendChild(document.createTextNode(css));
+			}
+			document.getElementsByTagName('head')[0].appendChild(styleElement);
+	}
+	function toggleRadioButton(e, RadioElement){
+		var radioInputsParent = document.querySelector(parentCSSName);
 
-	if (previousSelected != null){
-		if(e.target.previousElementSibling.checked != true){
-			previousSelected.classList.remove("selected");
-			previousSelected.classList.add("deselected");
-			//
+		//Find previous selected
+		var previousSelected = radioInputsParent.querySelector(".selected");
+
+		if (previousSelected != null){
+			if(e.target.previousElementSibling.checked != true){
+				previousSelected.classList.remove("selected");
+				previousSelected.classList.add("deselected");
+				//
+				e.target.classList.remove("deselected");
+				e.target.classList.add("selected");
+			}
+		}else{
 			e.target.classList.remove("deselected");
 			e.target.classList.add("selected");
 		}
-	}else{
-		e.target.classList.remove("deselected");
-		e.target.classList.add("selected");
 	}
-}
-function assignRadioEventHanler(RadioElement){
-		var radioLabel = RadioElement.nextElementSibling;
-		radioLabel.addEventListener("click", function(e){
-			toggleRadioButton(e, RadioElement);
-		}, false);
-}
-this.radio = {
-	build: function(RadioElement){
-		validateElement(RadioElement, "An input element needed as argument for the 'build' method, non provided");
-		if (parentCSSName == ""){
-			throw new Error ("Setup error: No radio buttons parent specified, please specify using the 'radio.parentCSSName' property and try again");
-		}
-		if(RadioElement.nodeName != "INPUT" && RadioElement.getAttribute("type") != "radio"){
-			throw new Error("A radio input element needed, please specify a valid radio input element");
-		}
-		if (radioDim.length == 0){
-			throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioButtonDimension' property");
-		}
-		if (styled == false){
-			//Apply Styles
-			radioStyleSheet();
-			styled = true;
-		}
-		RadioElement.style["opacity"] = "0";
-		if(RadioElement.checked == true){
-			RadioElement.nextElementSibling.classList.add("selected");
-		}else{
-			RadioElement.nextElementSibling.classList.add("deselected");
-		}
-		assignRadioEventHanler(RadioElement);
+	function assignRadioEventHanler(RadioElement){
+			var radioLabel = RadioElement.nextElementSibling;
+			radioLabel.addEventListener("click", function(e){
+				toggleRadioButton(e, RadioElement);
+			}, false);
 	}
-}
-Object.defineProperty(this, "radio", {
-	writable:false
-});
-Object.defineProperties(this.radio, {
+	this.radio = {
+		build: function(RadioElement){
+			validateElement(RadioElement, "An input element needed as argument for the 'build' method, non provided");
+			if (parentCSSName == ""){
+				throw new Error ("Setup error: No radio buttons parent specified, please specify using the 'radio.parentCSSName' property and try again");
+			}
+			if(RadioElement.nodeName != "INPUT" && RadioElement.getAttribute("type") != "radio"){
+				throw new Error("A radio input element needed, please specify a valid radio input element");
+			}
+			if (radioDim.length == 0){
+				throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioButtonDimension' property");
+			}
+			if (styled == false){
+				//Apply Styles
+				radioStyleSheet();
+
+				styled = true;
+			}
+			RadioElement.style["opacity"] = "0";
+			if(RadioElement.checked == true){
+				RadioElement.nextElementSibling.classList.add("selected");
+			}else{
+				RadioElement.nextElementSibling.classList.add("deselected");
+			}
+			assignRadioEventHanler(RadioElement);
+		}
+	}
+	Object.defineProperty(this, "radio", {
+		writable:false
+	});
+	Object.defineProperties(this.radio, {
 	build:{
 		writable:false
 	},
@@ -2420,274 +2425,166 @@ Object.defineProperties(this.radio, {
 		}
 	},
 })
-/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
-/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom checkBox builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-var checkBoxAfterSelectionFn=function(){}, checkBoxDim =[], checkBoxWrapperStyle="", checkBoxStyle="", checkedCheckBoxIcon = "", uncheckedCheckBoxIcon ="", checkBoxLabelStyle ="", groupAxis= "x", display="",
-mouseEffect = [], styled=false, group=true, toggledElement=null;
+	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom checkBox builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+	var checkBoxDim =[], checkBoxStyle="", checkedCheckBoxIcon = "", uncheckedCheckBoxIcon ="", checkBoxLabelStyle ="",
+	mouseEffect = [], styled=false, parentCSSName= "";
 	/************************************************************************************/
 	//checkBoxDim[a,b] a=> width of checkBox cElement , b=> height of checkBox cElement
 	//mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
 	/************************************************************************************/
 
-function toggleCheckBox(e, checkBoxElement){
-
-	if (e.target.classList.contains("label") == true){
-		var checkBox = e.target.previousElementSibling;
-	}else{
-		var checkBox = e.target;
-	}
-
-	//toggle current
-	if(checkBox.classList.contains("checked")){
-		//toggle custom
-		checkBox.classList.remove("checked");
-		checkBox.classList.add("unchecked");
-
-		//set checkstate
-		//custom
-		if (e.target.classList.contains("label") == false){
-			e.target.setAttribute("data-checkState","0");
-		}else{
-			//custom
-			e.target.previousElementSibling.setAttribute("data-checkState","0");
+	function toggleCheckBox(e){
+		if(e.target.nodeName == "LABEL"){
+			if(e.target.previousElementSibling.checked != true){
+				e.target.classList.remove("unchecked");
+				e.target.classList.add("checked");
+				e.target.previousElementSibling.checked = true;
+			}else{
+				e.target.classList.remove("checked");
+				e.target.classList.add("unchecked");
+				e.target.previousElementSibling.checked = false;
+			}
+		}else if (e.target.nodeName == "INPUT") {
+			if(e.target.checked != true){
+				e.target.nextElementSibling.classList.remove("unchecked");
+				e.target.nextElementSibling.classList.add("checked");
+				//e.target.previousElementSibling.checked = true;
+			}else{
+				e.target.nextElementSibling.remove("checked");
+				e.target.nextElementSibling.add("unchecked");
+				//e.target.previousElementSibling.checked = false;
+			}
 		}
 
-		//main
-		checkBoxElement.checked = false;
-	}else{
+	};
+	function checkBoxEventHandler(checkBoxElement){
+		var radioLabel = checkBoxElement.nextElementSibling;
+		radioLabel.addEventListener("click", function(e){
+			toggleCheckBox(e);
+		}, false);
+		checkBoxElement.addEventListener("click", function(e){
+			toggleCheckBox(e);
+		}, false);
+	}
+	function checkBoxStyleSheet(){
+			var left = parseInt(extractDimensionValue(checkBoxDim[0], "px"))+2;
+			var css = parentCSSName + " label {position:relative; cursor:pointer;}";
+			css +=  parentCSSName + " label::before {overflow:hidden;cursor:pointer; box-sizing:border-box; width:"+checkBoxDim[0]+"; border-radius:4px; height:"+checkBoxDim[1]+"; transition:all 0.2s linear; position:absolute; left:-"+left+"px; content:''}";
+			css +=  parentCSSName + " .checked::before {border:solid 1px white; background-color:purple; box-sizing:border-box; }";
+			css +=  parentCSSName + " .unchecked::before {border:solid 1px purple; background-color:white;  box-sizing:border-box; }";
+			css +=  parentCSSName + " .unchecked::before:hover{"+mouseEffect[0]+";}";
+			css +=  parentCSSName + " .unchecked:active::before{"+mouseEffect[1]+";}";
 
-			checkBox.classList.remove("unchecked");
-			checkBox.classList.add("checked");
 
-			//set checkstate
-			//custom
-			if (e.target.classList.contains("label") == false){
-				e.target.setAttribute("data-checkState","1");
-			}else{
-				//custom
-				e.target.previousElementSibling.setAttribute("data-checkState","1");
+			if(uncheckedCheckBoxIcon != ""){
+				css += parentCSSName + " .unchecked::before {"+uncheckedCheckBoxIcon+"}";
+			}
+			if(checkedCheckBoxIcon != ""){
+				css += parentCSSName + " .checked::before {"+checkedCheckBoxIcon+"}";
 			}
 
-			//main
-			checkBoxElement.checked = true;
-		}
+			if(checkBoxLabelStyle != ""){
+				css += parentCSSName + " label {"+checkBoxLabelStyle+"}";
+			}
 
-	//Set toggled element
-	toggledElement = checkBoxElement;
-	checkBoxAfterSelectionFn();
-};
-function checkBoxEventHandler(checkBoxElement){
-	document.body.addEventListener("click", function(e){
-		if(e.target.nodeName == "DIV" && e.target.getAttribute("id") == checkBoxElement.getAttribute("id")){
-			toggleCheckBox(e, checkBoxElement);
-		}else if (e.target.nodeName == "DIV" && e.target.classList.contains("label") && e.target.getAttribute("data-for") == checkBoxElement.getAttribute("id")){
-			toggleCheckBox(e, checkBoxElement);
-		}
-	}, false);
-}
-function checkBoxStyleSheet(){
-
-		(groupAxis == "x" | "X")?display="inline-block":display="block";
-
-		var css = "."+vWrapper + " {width:auto; height:auto;display:"+display+"}";
-		css +=  "."+vWrapper + " .vCheckBoxCon {cursor:pointer;  box-sizing:border-box; width:"+checkBoxDim[0]+"; height:"+checkBoxDim[1]+"; float:left; transition:all 0.2s linear; position:relative; overflow:hidden;}";
-		css +=  "."+vWrapper + " .vCheckBoxCon::before {overflow:hidden; box-sizing:border-box; position:absolute; left:0; top:0; width:100%; height:100%; text-align:center; line-height:"+checkBoxDim[1]+"; transition: color 0.1s linear;}";
-		css +=  "."+vWrapper + " .vCheckBoxCon:hover{"+mouseEffect[0]+";}";
-		css +=  "."+vWrapper + " .vCheckBoxCon:active{"+mouseEffect[1]+";}";
-
-		css +=  "."+vWrapper + " .label {position:static; width:auto; height:"+checkBoxDim[1]+"; line-height:"+checkBoxDim[1]+"; float:left; cursor:pointer;}";
-
-
-
-		if(uncheckedCheckBoxIcon != ""){
-			css += "."+vWrapper + " .unchecked::before {"+uncheckedCheckBoxIcon+"}";
-		}
-		if(checkedCheckBoxIcon != ""){
-			css += "."+vWrapper + " .checked::before {"+checkedCheckBoxIcon+"}";
-		}
-
-		var styleElement = document.createElement("style");
-		styleElement.setAttribute("type", "text/css");
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-		  styleElement.appendChild(document.createTextNode(css));
-		}
-		document.getElementsByTagName('head')[0].appendChild(styleElement);
-}
-function reCreateCheckBox (checkBoxElement){
-	var checkBoxWrapper = document.createElement("DIV");
-	var checkBoxCon = document.createElement("DIV");
-	var checkBoxLabel = document.createElement("DIV");
-	var maincheckBoxLabel = checkBoxElement.nextElementSibling;
-
-	//checkBox Wrapper
-	checkBoxWrapper.setAttribute("class", vWrapper);
-
-	//checkBox
-	checkBoxCon.setAttribute("tabindex", "0");
-
-	if(checkBoxElement.getAttribute("checked") != null){
-		checkBoxCon.setAttribute("data-checkedState", "1");
-		checkBoxCon.setAttribute("class", "vCheckBoxCon checked");
-	}else{
-		checkBoxCon.setAttribute("data-checkedState", "0");
-		checkBoxCon.setAttribute("class", "vCheckBoxCon unchecked");
+			var styleElement = document.createElement("style");
+			styleElement.setAttribute("type", "text/css");
+			if (styleElement.styleSheet) {
+				styleElement.styleSheet.cssText = css;
+			} else {
+			  styleElement.appendChild(document.createTextNode(css));
+			}
+			document.getElementsByTagName('head')[0].appendChild(styleElement);
 	}
-	checkBoxCon.setAttribute("id", checkBoxElement.getAttribute("id"));
-	checkBoxCon.setAttribute("value", checkBoxElement.getAttribute("value"));
-	checkBoxCon.setAttribute("name", checkBoxElement.getAttribute("name"));
-
-	//checkBox Label
-	checkBoxLabel.setAttribute("class", "label");
-	checkBoxLabel.setAttribute("data-for", maincheckBoxLabel.getAttribute("for"));
-
-  // main label content
-	var content = maincheckBoxLabel.innerHTML;
-	checkBoxLabel.appendChild(document.createTextNode(content));
-
-	//Wrapper style
-	if(checkBoxWrapperStyle != ""){
-		checkBoxWrapper.style = checkBoxWrapperStyle;
-	}
-
-	if(checkBoxLabelStyle != ""){
-		checkBoxLabel.style = checkBoxLabelStyle;
-	}
-
-
-	checkBoxWrapper.appendChild(checkBoxCon);
-	checkBoxWrapper.appendChild(checkBoxLabel);
-
-
-	//Add wrapper before target select;
-	var checkBoxParent = checkBoxElement.parentNode;
-	checkBoxParent.insertBefore(checkBoxWrapper, checkBoxElement);
-
-
-	//Hide main radio element
-	checkBoxElement.style["display"] = "none";
-
-	//Hide main radio label
-	checkBoxElement.parentNode.querySelector("label[for='"+checkBoxElement.getAttribute("id")+"']").style["display"] = "none";
-}
-this.checkBox = {
-	build: function(checkBoxElement){
-		validateElement(checkBoxElement, "An input element needed as 1st argument for the 'build' method, non provided");
-		if(checkBoxElement.nodeName != "INPUT" && checkBoxElement.getAttribute("type") != "checkbox"){
-			throw new Error("A checkbox input element needed as 1st argument, please specify a valid checkbox input element");
-		}
-		if (checkBoxDim.length == 0){
-			throw new Error("Setup imcomplete: checkbox component dimension needed, specify using the 'checkBox.checkBoxDimension' property");
-		}
-		if(group == false){
-			//Create elements
-			reCreateCheckBox(checkBoxElement);
-			//Apply Styles
-			checkBoxStyleSheet();
-			checkBoxEventHandler(checkBoxElement)
-			styled = true;
-			// assignRadioEventHanler(checkBoxElement);
-		}else if (group == true) {
-			//Create elements
-			reCreateCheckBox(checkBoxElement);
-			checkBoxEventHandler(checkBoxElement);
+	this.checkBox = {
+		build: function(checkBoxElement){
+			validateElement(checkBoxElement, "An input element needed as 1st argument for the 'build' method, non provided");
+			if(checkBoxElement.nodeName != "INPUT" && checkBoxElement.getAttribute("type") != "checkbox"){
+				throw new Error("A checkbox input element needed as 1st argument, please specify a valid checkbox input element");
+			}
+			if (parentCSSName == ""){
+				throw new Error ("Setup error: No radio buttons parent specified, please specify using the 'radio.parentCSSName' property and try again");
+			}
+			if (checkBoxDim.length == 0){
+				throw new Error("Setup imcomplete: checkbox component dimension needed, specify using the 'checkBox.checkBoxDimension' property");
+			}
 			if (styled == false){
 				//Apply Styles
 				checkBoxStyleSheet();
 				styled = true;
 			}
+			checkBoxElement.style["opacity"] = "0";
+			if(checkBoxElement.checked == true){
+				checkBoxElement.nextElementSibling.classList.add("checked");
+			}else{
+				checkBoxElement.nextElementSibling.classList.add("unchecked");
+			}
+			checkBoxEventHandler(checkBoxElement);
 		}
 	}
-}
-Object.defineProperty(this, "checkBox", {
-	writable:false
-});
-Object.defineProperties(this.checkBox, {
-	build:{
+	Object.defineProperty(this, "checkBox", {
 		writable:false
-	},
-	afterSelectionFn : {//Function to call after selection
-		set:function(value){
-			if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
-				checkBoxAfterSelectionFn = value;
-			}
-		}
-	},
-	checkBoxDimension:{
-		set:function(value){
-			if(validateArray(value, 2, "string", "checkBox.checkBoxDimension")){
-				if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'checkBox.checkBoxDimension' property")){
-					if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'checkBox.checkBoxDimension' property")){
-						checkBoxDim = value;
+	});
+	Object.defineProperties(this.checkBox, {
+		build:{
+			writable:false
+		},
+		checkBoxDimension:{
+			set:function(value){
+				if(validateArray(value, 2, "string", "checkBox.checkBoxDimension")){
+					if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'checkBox.checkBoxDimension' property")){
+						if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'checkBox.checkBoxDimension' property")){
+							checkBoxDim = value;
+						}
 					}
 				}
 			}
-		}
-	},
-	wrapperStyle:{
-		set:function(value){
-			if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
-				checkBoxWrapperStyle = value;
+		},
+		checkedIcon:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) needed for the 'selectedCheckBoxStyle' property")){
+					checkedCheckBoxIcon = value;
+				}
 			}
-		}
-	},
-	checkedIcon:{
-		set:function(value){
-			if(validateString(value, "A string of valid CSS style(s) needed for the 'selectedCheckBoxStyle' property")){
-				checkedCheckBoxIcon = value;
+		},
+		uncheckedIcon:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) value needed for the 'deselectedCheckBoxStyle' property")){
+					uncheckedCheckBoxIcon = value;
+				}
 			}
-		}
-	},
-	uncheckedIcon:{
-		set:function(value){
-			if(validateString(value, "A string of valid CSS style(s) value needed for the 'deselectedCheckBoxStyle' property")){
-				uncheckedCheckBoxIcon = value;
+		},
+		labelStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property")){
+					checkBoxLabelStyle = value;
+				}
 			}
-		}
-	},
-	groupAxis:{
-		set:function(value){
-			if(validateString(value, "A string value needed for the 'groupAxis' property")){
-				if(value = "x" | "X" | "y" | "Y"){
-					groupAxis = value;
-				}else {
-					throw new Error("String value can either be 'x' or 'y' (Case insensitive)");
+		},
+		parentCSSName:{
+			set:function(value){
+				if (validateString(value, "A string needed as value for 'parentCSSName' property")){
+					var testE = document.querySelector(value);
+					if (testE == null){
+						throw new Error("'parentCSSName' property value must be a string of valid CSS class or ID name")
+					}else{
+						parentCSSName = value;
+					}
+				}
+			}
+		},
+		mouseEffectStyle:{
+			set:function(value){
+				if(validateArray(value, 2, "string", "mouseEffectStyle")){
+					mouseEffect = value;
 				}
 			}
 		}
-	},
-	labelStyle:{
-		set:function(value){
-			if(validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property")){
-				checkBoxLabelStyle = value;
-			}
-		}
-	},
-	mouseEffectStyle:{
-		set:function(value){
-			if(validateArray(value, 2, "string", "mouseEffectStyle")){
-				mouseEffect = value;
-			}
-		}
-	},
-	thisElement:{
-		get:function(){
-			return toggledElement;
-		}
-	},
-	group:{
-		set:function(){
-				if(validateBoolean(value, "A boolean needed as value for the 'checkBox.group' property")){
-					group = value;
-				}
-		}
-	},
-
-})
-/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+	})
+	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 }
 /****************************************************************/
 
