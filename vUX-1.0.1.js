@@ -75,7 +75,7 @@ function matchNumbers(number, NumbersArr, msg = null){
 function validateArray(array, totalMember, type, id=null){
 	//id => property name
 	if (Array.isArray(array)){
-		if(totalMember != -1){ //-1 = no specific length
+		if(totalMember != -1){ //fixed length
 			if(array.length == totalMember){
 					for (var x = 0; x < totalMember; x++){
 						if(type == "string"){
@@ -122,7 +122,7 @@ function validateArray(array, totalMember, type, id=null){
 					throw new Error("Incomplete member error: "+ totalMember +" member(s) needed");
 				}
 			}
-		}else if (totalMember == -1){
+		}else if (totalMember == -1){//-1 = no specific length
 			var len = array.length;
 			for (var x = 0; x < len; x++){
 				if(type == "string"){
@@ -317,6 +317,19 @@ function keyboardEventHanler(e){
 	return {
 		type:type,
 		handled:handled,
+	}
+}
+function sanitizeInteger(value){
+	var stripped = value.replace(/[^0-9]+/g, "");
+	return stripped;
+}
+function minMaxInt(value, min, max){
+	if(value < max && value > min){
+		return value;
+	}else if(value >= max){
+		return max;
+	}else if(value <= min){
+		return min;
 	}
 }
 /****************************************************************/
@@ -1441,13 +1454,13 @@ function ScreenBreakPoint(breakPoints){
 /************************CSS Style getter************************/
 function css(){};
 css.getStyle = function (element, property){
-					if(window.getComputedStyle){
-						var styleHandler = getComputedStyle(element, null);
-					}else{
-						var styleHandler = element.currentStyle;
-					}
-					var propertyValue = styleHandler[property];
-					return propertyValue;
+	if(window.getComputedStyle){
+		var styleHandler = getComputedStyle(element, null);
+	}else{
+		var styleHandler = element.currentStyle;
+	}
+	var propertyValue = styleHandler[property];
+	return propertyValue;
 }
 /****************************************************************/
 
@@ -1509,34 +1522,51 @@ function listScroller(container, listParent, listType){
 	validateString(listType, "listType must be a string identifying list element type. e.g. 'li', 'div'");
 	var windowResizeHandler = new browserResizeProperty();
 	var maxAdd = 0, remToAdd = 0, ini = 0, tabsBehindRight = 0,	tabsBehindLeft = 0,	extraSpace = 70,	remainingFrac =0, ready = 0, listening=0, diff=0, remAdded = 0, running=0;
-	var listPlane = "x", Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonClassName = "";
+	var listPlane = "x", Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonsClassName = [];
 	//Xbuttons[0] = left buttons, Xbuttons[1] = Right buttons
 	//scrollToLeftStatus : 1 => not started, 2 => started but not finished, 3 => finished;
+	function toggleClass(type, id){
+		if(listPlane == "X" || listPlane == "x"){
+			if (type == "r"){//remove
+				if (inactiveButtonsClassName.length == 2){
+					Xbuttons[id].classList.remove(inactiveButtonsClassName[id]);
+				}else{
+					Xbuttons[id].classList.remove(inactiveButtonsClassName[0]);
+				}
+			}else if (type == "a") {//add
+				if (inactiveButtonsClassName.length == 2){
+					Xbuttons[id].classList.add(inactiveButtonsClassName[id]);
+				}else{
+					Xbuttons[id].classList.add(inactiveButtonsClassName[0]);
+				}
+			}
+		}else{
 
+		}
+	}
 	function assignHandlers(){
 		//List Container
 		listParent.addEventListener("transitionend", function(e){
 			if (listPlane == "X" || listPlane == "x"){
 				if (tabsBehindLeft > 0){
-					Xbuttons[0].classList.remove(inactiveButtonClassName);
+					toggleClass("r", 0);
 					running=0;
 				}else if(tabsBehindLeft == 0 && remAdded > 0){
-					Xbuttons[0].classList.remove(inactiveButtonClassName);
+					toggleClass("r", 0);
 					running=0;
 				}else if(tabsBehindLeft == 0 && remAdded == 0){
-					Xbuttons[0].classList.add(inactiveButtonClassName);
+					toggleClass("a", 0);
 					running=0;
 				}
 
-
 				if(tabsBehindRight == 0 && remToAdd == 0){
-					Xbuttons[1].classList.add(inactiveButtonClassName);
+					toggleClass("a", 1);
 					running=0;
 				}else if(tabsBehindRight > 0){
-					Xbuttons[1].classList.remove(inactiveButtonClassName);
+					toggleClass("r", 1);
 					running=0;
 				}else if(tabsBehindRight == 0 && remToAdd > 0){
-					Xbuttons[1].classList.remove(inactiveButtonClassName);
+					toggleClass("r", 1);
 					running=0;
 				}
 			}else if (listPlane == "Y" || listPlane == "y") {
@@ -1564,7 +1594,6 @@ function listScroller(container, listParent, listType){
 			}
 		}, false);
 
-
 		//Browser
 		window.addEventListener("resize", function(){
 			if (listening == 1){
@@ -1589,14 +1618,14 @@ function listScroller(container, listParent, listType){
 	function addVitalStyles(){
 		if(listPlane == "x" || "X" ){
 			if (listening == 1){
-				listParent.style["display"] = "table";
-				listParent.style["width"] = "auto";
+				listParent.style["display"] = "flex";
+				listParent.style["width"] = listParent.scrollWidth+"px";;
 				listParent.style["white-space"] = "nowrap";
 				listParent.style["transition"] = "left "+ effects[0]+"s "+effects[1]+", right "+effects[0]+"s " +effects[1];
 				var listItems = listParent.querySelectorAll(listType);
 				if (listItems.length > 0){
 					for (var list of listItems) {
-						list.style["display"] = "inline-block";
+						list.style["flex-shrink"] = "0";
 					}
 					computeValues();
 					scrollStatus();
@@ -1613,6 +1642,7 @@ function listScroller(container, listParent, listType){
 				if(tabsBehindRight != 0){
 					maxAdd = scrollSize;
 					var newPostion = currentPosition - maxAdd;
+					listParent.scrollWidth;
 					listParent.style["left"] = newPostion+"px";
 					tabsBehindRight--;
 					tabsBehindLeft++;
@@ -1648,7 +1678,7 @@ function listScroller(container, listParent, listType){
 				var containerSize = container.clientWidth;
 				var listParentSize = listParent.scrollWidth+extraSpace;
 				if (containerSize < listParentSize){
-					Xbuttons[1].classList.remove(inactiveButtonClassName);
+					toggleClass("r", 1);
 				}
 			}
 		}else if (listPlane == "y" ||  "Y" ){
@@ -1663,9 +1693,9 @@ function listScroller(container, listParent, listType){
 			diff = (containerSize - listParentSize);
 
 			if (diff < 0 && tabsBehindRight == 0 && remToAdd == 0){ //Expansion outside view area
-				Xbuttons[1].classList.add(inactiveButtonClassName);
+				toggleClass("a", 1);
 			}else if (diff < 0 && tabsBehindRight >= 0 && remToAdd > 0) { //Expansion within  view area
-				Xbuttons[1].classList.remove(inactiveButtonClassName);
+				toggleClass("r", 1);
 				var AbsoluteDiff = windowResizeHandler.change;
 		 		tabsBehindRight = tabsBehindRight - parseInt(AbsoluteDiff/scrollSize);
 				remainingFrac = AbsoluteDiff%scrollSize;
@@ -1678,7 +1708,7 @@ function listScroller(container, listParent, listType){
 			}
 		}else if (windowResizeHandler.mode == "shrinked") {
 			if (diff < 0){
-				Xbuttons[1].classList.remove(inactiveButtonClassName);
+				toggleClass("r", 1);
 				var AbsoluteDiff = windowResizeHandler.change;
 		 		tabsBehindRight =  tabsBehindRight + parseInt(AbsoluteDiff/scrollSize);
 				remainingFrac = AbsoluteDiff%scrollSize;
@@ -1696,10 +1726,11 @@ function listScroller(container, listParent, listType){
 					maxAdd = AbsoluteDiff;
 				}
 			}else{
-				Xbuttons[1].classList.add(inactiveButtonClassName);
+				toggleClass("a", 1);
 			}
 		}
 	};
+	this.config = {};
 	this.initialize = function(){
 			if(listPlane == "x" || "X"){
 				if(Xbuttons.length == 0 ){
@@ -1710,7 +1741,7 @@ function listScroller(container, listParent, listType){
 					throw new Error("Setup error: Ybuttons not specified");
 				}
 			}
-			if(inactiveButtonClassName == ""){
+			if(inactiveButtonsClassName.length == 0){
 				throw new Error("Setup error: Buttons class not specified");
 			}
 			addVitalStyles();
@@ -1730,11 +1761,13 @@ function listScroller(container, listParent, listType){
 	this.offScroller = function (){
 		if(ready == 1){
 			listening = 0;
+			toggleClass("a", 0);
+			toggleClass("a", 1);
 		}else {
 			throw new Error("Initialization incomplete, complete initialization 1st before executing 'runScroller()' method");
 		}
 	};
-	Object.defineProperties(this, {
+	Object.defineProperties(this.config, {
 		listPlane:{
 			set: function(value){
 				if (validateString(value, "String needed as listPlane value")){
@@ -1772,19 +1805,18 @@ function listScroller(container, listParent, listType){
 				}
 			}
 		},
-		// listening: {
-		// 	set:function(value){
-		// 		if(validateNumber(value, "Numeric value needed for listening property")){
-		// 			if (matchNumbers(value, [1,0], "listening property value can either be 1 or 0")){
-		// 				listening = value;
-		// 			}
-		// 		}
-		// 	}
-		// },
-		inactiveButtonClassName:{
+		inactiveButtonsClassName:{
 			set:function(value){
-				if(validateString(value, "String value needed for inactiveButtonClassName property")){
-					inactiveButtonClassName = value;
+				if(validateArray(value, -1, "string", "inactiveButtonsClassName")){
+					if (value.length == 0 ){
+						throw new Error ("'config.inactiveButtonsClassName' property value cannot be an empty array");
+					}else{
+						if(value.length > 2){
+							throw new Error ("'config.inactiveButtonsClassName' property value must be an array of either 1 or 2 members");
+						}else{
+							inactiveButtonsClassName = value;
+						}
+					}
 				}
 			}
 		},
@@ -1799,6 +1831,12 @@ function listScroller(container, listParent, listType){
 				}
 			}
 		}
+	});
+	Object.defineProperties(this, {
+		config:{writable:false},
+		initialize:{writable:false},
+		runScroller:{writable:false},
+		offScroller:{writable:false}
 	});
 }
 /****************************************************************/
@@ -2589,7 +2627,7 @@ function customFormComponent(vWrapper=null){
 /****************************************************************/
 
 /************************Form validator**************************/
-function formValidator(form){
+function formValidator(){
 	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="";
 
 	//Create Element
@@ -2814,8 +2852,8 @@ function formValidator(form){
 	}
 
 	//Attach event handler
-	function addEventhandler(form){
-		form.addEventListener("transitionend", function(e){
+	function addEventhandler(){
+		document.body.addEventListener("transitionend", function(e){
 			if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("error") && e.target.classList.contains("clear") == false){
 				e.target.style["color"] = "red";
 			}else if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("warning") && e.target.classList.contains("clear") == false){
@@ -2828,6 +2866,9 @@ function formValidator(form){
 		});
 	}
 
+	function InIError(methodName){
+		throw new Error("To use the '"+methodName+"()' method, initialization must be done. Initialize using the 'initialize()' method");
+	}
 	//create style styleSheet
 	function setStyleSheet(){
 		var css = " .vMsgBox {box-sizing:border-box; padding:0 10px 0 10px; text-align:center; white-space: nowrap; font-size:13px; line-height:250%; color:transparent; border-radius:5px;}";
@@ -2896,6 +2937,7 @@ function formValidator(form){
 
 	/*Message*/
 	this.message = {
+
 		write: function(messageConElement, messageType, location, message, inputVisualFields=null, maxSize=null){
 			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
 			//(optinal) inputVisualFields [a,b, c] : a => inputWrapper, b => placeholder, c => custom top position for left|right location
@@ -2922,6 +2964,8 @@ function formValidator(form){
 						throw new Error("'write method'argument 5 and 'placeholderClass' property cannot be simultaneously emtpy, specify either 1");
 				}
 				createMessageCon(messageConElement, messageType, location, message, inputVisualFields, maxSize);
+			}else{
+				InIError("write");
 			}
 		},
 		clear: function(messageConElement, location, inputVisualFields=null){
@@ -2942,16 +2986,17 @@ function formValidator(form){
 				}
 
 				clearMessage(messageConElement, location, inputVisualFields);
+			}else {
+				InIError("clear");
 			}
 		}
 	}
 	/**********/
 
-
 	/*Initialize*/
 	this.initialize = function(){
 		setStyleSheet();
-		addEventhandler(form);
+		addEventhandler();
 		initialized =true;
 	}
 	/**********/
@@ -3000,6 +3045,12 @@ function formValidator(form){
 			validateNumber(value, "'roundToDec' method argument 1 must be numeric value");
 			validateNumber(decimals, "'roundToDec' method argument 2 must be numeric value");
 		  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+		},
+		integerField:function(inputElement){
+			inputElement.addEventListener("keyup", function(){
+				var inputValue = sanitizeInteger(inputElement.value);
+				inputElement.value = inputValue;
+			}, false);
 		}
 	}
   /**********/
@@ -3017,11 +3068,15 @@ function formValidator(form){
 		emailAddress : function(email){
 			var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{2,3}$/.test(email);//matches email address pattern
 			return email_filter;
+		},
+		integer:function(n){
+			return Number(n) === n && n % 1 === 0;
+		},
+		float:function(n){
+			return Number(n) === n && n % 1 !== 0;
 		}
 	}
 	/**********/
-
-
 	Object.defineProperties(this.validate, {
 		alpha:{
 			writable:false
@@ -3034,7 +3089,9 @@ function formValidator(form){
 		}
 	});
 	Object.defineProperties(this.format, {
-		toCurrency:{writable:false}
+		toCurrency:{writable:false},
+		roundToDec:{writable:false},
+		integerField:{writable:false}
 	});
 	Object.defineProperties(this.config, {
 		bottomConStyle:{
@@ -3718,6 +3775,1066 @@ function modalDisplayer(){
 						closeButton = value;
 					}else{
 						throw new Error("The specified close button element must have an id attribute set, please set and try again");
+					}
+				}
+			}
+		}
+	});
+}
+/****************************************************************/
+
+/***************************Date picker**************************/
+function datePicker(){
+	var today = new Date();
+	var currentYear = today.getFullYear();
+	currentYear <2019?currentYear=2019:currentYear= parseInt(currentYear);
+	var startYear=0,self=this, presentYear=0, selectedSeries=0, meridian = "am", show=0,textInputElement=null, includeTime = false, endYear=0, dateType="past", wrapperHeight = 0, n=0 , pastDateRange=[1900, currentYear-1], furtureStopDate=[], initialized = 0, dateInputIcon="", singleDateField=true, styled=false, numberOfRangeBoxes=0,
+	yearValue="",pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+	var status = {
+		set:false,
+		completed:false
+	};
+	function createStyles(){
+		var css = ".vDateIcon {position:absolute; width:36px; top:0; right:0; height:100%; box-sizing:border-box;z-index:4;}";
+		css += ".vDateIcon::before {transition:color .2s linear; cursor:pointer; text-align:center; line-height:200%;position:absolute; width:100%; right:0; height:100%; box-sizing:border-box; content:''; border:solid 1px #ccc; border-radius:0 4px 4px 0; background-image:linear-gradient(to bottom, #ccc 0%, #c6bfbf 100%);}";
+		css += ".vDateIcon:hover::before {color:rgba(255, 255, 255, 0.25)}";
+		css += ".vDateIcon:active::before {color:rgba(255, 255, 255, 0.75)}";
+		css += ".vDateBoxTool {transition:height 0.2s linear; overflow:hidden;display:none;width:300px; height:0px; position:absolute; top:calc(100% + 2px); left:0;}";
+		css += ".vDateBoxTool .vDateBox {box-sizing: border-box;overflow:hidden; border-radius:5px;width:100%; height:auto; position:absolute; top:10px; left:0; border:solid 1px #ccc;}";
+		css += ".vDateBoxTool .vDateBoxArrow {width:300px; height:10px; position:absolute;top:0}";
+		css += ".vDateBoxTool .vDateBoxArrow::before {width:0; height:0; position:absolute; content:''; left:10px; top:0px;border-left:solid 7px transparent; border-right:solid 7px transparent;border-bottom:solid 10px #ccc;}";
+		css += ".vDateBoxTool .vDateBoxHeader {font-synthesis: unset;color:#c5c5c5; font-weight: bold;position:relative; box-shadow:0 2px 4px 0 #7e7979; width:100%; height:36px; background-image:linear-gradient(to top, black 0% , #4a4949 100%); text-align:center; line-height:36px;}";
+		css += ".vDateBoxTool .vDateBoxDisplayCon {position: relative;width:100%; height:200px; background-color:white;}";
+		css += ".vDateBoxTool .vDateRangeCon, .vDateBoxTool .vFutureYearsCon{opacity:1;overflow: hidden;top: 50%;transform: translateY(-50%);left:0;position: absolute;width:auto; height:100%;}";
+		css += ".vDateBoxTool .vDateRangeConTrans,.vDateBoxTool .vFutureYearsCon{transition:all .15s linear!important;}";
+		css += ".vDateBoxTool .rangeBox, .vDateBoxTool .yearsBox{flex-shrink:0; flex-basis:300px; justify-content: start; align-content: center; height:100%;box-sizing: border-box;padding:20px 0 20px 20px;display: flex; flex-wrap: wrap;width:300px}";
+		css += ".vDateBoxTool .range, .vDateBoxTool .yearsBox>.year{transition:all .1s linear; cursor:pointer;margin-right:5px;background-color: #e9e9e9; font-size:13px;flex-basis:80px; color: #f817ed; border: 1px solid #d2d4d5; height:30px; text-align:center;line-height:30px; margin-bottom:5px}";
+		css += ".vDateBoxTool .yearsBox>.year:hover, .vDateBoxTool .range:hover,.vDateBoxTool .vYearsCon>.year:hover,.vDateBoxTool .month:hover,.vDateBoxTool .day:hover{background-color: #cecece; color:black;}";
+		css += ".vDateBoxTool .range:active,.vDateBoxTool .year:active,.vDateBoxTool .month:active,.vDateBoxTool .day:active{background-color: black; color:white;}";
+		css += ".vDateBoxTool .vDateBoxControlCon {position:relative;width:100%; height:36px; background-color:#c0bfbf; box-shadow:0 -2px 4px 0 #7e7979;}";
+		css += ".vDateBoxTool .vDateBoxControlCon button{border:none;cursor:pointer;top:0;transform:none;}";
+		css += ".vDateBoxTool .vDateBoxControlCon button::before{position:absolute; content:''; top:8px;left:50%; transform:translateX(-50%);}";
+		css += ".vDateBoxTool .vPrev{width:36px; height:36px; position:absolute; left:0;}";
+		css += ".vDateBoxTool .vPrev::before{width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent;border-right:15px solid black;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .linactive::before{border-right:15px solid #ccc;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .linactive{cursor:not-allowed;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .vBack{border:solid 1px #9e9e9e; background-image:linear-gradient(to bottom, #ccc 0%, white 100%);border-radius:15px;top:5px; width:70px; height:27px; background-color:#ccc; position:absolute; left:25%;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .vClose{border:solid 1px #9e9e9e; background-image:linear-gradient(to bottom, #ccc 0%, white 100%);border-radius:15px;top:5px; width:70px; height:27px; background-color:#ccc; position:absolute; left:50%;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .vbActive:active, .vDateBoxTool .vDateBoxControlCon .vClose:active{background-image:linear-gradient(to top, #ccc 0%, white 100%);}";
+		css += ".vDateBoxTool .vDateBoxControlCon .vbActive:hover, .vDateBoxTool .vDateBoxControlCon .vClose:hover{color:#32a13f;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .vbInactive{cursor:not-allowed;background-image:none;color:#b3a5a5;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .vNext{width:36px; height:36px; position:absolute; right:0;left:auto;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .vNext::before{width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-left:15px solid black;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .rinactive::before{border-left:15px solid #ccc;}";
+		css += ".vDateBoxTool .vDateBoxControlCon .rinactive{cursor:not-allowed;}";
+		css += ".vDateBoxTool .vYearsCon,.vDateBoxTool .vMonthsCon, .vDateBoxTool .vDaysCon,.vDateBoxTool .vTimeCon{opacity:0;flex-wrap:wrap;padding:30px 0 20px 2px;overflow:hidden;transition:all .15s linear;align-content: center;justify-content: space-around;box-sizing: border-box;display:none;position:absolute;width:0%; height:0%; left:50%;top:50%; transform:translateX(-50%) translateY(-50%);}";
+		css += ".vDateBoxTool .vYearsCon .year,.vDateBoxTool .month, .vDateBoxTool .day{flex-shrink: 0;cursor:pointer;margin:0 2px 10px 0 ;background-color: #e9e9e9; font-size:13px;flex-basis:80px; color: #f817ed; border: 1px solid #d2d4d5; height:25px; text-align:center;line-height:25px;}";
+		css += ".vDateBoxTool .vMonthsCon{justify-content:center;}";
+		css += ".vDateBoxTool .month{flex-basis:80px; height:25px;line-height:25px;}";
+		css += ".vDateBoxTool .vDaysCon{justify-content:start;padding:30px 0 20px 13px;}";
+		css += ".vDateBoxTool .day{flex-basis:30px; height:25px;line-height:25px;}";
+		css += ".vDateBox .vTimeCon{padding:0;}";
+		css += ".vDateBox .meridianCon{width:100%; height:40px;top: 0;position: absolute;}";
+		css += ".vDateBox .meridian{width:60px; height:30px;top: 5px;position: relative;margin:0 auto;}";
+		css += ".vDateBox .meridian::before, .vDateBox .vDateBoxDisplayCon .vTimeCon .meridianCon .meridian::after{width:30px; height:30px;position: absolute; text-align:center;line-height:30px;top:0;font-weight: 400;}";
+		css += ".vDateBox .meridian::before{left:-30px;content:'AM';}";
+		css += ".vDateBox .AMon::before{color:purple}";
+		css += ".vDateBox .meridian::after{right:-30px;content:'PM'}";
+		css += ".vDateBox .PMon::after{color:purple}";
+		css += ".vDateBox .meridianSwitchCon{box-shadow: inset 0 0px 4px 0px #ccc6c6;cursor:pointer;width:100%;height:20px;border: solid 1px #cfcece;border-radius: 20px;top: 5px;position: relative;box-sizing: border-box;}";
+		css += ".vDateBox .meridianSwitchCon::before{transition:left .2s linear; width:24px;height:24px;border-radius:50%;background-color:purple;content:'';position:absolute;top:-3px;}";
+		css += ".vDateBox .am::before{left:0}";
+		css += ".vDateBox .pm::before{left:35px}";
+		css += ".vDateBox .timpePropertiesCon{width:100%; height:100px;top: 40px;position: absolute;}";
+		css += ".vDateBox .hourCon,.vDateBox .minCon,.vDateBox .secCon{box-sizing:border-box;border:solid 1px #ccc; top:36px;height:50px;width:50px;position:absolute;}";
+		css += ".vDateBox .vDateBoxDisplayCon .vTimeCon .timpePropertiesCon .hourCon{left:50px;}";
+		css += ".vDateBox .hourCon::before,.vDateBox .minCon::before,.vDateBox .secCon::before{text-align:center;line-height:20px;width:100%;height:20px;position:absolute;top:-22px;}";
+		css += ".vDateBox .hourCon::before{content:'h'}";
+		css += ".vDateBox .minCon::before{content:'m'}";
+		css += ".vDateBox .secCon::before{content:'s'}";
+		css += ".vDateBox .hourCon::after, .vDateBox .minCon::after{width:20px;height:100%; right:-24px; top:0; content:':';color:#398000;font-size:30px; text-align:center;line-height:40px;position:absolute;}";
+		css += ".vDateBox .minCon{left:50%;transform:translateX(-50%);}";
+		css += ".vDateBox .secCon{right:50px;}";
+		css += ".vDateBox input[type='text']{border:none;width:100%;height:100%;padding-left:0px; text-align:center;line-height:50px;color:#398000;font-size:30px;}";
+		css += ".vDateBox button{transition:all .1s linear; width:80px;position:absolute; top: 150px; left:50%; transform:translateX(-50%); height:40px;border: none;border-radius: 5px;}";
+		css += ".vDateBox .tbuttonActive{cursor:pointer; background-color:#800080cc; color:white;}";
+		css += ".vDateBox .tbuttonActive:hover{color:black; background-color:purple;}";
+		css += ".vDateBox .tbuttonActive:active{color:white;}";
+		css += ".vDateBox .tbuttonInactive{cursor:not-allowed;}";
+
+		if(includeTime == true){
+			css += ".vDateBoxTool .vDateBox .vDateBoxDisplayCon .vTimeCon{display:none;width:100%; height:100%; position:absolute;}";
+		}
+
+		if(dateInputIcon != ""){
+			css += ".vDateIcon::before {"+dateInputIcon+"}";
+		}
+
+		var styleElement = document.createElement("style");
+
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
+	}
+	function AddEventHandlers(){
+		var inputIcon = textInputElement.parentNode.querySelector(".vDateIcon");
+		inputIcon.addEventListener("click", function(){
+			if(show==0){
+				self.showDateBox();
+			}else {
+				self.closeDateBox();
+			}
+		}, false);
+		textInputElement.addEventListener("focusin", function(e){
+			e.preventDefault();
+			if(show==0){
+				self.showDateBox();
+			}
+		},false);
+
+		//clicks
+		textInputElement.parentNode.addEventListener("click", function(e){
+			if(e.target.classList.contains("range")){//hide rangeBox and show yearsCon
+				var yearSeries = parseInt(e.target.getAttribute("data-range"));
+				selectedSeries = yearSeries;
+				var rangeCon = e.target.parentNode.parentNode;
+				var yearsCon = textInputElement.parentNode.querySelector(".vYearsCon");
+				generateYears(yearSeries, yearsCon);
+				rangeCon.classList.add("vDateRangeConTrans");
+				rangeCon.style["height"] = "0%";
+				rangeCon.style["left"] = "0px";
+				rangeCon.style["opacity"] = "0";
+				rangeCon.classList.contains("displayActive")?rangeCon.classList.remove("displayActive"):null;
+
+				yearsCon.classList.add("displayActive");
+				yearsCon.classList.add("rangeToYear");
+				yearsCon.style["display"] = "flex";
+				yearsCon.scrollHeight;
+				yearsCon.style["height"] = "100%";
+				yearsCon.style["width"] = "100%";
+				yearsCon.style["opacity"] = "1";
+				forward = true;
+				toggleBackButton();
+			}else	if(e.target.classList.contains("year")){//hide yearsCon and show MonthsCon
+				var year = parseInt(e.target.innerHTML);
+				var monthsCon = textInputElement.parentNode.querySelector(".vMonthsCon");
+
+				if(dateType == "past"){
+					var stop = 0;
+					var yearsCon = e.target.parentNode;
+					yearsCon.style["height"] = "0%";
+					yearsCon.style["width"] = "0%";
+					yearsCon.style["opacity"] = "0";
+					yearsCon.classList.remove("displayActive");
+					monthsCon.classList.add("yearToMonth");
+					monthsCon.innerHTML = "";
+
+					if(year == pastStopDate[0]){
+						stop = pastStopDate[1];
+					}else {
+						stop = 11;
+					}
+					for (var x=0; x<=stop; x++){
+						var month = document.createElement("DIV");
+						month.setAttribute("class", "month");
+						x<9?month.setAttribute("data-value", "0"+(x+1).toString()):month.setAttribute("data-value", x+1);
+						month.append(document.createTextNode(months[x]))
+						monthsCon.appendChild(month);
+					}
+				}else{
+					var yearsCon = e.target.parentNode.parentNode;
+					var stop =0;
+					yearsCon.style["height"] = "0%";
+					yearsCon.style["left"] = "0%";
+					yearsCon.style["opacity"] = "0";
+					yearsCon.classList.remove("displayActive");
+					monthsCon.classList.add("futureYearToMonth");
+					monthsCon.innerHTML = "";
+
+					if(year == furtureStopDate[0]){
+						stop = furtureStopDate[1];
+					}else {
+						stop = 11;
+					}
+					for (var x=0; x<stop; x++){
+						var month = document.createElement("DIV");
+						month.setAttribute("class", "month");
+						x<9?month.setAttribute("data-value", "0"+(x+1).toString()):month.setAttribute("data-value", x+1);
+						month.append(document.createTextNode(months[x]))
+						monthsCon.appendChild(month);
+					}
+				}
+
+				monthsCon.classList.add("displayActive");
+				monthsCon.style["display"] = "flex";
+				monthsCon.scrollHeight;
+				monthsCon.style["height"] = "100%";
+				monthsCon.style["width"] = "100%";
+				monthsCon.style["opacity"] = "1";
+				yearValue= year;
+				writeToInput();
+				forward=true;
+				dateType=="future"?toggleBackButton():null;
+				status["set"] = true;
+			}else	if(e.target.classList.contains("month")){//hide monthCon and show days
+				var month = parseInt(e.target.getAttribute("data-value"));
+				var monthsCon = e.target.parentNode;
+				var daysCon = textInputElement.parentNode.querySelector(".vDaysCon");
+
+				monthsCon.style["height"] = "0%";
+				monthsCon.style["width"] = "0%";
+				monthsCon.style["opacity"] = "0";
+				monthsCon.classList.remove("displayActive");
+
+				daysCon.classList.add("displayActive");
+				daysCon.classList.add("monthToDay");
+				daysCon.style["display"] = "flex";
+				daysCon.scrollHeight;
+				daysCon.style["height"] = "100%";
+				daysCon.style["width"] = "100%";
+				daysCon.style["opacity"] = "1";
+				monthValue = "-"+month;
+				writeToInput();
+				//Generate days
+				generateDays(month);
+			}else	if(e.target.classList.contains("day")){//hide dayCon and show time if specified
+				var day = e.target.getAttribute("data-value");
+				if(includeTime == true){
+					var daysCon = e.target.parentNode;
+					var timeCon = textInputElement.parentNode.querySelector(".vTimeCon");
+					daysCon.style["height"] = "0%";
+					daysCon.style["width"] = "0%";
+					daysCon.style["opacity"] = "0";
+					daysCon.classList.remove("displayActive");
+
+					timeCon.classList.add("displayActive");
+					timeCon.classList.add("dayToTime");
+					timeCon.style["display"] = "flex";
+					timeCon.scrollHeight;
+					timeCon.style["height"] = "100%";
+					timeCon.style["width"] = "100%";
+					timeCon.style["opacity"] = "1";
+					dayValue = "-"+day;
+					status["completed"] = true;
+					writeToInput();
+				}else{
+					var daysCon = e.target.parentNode;
+					var header = textInputElement.parentNode.querySelector(".vDateBoxHeader").innerHTML = "Exiting...";
+					daysCon.style["height"] = "0%";
+					daysCon.style["width"] = "0%";
+					daysCon.style["opacity"] = "0";
+					daysCon.classList.remove("monthToDay");
+					dayValue = "-"+day;
+					writeToInput();
+					status["completed"] = true;
+					//Close Date picker Box
+					self.closeDateBox();
+				}
+			}else	if(e.target.classList.contains("vbActive")){//Back button clicked
+					var currentDisplay = textInputElement.parentNode.querySelector(".displayActive");
+					var prev = textInputElement.parentNode.querySelector(".displayActive").previousElementSibling;
+					currentDisplay.classList.remove("displayActive");
+					currentDisplay.classList.add("temp");
+					currentDisplay.style["height"] = "0%";
+					currentDisplay.style["width"] = "0%";
+					currentDisplay.style["opacity"] = "0";
+					if (dateType == "past"){
+						if(currentDisplay.classList.contains("vMonthsCon")){
+							generateYears(selectedSeries, textInputElement.parentNode.querySelector(".vYearsCon"));
+						}
+					}
+
+					prev.classList.add("rewind");
+					prev.style["display"] = "flex";
+					prev.scrollHeight;
+					if (prev.classList.contains("vDateRangeCon") == false && prev.classList.contains("vFutureYearsCon") == false){
+						prev.style["height"] = "100%";
+						prev.style["width"] = "100%";
+						prev.style["opacity"] = "1";
+					}else if(prev.classList.contains("vDateRangeCon") == true){
+						prev.classList.add("vDateRangeConTrans");
+						prev.style["height"] = "100%";
+						prev.style["opacity"] = "1";
+						toggleListScroller();
+					}else if(prev.classList.contains("vFutureYearsCon") == true){
+						prev.style["height"] = "100%";
+						prev.style["opacity"] = "1";
+						toggleListScroller();
+					}
+			}else	if(e.target.classList.contains("meridianSwitchCon")){//meridian switch button clicked
+				if(e.target.classList.contains("am")){
+					e.target.classList.remove("am");
+					e.target.classList.add("pm");
+					meridian="pm";
+				}else {
+					e.target.classList.add("am");
+					e.target.classList.remove("pm");
+					meridian="am";
+				}
+			}else	if(e.target.classList.contains("vClose")){//close button clicked
+				if(show==1){
+					self.closeDateBox();
+				}
+			}else	if(e.target.classList.contains("tbuttonActive")){//Done button clicked
+				status["completed"] = true;
+				self.closeDateBox();
+			}
+		}, false);
+
+		//Transition control
+		textInputElement.parentNode.addEventListener("transitionend", function(e){
+			if(e.target.classList.contains("displayActive")){
+				var header = textInputElement.parentNode.querySelector(".vDateBoxHeader");
+				header.innerHTML = e.target.getAttribute("data-title");
+			}
+			if(e.target.classList.contains("rangeToYear")){//Hide rangeCon
+				var rangeCon = textInputElement.parentNode.querySelector(".vDateRangeCon");
+				rangeCon.classList.remove("vDateRangeConTrans");
+				rangeCon.style["display"] = "none";
+				e.target.classList.remove("rangeToYear");
+				toggleListScroller();
+			}else if(e.target.classList.contains("futureYearToMonth")){//Hide future yearcon
+				var fyearCon = textInputElement.parentNode.querySelector(".vFutureYearsCon");
+				fyearCon.style["display"] = "none";
+				e.target.classList.remove("futureYearToMonth");
+				toggleListScroller();
+			}else if (e.target.classList.contains("yearToMonth")) {//Hide yearsCon
+				var yearsCon = textInputElement.parentNode.querySelector(".vYearsCon");
+				yearsCon.style["display"] = "none";
+				yearsCon.innerHTML="";
+				e.target.classList.remove("yearToMonth");
+			}else if (e.target.classList.contains("monthToDay")) {//Hide monthsCon
+				var monthCon = textInputElement.parentNode.querySelector(".vMonthsCon");
+				monthCon.style["display"] = "none";
+				e.target.classList.remove("monthToDay");
+			}else if (e.target.classList.contains("dayToTime")) {//Hide daysCon
+				var daysCon = textInputElement.parentNode.querySelector(".vDaysCon");
+				var timeCon = textInputElement.parentNode.querySelector(".vTimeCon");
+				timeCon.querySelector(".hourCon input").focus();
+				daysCon.style["display"] = "none";
+				e.target.classList.remove("dayToTime");
+			}else if (e.target.classList.contains("exiting")) {//Exiting dateBox
+				if(dateType == "past"){
+					var yearsRangeCon = textInputElement.parentNode.querySelector(".vDateRangeCon");
+					yearsRangeCon.style["display"] = "flex";
+					yearsRangeCon.style["height"] = "100%";
+				}else{
+					var yearsCon = textInputElement.parentNode.querySelector(".vFutureYearsCon");
+					yearsCon.style["display"] = "flex";
+					yearsCon.style["height"] = "100%";
+				}
+			}else if (e.target.classList.contains("rewind")) {//previous
+				e.target.classList.remove("rewind");
+				if(e.target.classList.contains("vDateRangeCon") || e.target.classList.contains("vFutureYearsCon") ){
+					var BackButton = 	textInputElement.parentNode.querySelector(".vbActive");
+
+					if(dateType == "past"){
+						var rangeCon = textInputElement.parentNode.querySelector(".vDateRangeCon");
+						rangeCon.classList.remove("vDateRangeConTrans");
+					}else{
+						var rangeCon = textInputElement.parentNode.querySelector(".vFutureYearsCon");
+					}
+
+					rangeCon.style["display"] = "flex";
+					rangeCon.classList.add("displayActive");
+
+					forward = false;
+					toggleBackButton();
+				}else{
+					e.target.classList.add("displayActive");
+				}
+			}else if (e.target.classList.contains("temp")) {//previous
+				e.target.classList.remove("temp");
+				e.target.style["display"] = "none";
+			}else if (e.target.classList.contains("meridianSwitchCon")) {//meridian switch
+				var label = e.target.parentNode;
+				if(e.target.classList.contains("pm")){
+					label.classList.remove("AMon");
+					label.classList.add("PMon");
+				}else {
+					label.classList.add("AMon");
+					label.classList.remove("PMon");
+				}
+				reCompute24hours();
+			}
+		}, false);
+
+		//Time input
+		textInputElement.parentNode.addEventListener("focusout", function(e){
+			if(e.target.classList.contains("hr")){
+				e.target.value = minMaxInt(e.target.value, 1, 12);
+				var value = e.target.value;
+				var minValue = textInputElement.parentNode.querySelector(".min").value;
+				if(value.length==1){
+					var pint = parseInt(value);
+					timeValue[0] = "0"+value.toString();
+					e.target.value = "0"+value.toString();
+					displayTimeValue[0] = convertTo24hours(parseInt(pint))<10?"0"+convertTo24hours(pint).toString():convertTo24hours(pint);
+				}else if (value.length == 2) {
+					var pint = parseInt(value);
+					timeValue[0] = value.toString();
+					displayTimeValue[0] = convertTo24hours(parseInt(pint))<10?"0"+convertTo24hours(pint).toString():convertTo24hours(pint);
+				}
+				writeToInput();
+				if(value.length > 0 && minValue.length >0){
+					activateOK();
+				}else {
+					deactivateOK();
+				}
+			}else if (e.target.classList.contains("min")) {
+				e.target.value = minMaxInt(e.target.value, 0, 59);
+				var value = e.target.value;
+				var hrValue = textInputElement.parentNode.querySelector(".hr").value;
+				if(value.length==1){
+					timeValue[1] = "0"+value.toString();
+					displayTimeValue[1] = ":0"+value.toString();
+					e.target.value = timeValue[1];
+					timeValue[2] = "00";
+					displayTimeValue[2] = ":00";
+				}else if (value.length == 2) {
+					timeValue[1] = value.toString();
+					displayTimeValue[1] = ":"+value.toString();
+					timeValue[2] = "00";
+					displayTimeValue[2] = ":00";
+				}
+
+				writeToInput();
+
+				if(value.length > 0 && hrValue.length >0){
+					activateOK();
+				}else {
+					deactivateOK();
+				}
+			}
+		}, false);
+	}
+	function activateOK(){
+		var button = textInputElement.parentNode.querySelector(".vTimeCon button");
+		button.classList.remove("tbuttonInactive");
+		button.classList.add("tbuttonActive");
+	}
+	function deactivateOK(){
+		var button = textInputElement.parentNode.querySelector(".vTimeCon button");
+		button.classList.add("tbuttonInactive");
+		button.classList.remove("tbuttonActive");
+	}
+	function generateYears(SeriesStartYear, yearsCon){
+		var yearSeries = SeriesStartYear;
+		yearsCon.innerHTML = "";
+		for(var x=0; x<10;x++){
+			var year = document.createElement("DIV");
+			year.setAttribute("class", "year");
+			year.appendChild(document.createTextNode(yearSeries));
+			yearsCon.appendChild(year);
+			yearSeries++;
+		}
+
+	}
+	function createDatePickerBox(){
+		var dateInputWrapper = textInputElement.parentNode;
+		//_____________Create elements___________
+		// Input icon
+		var dateIconElement = document.createElement("DIV");
+		dateIconElement.setAttribute("class", "vDateIcon");
+
+		//DateBox tool parent
+		var dateBoxToolElement = document.createElement("DIV");
+		dateBoxToolElement.setAttribute("class", "vDateBoxTool");
+
+		//Arrow
+		var dateBoxArrowElement = document.createElement("DIV");
+		dateBoxArrowElement.setAttribute("class", "vDateBoxArrow");
+
+		//DateBox
+		var dateBoxElement = document.createElement("DIV");
+		dateBoxElement.setAttribute("class", "vDateBox");
+
+		//DateBox Header
+		var dateBoxHeaderElement = document.createElement("DIV");
+		dateBoxHeaderElement.setAttribute("class", "vDateBoxHeader");
+
+		//DateBox displayCon
+		var dateBoxDisplayConElement = document.createElement("DIV");
+		dateBoxDisplayConElement.setAttribute("class", "vDateBoxDisplayCon");
+
+		if (dateType == "past"){
+			//Date range Box
+			var dateRangeConElement = document.createElement("DIV");
+			dateRangeConElement.setAttribute("class", "vDateRangeCon");
+			dateRangeConElement.setAttribute("data-title", "Select year series");
+			n = (endYear - startYear) /10;
+			numberOfRangeBoxes = Math.ceil(n/11);
+			for (var x=0; x<numberOfRangeBoxes; x++){
+				var rangeBox = document.createElement("DIV");
+				rangeBox.setAttribute("class", "rangeBox");
+				dateRangeConElement.appendChild(rangeBox);
+			}
+
+			//Years Container
+			var yearsConElement = document.createElement("DIV");
+			yearsConElement.setAttribute("class", "vYearsCon");
+			yearsConElement.setAttribute("data-title", "Select year");
+		}else if(dateType == "future"){
+			//Years Container
+			var futureYearsConElement = document.createElement("DIV");
+			futureYearsConElement.setAttribute("class", "vFutureYearsCon");
+			futureYearsConElement.setAttribute("data-title", "Select year");
+
+			presentYear = new Date().getFullYear();
+			var diff = (furtureStopDate[0] - presentYear)
+			diff>0?n = diff:n=1;
+			numberOfyearsConBoxes = Math.ceil(n/11);
+			for (var x=0; x<numberOfyearsConBoxes; x++){
+				var yearsBox = document.createElement("DIV");
+				yearsBox.setAttribute("class", "yearsBox");
+				futureYearsConElement.appendChild(yearsBox);
+			}
+		}
+
+		//Months Container
+		var monthsConElement = document.createElement("DIV");
+		monthsConElement.setAttribute("class", "vMonthsCon");
+		monthsConElement.setAttribute("data-title", "Select month");
+
+		//Days Container
+		var daysConElement = document.createElement("DIV");
+		daysConElement.setAttribute("class", "vDaysCon");
+		daysConElement.setAttribute("data-title", "Select day");
+
+		//Time Container
+		if (includeTime == true){
+			var timeConElement = document.createElement("DIV");
+			var meridianCon = document.createElement("DIV");
+			var meridian = document.createElement("DIV");
+			var meridianSwitchCon = document.createElement("DIV");
+			var timpePropertiesCon = document.createElement("DIV");
+			var hourCon = document.createElement("DIV");
+			var hourInput = document.createElement("INPUT");
+			var minCon = document.createElement("DIV");
+			var minInput = document.createElement("INPUT");
+			var secInput = document.createElement("INPUT");
+			var secCon = document.createElement("DIV");
+			var OkButton = document.createElement("BUTTON");
+			timeConElement.setAttribute("class", "vTimeCon");
+			timeConElement.setAttribute("data-title", "Set time");
+			meridianCon.setAttribute("class", "meridianCon");
+			meridian.setAttribute("class", "meridian AMon");
+			meridianSwitchCon.setAttribute("class", "meridianSwitchCon am");
+			timpePropertiesCon.setAttribute("class", "timpePropertiesCon");
+			hourCon.setAttribute("class", "hourCon");
+			hourInput.setAttribute("type", "text");
+			hourInput.setAttribute("class", "hr");
+			hourInput.setAttribute("maxlength", "2");
+			hourCon.appendChild(hourInput);
+			minCon.setAttribute("class", "minCon");
+			minInput.setAttribute("type", "text");
+			minInput.setAttribute("maxlength", "2");
+			minInput.setAttribute("class", "min");
+			minCon.appendChild(minInput);
+			secCon.setAttribute("class", "secCon");
+			secInput.setAttribute("type", "text");
+			secInput.setAttribute("maxlength", "2");
+			secInput.setAttribute("readonly", "true");
+			secInput.setAttribute("value", "00");
+			secCon.appendChild(secInput);
+
+			OkButton.appendChild(document.createTextNode("Done"));
+			OkButton.setAttribute("class", "tbuttonInactive");
+			//Append
+			//meridian children
+			meridianCon.appendChild(meridian);
+			meridian.appendChild(meridianSwitchCon);
+
+			//meridianCon to timeConElement
+			timeConElement.appendChild(meridianCon);
+			//timpePropertiesCon to timeConElement
+			timpePropertiesCon.appendChild(hourCon);
+			timpePropertiesCon.appendChild(minCon);
+			timpePropertiesCon.appendChild(secCon);
+			timeConElement.appendChild(timpePropertiesCon);
+			//Button to timeConElement
+			timeConElement.appendChild(OkButton);
+		}
+
+		//DateBox controlCon
+		var dateBoxControlConElement = document.createElement("DIV");
+		dateBoxControlConElement.setAttribute("class", "vDateBoxControlCon");
+
+		// previous button
+		var previousButtonElement = document.createElement("BUTTON");
+		previousButtonElement.setAttribute("class", "linactive vPrev");
+		previousButtonElement.setAttribute("id", "vPrev");
+		// back button
+		var backButtonElement = document.createElement("BUTTON");
+		backButtonElement.setAttribute("class", "vBack vbInactive");
+		backButtonElement.appendChild(document.createTextNode("Back"));
+		// Close button
+		var closeButtonElement = document.createElement("BUTTON");
+		closeButtonElement.setAttribute("class", "vClose");
+		closeButtonElement.appendChild(document.createTextNode("Close"));
+		// next button
+		var nextButtonElement = document.createElement("BUTTON");
+		nextButtonElement.setAttribute("class", "rinactive vNext");
+		nextButtonElement.setAttribute("id", "vNext");
+
+		//____________Append______________
+		//Append dateBox header to dateBox Element
+		dateBoxElement.appendChild(dateBoxHeaderElement);
+
+		//Append dateBox displayCon to dateBox Element
+		dateBoxElement.appendChild(dateBoxDisplayConElement);
+
+		if(dateType == "past"){
+			//Append date rangeCon to displayCon Element
+			dateBoxDisplayConElement.appendChild(dateRangeConElement);
+
+			// Append years container to displayCon Element
+			dateBoxDisplayConElement.appendChild(yearsConElement);
+		}else if (dateType == "future"){
+			// Append years container to displayCon Element
+			dateBoxDisplayConElement.appendChild(futureYearsConElement);
+		}
+
+
+		// Append months container to displayCon Element
+		dateBoxDisplayConElement.appendChild(monthsConElement);
+
+		// Append Days container to displayCon Element
+		dateBoxDisplayConElement.appendChild(daysConElement);
+
+		// Append Time container to displayCon Element
+		includeTime == true?dateBoxDisplayConElement.appendChild(timeConElement):null;
+
+
+		//Append  prev element to controlCon Element
+		dateBoxControlConElement.appendChild(previousButtonElement);
+		//Append  back element to controlCon Element
+		dateBoxControlConElement.appendChild(backButtonElement);
+		//Append  close element to controlCon Element
+		dateBoxControlConElement.appendChild(closeButtonElement);
+		//Append  next element to controlCon Element
+		dateBoxControlConElement.appendChild(nextButtonElement);
+
+		//Append dateBox controlCon to dateBox Element
+		dateBoxElement.appendChild(dateBoxControlConElement);
+
+		//Append dateBoxArrow to date box tool parent
+		dateBoxToolElement.appendChild(dateBoxArrowElement);
+
+		//Append dateBox to box tool parent
+		dateBoxToolElement.appendChild(dateBoxElement);
+
+		//Append dateIcon to wrapper input
+		dateInputWrapper.appendChild(dateIconElement);
+
+		// Append datebox tool parent to wrapper input
+		dateInputWrapper.appendChild(dateBoxToolElement);
+	}
+	function generateYearRange (){
+		var displayCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vDateRangeCon");
+		var rangeBox = displayCon.querySelectorAll(".rangeBox");
+		var range = document.createElement("DIV");
+		range.setAttribute("class", "range");
+		range.setAttribute("data-range", startYear);
+		range.appendChild(document.createTextNode(startYear.toString()+"'s..."));
+		rangeBox[0].appendChild(range);
+		var c =0;
+		for (var x=0; x<numberOfRangeBoxes; x++){
+			for (var y=0; y<11; y++){
+				if(c != n){
+					c++;
+					startYear += 10;
+					var range = document.createElement("DIV");
+					range.setAttribute("class", "range");
+					range.setAttribute("data-range", startYear);
+					range.appendChild(document.createTextNode(startYear.toString()+"'s..."));
+					rangeBox[x].appendChild(range);
+					if (y== 10){
+						break;
+					}
+				}else{
+					break;
+				}
+			}
+		}
+	};
+	function generateFurtureYears (){
+			var displayCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon");
+			var yearsBox = displayCon.querySelectorAll(".yearsBox");
+			var year = document.createElement("DIV");
+			year.setAttribute("class", "year");
+			year.appendChild(document.createTextNode(presentYear.toString()));
+			yearsBox[0].appendChild(year);
+			var diff = (furtureStopDate[0] - presentYear);
+			if(diff > 0){
+				if (diff > 3){
+					yearsBox[0].style["justify-content"] = "start";
+					yearsBox[0].style["padding"] = "20px 0 20px 20px";
+				}else {
+					yearsBox[0].style["justify-content"] = "center";
+					yearsBox[0].style["padding"] = "20px 0 20px 0px";
+				}
+				var c =0;
+				for (var x=0; x<numberOfyearsConBoxes; x++){
+					for (var y=0; y<11; y++){
+						if(c != n){
+							c++;
+							presentYear += 1;
+							var year = document.createElement("DIV");
+							year.setAttribute("class", "year");
+							year.appendChild(document.createTextNode(presentYear.toString()));
+							yearsBox[x].appendChild(year);
+							if (y== 10){
+								break;
+							}
+						}else{
+							break;
+						}
+					}
+				}
+			}else{
+				yearsBox[0].style["justify-content"] = "center";
+				yearsBox[0].style["padding"] = "20px 0 20px 0px";
+			}
+		};
+	function generateDays(month){
+		function generate(type){
+			var daysCon = textInputElement.parentNode.querySelector(".vDaysCon");
+			daysCon.innerHTML = "";
+			if (type=="full"){
+				if (month=="4" || month=="6" || month=="9" || month=="11"){
+					for(var x = 0; x<30; x++){
+						var day = document.createElement("DIV");
+						day.setAttribute("class", "day");
+						x<9?day.setAttribute("data-value", "0"+(x+1).toString()):day.setAttribute("data-value", x+1);
+						day.append(document.createTextNode(x+1));
+						daysCon.appendChild(day);
+					}
+				}else if(month=="2"){
+					var stop = 0;
+					var leapYear = parseInt(yearValue)%4;
+					if(leapYear == 0){
+						stop =29;
+					}else{
+						stop =27;
+					}
+					for(var x = 0; x<stop; x++){
+						var day = document.createElement("DIV");
+						day.setAttribute("class", "day");
+						day.setAttribute("data-value", x+1);
+						day.append(document.createTextNode(x+1));
+						daysCon.appendChild(day);
+					}
+				}else{
+					for(var x = 0; x<31; x++){
+						var day = document.createElement("DIV");
+						day.setAttribute("class", "day");
+						day.setAttribute("data-value", x+1);
+						day.append(document.createTextNode(x+1));
+						daysCon.appendChild(day);
+					}
+				}
+			}else if (type=="part"){
+				var stp = 0;
+				if(dateType == "past"){
+					stp = pastStopDate[2];
+				}else{
+					stp = furtureStopDate[2];
+				}
+				for(var x = 0; x<stp; x++){
+					var day = document.createElement("DIV");
+					day.setAttribute("class", "day");
+					x<9?day.setAttribute("data-value", "0"+(x+1).toString()):day.setAttribute("data-value", x+1);
+					day.append(document.createTextNode(x+1));
+					daysCon.appendChild(day);
+				}
+			}
+		}
+		if(dateType == "past"){
+			if(yearValue == pastStopDate[0] && month == pastStopDate[1]+1){
+				generate("part");
+			}else{
+				generate("full");
+			}
+		}else {
+			var totalYears = textInputElement.parentNode.querySelectorAll(".year");
+			if (totalYears.length == 1){
+				if(month != furtureStopDate[1]){
+					generate("full");
+				}else if(month == furtureStopDate[1]){
+					generate("part");
+				}
+			}else if (totalYears.length > 1){
+				if(yearValue != furtureStopDate[0] && month != furtureStopDate[1]){
+					generate("full");
+				}else if(yearValue == furtureStopDate[0] && month == furtureStopDate[1]){
+					generate("part");
+				}
+			}
+		}
+
+	}
+	function toggleListScroller(){
+		if(dateType == "past"){
+			var listCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vDateRangeCon");
+			var list = textInputElement.parentNode.querySelectorAll(".vDateBox .vDateBoxDisplayCon .vDateRangeCon .rangeBox");
+		}else{
+			var listCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon");
+			var list = textInputElement.parentNode.querySelectorAll(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon .yearsBox");
+		}
+		if (list.length > 1 && css.getStyle(listCon, "display") != "none"){
+			var listConParent = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon");
+			var LeftBt = textInputElement.parentNode.querySelector("#vPrev");
+			var RightBt = textInputElement.parentNode.querySelector("#vNext");
+
+			listControllerObj = new  listScroller(listConParent, listCon, "div");
+			listControllerObj.config.listPlane = "x";
+			listControllerObj.config.Xbuttons = [LeftBt, RightBt];
+			listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
+			listControllerObj.config.effects = [0.4, "cubic-bezier(0,.99,0,1)"];
+			listControllerObj.config.scrollSize = 302;
+			listControllerObj.config.extraSpace = 0;
+			listControllerObj.initialize();
+			listControllerObj.runScroller();
+		}else{
+			listControllerObj.offScroller();
+		}
+	}
+	function toggleBackButton(){
+		var backButton = textInputElement.parentNode.querySelector(".vBack");
+		if(forward == true){
+			backButton.classList.remove("vbInactive");
+			backButton.classList.add("vbActive");
+		}else {
+			backButton.classList.add("vbInactive");
+			backButton.classList.remove("vbActive");
+		}
+	}
+	function writeToInput(){
+		if(includeTime ==true){
+			textInputElement.value = yearValue+monthValue+dayValue+" "+displayTimeValue[0]+displayTimeValue[1]+displayTimeValue[2];
+		}else{
+			textInputElement.value = yearValue+monthValue+dayValue;
+		}
+	}
+	function convertTo24hours(hour){
+		if(meridian == "am"){
+			if(hour == 12){
+				return 0;
+			}else {
+				return hour;
+			}
+		}else {
+			if(hour == 12){
+				return 12;
+			}else {
+				var hr = 12+parseInt(hour);
+				return hr;
+			}
+		}
+	}
+	function reCompute24hours(){
+		var hrInputValue = parseInt(textInputElement.parentNode.querySelector(".hourCon input").value);
+		if(hrInputValue.toString().length > 0){
+			var newV = convertTo24hours(hrInputValue);
+			if(newV > 9){
+				timeValue[0] = newV.toString();
+				displayTimeValue[0] = newV;
+			}else {
+				timeValue[0] = newV.toString();
+				displayTimeValue[0] = "0"+newV;
+			}
+			writeToInput();
+		}
+	}
+	this.config = {}
+	this.initialize = function(textInputEle){
+		if (validateElement(textInputEle, "'initialize()' method argument must be a valid HTML element")){
+			if(textInputEle.nodeName != "INPUT" && textInputEle.getAttribute("type") != "text"){
+				throw new Error("'initialize()' method argument must be an INPUT element of type 'text'");
+			}
+		}
+		if(dateType == "future"){
+			if(furtureStopDate.length == 0){
+				throw new Error("Date type is set to future, and no stop date specified, specify using the 'config.furtureStopDate' property");
+			}
+		}
+
+		//Initialization starts
+		textInputEle.parentNode.style["z-index"] = "500";
+		textInputEle.setAttribute("readonly", "true");
+		textInputElement = textInputEle;
+		textInputEle.value = "";
+		if(dateType == "past"){
+			startYear = parseInt(pastDateRange[0].toString()[0]+pastDateRange[0].toString()[1]+pastDateRange[0].toString()[2]+"0");
+			endYear = parseInt(pastDateRange[1].toString()[0]+pastDateRange[1].toString()[1]+pastDateRange[1].toString()[2]+"0");
+		}
+		if (singleDateField == true){
+			createStyles();
+		}else {
+			if (styled == false){
+				createStyles();
+				styled =true;
+			}
+		}
+		createDatePickerBox();
+		dateType=="past"?generateYearRange():generateFurtureYears();
+		AddEventHandlers();
+		if(includeTime == true){
+			var fv = new formValidator();
+			var hrinput = textInputEle.parentNode.querySelector(".hourCon input");
+			var mininput = textInputEle.parentNode.querySelector(".minCon input");
+			fv.format.integerField(hrinput);
+			fv.format.integerField(mininput);
+		}
+		initialized=1;
+	}
+	this.showDateBox = function(){
+		if (initialized == 0){
+			throw new Error("The 'showDateBox()' method must be called after initialization, initialize using the 'initialize()' method");
+		}else{
+			var dateBoxParent = textInputElement.parentNode.querySelector(".vDateBoxTool");
+			var dateBoxTitileCon = textInputElement.parentNode.querySelector(".vDateBoxHeader");
+			if(dateType == "past"){
+				var rangeCon = textInputElement.parentNode.querySelector(".vDateRangeCon");
+				dateBoxParent.style["display"] = "block";
+				dateBoxParent.scrollHeight;
+				dateBoxParent.style["height"] = dateBoxParent.scrollHeight+"px";
+				rangeCon.style["opacity"] = "1";
+				dateBoxTitileCon.innerHTML = rangeCon.getAttribute("data-title");
+			}else if (dateType == "future") {
+				var futureYearsCon = textInputElement.parentNode.querySelector(".vFutureYearsCon");
+				dateBoxParent.style["display"] = "block";
+				dateBoxParent.scrollHeight;
+				dateBoxParent.style["height"] = dateBoxParent.scrollHeight+"px";
+				futureYearsCon.style["opacity"] = "1";
+				dateBoxTitileCon.innerHTML = futureYearsCon.getAttribute("data-title");
+			}
+			toggleListScroller();
+			show=1;
+		}
+	}
+	this.closeDateBox = function(){
+		if (show == 0){
+			throw new Error("The 'closeDateBox()' method must be called only when the date picker box is opened");
+		}else{
+			var dateBoxParent = textInputElement.parentNode.querySelector(".vDateBoxTool");
+			var activeDisplay = textInputElement.parentNode.querySelector(".displayActive");
+			if (activeDisplay != null){
+				activeDisplay.style["display"] = "none";
+				activeDisplay.style["opacity"] = "0";
+				activeDisplay.classList.remove("displayActive");
+			}
+			forward = false;
+			toggleBackButton();
+			dateBoxParent.classList.add("exiting");
+			dateBoxParent.style["height"] = "0px";
+			show=0;
+		}
+	}
+	Object.defineProperties(this, {
+		showDateBox:{writable:false},
+		initialize:{writable:false},
+		config:{writable:false},
+		closeDateBox:{writable:false},
+		status:{
+			get:function(){
+				return status;
+			}
+		}
+	});
+	Object.defineProperties(this.config, {
+		inputIcon:{
+			set:function(value){
+				if(validateString(value, "'config.inputIcon' property must be string of valid CSS style(s)")){
+					dateInputIcon = value
+				}
+			}
+		},
+		includeTime:{
+			set:function(value){
+				if(validateBoolean(value, "'config.includeTime' property value must be a boolen")){
+					includeTime = value;
+				}
+			}
+		},
+		dateType:{
+			set:function(value){
+				if(validateString(value, "'config.dateType' property value must be a string")){
+					if(value.toLowerCase() == "past" || value.toLowerCase() == "future"){
+						dateType = value;
+					}else{
+						throw new Error ("'config.dateType' property value must either be 'past' or 'future'");
+					}
+				}
+			}
+		},
+		furtureStopDate:{
+			set:function(value){
+				if(validateArray(value, "3", "number", 'furtureStopDate')){
+					var validator = new formValidator();
+					if (validator.validate.integer(value[0])){
+						if (validator.validate.integer(value[1])){
+							if(value[1] > 0 && value[1] < 13){
+								if(validator.validate.integer(value[2])){
+									if(value[1]==4 || value[1]==6 || value[1]==9 || value[1]==9){
+										if(value[2] > 0 && value[2] < 31){
+											furtureStopDate = value;
+										}else {
+											throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 30' for the specified month");
+										}
+									}else if (value[1] == 2){
+										var leapYear = parseInt(yearValue)%4;
+										if(leapYear == 0){
+											if(value[2] > 0 && value[2] < 30){
+												furtureStopDate = value;
+											}else {
+												throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 29' for the specified month");
+											}
+										}else{
+											if(value[2] > 0 && value[2] < 29){
+												furtureStopDate = value;
+											}else {
+												throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 28' for the specified month");
+											}
+										}
+									}else{
+										if(value[2] > 0 && value[2] < 32){
+											furtureStopDate = value;
+										}else {
+											throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 31' for the specified month");
+										}
+									}
+								}else{
+									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be an integer");
+								}
+							}else{
+								throw new Error("Array member 2 value of 'config.furtureStopDate' property must be between the range '1 - 12'");
+							}
+						}else{
+							throw new Error("Array member 2 value of 'config.furtureStopDate' property must be an integer");
+						}
+					}else{
+						throw new Error("Array member 1 value of 'config.furtureStopDate' property must be an integer");
+					}
+				}
+			}
+		},
+		pastStartYear:{
+			set:function(value){
+				if(validateNumber(value, "'config.pastStartYear' property value must be a numeric value")){
+					if (value >= 1900 && value <= pastDateRange[1]){
+						if (new formValidator().validate.float(value) == false){
+							pastDateRange[0] = value;
+						}else{
+							throw new Error("'config.pastStartYear' property value must be an integer");
+						}
+					}else{
+						throw new Error("'config.pastStartYear' property value must be between 1900 and the current date year");
 					}
 				}
 			}

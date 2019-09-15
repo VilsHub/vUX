@@ -17,6 +17,7 @@
 - Form validator
 - Modal display
 - window vertical scroll Handler
+- Date picker
 
 ### Changed
 - Changed method call, from: 	Object.fixedRectangle.draw(CanvasObject, canvasElement) to Object.fixedRectangle.draw(canvasElement)

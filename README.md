@@ -1,5 +1,5 @@
 # vUX Overview
-vUX is JS framework for building UI components and optimizing UX. Its light and easy to use.
+vUX is JS library for building UI components and optimizing UX. Its light and easy to use.
 
 ## Requirements
 
