@@ -1465,9 +1465,9 @@ css.getStyle = function (element, property){
 /****************************************************************/
 
 /**********************Child index getter*********************/
-function child(){
+function element(){
 }
-child.getIndex = function(child){
+element.index = function(child){
 	var index = 0, n=0;
 	while(child){
 		child = child.previousElementSilbling;
@@ -1962,7 +1962,7 @@ function customFormComponent(vWrapper=null){
 		var activieHovered = listOptionCon.querySelector(".hovered");
 		if (activieHovered != null){
 			if(scrollIni == 0){
-				var index = child.getIndex(activieHovered);
+				var index = element.index(activieHovered);
 				startIndex = index;
 				scrollIni = 1;
 			}
@@ -1986,7 +1986,7 @@ function customFormComponent(vWrapper=null){
 		var activieHovered = listOptionCon.querySelector(".hovered");
 		if (activieHovered != null){
 			if(scrollIni == 0){
-				var index = child.getIndex(activieHovered);
+				var index = element.index(activieHovered);
 				startIndex = index;
 				scrollIni = 1;
 			}
