@@ -18,6 +18,7 @@
 - Modal display
 - window vertical scroll Handler
 - Date picker
+- Tool tip creator
 
 ### Changed
 - Changed method call, from: 	Object.fixedRectangle.draw(CanvasObject, canvasElement) to Object.fixedRectangle.draw(canvasElement)

@@ -4842,3 +4842,109 @@ function datePicker(){
 	});
 }
 /****************************************************************/
+
+/***************************Tool tip*****************************/
+function toolTip(){
+}
+toolTip.set = function(element, tip=null, style=null){
+	//style[a,b] ==> a=arrow color, b=tip box styles, if a = "", then a=null applies to b too.
+	validateElement(element, "Argument 1 of the set() static method must be a valid HTML element");
+	var mainTip ="";
+	if (tip == null && element.getAttribute("title") == null){
+		throw new Error("Argument 2 of the set() static method and element title attribute cannot be null, Please specify the tip to use.");
+	}else if(tip == null && element.getAttribute("title") != null){//use title attribute
+		element.setAttribute("data-tempTitle", element.getAttribute("title"));
+		mainTip = element.getAttribute("title");
+		element.removeAttribute("title");
+	}else if (tip != null) {//Use tip
+		validateString(tip, "Argument 2 of the set() static method, must be a string");
+		if (element.getAttribute("title") != null){
+			element.setAttribute("data-tempTitle", element.getAttribute("title"));
+			element.removeAttribute("title");
+			mainTip = tip;
+		}else{
+			mainTip = tip;
+		}
+	}
+	if(style!=null){
+		validateArray(style, 2, "string", "set()");
+	}
+	var tipId = "";
+	function createStyles(){
+		css = ".vToolTip {box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
+		css += ".vToolTip::before{position:absolute;content:'';}";
+		css += ".vToolTipTop::before{position:absolute;content:'';top:CALC(100%);border-left:5px solid transparent; border-right:5px solid transparent; border-top:10px solid #c08bc0;}";
+		if(style != null && style[1] != ""){
+			css += ".vToolTip{"+style[1]+"}";
+		}
+		if(style != null && style[0] != ""){
+			css += ".vToolTipTop::before{border-top:10px solid "+style[0]+";}";
+		}
+
+		var styleElement = document.createElement("style");
+
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
+	}
+	function createTipElement(){
+		var tipElement = document.createElement("DIV");
+		var existing = document.querySelectorAll(".vToolTip");
+		existing>0?tipId = existing+1:tipId=1;
+		tipElement.setAttribute("class", "vToolTip vToolTipTop");
+		tipElement.setAttribute("data-toolTipId", tipId);
+		element.setAttribute("data-TID", tipId);
+		element.setAttribute("data-vToolTipSwitch", "ON");
+		document.body.appendChild(tipElement);
+	}
+	function addEvent(){
+		var vTipCon = document.querySelector("div[data-toolTipId='"+element.getAttribute("data-TID")+"']");
+		element.addEventListener("mousemove", function(e){
+			if(	element.getAttribute("data-vToolTipSwitch") == "ON"){
+				vTipCon.style["display"] == "none"?vTipCon.style["display"] = "block":null;
+				var y = (e.clientY+scrollY)-vTipCon.scrollHeight;
+				var x = ( e.clientX+scrollX) - 10;
+				vTipCon.innerHTML = mainTip;
+				vTipCon.style["top"] = y+"px";
+				vTipCon.style["left"] =x+"px";
+			}
+		}, false);
+		element.addEventListener("mouseout", function(e){
+			if(e.target.getAttribute("data-TID") != null){
+				vTipCon.style["display"] = "none";
+				vTipCon.style["top"] = "0";
+				vTipCon.style["left"] ="0";
+			}
+		},false);
+	}
+	createTipElement();
+	createStyles();
+	addEvent();
+}
+toolTip.on = function(element){
+	validateElement(element, "Argument 1 of the on() static method must be a valid HTML element");
+	if (element.getAttribute("data-TID") != null){
+		if(element.getAttribute("data-vToolTipSwitch") == "OFF"){
+			element.setAttribute("data-vToolTipSwitch", "ON");
+			element.getAttribute("data-tempTitle") != null?element.removeAttribute("title"):null;
+		}
+	}else{
+		throw new Error("No tool tip applied on target element");
+	}
+}
+toolTip.off = function(element){
+	validateElement(element, "Argument 1 of the off() static method must be a valid HTML element");
+	if (element.getAttribute("data-TID") != null){
+		if(element.getAttribute("data-vToolTipSwitch") == "ON"){
+			element.getAttribute("data-tempTitle") != null?element.setAttribute("title", element.getAttribute("data-tempTitle")):null;
+			element.setAttribute("data-vToolTipSwitch", "OFF");
+		}
+	}else{
+		throw new Error("No tool tip applied on target element");
+	}
+}
+/****************************************************************/
