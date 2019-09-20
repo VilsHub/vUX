@@ -1502,7 +1502,7 @@ function element(){
 element.index = function(child){
 	var index = 0, n=0;
 	while(child){
-		child = child.previousElementSilbling;
+		child = child.previousElementSibling;
 		n++;
 	}
 	index = n++;
@@ -1992,53 +1992,72 @@ function customFormComponent(vWrapper=null){
 	}
 	function scrollDown(listOptionCon){
 		var activieHovered = listOptionCon.querySelector(".hovered");
-		if (activieHovered != null){
-			if(scrollIni == 0){
-				var index = element.index(activieHovered);
-				startIndex = index;
-				scrollIni = 1;
+		if (activieHovered == null){
+			var firstSelectable = listOptionCon.querySelector("div[data-disabled='false']");
+			if(firstSelectable != null){
+				firstSelectable.classList.add("hovered");
 			}
-			startIndex++;
-			if(startIndex > totalOptions){
-				startIndex = 1;
+		}else {
+			var index = element.index(activieHovered);
+			var totalOptions = listOptionCon.childElementCount;
+			if(index != totalOptions){
+				var allOptions = listOptionCon.querySelectorAll(".option");
+				for(var x=1; x<=totalOptions; x++){
+					if(x>index){
+						if(allOptions[x-1].getAttribute("data-disabled") == "false"){
+							activieHovered.classList.remove("hovered");
+							allOptions[x-1].classList.add("hovered");
+							break;
+						}
+					}
+				}
+			}else{
+				var allOptions = listOptionCon.querySelectorAll(".option");
+				for(var x=0; x<=totalOptions; x++){
+					if(allOptions[x].getAttribute("data-disabled") == "false"){
+						activieHovered.classList.remove("hovered");
+						allOptions[x].classList.add("hovered");
+						break;
+					}
+				}
 			}
-			listOptionCon.querySelector(".option:nth-child("+startIndex+")").classList.add("hovered");
-
-			activieHovered.classList.remove("hovered");
-			if(startIndex > totalOptions){
-				startIndex = 0;
-			}
-		}else{
-			startIndex = 1;
-			scrollIni =1;
-			listOptionCon.querySelector(".option").classList.add("hovered");
 		}
 	}
 	function scrollUp(listOptionCon){
 		var activieHovered = listOptionCon.querySelector(".hovered");
-		if (activieHovered != null){
-			if(scrollIni == 0){
-				var index = element.index(activieHovered);
-				startIndex = index;
-				scrollIni = 1;
+		if (activieHovered == null){
+			var allSelectable = listOptionCon.querySelectorAll("div[data-disabled='false']");
+			if(allSelectable.length >0){
+				allSelectable[allSelectable.length-1].classList.add("hovered");
 			}
-			startIndex--;
-			if(startIndex == 0){
-				startIndex = totalOptions;
-			}
-			activieHovered.classList.remove("hovered");
-			listOptionCon.querySelector(".option:nth-child("+startIndex+")").classList.add("hovered");
 		}else{
-			startIndex = totalOptions;
-			scrollIni =1;
-			listOptionCon.querySelector(".option:last-of-type").classList.add("hovered");
+			var index = element.index(activieHovered);
+			var totalOptions = listOptionCon.childElementCount;
+			if(index != 1){//scroll up
+				var allOptions = listOptionCon.querySelectorAll(".option");
+				for(var x=index-2; x>=0; x--){
+					if(allOptions[x].getAttribute("data-disabled") == "false"){
+						activieHovered.classList.remove("hovered");
+						allOptions[x].classList.add("hovered");
+						break;
+					}
+				}
+			}else{
+				activieHovered.classList.remove("hovered");
+				var allSelectable = listOptionCon.querySelectorAll("div[data-disabled='false']");
+				if(allSelectable.length >0){
+					allSelectable[allSelectable.length-1].classList.add("hovered");
+				}
+			}
 		}
 	}
 	function createStyleSheet(){
 		var css = "."+vWrapper + " {width:"+selectDim[0]+"; height:"+selectDim[1]+";}";
 		css += "."+vWrapper + " .sfield {position:absolute; width:100%; height:100%; z-index:1; line-height:"+selectDim[1]+"; padding-left:5px; cursor:pointer; box-sizing: border-box; background-color:#ccc;}";
 		css += "."+vWrapper + " .optionsCon {position:absolute; width:100%; height:0px; z-index:2; top:100%; transition:height 0.2s linear; overflow-y:hidden; display:none}";
-		css += "."+vWrapper + " .optionsCon .option {position:static; width:100%; height:"+selectDim[1]+"; padding-left:5px; box-sizing:border-box; line-height:"+selectDim[1]+"; cursor:pointer; border-bottom:solid 1px #ccc;}";
+		css += "."+vWrapper + " .optionsCon .option {position:static; width:100%; height:"+selectDim[1]+"; padding-left:5px; box-sizing:border-box; line-height:"+selectDim[1]+";border-bottom:solid 1px #ccc;}";
+		css += "."+vWrapper + " .optionsCon .option[data-disabled='false'] { cursor:pointer; }";
+		css += "."+vWrapper + " .optionsCon .option[data-disabled='true'] { cursor:not-allowed; background-color:#2f2a2a; color:#595454!important;}";
 		css += "."+vWrapper + " .optionsCon .option:last-of-type {border-bottom:none!important;}";
 		css += "."+vWrapper + " .optionsCon .hovered {background-color:rgba(255, 255, 255, 0.3)}";
 		css += "."+vWrapper + " .optionsCon .selected {background-color:rgba(255, 255, 255, 0.5)}";
@@ -2108,6 +2127,7 @@ function customFormComponent(vWrapper=null){
 			var options = document.createElement("DIV");
 			options.setAttribute("class", "option");
 			options.setAttribute("value", SelectElement.options[x].getAttribute("value"));
+			SelectElement.options[x].getAttribute("disabled") != null?options.setAttribute("data-disabled", "true"):options.setAttribute("data-disabled", "false");
 
 			if(optionCustomStyle != ""){
 				options.style = optionCustomStyle;
@@ -2163,7 +2183,7 @@ function customFormComponent(vWrapper=null){
 				if (e.target.classList.contains("sfield") | e.target.classList.contains("arrowCon")){
 					toggleOptionList(listOptionCon);
 				}else if (e.target.classList.contains("option")) {
-					if (multipleSelection == false){
+					if (multipleSelection == false && e.target.getAttribute("data-disabled") == "false"){
 						selectOptions(listOptionCon);
 					}
 				}
@@ -2185,7 +2205,7 @@ function customFormComponent(vWrapper=null){
 			}
 		}, false);
 		listOptionCon.addEventListener("mouseover", function(e){
-			if(e.target.classList.contains("option")){
+			if(e.target.classList.contains("option") && e.target.getAttribute("data-disabled") == "false"){
 				hover(e, listOptionCon);
 			}
 		}, false);
@@ -2209,30 +2229,11 @@ function customFormComponent(vWrapper=null){
 		listParent.addEventListener("keydown", function (e){
 			if(e.target.classList.contains(vWrapper)){
 				if (selOpen == 1){
-					var handled = false, type=0;
-				  if (e.key !== undefined) {
-				    // Handle the event with KeyboardEvent.key and set handled true.
-						var targetKeyPressed = e.key;
-						handled = true;
-						type=1;
-
-				  } else if (e.keyIdentifier !== undefined) {
-				    // Handle the event with KeyboardEvent.keyIdentifier and set handled true.
-						var targetKeyPressed = e.keyIdentifier;
-						handled = true;
-						type=2;
-				  } else if (e.keyCode !== undefined) {
-				    // Handle the event with KeyboardEvent.keyCode and set handled true.
-						var targetKeyPressed = e.keyCode;
-						handled = true;
-						type=3;
-				  }
-
-
-				  if (handled) {
+					var khdlr = keyboardEventHanler(e);
+				  if (khdlr["handled"] == true) {
 				    // Suppress "double action" if event handled
 				    e.preventDefault();
-						if (type == 1){
+						if (khdlr["type"]  == 1){
 							if(e.key == "ArrowDown" | "Down"){
 								scrollDown(listOptionCon);
 							}else if (e.key == "ArrowUp" | "Up") {
@@ -2240,9 +2241,9 @@ function customFormComponent(vWrapper=null){
 							}else if (e.key == "Enter") {
 								selectOptions(listOptionCon);
 							}
-						}else if(type == 2){
+						}else if(khdlr["type"] == 2){
 
-						}else if(type == 3){
+						}else if(khdlr["type"] == 3){
 
 						}
 				  }
