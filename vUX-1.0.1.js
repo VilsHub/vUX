@@ -332,6 +332,38 @@ function minMaxInt(value, min, max){
 		return min;
 	}
 }
+function getDayName(year, month, day){
+	var date = year+"-"+month+"-"+day;
+	var tempDate = new Date(date);
+	var dayShortName = tempDate.toString().split(" ", 2)[0];
+	var dayFullName = "";
+	switch (dayShortName) {
+   case "Sun":
+     dayFullName = "Sunday";
+   break;
+   case "Mon":
+     dayFullName = "Monday";
+   break;
+	 case "Tue":
+     dayFullName = "Tuesday";
+   break;
+	 case "Wed":
+     dayFullName = "Wednesday";
+   break;
+	 case "Thu":
+     dayFullName = "Thursday";
+   break;
+	 case "Fri":
+     dayFullName = "Friday";
+   break;
+	 case "Sat":
+     dayFullName = "Saturday";
+   break;
+     // default expression
+ 	}
+
+	return dayFullName;
+}
 /****************************************************************/
 
 /*****************************Timing*****************************/
@@ -3789,7 +3821,7 @@ function datePicker(){
 	var currentYear = today.getFullYear();
 	currentYear <2019?currentYear=2019:currentYear= parseInt(currentYear);
 	var startYear=0,self=this, presentYear=0, selectedSeries=0, meridian = "am", show=0,textInputElement=null, includeTime = false, endYear=0, dateType="past", wrapperHeight = 0, n=0 , pastDateRange=[1900, currentYear-1], furtureStopDate=[], initialized = 0, dateInputIcon="", singleDateField=true, styled=false, numberOfRangeBoxes=0,
-	yearValue="",pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+	yearValue="",daysToolTip=false,pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var status = {
 		set:false,
 		completed:false
@@ -3954,18 +3986,24 @@ function datePicker(){
 					yearsCon.classList.remove("displayActive");
 					monthsCon.classList.add("futureYearToMonth");
 					monthsCon.innerHTML = "";
-
-					if(year == furtureStopDate[0]){
-						stop = furtureStopDate[1];
-					}else {
-						stop = 11;
-					}
-					for (var x=0; x<stop; x++){
-						var month = document.createElement("DIV");
-						month.setAttribute("class", "month");
-						x<9?month.setAttribute("data-value", "0"+(x+1).toString()):month.setAttribute("data-value", x+1);
-						month.append(document.createTextNode(months[x]))
-						monthsCon.appendChild(month);
+					for (var x=0; x<=11; x++){
+						if(year == currentYear){
+							if(year != furtureStopDate[0]){
+								if(x>=today.getMonth()){
+									generateMonths(x,monthsCon);
+								}
+							}else{
+								if(x<furtureStopDate[1] && x>=today.getMonth()){
+									generateMonths(x,monthsCon);
+								}
+							}
+						}else if(year == furtureStopDate[0] ){
+							if(x<furtureStopDate[1]){
+								generateMonths(x, monthsCon);
+							}
+						}else {
+							generateMonths(x, monthsCon);
+						}
 					}
 				}
 
@@ -3984,6 +4022,71 @@ function datePicker(){
 				var month = parseInt(e.target.getAttribute("data-value"));
 				var monthsCon = e.target.parentNode;
 				var daysCon = textInputElement.parentNode.querySelector(".vDaysCon");
+				var stop = 0;
+				daysCon.innerHTML = "";
+				monthValue = month;
+				if (month=="4" || month=="6" || month=="9" || month=="11"){
+					stop = 29;
+				}else if(month=="2"){
+					var leapYear = parseInt(yearValue)%4;
+					if(leapYear == 0){
+						stop =28;
+					}else{
+						stop =27;
+					}
+				}else{
+					stop = 30;
+				}
+
+				//Generate days
+				if(dateType == "past"){
+					for (var x=0; x<=stop; x++){
+						if(yearValue == pastStopDate[0] && monthValue != pastStopDate[1]){
+							if(x<pastStopDate[2]){
+								generateDays(x, daysCon);
+							}
+						}else{
+							generateDays(x, daysCon);
+						}
+					}
+				}else{
+					var diff = furtureStopDate[0] - currentYear;
+					for (var x=0; x<=stop; x++){
+						if(yearValue == currentYear ){
+							if(diff > 0){
+								if (parseInt(monthValue) == today.getMonth()+1){
+									if(x>=today.getDate()-1){
+										generateDays(x, daysCon);
+									}
+								}else{
+									generateDays(x, daysCon);
+								}
+							}else{
+								if(parseInt(monthValue) == furtureStopDate[1]){
+									if(x<furtureStopDate[2]){
+										generateDays(x, daysCon);
+									}
+								}else if(parseInt(monthValue) == today.getMonth()+1){
+									if(x>=today.getDate()-1){
+										generateDays(x, daysCon);
+									}
+								}else{
+									generateDays(x, daysCon);
+								}
+							}
+						}else if(yearValue == furtureStopDate[0] ){
+							if (parseInt(monthValue) == furtureStopDate[1]){
+								if(x<furtureStopDate[2]){
+									generateDays(x, daysCon);
+								}
+							}else{
+								generateDays(x, daysCon);
+							}
+						}else {
+							generateDays(x, daysCon);
+						}
+					}
+				}
 
 				monthsCon.style["height"] = "0%";
 				monthsCon.style["width"] = "0%";
@@ -3997,10 +4100,10 @@ function datePicker(){
 				daysCon.style["height"] = "100%";
 				daysCon.style["width"] = "100%";
 				daysCon.style["opacity"] = "1";
-				monthValue = "-"+month;
+
 				writeToInput();
-				//Generate days
-				generateDays(month);
+
+				//generateDays(month);
 			}else	if(e.target.classList.contains("day")){//hide dayCon and show time if specified
 				var day = e.target.getAttribute("data-value");
 				if(includeTime == true){
@@ -4028,7 +4131,7 @@ function datePicker(){
 					daysCon.style["width"] = "0%";
 					daysCon.style["opacity"] = "0";
 					daysCon.classList.remove("monthToDay");
-					dayValue = "-"+day;
+					dayValue = day;
 					writeToInput();
 					status["completed"] = true;
 					//Close Date picker Box
@@ -4233,6 +4336,13 @@ function datePicker(){
 			yearSeries++;
 		}
 
+	}
+	function generateMonths(x, monthsCon){
+		var month = document.createElement("DIV");
+		month.setAttribute("class", "month");
+		x<9?month.setAttribute("data-value", "0"+(x+1).toString()):month.setAttribute("data-value", x+1);
+		month.append(document.createTextNode(months[x]))
+		monthsCon.appendChild(month);
 	}
 	function createDatePickerBox(){
 		var dateInputWrapper = textInputElement.parentNode;
@@ -4501,82 +4611,20 @@ function datePicker(){
 				yearsBox[0].style["padding"] = "20px 0 20px 0px";
 			}
 		};
-	function generateDays(month){
-		function generate(type){
-			var daysCon = textInputElement.parentNode.querySelector(".vDaysCon");
-			daysCon.innerHTML = "";
-			if (type=="full"){
-				if (month=="4" || month=="6" || month=="9" || month=="11"){
-					for(var x = 0; x<30; x++){
-						var day = document.createElement("DIV");
-						day.setAttribute("class", "day");
-						x<9?day.setAttribute("data-value", "0"+(x+1).toString()):day.setAttribute("data-value", x+1);
-						day.append(document.createTextNode(x+1));
-						daysCon.appendChild(day);
-					}
-				}else if(month=="2"){
-					var stop = 0;
-					var leapYear = parseInt(yearValue)%4;
-					if(leapYear == 0){
-						stop =29;
-					}else{
-						stop =27;
-					}
-					for(var x = 0; x<stop; x++){
-						var day = document.createElement("DIV");
-						day.setAttribute("class", "day");
-						day.setAttribute("data-value", x+1);
-						day.append(document.createTextNode(x+1));
-						daysCon.appendChild(day);
-					}
-				}else{
-					for(var x = 0; x<31; x++){
-						var day = document.createElement("DIV");
-						day.setAttribute("class", "day");
-						day.setAttribute("data-value", x+1);
-						day.append(document.createTextNode(x+1));
-						daysCon.appendChild(day);
-					}
-				}
-			}else if (type=="part"){
-				var stp = 0;
-				if(dateType == "past"){
-					stp = pastStopDate[2];
-				}else{
-					stp = furtureStopDate[2];
-				}
-				for(var x = 0; x<stp; x++){
-					var day = document.createElement("DIV");
-					day.setAttribute("class", "day");
-					x<9?day.setAttribute("data-value", "0"+(x+1).toString()):day.setAttribute("data-value", x+1);
-					day.append(document.createTextNode(x+1));
-					daysCon.appendChild(day);
-				}
-			}
-		}
-		if(dateType == "past"){
-			if(yearValue == pastStopDate[0] && month == pastStopDate[1]+1){
-				generate("part");
-			}else{
-				generate("full");
-			}
-		}else {
-			var totalYears = textInputElement.parentNode.querySelectorAll(".year");
-			if (totalYears.length == 1){
-				if(month != furtureStopDate[1]){
-					generate("full");
-				}else if(month == furtureStopDate[1]){
-					generate("part");
-				}
-			}else if (totalYears.length > 1){
-				if(yearValue != furtureStopDate[0] && month != furtureStopDate[1]){
-					generate("full");
-				}else if(yearValue == furtureStopDate[0] && month == furtureStopDate[1]){
-					generate("part");
-				}
-			}
-		}
-
+	function createToolTip(){
+		var b = document.querySelectorAll(".vDaysCon .day");
+		b[b.length-1].addEventListener("mouseover", function(e){
+			var dayName = getDayName(yearValue, monthValue, e.target.getAttribute("data-value"));
+			toolTip.set(e.target, dayName, ["",""]);
+		},false);
+	}
+	function generateDays(x, daysCon){
+		var day = document.createElement("DIV");
+		day.setAttribute("class", "day");
+		x<9?day.setAttribute("data-value", "0"+(x+1).toString()):day.setAttribute("data-value", x+1);
+		day.append(document.createTextNode(x+1));
+		daysCon.appendChild(day);
+		daysToolTip==true?createToolTip():null;
 	}
 	function toggleListScroller(){
 		if(dateType == "past"){
@@ -4615,10 +4663,16 @@ function datePicker(){
 		}
 	}
 	function writeToInput(){
+		var tempMonth = "";
+		if (monthValue == ""){
+			tempMonth = "";
+		}else {
+			tempMonth = "-"+monthValue;
+		}
 		if(includeTime ==true){
-			textInputElement.value = yearValue+monthValue+dayValue+" "+displayTimeValue[0]+displayTimeValue[1]+displayTimeValue[2];
+			textInputElement.value = yearValue+tempMonth+dayValue+" "+displayTimeValue[0]+displayTimeValue[1]+displayTimeValue[2];
 		}else{
-			textInputElement.value = yearValue+monthValue+dayValue;
+			textInputElement.value = yearValue+tempMonth+dayValue;
 		}
 	}
 	function convertTo24hours(hour){
@@ -4649,6 +4703,22 @@ function datePicker(){
 				displayTimeValue[0] = "0"+newV;
 			}
 			writeToInput();
+		}
+	}
+	function compareDate(value, type){
+		if(type == "past"){
+
+		}else if(type= "future"){
+			var fdate = value[0]+"-"+(value[1])+"-"+value[2];
+			var cdate = today.getFullYear()+"-"+today.getMonth()+"-"+today.getDate();
+			var furtureDate = new Date(fdate).getTime();
+			var currentDate = new Date(cdate).getTime();
+			var diff = furtureDate - currentDate;
+			if(diff > 0){
+				return "valid";
+			}else{
+				return "invalid";
+			}
 		}
 	}
 	this.config = {}
@@ -4777,49 +4847,57 @@ function datePicker(){
 			set:function(value){
 				if(validateArray(value, "3", "number", 'furtureStopDate')){
 					var validator = new formValidator();
-					if (validator.validate.integer(value[0])){
-						if (validator.validate.integer(value[1])){
-							if(value[1] > 0 && value[1] < 13){
-								if(validator.validate.integer(value[2])){
-									if(value[1]==4 || value[1]==6 || value[1]==9 || value[1]==9){
-										if(value[2] > 0 && value[2] < 31){
-											furtureStopDate = value;
-										}else {
-											throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 30' for the specified month");
-										}
-									}else if (value[1] == 2){
-										var leapYear = parseInt(yearValue)%4;
-										if(leapYear == 0){
-											if(value[2] > 0 && value[2] < 30){
-												furtureStopDate = value;
-											}else {
-												throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 29' for the specified month");
-											}
-										}else{
-											if(value[2] > 0 && value[2] < 29){
-												furtureStopDate = value;
-											}else {
-												throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 28' for the specified month");
-											}
-										}
+					if (validator.validate.integer(value[0]) && validator.validate.integer(value[1]) && validator.validate.integer(value[2])){
+						if(value[1] > 0 && value[1] < 13){
+							if(value[1]==4 || value[1]==6 || value[1]==9 || value[1]==9){
+								if(value[2] > 0 && value[2] < 31){
+									if(compareDate(value, "future") == "valid"){
+										furtureStopDate = value;
 									}else{
-										if(value[2] > 0 && value[2] < 32){
+										throw new Error("Future date must be ahead of current time");
+									}
+								}else {
+									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 30' for the specified month");
+								}
+							}else if (value[1] == 2){
+								var leapYear = parseInt(yearValue)%4;
+								if(leapYear == 0){
+									if(value[2] > 0 && value[2] < 30){
+										if(compareDate(value, "future") == "valid"){
 											furtureStopDate = value;
-										}else {
-											throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 31' for the specified month");
+										}else{
+											throw new Error("Future date must be ahead of current time");
 										}
+									}else {
+										throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 29' for the specified month");
 									}
 								}else{
-									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be an integer");
+									if(value[2] > 0 && value[2] < 29){
+										if(compareDate(value, "future") == "valid"){
+											furtureStopDate = value;
+										}else{
+											throw new Error("Future date must be ahead of current time");
+										}
+									}else {
+										throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 28' for the specified month");
+									}
 								}
 							}else{
-								throw new Error("Array member 2 value of 'config.furtureStopDate' property must be between the range '1 - 12'");
+								if(value[2] > 0 && value[2] < 32){
+									if(compareDate(value, "future") == "valid"){
+										furtureStopDate = value;
+									}else{
+										throw new Error("Future date must be ahead of current time");
+									}
+								}else {
+									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 31' for the specified month");
+								}
 							}
 						}else{
-							throw new Error("Array member 2 value of 'config.furtureStopDate' property must be an integer");
-						}
+								throw new Error("Array member 2 value of 'config.furtureStopDate' property must be between the range '1 - 12'");
+							}
 					}else{
-						throw new Error("Array member 1 value of 'config.furtureStopDate' property must be an integer");
+						throw new Error("Array members value of 'config.furtureStopDate' property must all be an integers");
 					}
 				}
 			}
@@ -4836,6 +4914,13 @@ function datePicker(){
 					}else{
 						throw new Error("'config.pastStartYear' property value must be between 1900 and the current date year");
 					}
+				}
+			}
+		},
+		daysToolTip:{
+			set:function(value){
+				if(validateBoolean(value, "'config.daysToolTip' property value must be a boolean")){
+					daysToolTip = value;
 				}
 			}
 		}
@@ -4871,7 +4956,7 @@ toolTip.set = function(element, tip=null, style=null){
 	}
 	var tipId = "";
 	function createStyles(){
-		css = ".vToolTip {box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
+		css = ".vToolTip {display:none;box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
 		css += ".vToolTip::before{position:absolute;content:'';}";
 		css += ".vToolTipTop::before{position:absolute;content:'';top:CALC(100%);border-left:5px solid transparent; border-right:5px solid transparent; border-top:10px solid #c08bc0;}";
 		if(style != null && style[1] != ""){
