@@ -281,7 +281,7 @@ function extractDimensionValue(dimension, unit){
 }
 function getDimensionOfHidden(element){
 	var height=0, prePos="", width=0;
-	prePos = css.getStyle(element, "position");
+	prePos = DOMelement.cssStyle(element, "position");
 	element.style["position"] = "absolute";
 	element.style["opacity"] = "0";
 	element.style["display"] = "block";
@@ -421,31 +421,20 @@ var timing = {
 }
 /****************************************************************/
 /***************************CSS Style getter***************************/
-var css = {
-	getStyles : function (element, property){
-					if(window.getComputedStyle){
-						var styleHandler = getComputedStyle(element, null);
-					}else{
-						var styleHandler = element.currentStyle;
-					}
-					var propertyValue = styleHandler[property];
-					return propertyValue;
-				}
-}
 /****************************************************************/
 /*****************************Cross XHR creator******************/
-var ajax = {
-	create : function () {
-				if (window.XMLHttpRequest) {
-					// code for modern browsers
-					var xmlhttp = new XMLHttpRequest();
-					return xmlhttp;
-				 } else {
-					// code for old IE browsers
-					var xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-					return xmlhttp;
-				}
-			}
+function ajax(){
+}
+ajax.create = function () {
+	if (window.XMLHttpRequest) {
+		// code for modern browsers
+		var xmlhttp = new XMLHttpRequest();
+		return xmlhttp;
+	 } else {
+		// code for old IE browsers
+		var xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		return xmlhttp;
+	}
 }
 /****************************************************************/
 
@@ -1366,7 +1355,7 @@ ToBaseGridMultiple.setHeight = function(targetElement, height){
 ToBaseGridMultiple.centerVertically = function (targetElement, height){
 	validateNumber(height);
 	validateElement(targetElement);
-	var transformValue = css.getStyles(targetElement, "transform");
+	var transformValue = DOMelement.cssStyle(targetElement, "transform");
 	var split = transformValue.split(", ");
 	var targetIndex = split[split.length-1];
 	var filteredValue = targetIndex.replace(")", "");
@@ -1483,23 +1472,10 @@ function ScreenBreakPoint(breakPoints){
 }
 /****************************************************************/
 
-/************************CSS Style getter************************/
-function css(){};
-css.getStyle = function (element, property){
-	if(window.getComputedStyle){
-		var styleHandler = getComputedStyle(element, null);
-	}else{
-		var styleHandler = element.currentStyle;
-	}
-	var propertyValue = styleHandler[property];
-	return propertyValue;
+/**********************Element properties getter*********************/
+function DOMelement(){
 }
-/****************************************************************/
-
-/**********************Child index getter*********************/
-function element(){
-}
-element.index = function(child){
+DOMelement.index = function(child){
 	var index = 0, n=0;
 	while(child){
 		child = child.previousElementSibling;
@@ -1507,6 +1483,15 @@ element.index = function(child){
 	}
 	index = n++;
 	return index;
+}
+DOMelement.cssStyle = function (element, property){
+	if(window.getComputedStyle){
+		var styleHandler = getComputedStyle(element, null);
+	}else{
+		var styleHandler = element.currentStyle;
+	}
+	var propertyValue = styleHandler[property];
+	return propertyValue;
 }
 /****************************************************************/
 
@@ -1670,7 +1655,7 @@ function listScroller(container, listParent, listType){
 	function scrollToleft(e){
 		if (e.button == 0){
 			if (diff < 0){
-				var currentPosition = parseInt(css.getStyle(listParent, "left"), "px");
+				var currentPosition = parseInt(DOMelement.cssStyle(listParent, "left"), "px");
 				if(tabsBehindRight != 0){
 					maxAdd = scrollSize;
 					var newPostion = currentPosition - maxAdd;
@@ -1689,7 +1674,7 @@ function listScroller(container, listParent, listType){
 	}
 	function scrollToRight(e){
 		if (e.button == 0){
-			var currentPosition = parseInt(css.getStyle(listParent, "left"), "px");
+			var currentPosition = parseInt(DOMelement.cssStyle(listParent, "left"), "px");
 			if(tabsBehindLeft != 0){
 				maxAdd = scrollSize;
 				var newPostion = currentPosition + maxAdd;
@@ -1967,7 +1952,7 @@ function customFormComponent(vWrapper=null){
 	}
 	function unhovered(e, listOptionCon){
 		var prevHovered = listOptionCon.querySelector(".hovered");
-		prevHovered.classList.remove("hovered");
+		prevHovered != null?prevHovered.classList.remove("hovered"):null;
 	}
 	function toggleOptionList(listOptionCon){
 		if (selOpen == 0){ //list closed
@@ -2794,7 +2779,7 @@ function formValidator(){
 
 				checkExistence.style["text-align"] = "left";
 				checkExistence.style["height"] = "auto";
-				checkExistence.style["min-height"] = css.getStyle(checkExistence, "height");
+				checkExistence.style["min-height"] = DOMelement.cssStyle(checkExistence, "height");
 				checkExistence.innerHTML = message;
 			}
 		}
@@ -3187,7 +3172,7 @@ function formValidator(){
 
 /****************************Modal*******************************/
 function modalDisplayer(){
-	var self=this, effectName="none", bodyOldPosition = "", mainFormCon = "", closeButton=null, mainFormConInner="", overlayType="", colorOverlayStyle="", maxupScrollUpStop =0, totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, ModalHeight=0, ModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50, reachedBottom=0;
+	var self=this,cssWidth="",currentForm=null,id=null, effectName="none", bodyOldPosition = "", mainFormCon = "", closeButton=null, mainFormConInner="", overlayType="", colorOverlayStyle="", maxupScrollUpStop =0, totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, computedModalHeight=0, computedModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50, reachedBottom=0;
 	var effects ={
 		none:function(modal){
 			var newModal = document.createElement("DIV");
@@ -3195,14 +3180,12 @@ function modalDisplayer(){
 			modalOn = true;
 			var modayBody = document.querySelector(".vModal");
 			var modalCon = modayBody.querySelector(".modalSpace");
-			ModalHeight = getDimensionOfHidden(modal)["height"];
-			ModalWidth = getDimensionOfHidden(modal)["width"];
 
 			//Create and set newmodal style
-			var newModalCSS = "width:"+ModalWidth+"px; height:"+ModalHeight+"px;";
+			var newModalCSS = "width:"+cssWidth+"; height:"+computedModalHeight+"px;";
 			newModal.setAttribute("style", newModalCSS);
 
-			positionVertically(modalCon, ModalHeight);
+			positionVertically(modalCon, computedModalHeight);
 			modalCon.appendChild(newModal);
 
 			//Call new modal
@@ -3222,21 +3205,18 @@ function modalDisplayer(){
 			modal.innerHTML = "";
 
 			modayBody.classList.add("show");
-			openProcessor();
 		},
 		split:function(modal){
 			var newModal = document.createElement("DIV");
 			var effectsCon = document.createElement("DIV");
 			var leftEle = document.createElement("DIV");
 			var rightEle = document.createElement("DIV");
-			ModalHeight = getDimensionOfHidden(modal)["height"];
-			ModalWidth = getDimensionOfHidden(modal)["width"];
 			//left style
-			var lcss = "position:absolute;left:-200%; top:0; transition:left .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:"+ModalHeight+"px; overflow:hidden;";
-			var rcss = "position:absolute;right:-200%; top:0; transition:right .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:"+ModalHeight+"px; overflow:hidden;";
+			var lcss = "position:absolute;left:-200%; top:0; transition:left .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:"+computedModalHeight+"px; overflow:hidden;";
+			var rcss = "position:absolute;right:-200%; top:0; transition:right .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:"+computedModalHeight+"px; overflow:hidden;";
 
 			//EffectsCons attributes
-			effectsCon.setAttribute("style", "position:relative; width:"+ModalWidth+"px; height:"+ModalHeight+"px;");
+			effectsCon.setAttribute("style", "position:relative; width:"+computedModalWidth+"px; height:"+computedModalHeight+"px;");
 			effectsCon.setAttribute("id", "effectsCon");
 			effectsCon.setAttribute("class", "trans_in split");
 
@@ -3254,7 +3234,7 @@ function modalDisplayer(){
 			var modayBody = document.querySelector(".vModal");
 			var modalCon = modayBody.querySelector(".modalSpace");
 
-			positionVertically(modalCon, ModalHeight);
+			positionVertically(modalCon, computedModalHeight);
 
 			//Append left and right to effectsCon
 			effectsCon.appendChild(leftEle);
@@ -3298,9 +3278,7 @@ function modalDisplayer(){
 			var flipperBGElement = document.createElement("DIV");
 			var flipperFormElement = document.createElement("DIV");
 
-			ModalHeight = getDimensionOfHidden(modal)["height"];
-			ModalWidth = getDimensionOfHidden(modal)["width"];
-			var mainFormBg = css.getStyle(modal, "background-color");
+			var mainFormBg = DOMelement.cssStyle(modal, "background-color");
 
 			//Create Style for flipper
 			var flipperCSS = "transition:transform .6s linear 0s; width:100%; height:100%; transform-style:preserve-3d; backface-visibilty: hidden; transform:rotateX(0deg); ";
@@ -3312,7 +3290,7 @@ function modalDisplayer(){
 			flipperFormElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility: hidden; z-index:1; transform:rotateX(-180deg);");
 			flipperFormElement.setAttribute("id", "flpform");
 			//Set attribute for effectsCon
-			effectsCon.setAttribute("style", "position:relative; width:"+ModalWidth+"px; height:"+ModalHeight+"px; perspective: 4000px;");
+			effectsCon.setAttribute("style", "position:relative; width:"+computedModalWidth+"px; height:"+computedModalHeight+"px; perspective: 4000px;");
 			effectsCon.setAttribute("id", "effectsCon");
 			effectsCon.setAttribute("class", "trans_in flip");
 
@@ -3328,7 +3306,7 @@ function modalDisplayer(){
 			var modayBody = document.querySelector(".vModal");
 			var modalCon = modayBody.querySelector(".modalSpace");
 
-			positionVertically(modalCon, ModalHeight);
+			positionVertically(modalCon, computedModalHeight);
 
 			//Append flipperBGElement and flipperFormElement to effectsCon
 			flipper.appendChild(flipperFormElement);
@@ -3362,18 +3340,14 @@ function modalDisplayer(){
 
 			flipperEffectBox.scrollHeight;
 			flipperEffectBox.style["transform"] = "rotateX(180deg)";
-			openProcessor();
 		},
 		box: function(modal){
 			var newModal = document.createElement("DIV");
 			var effectsCon = document.createElement("DIV");
 			var box = document.createElement("DIV");
 
-			ModalHeight = getDimensionOfHidden(modal)["height"];
-			ModalWidth = getDimensionOfHidden(modal)["width"];
-
 			//Set attribute for effectsCon
-			effectsCon.setAttribute("style", "position:relative; width:"+ModalWidth+"px; height:"+ModalHeight+"px;");
+			effectsCon.setAttribute("style", "position:relative; width:"+computedModalWidth+"px; height:"+computedModalHeight+"px;");
 			effectsCon.setAttribute("id", "effectsCon");
 			effectsCon.setAttribute("class", "trans_in box");
 
@@ -3389,7 +3363,7 @@ function modalDisplayer(){
 			var modayBody = document.querySelector(".vModal");
 			var modalCon = modayBody.querySelector(".modalSpace");
 
-			positionVertically(modalCon, ModalHeight);
+			positionVertically(modalCon, computedModalHeight);
 
 			//Append Nox to effectsCon
 			effectsCon.appendChild(box);
@@ -3418,7 +3392,6 @@ function modalDisplayer(){
 			BoxFormE.scrollHeight;
 			BoxFormE.style["width"] = "100%";
 			BoxFormE.style["height"] = "100%";
-			openProcessor();
 		}
 	};
 	var closeEffect ={
@@ -3526,16 +3499,16 @@ function modalDisplayer(){
 		var diff = browserHeight - height;
 		sX= window.scrollX;
 		sY = window.scrollY;
-		modalHeigthBelow = ((paddingTop*2)+ModalHeight)-window.innerHeight;
+		modalHeigthBelow = ((paddingTop*2)+computedModalHeight)-window.innerHeight;
 		if (diff < 100){
 			scrollable =true;
-			var heightBelow = verticalScroll.query(parseInt(css.getStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
+			var heightBelow = verticalScroll.query(parseInt(DOMelement.cssStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
 			if (heightBelow >= modalHeigthBelow){
 				modal.style["top"] = "50px";
 				modal.style["transform"] = "translateY(0%) translateX(-50%)";
 				reachedBottom =0;
 			}else{
-				modalHeigthAbove = ((paddingTop*2)+ModalHeight)-window.innerHeight;
+				modalHeigthAbove = ((paddingTop*2)+computedModalHeight)-window.innerHeight;
 				maxupScrollUpStop = scrollY - modalHeigthAbove;
 				var newTop = modalHeigthBelow-paddingTop;
 				modal.style["top"] = "-"+newTop+"px";
@@ -3544,7 +3517,7 @@ function modalDisplayer(){
 			}
 		}
 		if (modalOn == true){
-			bodyOldPosition = css.getStyle(document.body, "position");
+			bodyOldPosition = DOMelement.cssStyle(document.body, "position");
 			document.body.style["position"] = "fixed";
 			document.body.style["top"] = "-"+sY+"px";
 		}
@@ -3552,7 +3525,6 @@ function modalDisplayer(){
 	function releaseModal(e){
 			var modalBody = document.querySelector(".vModal");
 			var modalCon = document.querySelector(".vModal .modalSpace");
-			var OldModal = document.querySelector("#vOld");
 
 			modalCon.removeAttribute("style");
 			e.target.parentNode.classList.remove("trans_out");
@@ -3585,7 +3557,7 @@ function modalDisplayer(){
 						scrollTo(0, sY);
 					}else if (reachedBottom == 1){
 						if(scrollY > maxupScrollUpStop){
-							var currentTop = parseInt(css.getStyle(modal, "top"),"px");
+							var currentTop = parseInt(DOMelement.cssStyle(modal, "top"),"px");
 							if (scrollHandler.query["direction"] == "up"){
 							  var newTop = currentTop + scrollHandler.query["change"];
 								modal.style['top'] = newTop+"px";
@@ -3613,32 +3585,29 @@ function modalDisplayer(){
 			}
 		},false);
 		document.body.addEventListener("transitionend", function(e){
-			var tin=0, tout=0;
 			if(modalOn == true){
 				if(e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("split")){
-					if(e.target.id == "eleft" || e.target.id == "eright" ){
-						tin++;
-					}
-					if(tin == 1){
-						e.target.innerHTML = "";
-						e.target.parentNode.style["display"] = "none";
+					e.target.innerHTML = "";
+					e.target.parentNode.style["display"] = "none";
 
-						//display main modal
+					if(e.target.id == "eright"){
+						//display main modalformCon
 						var newM = document.querySelector(".vModal #newModal");
-						newM.style["width"] = ModalWidth+"px";
-						newM.style["height"] = ModalHeight+"px";
+						var modalSpace = document.querySelector(".vModal .modalSpace");
+
+						newM.style["width"] = "100%";
+						newM.style["height"] = computedModalHeight+"px";
+						modalSpace.style["width"] = cssWidth;
 						// insert main form to new formCon and display
 						newM.innerHTML = mainFormCon;
 						newM.style["display"] = "block";
 						newM.childNodes[0].style["display"] = "block";
+						newM.childNodes[0].style["width"] = "100%";
 						openProcessor();
 					}
 				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("split")) {
-					if(e.target.id == "eleft" || e.target.id == "eright" ){
-						tout++;
-					}
-					if(tout == 1){
-						 releaseModal(e);
+					if(e.target.id == "eleft"){
+						releaseModal(e);
 					}
 				}else if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("flip")) {
 					//Remove effect modal
@@ -3651,8 +3620,8 @@ function modalDisplayer(){
 					//insert main form to new formCon and display
 					newM.innerHTML = mainFormCon;
 					newM.style["display"] = "block";
-					newM.style["width"] = ModalWidth+"px";
-					newM.style["height"] = ModalHeight+"px";
+					newM.style["width"] = computedModalWidth+"px";
+					newM.style["height"] = computedModalHeight+"px";
 					newM.childNodes[0].style["display"] = "block";
 					openProcessor();
 				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("flip")) {
@@ -3668,8 +3637,8 @@ function modalDisplayer(){
 					// // insert main form to new formCon and display
 					newM.innerHTML = mainFormCon;
 					newM.style["display"] = "block";
-					newM.style["height"] = ModalHeight+"px";
-					newM.style["width"] = ModalWidth+"px";
+					newM.style["height"] = computedModalHeight+"px";
+					newM.style["width"] = computedModalWidth+"px";
 					newM.childNodes[0].style["display"] = "block";
 					openProcessor();
 				}else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("box")) {
@@ -3689,12 +3658,14 @@ function modalDisplayer(){
 		oldModal.setAttribute("id", currentModal.id);
 		oldModal.setAttribute("class", currentModal.getAttribute("class"));
 		oldModal.style["display"] = "none";
+		oldModal.style["width"] = cssWidth;
 		oldModal.innerHTML = mainFormConInner;
 	}
 	function createStyles(){
 		var css = " .vModal{position:absolute; top:0; width:100%; height:100vh; z-index:999; display:none}";
 		css += ".show {display:block}";
-		css += " .vModal .modalSpace {width:auto; height:auto; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); position:absolute;}";
+		css += " .vModal .modalSpace {height:auto; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); position:absolute;}";
+		css += " .vModal .modalSpace #newModal{width:100%;}";
 		var styleElement = document.createElement("style");
 		styleElement.setAttribute("type", "text/css");
 		if (styleElement.styleSheet) {
@@ -3733,10 +3704,18 @@ function modalDisplayer(){
 		if(initialized==true){
 			sY = scrollY;
 			document.querySelector(".vModal").style["top"] = sY+"px";
-
+			currentForm = modal;
+			modal.id!=null?id=modal.id:null;
+			computedModalHeight = getDimensionOfHidden(modal)["height"];
+			computedModalWidth = getDimensionOfHidden(modal)["width"];
+			cssWidth = DOMelement.cssStyle(modal, "width");
+			if(effectName == "split"){
+				modal.style["width"] = computedModalWidth+"px";
+			}else{
+				modal.style["width"] = "100%";
+			}
 			//effect call
 			effects[effectName](modal);
-
 		}else{
 			throw new Error("Please initialize using the 'initialize()', before calling the 'show', method");
 		}
@@ -3746,9 +3725,11 @@ function modalDisplayer(){
 			var modalParent = document.querySelector(".vModal");
 			var OldModal = document.querySelector("#vOld");
 			var currentModal = modalParent.querySelector("#newModal").childNodes[0];
+			currentForm=null;
+			id=null;
 			closeEffect[effectName](OldModal, currentModal);
 		}
-	}
+	};
 	this.initialize = function(){
 		totalHeight = document.querySelector("html").scrollHeight;
 		createStyles();
@@ -3760,7 +3741,19 @@ function modalDisplayer(){
 		config:{writable:false},
 		show:{writable:false},
 		close:{writable:false},
-		initialize:{writable:false}
+		initialize:{writable:false},
+		thisForm:{
+			get:function(){
+				if(modalOn == true){
+					return {
+						element:currentForm,
+						id:id
+					};
+				}else{
+					return null;
+				}
+			}
+		}
 	});
 	Object.defineProperties(this.config, {
 		effect:{
@@ -3821,7 +3814,7 @@ function datePicker(){
 	var today = new Date();
 	var currentYear = today.getFullYear();
 	currentYear <2019?currentYear=2019:currentYear= parseInt(currentYear);
-	var startYear=0,self=this, presentYear=0, selectedSeries=0, meridian = "am", show=0,textInputElement=null, includeTime = false, endYear=0, dateType="past", wrapperHeight = 0, n=0 , pastDateRange=[1900, currentYear-1], furtureStopDate=[], initialized = 0, dateInputIcon="", singleDateField=true, styled=false, numberOfRangeBoxes=0,
+	var startYear=0,self=this, tooTipHandler= null,presentYear=0, selectedSeries=0, meridian = "am", show=0,textInputElement=null, includeTime = false, endYear=0, dateType="past", wrapperHeight = 0, n=0 , pastDateRange=[1900, currentYear-1], furtureStopDate=[], initialized = 0, dateInputIcon="", singleDateField=true, styled=false, numberOfRangeBoxes=0,
 	yearValue="",daysToolTip=false,pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var status = {
 		set:false,
@@ -4616,7 +4609,7 @@ function datePicker(){
 		var b = document.querySelectorAll(".vDaysCon .day");
 		b[b.length-1].addEventListener("mouseover", function(e){
 			var dayName = getDayName(yearValue, monthValue, e.target.getAttribute("data-value"));
-			toolTip.set(e.target, dayName, ["",""]);
+			tooTipHandler.set(e.target, dayName);
 		},false);
 	}
 	function generateDays(x, daysCon){
@@ -4635,7 +4628,7 @@ function datePicker(){
 			var listCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon");
 			var list = textInputElement.parentNode.querySelectorAll(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon .yearsBox");
 		}
-		if (list.length > 1 && css.getStyle(listCon, "display") != "none"){
+		if (list.length > 1 && DOMelement.cssStyle(listCon, "display") != "none"){
 			var listConParent = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon");
 			var LeftBt = textInputElement.parentNode.querySelector("#vPrev");
 			var RightBt = textInputElement.parentNode.querySelector("#vNext");
@@ -4736,33 +4729,39 @@ function datePicker(){
 		}
 
 		//Initialization starts
-		textInputEle.parentNode.style["z-index"] = "500";
-		textInputEle.setAttribute("readonly", "true");
-		textInputElement = textInputEle;
-		textInputEle.value = "";
-		if(dateType == "past"){
-			startYear = parseInt(pastDateRange[0].toString()[0]+pastDateRange[0].toString()[1]+pastDateRange[0].toString()[2]+"0");
-			endYear = parseInt(pastDateRange[1].toString()[0]+pastDateRange[1].toString()[1]+pastDateRange[1].toString()[2]+"0");
-		}
-		if (singleDateField == true){
-			createStyles();
-		}else {
-			if (styled == false){
-				createStyles();
-				styled =true;
+		if(initialized==0){
+			textInputEle.parentNode.style["z-index"] = "500";
+			textInputEle.setAttribute("readonly", "true");
+			textInputElement = textInputEle;
+			textInputEle.value = "";
+			if(dateType == "past"){
+				startYear = parseInt(pastDateRange[0].toString()[0]+pastDateRange[0].toString()[1]+pastDateRange[0].toString()[2]+"0");
+				endYear = parseInt(pastDateRange[1].toString()[0]+pastDateRange[1].toString()[1]+pastDateRange[1].toString()[2]+"0");
 			}
+			if (singleDateField == true){
+				createStyles();
+			}else {
+				if (styled == false){
+					createStyles();
+					styled =true;
+				}
+			}
+			createDatePickerBox();
+			dateType=="past"?generateYearRange():generateFurtureYears();
+			AddEventHandlers();
+			if(includeTime == true){
+				var fv = new formValidator();
+				var hrinput = textInputEle.parentNode.querySelector(".hourCon input");
+				var mininput = textInputEle.parentNode.querySelector(".minCon input");
+				fv.format.integerField(hrinput);
+				fv.format.integerField(mininput);
+			}
+			if(daysToolTip==true){
+				tooTipHandler = new toolTip();
+				tooTipHandler.initialize();
+			};
+			initialized=1;
 		}
-		createDatePickerBox();
-		dateType=="past"?generateYearRange():generateFurtureYears();
-		AddEventHandlers();
-		if(includeTime == true){
-			var fv = new formValidator();
-			var hrinput = textInputEle.parentNode.querySelector(".hourCon input");
-			var mininput = textInputEle.parentNode.querySelector(".minCon input");
-			fv.format.integerField(hrinput);
-			fv.format.integerField(mininput);
-		}
-		initialized=1;
 	}
 	this.showDateBox = function(){
 		if (initialized == 0){
@@ -4931,40 +4930,16 @@ function datePicker(){
 
 /***************************Tool tip*****************************/
 function toolTip(){
-}
-toolTip.set = function(element, tip=null, style=null){
-	//style[a,b] ==> a=arrow color, b=tip box styles, if a = "", then a=null applies to b too.
-	validateElement(element, "Argument 1 of the set() static method must be a valid HTML element");
-	var mainTip ="";
-	if (tip == null && element.getAttribute("title") == null){
-		throw new Error("Argument 2 of the set() static method and element title attribute cannot be null, Please specify the tip to use.");
-	}else if(tip == null && element.getAttribute("title") != null){//use title attribute
-		element.setAttribute("data-tempTitle", element.getAttribute("title"));
-		mainTip = element.getAttribute("title");
-		element.removeAttribute("title");
-	}else if (tip != null) {//Use tip
-		validateString(tip, "Argument 2 of the set() static method, must be a string");
-		if (element.getAttribute("title") != null){
-			element.setAttribute("data-tempTitle", element.getAttribute("title"));
-			element.removeAttribute("title");
-			mainTip = tip;
-		}else{
-			mainTip = tip;
-		}
-	}
-	if(style!=null){
-		validateArray(style, 2, "string", "set()");
-	}
-	var tipId = "";
+	var sy=0,sx=0, ini=false, tipBoxStyle="", arrowColor="", tipId="", initialized=0;
 	function createStyles(){
-		css = ".vToolTip {display:none;box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
+		var css = ".vToolTip {display:none;box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
 		css += ".vToolTip::before{position:absolute;content:'';}";
 		css += ".vToolTipTop::before{position:absolute;content:'';top:CALC(100%);border-left:5px solid transparent; border-right:5px solid transparent; border-top:10px solid #c08bc0;}";
-		if(style != null && style[1] != ""){
-			css += ".vToolTip{"+style[1]+"}";
+		if(tipBoxStyle != ""){
+			css += ".vToolTip{"+tipBoxStyle+"}";
 		}
-		if(style != null && style[0] != ""){
-			css += ".vToolTipTop::before{border-top:10px solid "+style[0]+";}";
+		if(arrowColor != ""){
+			css += ".vToolTipTop::before{border-top:10px solid "+arrowColor+";}";
 		}
 
 		var styleElement = document.createElement("style");
@@ -4980,20 +4955,19 @@ toolTip.set = function(element, tip=null, style=null){
 	function createTipElement(){
 		var tipElement = document.createElement("DIV");
 		var existing = document.querySelectorAll(".vToolTip");
-		existing>0?tipId = existing+1:tipId=1;
+		existing.length>0?tipId = existing.length+1:tipId=1;
 		tipElement.setAttribute("class", "vToolTip vToolTipTop");
 		tipElement.setAttribute("data-toolTipId", tipId);
-		element.setAttribute("data-TID", tipId);
-		element.setAttribute("data-vToolTipSwitch", "ON");
 		document.body.appendChild(tipElement);
 	}
-	function addEvent(){
+	function addEvent(element, mainTip){
 		var vTipCon = document.querySelector("div[data-toolTipId='"+element.getAttribute("data-TID")+"']");
 		element.addEventListener("mousemove", function(e){
+			sy=scrollY;sx=scrollX;
 			if(	element.getAttribute("data-vToolTipSwitch") == "ON"){
 				vTipCon.style["display"] == "none"?vTipCon.style["display"] = "block":null;
-				var y = (e.clientY+scrollY)-vTipCon.scrollHeight;
-				var x = ( e.clientX+scrollX) - 10;
+				var y = (e.clientY+sy)-vTipCon.scrollHeight;
+				var x = ( e.clientX+sx) - 10;
 				vTipCon.innerHTML = mainTip;
 				vTipCon.style["top"] = y+"px";
 				vTipCon.style["left"] =x+"px";
@@ -5007,30 +4981,83 @@ toolTip.set = function(element, tip=null, style=null){
 			}
 		},false);
 	}
-	createTipElement();
-	createStyles();
-	addEvent();
-}
-toolTip.on = function(element){
-	validateElement(element, "Argument 1 of the on() static method must be a valid HTML element");
-	if (element.getAttribute("data-TID") != null){
-		if(element.getAttribute("data-vToolTipSwitch") == "OFF"){
-			element.setAttribute("data-vToolTipSwitch", "ON");
-			element.getAttribute("data-tempTitle") != null?element.removeAttribute("title"):null;
+	this.initialize =  function(){
+		if(initialized == 0){
+			createTipElement();
+			createStyles();
+			// window.addEventListener("scroll", function(){
+			// 	sy=scrollY;
+			// 	sx=scrollX;
+			// }, false);
+			initialized=1;
 		}
-	}else{
-		throw new Error("No tool tip applied on target element");
-	}
-}
-toolTip.off = function(element){
-	validateElement(element, "Argument 1 of the off() static method must be a valid HTML element");
-	if (element.getAttribute("data-TID") != null){
-		if(element.getAttribute("data-vToolTipSwitch") == "ON"){
-			element.getAttribute("data-tempTitle") != null?element.setAttribute("title", element.getAttribute("data-tempTitle")):null;
-			element.setAttribute("data-vToolTipSwitch", "OFF");
+	};
+	this.config = {
+
+	};
+	this.set = function(element, tip=null){
+		validateElement(element, "Argument 1 of the set() static method must be a valid HTML element");
+		var mainTip ="";
+		if (tip == null && element.getAttribute("title") == null){
+			throw new Error("Argument 2 of the set() method and element title attribute cannot be null, Please specify the tip to use.");
+		}else if(tip == null && element.getAttribute("title") != null){//use title attribute
+			element.setAttribute("data-tempTitle", element.getAttribute("title"));
+			mainTip = element.getAttribute("title");
+			element.removeAttribute("title");
+		}else if (tip != null) {//Use tip
+			validateString(tip, "Argument 2 of the set() method, must be a string");
+			if (element.getAttribute("title") != null){
+				element.setAttribute("data-tempTitle", element.getAttribute("title"));
+				element.removeAttribute("title");
+				mainTip = tip;
+			}else{
+				mainTip = tip;
+			}
 		}
-	}else{
-		throw new Error("No tool tip applied on target element");
+		element.setAttribute("data-TID", tipId);
+		element.setAttribute("data-vToolTipSwitch", "ON");
+		addEvent(element, mainTip);
 	}
+	this.on = function(element){
+		validateElement(element, "Argument 1 of the on() static method must be a valid HTML element");
+		if (element.getAttribute("data-TID") != null){
+			if(element.getAttribute("data-vToolTipSwitch") == "OFF"){
+				element.setAttribute("data-vToolTipSwitch", "ON");
+				element.getAttribute("data-tempTitle") != null?element.removeAttribute("title"):null;
+			}
+		}else{
+			throw new Error("No tool tip applied on target element");
+		}
+	}
+	this.off = function(element){
+		validateElement(element, "Argument 1 of the off() static method must be a valid HTML element");
+		if (element.getAttribute("data-TID") != null){
+			if(element.getAttribute("data-vToolTipSwitch") == "ON"){
+				element.getAttribute("data-tempTitle") != null?element.setAttribute("title", element.getAttribute("data-tempTitle")):null;
+				element.setAttribute("data-vToolTipSwitch", "OFF");
+			}
+		}else{
+			throw new Error("No tool tip applied on target element");
+		}
+	}
+	Object.defineProperties(this.config, {
+		arrowColor:{
+			set:function(value){
+
+			}
+		},
+		tipBoxStyle:{
+			set:function(value){
+
+			}
+		}
+	})
+	Object.defineProperties(this, {
+		initialize:{writable:false},
+		config:{writable:false},
+		set:{writable:false},
+		on:{writable:false},
+		off:{writable:false}
+	})
 }
 /****************************************************************/

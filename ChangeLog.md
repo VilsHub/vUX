@@ -7,9 +7,8 @@
 
 ### Added
 - screen break points checker
-- universal style getter
 - browser Resize Property handler
-- child element index getter
+- DOM Element properties getter
 - Custom form component builder
   - Select input
   - Radio input
