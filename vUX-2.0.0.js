@@ -4931,6 +4931,7 @@ function datePicker(){
 /***************************Tool tip*****************************/
 function toolTip(){
 	var sy=0,sx=0, ini=false, tipBoxStyle="", arrowColor="", tipId="", initialized=0;
+	var scrollHandler =
 	function createStyles(){
 		var css = ".vToolTip {display:none;box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
 		css += ".vToolTip::before{position:absolute;content:'';}";
@@ -4962,12 +4963,17 @@ function toolTip(){
 	}
 	function addEvent(element, mainTip){
 		var vTipCon = document.querySelector("div[data-toolTipId='"+element.getAttribute("data-TID")+"']");
-		element.addEventListener("mousemove", function(e){
+
+		element.addEventListener("mouseover", function(){
 			sy=scrollY;sx=scrollX;
+		},false)
+		element.addEventListener("mousemove", function(e){
+
 			if(	element.getAttribute("data-vToolTipSwitch") == "ON"){
 				vTipCon.style["display"] == "none"?vTipCon.style["display"] = "block":null;
 				var y = (e.clientY+sy)-vTipCon.scrollHeight;
 				var x = ( e.clientX+sx) - 10;
+				console.log(e.clientY + " : : total=> " +y);
 				vTipCon.innerHTML = mainTip;
 				vTipCon.style["top"] = y+"px";
 				vTipCon.style["left"] =x+"px";
@@ -4986,7 +4992,10 @@ function toolTip(){
 			createTipElement();
 			createStyles();
 			// window.addEventListener("scroll", function(){
-			// 	sy=scrollY;
+			// 	var diff = scrollY -prev;
+			// 	// console.log("diff :: "+ "hh"+diff);
+			// 	sy=scrollY-diff;
+			// 	// sy = scrollY;
 			// 	sx=scrollX;
 			// }, false);
 			initialized=1;
