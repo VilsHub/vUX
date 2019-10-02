@@ -10,6 +10,8 @@ vUX is strictly built on JavaScript and has no dependencies, other than a JavaSc
 To use vUX, include the script **vUX-x.y.z.js** where **x y z** represents the version. Example is shown below:
 
     <script src="vUX/vUX-0.1.0.js"></script>
+    or
+    <script src="vUX/vUX-0.1.0.min.js"></script>
 
 **Note**
 

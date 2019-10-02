@@ -1,10 +1,10 @@
 /*
- * vUX JavaScript framework v1.0.1
- * https://framework.vilshub.com/
+ * vUX JavaScript framework v2.0.0
+ * https://library.vilshub.com/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://framework.vilshub.com/license
+ * https://library.vilshub.com/lib/vUX/license
  *
  * Date: 2019-06-20T22:30Z
  */
@@ -439,9 +439,15 @@ ajax.create = function () {
 /****************************************************************/
 
 /*********************imageManipulator***************************/
-function imageManipulator(canvasObj, image){
+function imageManipulator(canvasElement, image){
 	var self = this, initRGB = [], maxGray = [], maxGrayControl = [], maximumLoop = 0, highestDifference =0, currentLoop = 0, initGray = [], maxRGB = [], maxRGBControl = [], speed = 0, diff=0, imageData, width=300, height=300;
-
+	if (validateElement(canvasElement, "imageManipulator() constructor argument 1 must be a valid HTML element")){
+		if(canvasElement.nodeName != "CANVAS"){
+			throw new Error("imageManipulator() constructor argument 1 must be a valid HTML Canvas element");
+		}
+	}
+	validateString(image, "imageManipulator() constructor argument 2 must be string of image URL");
+	var canvasObj = canvasElement.getContext('2d'); //initialization
 	function extractImageData(type){
 		if (type == "rtg"){ //rgb to gray
 			for (var x=0;x<imageData.data.length; x+=4) {
@@ -565,32 +571,12 @@ function imageManipulator(canvasObj, image){
 		}
 	}
 
-	/****************************properties************************/
-	this.dimension = {
-	};
-	Object.defineProperty(this.dimension, "width", {
-		set: function(value){
-			if(validateNumber(value)){
-				width = value;
-			}
-		}
-	});
-	Object.defineProperty(this.dimension, "height", {
-		set: function(value){
-			if(validateNumber(value)){
-				height = value;
-			}
-		}
-	});
-	Object.defineProperty(this, "dimension", {
-		writable:false
-	});
-	/**************************************************************/
-
 	/****************************RGB to Gray************************/
 	this.initializeRgbToGray = function (Speed){
 		validateNumber(Speed);
 		var  img = new Image(); //Image object created
+		width = canvasElement.scrollWidth;
+		height = canvasElement.scrollHeight;
 		img.src = image;
 		img.onload = function(){
 			canvasObj.drawImage(img, 0, 0);
@@ -671,7 +657,9 @@ function imageManipulator(canvasObj, image){
 	/**************************Gray to RGB*************************/
 	this.initializeGrayToRgb = function (Speed){
 		validateNumber(Speed);
-		var  img = new Image(); //Image object created
+		var img = new Image(); //Image object created
+		width = canvasElement.scrollWidth;
+		height = canvasElement.scrollHeight;
 		img.src = image;
 		img.onload = function(){
 			canvasObj.drawImage(img, 0, 0);
@@ -754,288 +742,380 @@ function imageManipulator(canvasObj, image){
 		}
 	}
 	/***************************************************************/
+
+	Object.defineProperties(this, {
+		initializeRgbToGray:{writable:false},
+		initializeGrayToRgb:{writable:false},
+		rgbToGray:{writable:false},
+		grayToRgb:{writable:false},
+	})
 }
 /****************************************************************/
 
 /***********************gridBorderRectangle**********************/
 function gridBorderRectangle(){
 	var self = this, seg = 0, tf = 0, FRlinecolor = "black", FRlinewidth = 5, FRsegment = [10,2], FROrigin = [0,0], ARlinecolor = "black", ARlinewidth = 5, ARsegment = [10,2], AROrigin = [0,0], ARclockWise	= true,
-		ARduration = 3000, AReasing = "linear", ARactive="", ARstop=0;
+		ARduration = 3000, AReasing = "linear", ARactive="", ARstop=0, animationCount=1, cycle=0,fn=null;
 
 	/*******************fixed dashed rectangle starts********************/
-	this.fixedRectangle = {};
-	Object.defineProperties(this.fixedRectangle, {
+	this.fixedRectangle = {
+		config:{
+		},
+		draw : function(canvasElement){
+				validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+				canvasElement.width = canvasElement.scrollWidth;
+				canvasElement.height = canvasElement.scrollHeight;
+				var canObj = canvasElement.getContext("2d");
+
+				//Segment
+				canObj.setLineDash(FRsegment);
+
+				//lineColor
+				canObj.strokeStyle = FRlinecolor;
+
+				//lineWidth
+				canObj.lineWidth = FRlinewidth;
+
+				//origin
+				var xOrigin = FROrigin[0];
+				var yOrigin = FROrigin[1]
+				canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+				canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+				canObj.stroke();
+			}
+	};
+	Object.defineProperties(this.fixedRectangle.config, {
 			lineColor :{
-							set: function(value){
-								if(validateString(value)){
-									FRlinecolor = value;
-								}
-							}
+				set: function(value){
+					if(validateString(value)){
+						FRlinecolor = value;
+					}
+				}
 			},
 			lineWidth :{
-							set: function(value){
-								if(validateNumber(value)){
-									FRlinewidth  = value;
-								}
-							}
+				set: function(value){
+					if(validateNumber(value)){
+						if(value > 0){
+							FRlinewidth  = value;
+						}else{
+							FRlinewidth = 1;
+						}
+					}
+				}
 			},
 			segment :{
-							set: function(value){
-								if(validateArray(value, 2, "number")){
-										FRsegment = value;
-								}
-							}
+				set: function(value){
+					if(validateArray(value, 2, "number")){
+						if(value[0]>0 && value[1]>0){
+							FRsegment = value;
+						}else{
+							throw new Error("Array members for 'segment' property value must all be positive integers");
+						}
+					}
+				}
 			},
 			origin :{
-							set: function(value){
-								if(validateArray(value, 2, "number")){
-										FROrigin = value;
-								}
-							}
+				set: function(value){
+					if(validateArray(value, 2, "number")){
+							FROrigin = value;
+					}
+				}
 			},
-			draw : {
-				value: function(canvasElement){
+	});
+	Object.defineProperties(this.fixedRectangle, {
+		config:{writable:false},
+		draw:{writable:false}
+	})
+	/*******************************************************************/
+
+	/*******************animated dashed rectangle starts********************/
+	this.animatedRectangle = {
+		config:{},
+		draw : function(canvasElement){
 					validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+					if(canvasElement.getAttribute("id") == null){
+						throw new Error("Canvas element must have an ID set");
+					}
+					//Set ID
+					ARactive = canvasElement.id;
+					ARstop = 0;
+
+					//Reset canvas size
 					canvasElement.width = canvasElement.scrollWidth;
 					canvasElement.height = canvasElement.scrollHeight;
 					var canObj = canvasElement.getContext("2d");
 
 					//Segment
-					canObj.setLineDash(FRsegment);
-
+					canObj.setLineDash(ARsegment);
 
 					//lineColor
-					canObj.strokeStyle = FRlinecolor;
-
+					canObj.strokeStyle = ARlinecolor;
 
 					//lineWidth
-					canObj.lineWidth = FRlinewidth;
+					canObj.lineWidth = ARlinewidth;
 
 					//origin
-					var xOrigin = FROrigin[0];
-					var yOrigin = FROrigin[1]
-					canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-					canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-					canObj.stroke();
-				},
-				writable:false
-			}
-	});
-	/*******************************************************************/
+					var xOrigin = AROrigin[0];
+					var yOrigin = AROrigin[1];
 
-	/*******************animated dashed rectangle starts********************/
-	this.animatedRectangle = {};
-	Object.defineProperties(this.animatedRectangle, {
-			lineColor :{
-							set: function(value){
-								if(validateString(value)){
-									ARlinecolor = value;
+					//easing
+					var easing = AReasing;
+
+					//duration
+					var duration = ARduration;
+
+					//direction
+					var direction = ARclockWise; //clockwise
+
+					var animationStart = Date.now();
+					requestAnimationFrame(function animate(){
+						var tf = timing.timeFraction (animationStart, duration);
+						var progress = timing[easing](tf);
+
+						if(direction == true){ //clockwise
+							canObj.lineDashOffset = -1*(progress*100);
+						}else{//anti clockwise
+							canObj.lineDashOffset = progress*100;
+						}
+						canObj.clearRect(xOrigin,yOrigin, canvasElement.width, canvasElement.height);
+						canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+						canObj.stroke();
+						if(ARstop == 0 && ARactive == canvasElement.id && progress < 1 ){
+							requestAnimationFrame(animate);
+						}else if(progress == 1){
+							fn!=null?fn():null;
+							if(animationCount != "infinite"){
+								cycle++;
+								if(cycle < animationCount){
+									self.animatedRectangle.draw(canvasElement);
+								}else{
+									cycle=0
 								}
+							}else{
+								self.animatedRectangle.draw(canvasElement);
 							}
+						}
+					})
+				},
+		stop :function(){
+			ARstop = 1;
+		}
+	};
+	Object.defineProperties(this.animatedRectangle.config, {
+			lineColor :{
+				set: function(value){
+					if(validateString(value)){
+						ARlinecolor = value;
+					}
+				}
 			},
 			lineWidth :{
-							set: function(value){
-								if(validateNumber(value)){
-									ARlinewidth  = value;
+				set: function(value){
+					if(validateNumber(value)){
+						if(value > 0){
+							ARlinewidth  = value;
+						}else{
+							ARlinewidth = 1;
+						}
+					}
+				}
+			},
+			iterationCount:{
+				set:function(value){
+					if(typeof value == "number" || typeof value == "string"){
+						if(typeof value == "number"){
+							var val = new formValidator();
+							if(val.validate.integer(value)){
+								if(value < 0){
+									animationCount = 1;
+								}else{
+									animationCount = value;
+									console.log(animationCount)
 								}
+							}else{
+								throw new Error("'iterationCount' property numeric value must be an integer")
 							}
+						}else if (typeof value == "string") {
+							if(value.toLowerCase() == "infinite"){
+								animationCount = value.toLowerCase();
+							}else{
+								throw new Error("'iterationCount' property string value can only be 'infinite'");
+							}
+						}
+					}else {
+						throw new Error("'iterationCount' property value must be a numeric or a string of value 'infinite'")
+					}
+				}
 			},
 			segment :{
-							set: function(value){
-								if(validateArray(value, 2, "number")){
-										ARsegment = value;
-								}
-							}
+				set: function(value){
+					if(validateArray(value, 2, "number")){
+						if(value[0]>0 && value[1]>0){
+							ARsegment = value;
+						}else{
+							throw new Error("Array members for 'segment' property value must all be positive integers");
+						}
+					}
+				}
 			},
 			origin :{
-							set: function(value){
-								if(validateArray(value, 2, "number")){
-										AROrigin = value;
-								}
-							}
-			},
-			active :{
-							set: function(value){
-								if(validateString(value)){
-										ARactive = value;
-								}
-							}
-			},
-			stop :{
-							set: function(value){
-								if(validateNumber(value)){
-										ARactive = value;
-								}
-							}
+				set: function(value){
+					if(validateArray(value, 2, "number")){
+							AROrigin = value;
+					}
+				}
 			},
 			easing :{
-							set: function(value){
-								if(validateString(value)){
-									if (validateObjectMember(timing, value)){
-										AReasing = value;
-									}
-								}
-							}
+				set: function(value){
+					if(validateString(value)){
+						if (validateObjectMember(timing, value)){
+							AReasing = value;
+						}
+					}
+				}
 			},
 			duration :{
-							set: function(value){
-								if(validateNumber(value)){
-										ARduration = value;
-								}
-							}
+				set: function(value){
+					if(validateNumber(value)){
+						if(value>0){
+							ARduration = value;
+						}else{
+							ARduration = 0;
+						}
+					}
+				}
 			},
 			clockWise :{
-							set: function(value){
-								if(validateBoolean(value)){
-										ARclockWise = value;
-								}
-							}
-			},
-			draw : {
-						value: function(canvasElement){
-							validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
-							//Reset canvas size
-							canvasElement.width = canvasElement.scrollWidth;
-							canvasElement.height = canvasElement.scrollHeight;
-							var canObj = canvasElement.getContext("2d");
-
-							//Segment
-							canObj.setLineDash(ARsegment);
-
-							//lineColor
-							canObj.strokeStyle = ARlinecolor;
-
-							//lineWidth
-							canObj.lineWidth = ARlinewidth;
-
-							//origin
-							var xOrigin = AROrigin[0];
-							var yOrigin = AROrigin[1];
-
-
-							//easing
-							var easing = AReasing;
-
-
-							//duration
-							var duration = ARduration;
-
-
-							//direction
-							var direction = ARclockWise; //clockwise
-
-							var animationStart = Date.now();
-
-							requestAnimationFrame(function animate(){
-
-								var tf = timing.timeFraction (animationStart, duration);
-								var progress = timing[easing](tf);
-
-								if(direction == true){ //clockwise
-									canObj.lineDashOffset = -1*(progress*100);
-								}else{//anti clockwise
-									canObj.lineDashOffset = progress*100;
-								}
-								canObj.clearRect(xOrigin,yOrigin, canvasElement.width, canvasElement.height);
-								canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-								canObj.stroke();
-
-
-								if(ARstop == 0 && ARactive == canvasElement.id && progress < 1 ){
-									requestAnimationFrame(animate);
-								}
-
-						})
+				set: function(value){
+					if(validateBoolean(value)){
+							ARclockWise = value;
 					}
-		}
-
+				}
+			},
+			fn:{
+				set:function(value){
+					if(validateFunction(value, "'config.fn' property value must be a function")){
+						fn=value;
+					}
+				}
+			}
 });
+	Object.defineProperties(this.animatedRectangle, {
+		config:{writable:false},
+		draw:{writable:false},
+		stop:{writable:false}
+	})
+	/*******************************************************************/
+
 	Object.defineProperty(this, "animatedRectangle", {writable:false});
 	Object.defineProperty(this, "fixedRectangle", {writable:false});
-	/*******************************************************************/
 }
 /****************************************************************/
 
 /************************loadProgress****************************/
-function loadProgressIndicator(canvasElement, canvasObj){
-	var self = this, start =12,	progressLabel = "on", progressBackground	= "#ccc", strokeWidth	= 10, strokeColor	="yellow", radius	= 50, percentageFontColor	= "white",
+function loadProgressIndicator(canvasElement){
+	var self = this, start =12,	progressLabel = true, progressBackground	= "#ccc", strokeWidth	= 10, strokeColor	="yellow", radius	= 50, percentageFontColor	= "white",
 percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelFont	= "normal normal .9vw Verdana";
-	this.circularProgress = {
 
-	};
-	Object.defineProperties(this.circularProgress, {
-		start:{
-			set: function(value){
-				if(validateNumber(value)){
-					start = value;
+	if (validateElement(canvasElement, "loadProgressIndicator() constructor argument 1 must be a valid HTML element")){
+		if(canvasElement.nodeName != "CANVAS"){
+			throw new Error("imageManipulator() constructor argument 1 must be a valid HTML Canvas element");
+		}
+	}
+	var canvasObj = canvasElement.getContext('2d'); //initialization
+	this.circularProgress = {
+		config:{
+			start:{
+				set: function(value){
+					if(validateNumber(value, "'start' property value must be numeric")){
+						start = value;
+					}
+				}
+			},
+			progressLabel:{
+				set: function(value){
+					if(validateBoolean(value, "'progressLabel' property value must be boolean")){
+						progressLabel = value;
+					}
+				}
+			},
+			progressBackground:{
+				set: function(value){
+					if(validateString(value, "'progressBackground' property value must be string of valid CSS color")){
+						progressBackground = value;
+					}
+				}
+			},
+			strokeWidth:{
+				set: function(value){
+					if(validateNumber(value, "'strokeWidth' property value must be numeric")){
+						var test = new formValidator();
+						if(test.validate.integer(value)){
+							strokeWidth = value;
+						}else {
+							throw new Error ("'strokeWidth' property value must be integer");
+						}
+					}
+				}
+			},
+			strokeColor:{
+				set: function(value){
+					if(validateString(value, "'strokeColor' property value must be string of valid CSS color")){
+						strokeColor = value;
+					}
+				}
+			},
+			radius:{
+				set: function(value){
+					if(validateNumber(value, "'radius' property value must be numeric")){
+						var test = new formValidator();
+						if(test.validate.integer(value)){
+							radius = value;
+						}else {
+							throw new Error ("'radius' property value must be integer");
+						}
+					}
+				}
+			},
+			percentageFontColor:{
+				set: function(value){
+					if(validateString(value, "'percentageFontColor' property value must be string of valid CSS color")){
+						percentageFontColor = value;
+					}
+				}
+			},
+			percentageFont:{
+				set: function(value){
+					if(validateString(value, "'percentageFont' property value must be string of valid CSS font property value")){
+						percentageFont = value;
+					}
+				}
+			},
+			labelFontColor:{
+				set: function(value){
+					if(validateString(value, "'labelFontColor' property value must be string of valid CSS color")){
+						LabelFontColor = value;
+					}
+				},
+				get:function(){
+					console.log(555);
+				}
+			},
+			labelFont:{
+				set: function(value){
+					if(validateString(value, "'labelFont' property value must be string of valid CSS font property value")){
+						LabelFont = value;
+					}
 				}
 			}
 		},
-		progressLabel:{
-			set: function(value){
-				if(validateString(value)){
-					progressLabel = value;
+		show: function(progress, label){
+				var test = new formValidator();
+				if (test.validate.integer(progress) == false){
+					throw new Error("circularProgress.show() method argument 1 must be an integer");
 				}
-			}
-		},
-		progressBackground:{
-			set: function(value){
-				if(validateString(value)){
-					progressBackground = value;
-				}
-			}
-		},
-		strokeWidth:{
-			set: function(value){
-				if(validateNumber(value)){
-					strokeWidth = value;
-				}
-			}
-		},
-		strokeColor:{
-			set: function(value){
-				if(validateString(value)){
-					strokeColor = value;
-				}
-			}
-		},
-		radius:{
-			set: function(value){
-				if(validateNumber(value)){
-					radius = value;
-				}
-			}
-		},
-		percentageFontColor:{
-			set: function(value){
-				if(validateString(value)){
-					percentageFontColor = value;
-				}
-			}
-		},
-		percentageFont:{
-			set: function(value){
-				if(validateString(value)){
-					percentageFont = value;
-				}
-			}
-		},
-		labelFontColor:{
-			set: function(value){
-				if(validateString(value)){
-					LabelFontColor = value;
-				}
-			}
-		},
-		labelFont:{
-			set: function(value){
-				if(validateNumber(value)){
-					LabelFont = value;
-				}
-			}
-		},
-		show:{
-			value : function(progress, label){
+				validateString(label, "circularProgress.show() method argument 2 must be a string");
+
 				var startPoint = 0;
 				var fprog = roundToDec(progress, 2);
 				if(start == 12){
@@ -1048,7 +1128,7 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 
 				var x = (50/100) * canvasElement.scrollWidth;
 				var y = (50/100) * canvasElement.scrollHeight;
-				if(progressLabel == "on"){
+				if(progressLabel == true){
 					var fontY = (46/100) * canvasElement.scrollHeight;
 					var labelY = (55/100) * canvasElement.scrollHeight;
 				}else{
@@ -1072,7 +1152,7 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 				canvasObj.font = percentageFont;
 				canvasObj.fillStyle = percentageFontColor;
 				canvasObj.fillText(fprog+"%", x, fontY);
-				if(progressLabel == "on"){ //label
+				if(progressLabel == true){ //label
 					canvasObj.font = LabelFont;
 					canvasObj.fillStyle = LabelFontColor;
 					canvasObj.fillText(label, x, labelY);
@@ -1085,12 +1165,13 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 				canvasObj.arc(x,y,radius,startPoint,percentageToAngle(progress, start), false);
 				canvasObj.stroke();
 			}
-		}
-	});
+	};
 	Object.defineProperties(this, {
-		circularProgress:{
-			writable:false
-		}
+		circularProgress:{writable:false}
+	});
+	Object.defineProperties(this.circularProgress, {
+		config:{writable:false},
+		show:{writable:false}
 	});
 }
 /****************************************************************/
@@ -1278,7 +1359,7 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 	//private members end
 
 
-	this.options = {
+	this.config = {
 	}
 	Object.defineProperties(this, {
 		currentProgress:{
@@ -1309,7 +1390,7 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 		}
 
 	});
-	Object.defineProperties(this.options, {
+	Object.defineProperties(this.config, {
 			callBack:{
 				set:function(value){
 					if(validateBoolean(value)){
@@ -1327,7 +1408,11 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 			delay:{
 				set:function(value){
 					if(validateNumber(value)){
-						options.delay = value
+						if(value > 0){
+							options.delay = value
+						}else {
+							options.delay = 0
+						}
 					}
 				}
 			}
@@ -1420,7 +1505,8 @@ function typeWriter(){
 
 		}
 	}
-	Object.defineProperties(this, {
+	this.config={}
+	Object.defineProperties(this.config, {
 		callBackDelay:{
 			set:function(value){
 				if(validateNumber(value)){
@@ -1435,6 +1521,11 @@ function typeWriter(){
 				}
 			}
 		}
+	})
+	Object.defineProperties(this, {
+		writePlainText:{writable:false},
+		writeParagraphText:{writable:false},
+		config:{writable:false}
 	})
 }
 /****************************************************************/
@@ -1492,6 +1583,109 @@ DOMelement.cssStyle = function (element, property){
 	}
 	var propertyValue = styleHandler[property];
 	return propertyValue;
+},
+DOMelement.centerY = function (element){
+	validateElement(element, "DOMelement.centerY() static method argument 1 must be a valid HTML element");
+	var positionType = DOMelement.cssStyle(element, "position");
+	var elementParent = element.parentNode;
+	var support = DOMelement.cssStyle(element, "transform");
+
+	if(positionType != "static"){//Positioned element
+		if(support != undefined){//Transform supported
+			//Centralize
+			element.style["top"] = "50%";
+			element.style["transform"] = "translateY(-50%)";
+		}else{//Transform not supported
+			function centerY(){
+				var parentHeight = elementParent.scrollHeight;
+				var elementHeight = element.scrollHeight;
+				var top = (parentHeight - elementHeight)/2;
+				element.style["top"] = top+"px";
+			}
+			centerY();
+			window.addEventListener("resize", function(){
+				centerY();
+			}, false)
+		}
+	}else{ // static element
+		function centerY(){
+			var parentHeight = elementParent.scrollHeight;
+			var elementHeight = element.scrollHeight;
+			var marginTop = (parentHeight - elementHeight)/2;
+			elementParent.style["padding-top"] = "1px";
+			element.style["margin-top"] = marginTop+"px";
+		}
+		centerY();
+		window.addEventListener("resize", function(){
+			centerY();
+		}, false);
+	}
+}
+DOMelement.centerX = function (element){
+	validateElement(element, "DOMelement.centerX() static method argument 1 must be a valid HTML element");
+	var positionType = DOMelement.cssStyle(element, "position");
+	var elementParent = element.parentNode;
+	var support = DOMelement.cssStyle(element, "transform");
+
+	if(positionType != "static"){//Positioned element
+		if(support != undefined){//Transform supported
+			//Centralize
+			element.style["left"] = "50%";
+			element.style["transform"] = "translateX(-50%)";
+		}else{//Transform not supported
+			var parentWidth = elementParent.scrollWidth;
+			var elementWidth = element.scrollWidth;
+			var left = (parentWidth - elementWidth)/2;
+			element.style["left"] = left+"px";
+		}
+	}else{ // static element
+		element.style["margin-left"] ="auto";
+		element.style["margin-right"] ="auto";
+	}
+}
+DOMelement.center = function (element){
+	validateElement(element, "DOMelement.centerY() static method argument 1 must be a valid HTML element");
+	var positionType = DOMelement.cssStyle(element, "position");
+	var elementParent = element.parentNode;
+	var support = DOMelement.cssStyle(element, "transform");
+
+	if(positionType != "static"){//Positioned element
+		if(support != undefined){//Transform supported
+			//Centralize
+			element.style["top"] = "50%";
+			element.style["left"] = "50%";
+			element.style["transform"] = "translateY(-50%) translateX(-50%)";
+		}else{
+			function center(){
+				var parentHeight = elementParent.scrollHeight;
+				var elementHeight = element.scrollHeight;
+				var top = (parentHeight - elementHeight)/2;
+				var parentWidth = elementParent.scrollWidth;
+				var elementWidth = element.scrollWidth;
+				var left = (parentWidth - elementWidth)/2;
+				element.style["left"] = left+"px";
+				element.style["top"] = top+"px";
+			}
+			center();
+			window.addEventListener("resize", function(){
+				center();
+			}, false);
+		}
+	}else{ // static element
+		element.style["margin-left"] ="auto";
+		element.style["margin-right"] ="auto";
+		function centerY(){
+			var parentHeight = elementParent.scrollHeight;
+			var elementHeight = element.scrollHeight;
+			var marginTop = (parentHeight - elementHeight)/2;
+			elementParent.style["padding-top"] = "1px";
+			element.style["margin-top"] = marginTop+"px";
+		}
+		centerY();
+		window.addEventListener("resize", function(){
+			centerY();
+		}, false);
+	}
 }
 /****************************************************************/
 
@@ -1886,7 +2080,6 @@ function browserResizeProperty(){
 			}
 		}
 	})
-
 }
 /****************************************************************/
 
