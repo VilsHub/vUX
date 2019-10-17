@@ -12,9 +12,6 @@
 "use strict";
 
 /*************************Helper functions***********************/
-function roundToDec(value, decimals) {
-	return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
-};
 function percentageToAngle(percentage, start){
 	var angle = (percentage/100)*(2*Math.PI);
 	if(start == 12){
@@ -1013,11 +1010,12 @@ function gridBorderRectangle(){
 /****************************************************************/
 
 /************************loadProgress****************************/
-function loadProgressIndicator(canvasElement){
+function progressIndicator(canvasElement){
 	var self = this, start =12,	progressLabel = true, progressBackground	= "#ccc", strokeWidth	= 10, strokeColor	="yellow", radius	= 50, percentageFontColor	= "white",
 percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelFont	= "normal normal .9vw Verdana";
 
-	if (validateElement(canvasElement, "loadProgressIndicator() constructor argument 1 must be a valid HTML element")){
+//start => can either be 12 0r 3, anything else will default to zero
+	if (validateElement(canvasElement, "progressIndicator() constructor argument 1 must be a valid HTML element")){
 		if(canvasElement.nodeName != "CANVAS"){
 			throw new Error("imageManipulator() constructor argument 1 must be a valid HTML Canvas element");
 		}
@@ -1025,99 +1023,21 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 	var canvasObj = canvasElement.getContext('2d'); //initialization
 	this.circularProgress = {
 		config:{
-			start:{
-				set: function(value){
-					if(validateNumber(value, "'start' property value must be numeric")){
-						start = value;
-					}
-				}
-			},
-			progressLabel:{
-				set: function(value){
-					if(validateBoolean(value, "'progressLabel' property value must be boolean")){
-						progressLabel = value;
-					}
-				}
-			},
-			progressBackground:{
-				set: function(value){
-					if(validateString(value, "'progressBackground' property value must be string of valid CSS color")){
-						progressBackground = value;
-					}
-				}
-			},
-			strokeWidth:{
-				set: function(value){
-					if(validateNumber(value, "'strokeWidth' property value must be numeric")){
-						var test = new formValidator();
-						if(test.validate.integer(value)){
-							strokeWidth = value;
-						}else {
-							throw new Error ("'strokeWidth' property value must be integer");
-						}
-					}
-				}
-			},
-			strokeColor:{
-				set: function(value){
-					if(validateString(value, "'strokeColor' property value must be string of valid CSS color")){
-						strokeColor = value;
-					}
-				}
-			},
-			radius:{
-				set: function(value){
-					if(validateNumber(value, "'radius' property value must be numeric")){
-						var test = new formValidator();
-						if(test.validate.integer(value)){
-							radius = value;
-						}else {
-							throw new Error ("'radius' property value must be integer");
-						}
-					}
-				}
-			},
-			percentageFontColor:{
-				set: function(value){
-					if(validateString(value, "'percentageFontColor' property value must be string of valid CSS color")){
-						percentageFontColor = value;
-					}
-				}
-			},
-			percentageFont:{
-				set: function(value){
-					if(validateString(value, "'percentageFont' property value must be string of valid CSS font property value")){
-						percentageFont = value;
-					}
-				}
-			},
-			labelFontColor:{
-				set: function(value){
-					if(validateString(value, "'labelFontColor' property value must be string of valid CSS color")){
-						LabelFontColor = value;
-					}
-				},
-				get:function(){
-					console.log(555);
-				}
-			},
-			labelFont:{
-				set: function(value){
-					if(validateString(value, "'labelFont' property value must be string of valid CSS font property value")){
-						LabelFont = value;
-					}
-				}
-			}
+
 		},
 		show: function(progress, label){
 				var test = new formValidator();
 				if (test.validate.integer(progress) == false){
 					throw new Error("circularProgress.show() method argument 1 must be an integer");
+				}else{
+					if(progress < 0 || progress >100){
+						throw new Error("circularProgress.show() method argument 1 must be between 0 - 100");
+					}
 				}
 				validateString(label, "circularProgress.show() method argument 2 must be a string");
 
 				var startPoint = 0;
-				var fprog = roundToDec(progress, 2);
+				var fprog = parseInt(progress);
 				if(start == 12){
 					startPoint = -0.5*Math.PI;
 				}else if(start == 3){
@@ -1173,24 +1093,114 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 		config:{writable:false},
 		show:{writable:false}
 	});
+	Object.defineProperties(this.circularProgress.config, {
+		start:{
+			set: function(value){
+				if(validateNumber(value, "'start' property value must be numeric")){
+					start = value;
+				}
+			}
+		},
+		progressLabel:{
+			set: function(value){
+				if(validateBoolean(value, "'progressLabel' property value must be boolean")){
+					progressLabel = value;
+				}
+			}
+		},
+		progressBackground:{
+			set: function(value){
+				if(validateString(value, "'progressBackground' property value must be string of valid CSS color")){
+					progressBackground = value;
+				}
+			}
+		},
+		strokeWidth:{
+			set: function(value){
+				if(validateNumber(value, "'strokeWidth' property value must be numeric")){
+					var test = new formValidator();
+					if(test.validate.integer(value)){
+						strokeWidth = value;
+					}else {
+						throw new Error ("'strokeWidth' property value must be integer");
+					}
+				}
+			}
+		},
+		strokeColor:{
+			set: function(value){
+				if(validateString(value, "'strokeColor' property value must be string of valid CSS color")){
+					strokeColor = value;
+				}
+			}
+		},
+		radius:{
+			set: function(value){
+				if(validateNumber(value, "'radius' property value must be numeric")){
+					var test = new formValidator();
+					if(test.validate.integer(value)){
+						radius = value;
+					}else {
+						throw new Error ("'radius' property value must be integer");
+					}
+				}
+			}
+		},
+		percentageFontColor:{
+			set: function(value){
+				if(validateString(value, "'percentageFontColor' property value must be string of valid CSS color")){
+					percentageFontColor = value;
+				}
+			}
+		},
+		percentageFont:{
+			set: function(value){
+				if(validateString(value, "'percentageFont' property value must be string of valid CSS font property value")){
+					percentageFont = value;
+				}
+			}
+		},
+		labelFontColor:{
+			set: function(value){
+				if(validateString(value, "'labelFontColor' property value must be string of valid CSS color")){
+					LabelFontColor = value;
+				}
+			},
+			get:function(){
+				console.log(555);
+			}
+		},
+		labelFont:{
+				set: function(value){
+					if(validateString(value, "'labelFont' property value must be string of valid CSS font property value")){
+						LabelFont = value;
+					}
+				}
+			}
+	})
 }
 /****************************************************************/
 
-/************************ResourceLoader**************************/
-function resourceLoader (canvasElement, canvasObj, progressObj){
+/************************ResourceIO**************************/
+function resourceIO(){
 	//private members starts
-	var self 	= this, imageXhr = [],	imageUrls = [],	ImageLoadOk = 0,	FontXhr 	= [],	FontUrls 	= [],	FontLoadOk	= 0,	pageXhr	= [],	pageUrls 	= [],	pageLoadOk	= 0,currentPrg = 0,	currentLbl = "", resourceType = "text";
+	var self 	= this, imageXhr = [],	imageUrls = [],	ImageLoadOk = 0, FontXhr = [], FontUrls = [],	FontLoadOk	= 0,	pageXhr	= [],	pageUrls 	= [],	pageLoadOk	= 0,resourceType = "text", total=0;
 	var options	= {
-			callBack: false,
-			fn		: function(){},
-			delay	: 0
+			ICompleteCallBackfn		: null,
+			ICompleteCallBackDelay	: 0,
+			OCompleteCallBackfn		: null,
+			OCompleteCallBackDelay	: 0,
+			Oprogressfn : null,
+			writeResource:true,
+			imageElements:null,
+			textElements:null
 	}
 	function initializeResource(resource){
 		if(resourceType == "image"){
 			for(var x=0; x<resource.length; x++){
 				imageXhr[x] = new XMLHttpRequest();
 				imageXhr[x].responseType = 'blob';
-				imageUrls[x] = resource[x].getAttribute("data-vbg");
+				imageUrls[x] = resource[x];
 				if (x == resource.length-1){
 					assignEventHandlers();
 				}
@@ -1199,7 +1209,7 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 			for(var x=0; x<resource.length; x++){
 				FontXhr[x] = new XMLHttpRequest();
 				FontXhr[x].responseType = 'text';
-				FontUrls[x] = resource[x].getAttribute("data-vfont");
+				FontUrls[x] = resource[x];
 				if (x == resource.length-1){
 					assignEventHandlers();
 				}
@@ -1208,7 +1218,7 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 			for(var x=0; x<resource.length; x++){
 				pageXhr[x] = new XMLHttpRequest();
 				pageXhr[x].responseType = 'text';
-				pageUrls[x] = resource[x].getAttribute("data-vContent");
+				pageUrls[x] = resource[x];
 				if (x == resource.length-1){
 					assignEventHandlers();
 				}
@@ -1219,138 +1229,106 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 		if(resourceType == "image"){
 			imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				imageXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
-				if (arrayIndex == resource.length-1){
+				if (arrayIndex == imageXhr.length-1){
 					get();
 				}
 			})
 		}else if (resourceType == "font"){
 			FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				FontXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
-				if (arrayIndex == resource.length-1){
+				if (arrayIndex == FontXhr.length-1){
 					get();
 				}
 			})
 		}else if (resourceType == "text"){
 			pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				pageXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
-				//Xreq.onload = function(){
-
-				if (arrayIndex == resource.length-1){
+				if (arrayIndex == pageXhr.length-1){
 					get();
 				}
 			})
 		}
-
 	};
 	function get(){
 		if(resourceType == "image"){
 			imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				imageXhr[arrayIndex].open("GET", imageUrls[arrayIndex], true);
-				if (arrayIndex == resource.length-1){
+				if (arrayIndex == imageXhr.length-1){
 					 fireGet();
 				}
 			})
 		}else if(resourceType == "font"){
 			FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				FontXhr[arrayIndex].open("GET", FontUrls[arrayIndex], true);
-				if (arrayIndex == resource.length-1){
+				if (arrayIndex == FontXhr.length-1){
 					 fireGet();
 				}
 			})
 		}else if(resourceType == "text"){
 			pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				pageXhr[arrayIndex].open("GET", pageUrls[arrayIndex], true);
-				if (arrayIndex == resource.length-1){
+				if (arrayIndex == pageXhr.length-1){
 					 fireGet();
 				}
 			})
 		}
 	}
+	function callBack(){
+		if(options.OCompleteCallBackfn != null){
+			setTimeout(function(){
+				options.OCompleteCallBackfn();
+			}, options.OCompleteCallBackDelay);
+		}
+	}
 	function progCalc(index){
 		if(resourceType == "image"){
 			if(imageXhr[index].status == 200){
-				var reader  = new FileReader();
-				reader.onloadend = function () {
-					ImageLoadOk += 1;
-					var total = (ImageLoadOk/imageXhr.length)*100;
-					resource[index].style["background-image"] = "url("+reader.result+")";
-					currentPrg = total;
-					currentLbl = "Loading images";
-					progressObj.circularProgress.show(currentPrg, currentLbl);
-					if(total == 100){
-						if (options.callBack == true){
-							setTimeout(function(){
-								options.fn();
-							}, options.delay);
+				if(options.writeResource == true){
+					var reader  = new FileReader();
+					reader.onloadend = function () {
+						ImageLoadOk += 1;
+						options.imageElements[index].style["background-image"] = "url("+reader.result+")";
+						total = (ImageLoadOk/imageXhr.length)*100;
+						options.Oprogressfn != null?options.Oprogressfn():null;
+						if(total == 100){
+							callBack();
 						}
-					}
-				};
-				reader.readAsDataURL(imageXhr[index].response);
-			}else{
-				progressObj.circularProgress.show(0, "Error occured");
+					};
+					reader.readAsDataURL(imageXhr[index].response);
+				}
 			}
 		}else if(resourceType == "font"){
 			if(FontXhr[index].status == 200){
 				FontLoadOk += 1;
-				var total = (FontLoadOk/FontXhr.length)*100;
-				currentPrg = total;
-				currentLbl = "Loading fonts"
-				progressObj.circularProgress.show(currentPrg, currentLbl);
+				total = (FontLoadOk/FontXhr.length)*100;
+				options.Oprogressfn != null?options.Oprogressfn():null;
 				if(total == 100){
-					if (options.callBack == true){
-						setTimeout(function(){
-							options.fn();
-						}, options.delay);
-					}
+					callBack();
 				}
-			}else{
-				progressObj.circularProgress.show(0, "Error "+FontXhr[index].status);
 			}
 		}else if(resourceType == "text"){
 			if(pageXhr[index].status == 200){
 				pageLoadOk += 1;
-				var total = (pageLoadOk/pageXhr.length)*100;
-				resource[index].innerHTML = pageXhr[index].responseText;
-				currentPrg = total;
-				currentLbl = "Loading content"
-				progressObj.circularProgress.show(currentPrg, currentLbl);
+				total = (pageLoadOk/pageXhr.length)*100;
+				options.Oprogressfn != null?options.Oprogressfn():null;
+				options.textElements[index].innerHTML = pageXhr[index].responseText;
 				if(total == 100){
-
-					if (options.callBack == true){
-						setTimeout(function(){
-							options.fn();
-						}, options.delay);
-					}
+					callBack();
 				}
-			}else{
-				currentPrg = 0;
-				currentLbl = "Error "+pageXhr[index].status;
-				progressObj.circularProgress.show(currentPrg, currentLbl);
 			}
 		}
 	}
 	function fireGet(){
 		if(resourceType == "image"){
-			currentLbl = "Loading images";
-			currentPrg = 0;
-			progressObj.circularProgress.show(currentPrg, currentLbl);
 			imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				imageXhr[arrayIndex].send();
 			})
 		}else if(resourceType == "font"){
-			currentLbl = "Loading fonts";
-			currentPrg = 0;
-			progressObj.circularProgress.show(currentPrg, currentLbl);
 			FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
 				FontXhr[arrayIndex].send();
 			})
 		}else if(resourceType == "text"){
-
-			currentLbl = "Loading content";
-			currentPrg = 0;
-			progressObj.circularProgress.show(currentPrg, currentLbl);
 			pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
-
 				pageXhr[arrayIndex].send();
 			})
 		}
@@ -1358,62 +1336,107 @@ function resourceLoader (canvasElement, canvasObj, progressObj){
 	}
 	//private members end
 
-
-	this.config = {
+	this.uploader = {
+		config : {
+		}
 	}
-	Object.defineProperties(this, {
-		currentProgress:{
-			get:function(){
-				return currentPrg;
-			}
-		},
-		currentLabel	:	{
-			get: function(){
-				return currentLbl;
-			}
-		},
-		resourceType: {
-			set: function(value){
-				if (validateString(value)){
-					resourceType = value;
-				}
+	this.downloader = {
+		config : {
+		}
+	}
+	this.download = function(resource){
+		initializeResource(resource);
+	}
+	this.upload = function(resource){}
 
-			}
-		},
-		options:{
+	Object.defineProperties(this, {
+		uploader:{
 			writable:false
 		},
-		get:{
-			value: function(resource){
-				initializeResource(resource);
+		downloader:{
+			writable:false
+		},
+		upload:{
+			writable:false
+		},
+		download:{
+			writable:false
+		}
+	});
+	Object.defineProperties(this.downloader, {
+		config:{
+			writable:false
+		},
+		status:{
+			get:function(){
+				return parseInt(total);
 			}
 		}
-
 	});
-	Object.defineProperties(this.config, {
-			callBack:{
-				set:function(value){
-					if(validateBoolean(value)){
-						options.callBack = value
-					}
-				}
-			},
-			fn:{
+	Object.defineProperties(this.downloader.config, {
+			callBackFn:{
 				set:function(value){
 					if (validateFunction(value)){
-						options.fn = value
+						options.OCompleteCallBackfn = value
 					}
 				}
 			},
-			delay:{
+			callBackDelay:{
 				set:function(value){
 					if(validateNumber(value)){
 						if(value > 0){
-							options.delay = value
+							options.OCompleteCallBackDelay = value;
 						}else {
-							options.delay = 0
+							options.OCompleteCallBackDelay = 0;
 						}
 					}
+				}
+			},
+			resourceType: {
+				set: function(value){
+					if (validateString(value)){
+						if(matchString(value.toLowerCase(), ["image", "text", "font"])){
+								if(value.toLowerCase() == "image"){
+									if(options.writeResource == true && options.imageElements == null){
+										throw new Error("No images element set, set using the 'downloader.imageElements' properties");
+									}else{
+										resourceType = value.toLowerCase();
+									}
+								}else if (value.toLowerCase() == "text") {
+									if(options.writeResource == true && options.textElements == null){
+										throw new Error("No text elements set, set using the 'downloader.textElements' properties");
+									}else{
+										resourceType = value.toLowerCase();
+									}
+								}else{
+									resourceType = value.toLowerCase();
+								}
+						}
+					}
+				}
+			},
+			writeResource:{
+				set:function(value){
+					validateBoolean(value, "'writeResource' property value must be a boolean");
+					options.writeResource = value;
+				}
+			},
+			imageElements:{
+				set:function(value){
+					validateHTMLObject(value, "'imageElements' property must be an HTMLObject");
+					options.imageElements = value;
+				}
+			},
+			textElements:{
+				set:function(value){
+					validateHTMLObject(value, "'textElements' property must be an HTMLObject");
+					options.textElements = value;
+				}
+			},
+			progressCallBackFn :{
+				set:function(value){
+					validateFunction(value, "'progressCallBack' property value must be a function");
+					options.Oprogressfn = value;
 				}
 			}
 	});
@@ -1457,7 +1480,6 @@ ToBaseGridMultiple.centerVertically = function (targetElement, height){
 /**************************TypeWriter****************************/
 function typeWriter(){
 	var PlainTextCounter = 0,	ParagraphTextCounter = 0,	ActiveParagraph = 0, self = this, n, callBackDelay=0, speed= [10,20];
-
 	this.writePlainText = function(con, text, fn){
 		validateElement(con);
 		validateString(text);
@@ -1536,23 +1558,23 @@ function ScreenBreakPoint(breakPoints){
 
 	var screenMode = "";
   var baseBeakPoints = {
-		large:1000, //large start point
-		medium: 600 //medium start point
+		largeStart:1000, //large start point
+		mediumStart: 600 //medium start point
 	}
 	validateObjectMembers(breakPoints, baseBeakPoints);
 
-	if(validateNumber(breakPoints["large"])){
-		baseBeakPoints.large = breakPoints["large"];
+	if(validateNumber(breakPoints["largeStart"])){
+		baseBeakPoints.largeStart = breakPoints["largeStart"];
 	}
-	if(validateNumber(breakPoints["medium"])){
-		baseBeakPoints.large = breakPoints["medium"];
+	if(validateNumber(breakPoints["mediumStart"])){
+		baseBeakPoints.mediumStart = breakPoints["mediumStart"];
 	}
 	Object.defineProperties(this, {
 		screen : {
 			get:function(){
-				if(innerWidth > baseBeakPoints["large"]){
+				if(innerWidth > baseBeakPoints["largeStart"]){
 					return {Mode:"large", actualSize:innerWidth};
-				}else if (innerWidth >= baseBeakPoints["medium"] && innerWidth < baseBeakPoints["large"]) {
+				}else if (innerWidth >= baseBeakPoints["mediumStart"] && innerWidth < baseBeakPoints["largeStart"]) {
 					return {Mode:"medium", actualSize:innerWidth};
 				}else {
 					return {Mode:"small", actualSize:innerWidth};
@@ -1648,7 +1670,6 @@ DOMelement.center = function (element){
 	var positionType = DOMelement.cssStyle(element, "position");
 	var elementParent = element.parentNode;
 	var support = DOMelement.cssStyle(element, "transform");
-
 	if(positionType != "static"){//Positioned element
 		if(support != undefined){//Transform supported
 			//Centralize
@@ -3366,6 +3387,8 @@ function formValidator(){
 /****************************Modal*******************************/
 function modalDisplayer(){
 	var self=this,cssWidth="",currentForm=null,id=null, effectName="none", bodyOldPosition = "", mainFormCon = "", closeButton=null, mainFormConInner="", overlayType="", colorOverlayStyle="", maxupScrollUpStop =0, totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, computedModalHeight=0, computedModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50, reachedBottom=0;
+	var modalWidths = ["500px", "500px", "86%"], brkpoints={largeStart:1000, mediumStart:520};
+
 	var effects ={
 		none:function(modal){
 			var newModal = document.createElement("DIV");
@@ -3736,6 +3759,7 @@ function modalDisplayer(){
 	}
 	function addEventhandler(){
 		var scrollHandler = new  verticalScroll();
+		var sbpoint = new ScreenBreakPoint(brkpoints);
 		window.addEventListener("scroll", function(e){
 			if(scrollable == true){
 				//Scrolling
@@ -3839,6 +3863,18 @@ function modalDisplayer(){
 				}
 			}
 		},false);
+		window.addEventListener("resize", function(){
+			if(modalOn == true){
+				var mainModal = document.querySelector(".modalSpace");
+				if (sbpoint.screen.Mode == "large"){
+					mainModal.style["width"] = modalWidths[0];
+				}else if (sbpoint.screen.Mode == "medium") {
+					mainModal.style["width"] = modalWidths[1];
+				}else if (sbpoint.screen.Mode == "small") {
+					mainModal.style["width"] = modalWidths[2];
+				}
+			}
+		})
 		if (closeButton != null){
 			document.body.addEventListener("click", function(e){
 				if (e.target.id == closeButton.id){
@@ -3869,11 +3905,9 @@ function modalDisplayer(){
 		document.getElementsByTagName('head')[0].appendChild(styleElement);
 	}
 	function createElements(){
-
 		//Create
 		var overlay = document.createElement("DIV");
 		var effectsCon = document.createElement("DIV");
-
 
 		//Set attributes
 		overlay.setAttribute("class", "vModal");
@@ -3882,7 +3916,6 @@ function modalDisplayer(){
 		}
 
 		effectsCon.setAttribute("class", "modalSpace");
-
 
 		//Append modal
 		//modalSpace to overlay
@@ -3996,6 +4029,16 @@ function modalDisplayer(){
 						throw new Error("The specified close button element must have an id attribute set, please set and try again");
 					}
 				}
+			}
+		},
+		modalWidths:{ // Needed only for active browser resiszing
+			set:function(value){
+
+			}
+		},
+		screenBreakPoints:{ // Needed only for active browser resiszing
+			set:function(value){
+
 			}
 		}
 	});
