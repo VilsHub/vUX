@@ -3048,7 +3048,7 @@ function customFormComponent(vWrapper=null){
 									width:"100%",
 									marginBottom:"5px"
 								}
-								cssGroupStyler(allRadiosButtons, cssObj);
+								cssGroupStyler(allCheckBoxes, cssObj);
 							}
 						}
 					}else {
