@@ -4288,7 +4288,7 @@ function datePicker(){
 	var currentYear = today.getFullYear();
 	currentYear <2019?currentYear=2019:currentYear= parseInt(currentYear);
 	var startYear=0,self=this, tooTipHandler= null,presentYear=0, selectedSeries=0, meridian = "am", show=0,textInputElement=null, includeTime = false, endYear=0, dateType="past", wrapperHeight = 0, n=0 , pastDateRange=[1900, currentYear-1], furtureStopDate=[], initialized = 0, dateInputIcon="", singleDateField=true, styled=false, numberOfRangeBoxes=0,
-	yearValue="",daysToolTip=false,pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+	yearValue="",daysToolTip=false,pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], shiftPoint=320;
 	var status = {
 		set:false,
 		completed:false
@@ -4301,7 +4301,9 @@ function datePicker(){
 		css += ".vDateBoxTool {transition:height 0.2s linear; overflow:hidden;display:none;width:300px; height:0px; position:absolute; top:calc(100% + 2px); left:0;}";
 		css += ".vDateBoxTool .vDateBox {box-sizing: border-box;overflow:hidden; border-radius:5px;width:100%; height:auto; position:absolute; top:10px; left:0; border:solid 1px #ccc;}";
 		css += ".vDateBoxTool .vDateBoxArrow {width:300px; height:10px; position:absolute;top:0}";
-		css += ".vDateBoxTool .vDateBoxArrow::before {width:0; height:0; position:absolute; content:''; left:10px; top:0px;border-left:solid 7px transparent; border-right:solid 7px transparent;border-bottom:solid 10px #ccc;}";
+		css += ".vDateBoxTool .shift::before {left:50%; margin-left:-5px;}";
+		css += ".vDateBoxTool .normalShift::before {left:10px;}";
+		css += ".vDateBoxTool .vDateBoxArrow::before {width:0; height:0; position:absolute; content:''; top:0px;border-left:solid 7px transparent; border-right:solid 7px transparent;border-bottom:solid 10px #ccc;}";
 		css += ".vDateBoxTool .vDateBoxHeader {font-synthesis: unset;color:#c5c5c5; font-weight: bold;position:relative; box-shadow:0 2px 4px 0 #7e7979; width:100%; height:36px; background-image:linear-gradient(to top, black 0% , #4a4949 100%); text-align:center; line-height:36px;}";
 		css += ".vDateBoxTool .vDateBoxDisplayCon {position: relative;width:100%; height:200px; background-color:white;}";
 		css += ".vDateBoxTool .vDateRangeCon, .vDateBoxTool .vFutureYearsCon{opacity:1;overflow: hidden;top: 50%;transform: translateY(-50%);left:0;position: absolute;width:auto; height:100%;}";
@@ -4781,6 +4783,14 @@ function datePicker(){
 				}
 			}
 		}, false);
+
+		window.addEventListener("resize", function(e){
+			if(show == 1){
+				var dateBoxParent = textInputElement.parentNode.querySelector(".vDateBoxTool");
+				var dateBoxArrow = textInputElement.parentNode.querySelector(".vDateBoxArrow");
+				shift(dateBoxParent, dateBoxArrow);
+			}
+		})
 	}
 	function activateOK(){
 		var button = textInputElement.parentNode.querySelector(".vTimeCon button");
@@ -4824,7 +4834,7 @@ function datePicker(){
 
 		//Arrow
 		var dateBoxArrowElement = document.createElement("DIV");
-		dateBoxArrowElement.setAttribute("class", "vDateBoxArrow");
+		dateBoxArrowElement.setAttribute("class", "vDateBoxArrow normalShift");
 
 		//DateBox
 		var dateBoxElement = document.createElement("DIV");
@@ -5188,6 +5198,19 @@ function datePicker(){
 			}
 		}
 	}
+	function shift(dateBoxParent, dateBoxArrow){
+			if(window.innerWidth > shiftPoint){
+				dateBoxArrow.classList.add("normalShift");
+				dateBoxArrow.classList.remove("shift");
+				dateBoxParent.style["left"] = "0";
+				dateBoxParent.style["margin-left"] = "0";
+			}else {
+				dateBoxArrow.classList.add("shift");
+				dateBoxArrow.classList.remove("normalShift");
+				dateBoxParent.style["left"] = "50%";
+				dateBoxParent.style["margin-left"] = "-150px";
+			}
+	}
 	this.config = {}
 	this.initialize = function(textInputEle){
 		if (validateElement(textInputEle, "'initialize()' method argument must be a valid HTML element")){
@@ -5242,18 +5265,18 @@ function datePicker(){
 		}else{
 			var dateBoxParent = textInputElement.parentNode.querySelector(".vDateBoxTool");
 			var dateBoxTitileCon = textInputElement.parentNode.querySelector(".vDateBoxHeader");
+			var dateBoxArrow = textInputElement.parentNode.querySelector(".vDateBoxArrow");
+			dateBoxParent.style["display"] = "block";
+			dateBoxParent.scrollHeight;
+			shift(dateBoxParent, dateBoxArrow);
+			dateBoxParent.style["height"] = dateBoxParent.scrollHeight+"px";
+
 			if(dateType == "past"){
 				var rangeCon = textInputElement.parentNode.querySelector(".vDateRangeCon");
-				dateBoxParent.style["display"] = "block";
-				dateBoxParent.scrollHeight;
-				dateBoxParent.style["height"] = dateBoxParent.scrollHeight+"px";
 				rangeCon.style["opacity"] = "1";
 				dateBoxTitileCon.innerHTML = rangeCon.getAttribute("data-title");
 			}else if (dateType == "future") {
 				var futureYearsCon = textInputElement.parentNode.querySelector(".vFutureYearsCon");
-				dateBoxParent.style["display"] = "block";
-				dateBoxParent.scrollHeight;
-				dateBoxParent.style["height"] = dateBoxParent.scrollHeight+"px";
 				futureYearsCon.style["opacity"] = "1";
 				dateBoxTitileCon.innerHTML = futureYearsCon.getAttribute("data-title");
 			}
@@ -5394,6 +5417,20 @@ function datePicker(){
 			set:function(value){
 				if(validateBoolean(value, "'config.daysToolTip' property value must be a boolean")){
 					daysToolTip = value;
+				}
+			}
+		},
+		shiftPoint:{
+			set:function(value){
+				var test = new formValidator();
+				if (test.validate.integer(value)){
+					if(value > 300){
+						shiftPoint = value;
+					}else{
+						throw new Error("'shiftPoint' property integer value must be greater than 300");
+					}
+				}else {
+					throw new Error("'shiftPoint' property value must be an integer");
 				}
 			}
 		}
