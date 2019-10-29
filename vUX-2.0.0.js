@@ -5441,7 +5441,7 @@ function datePicker(){
 /***************************Tool tip*****************************/
 function toolTip(){
 	var sy=0,sx=0, ini=false, tipBoxStyle="", arrowColor="", tipId="", initialized=0;
-	var scrollHandler =
+	// var scrollHandler =
 	function createStyles(){
 		var css = ".vToolTip {display:none;box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
 		css += ".vToolTip::before{position:absolute;content:'';}";
@@ -5501,13 +5501,6 @@ function toolTip(){
 		if(initialized == 0){
 			createTipElement();
 			createStyles();
-			// window.addEventListener("scroll", function(){
-			// 	var diff = scrollY -prev;
-			// 	// console.log("diff :: "+ "hh"+diff);
-			// 	sy=scrollY-diff;
-			// 	// sy = scrollY;
-			// 	sx=scrollX;
-			// }, false);
 			initialized=1;
 		}
 	};
