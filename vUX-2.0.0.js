@@ -2208,7 +2208,7 @@ function customFormComponent(vWrapper=null){
 				firstSelectable.classList.add("hovered");
 			}
 		}else {
-			var index = element.index(activieHovered);
+			var index = DOMelement.index(activieHovered);
 			var totalOptions = listOptionCon.childElementCount;
 			if(index != totalOptions){
 				var allOptions = listOptionCon.querySelectorAll(".option");
@@ -2241,7 +2241,7 @@ function customFormComponent(vWrapper=null){
 				allSelectable[allSelectable.length-1].classList.add("hovered");
 			}
 		}else{
-			var index = element.index(activieHovered);
+			var index = DOMelement.index(activieHovered);
 			var totalOptions = listOptionCon.childElementCount;
 			if(index != 1){//scroll up
 				var allOptions = listOptionCon.querySelectorAll(".option");
