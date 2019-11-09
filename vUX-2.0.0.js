@@ -1719,6 +1719,13 @@ DOMelement.center = function (element){
 		}, false);
 	}
 }
+DOMelement.findClass = function (element, className){
+	if (element.classList.contains(className)){
+		return true;
+	}else{
+		return false;
+	}
+}
 /****************************************************************/
 
 /********************Verticalal scroll handler*******************/
@@ -1759,15 +1766,13 @@ verticalScroll.query = function(totalHeight=null){
 /****************************************************************/
 
 /************************ListScroller****************************/
-function listScroller(container, listParent, listType){
+function listScroller(container, listParent){
 	validateElement(container, "An HTML element needed as list parent container");
 	validateElement(listParent, "List parent is not a valid HTML element");
-	validateString(listType, "listType must be a string identifying list element type. e.g. 'li', 'div'");
 	var windowResizeHandler = new browserResizeProperty();
-	var maxAdd = 0, remToAdd = 0, ini = 0, tabsBehindRight = 0,	tabsBehindLeft = 0,	extraSpace = 70,	remainingFrac =0, ready = 0, listening=0, diff=0, remAdded = 0, running=0;
-	var listPlane = "x", Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonsClassName = [];
+	var maxAdd = 0, ini = 0, paddingRight = 0,	ready = 0, listening=0, running=0;
+	var listPlane = "x", Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonsClassName = [], paddingLeft=0;
 	//Xbuttons[0] = left buttons, Xbuttons[1] = Right buttons
-	//scrollToLeftStatus : 1 => not started, 2 => started but not finished, 3 => finished;
 	function toggleClass(type, id){
 		if(listPlane == "X" || listPlane == "x"){
 			if (type == "r"){//remove
@@ -1791,25 +1796,20 @@ function listScroller(container, listParent, listType){
 		//List Container
 		listParent.addEventListener("transitionend", function(e){
 			if (listPlane == "X" || listPlane == "x"){
-				if (tabsBehindLeft > 0){
+				if(listParent.classList.contains("to_left")){
 					toggleClass("r", 0);
+					var diff = behindRightValue();
+					if(diff == 0){
+						toggleClass("a", 1);
+					}
 					running=0;
-				}else if(tabsBehindLeft == 0 && remAdded > 0){
-					toggleClass("r", 0);
-					running=0;
-				}else if(tabsBehindLeft == 0 && remAdded == 0){
-					toggleClass("a", 0);
-					running=0;
-				}
-
-				if(tabsBehindRight == 0 && remToAdd == 0){
-					toggleClass("a", 1);
-					running=0;
-				}else if(tabsBehindRight > 0){
+				}else if (listParent.classList.contains("to_right")) {
 					toggleClass("r", 1);
-					running=0;
-				}else if(tabsBehindRight == 0 && remToAdd > 0){
-					toggleClass("r", 1);
+					var leftValue = null;
+					behindLeftValue()<0?leftValue = -1*behindLeftValue():leftValue = behindLeftValue();
+					if(leftValue == 0){
+						toggleClass("a", 0);
+					}
 					running=0;
 				}
 			}else if (listPlane == "Y" || listPlane == "y") {
@@ -1821,7 +1821,6 @@ function listScroller(container, listParent, listType){
 		Xbuttons[0].addEventListener("click", function(e){
 			if (listening == 1){
 				if (running == 0){
-					running =1;
 					scrollToRight(e);
 				}
 			}
@@ -1831,46 +1830,43 @@ function listScroller(container, listParent, listType){
 		Xbuttons[1].addEventListener("click", function(e){
 			if (listening == 1){
 				if(running == 0){
-					running=1;
 					scrollToleft(e);
 				}
 			}
 		}, false);
 
-		//Browser
-		window.addEventListener("resize", function(){
-			if (listening == 1){
-				scrollFixer();
+		window.addEventListener("resize", function (){
+			if(listening == 1){
+				scrollStatus();
 			}
-		},false);
-
+		}, false);
 	}
-	function computeValues(){
-			var containerSize = container.clientWidth;
-			var listParentSize = listParent.scrollWidth+extraSpace;
-
-			diff = (containerSize - listParentSize);
-
-	 		var AbsoluteDiff = diff *-1;
-	 		tabsBehindRight = parseInt(AbsoluteDiff/scrollSize);
-	 		remainingFrac =  AbsoluteDiff%scrollSize;
-	 		remToAdd = remainingFrac;
-	 		(AbsoluteDiff>scrollSize) ? maxAdd = scrollSize : maxAdd = AbsoluteDiff;
-
+	function behindRightValue(){
+		var leftValue = null;
+		behindLeftValue()<0?leftValue = -1*behindLeftValue():leftValue = behindLeftValue();
+		var containerSize = container.clientWidth;
+		var behindRight = listParent.scrollWidth - (leftValue + (containerSize-(paddingLeft+paddingRight)));
+		return behindRight;
+	}
+	function behindLeftValue(){
+		var scrolledLeft = listParent.offsetLeft;
+		var diff = scrolledLeft - paddingLeft;
+		return diff;
 	}
 	function addVitalStyles(){
 		if(listPlane == "x" || "X" ){
 			if (listening == 1){
+				var listItems = listParent.children;
+				var children = listItems.length;
 				listParent.style["display"] = "flex";
-				listParent.style["width"] = listParent.scrollWidth+"px";;
+				listParent.style["width"] = (children*scrollSize)+"px";
 				listParent.style["white-space"] = "nowrap";
 				listParent.style["transition"] = "left "+ effects[0]+"s "+effects[1]+", right "+effects[0]+"s " +effects[1];
-				var listItems = listParent.querySelectorAll(listType);
-				if (listItems.length > 0){
+
+				if (children > 0){
 					for (var list of listItems) {
 						list.style["flex-shrink"] = "0";
 					}
-					computeValues();
 					scrollStatus();
 				}else{
 					throw new Error("Setup error: No list item found, check the listType specified in the contructor");
@@ -1880,99 +1876,58 @@ function listScroller(container, listParent, listType){
 	}
 	function scrollToleft(e){
 		if (e.button == 0){
-			if (diff < 0){
+			var behindRight = behindRightValue();
+			if (behindRight > 0){
+				maxAdd = scrollSize;
 				var currentPosition = parseInt(DOMelement.cssStyle(listParent, "left"), "px");
-				if(tabsBehindRight != 0){
-					maxAdd = scrollSize;
-					var newPostion = currentPosition - maxAdd;
-					listParent.scrollWidth;
+				listParent.classList.add("to_left");
+				listParent.classList.contains("to_right")?listParent.classList.remove("to_right"):null;
+				if(behindRight >= maxAdd){
+					var newPostion = currentPosition - (maxAdd);
 					listParent.style["left"] = newPostion+"px";
-					tabsBehindRight--;
-					tabsBehindLeft++;
-				}else if (tabsBehindRight == 0 && remToAdd > 0) {
-					newPostion = currentPosition - remainingFrac;
-					remToAdd = 0;
-					remAdded = remainingFrac;
+				}else {
+					var newPostion = currentPosition - (behindRight);
 					listParent.style["left"] = newPostion+"px";
 				}
+				running=1;
 			}
 		}
 	}
 	function scrollToRight(e){
 		if (e.button == 0){
+			var behindLeft = behindLeftValue();
 			var currentPosition = parseInt(DOMelement.cssStyle(listParent, "left"), "px");
-			if(tabsBehindLeft != 0){
+			maxAdd = scrollSize;
+
+			if(behindLeft < 0){
+				var ABS_diff = -1*behindLeft;
 				maxAdd = scrollSize;
-				var newPostion = currentPosition + maxAdd;
-				listParent.style["left"] = newPostion+"px";
-				tabsBehindRight++;
-				tabsBehindLeft--;
-			}else if (tabsBehindLeft == 0 && remAdded > 0) {
-				var newPostion = currentPosition + remainingFrac;
-				remAdded = 0;
-				remToAdd = remainingFrac;
-				listParent.style["left"] = newPostion+"px";
+				var currentPosition = parseInt(DOMelement.cssStyle(listParent, "left"), "px");
+
+				listParent.classList.add("to_right");
+				listParent.classList.contains("to_left")?listParent.classList.remove("to_left"):null;
+
+				if(ABS_diff >= maxAdd){
+					var newPostion = currentPosition + (maxAdd);
+					listParent.style["left"] = newPostion+"px";
+				}else {
+					var newPostion = currentPosition + (ABS_diff);
+					listParent.style["left"] = newPostion+"px";
+				}
+				running =1;
 			}
 		}
 	}
 	function scrollStatus(){
 		if (listPlane == "x" ||  "X" ){
 			if(listening == 1){ //started
-				var containerSize = container.clientWidth;
-				var listParentSize = listParent.scrollWidth+extraSpace;
-				if (containerSize < listParentSize){
-					toggleClass("r", 1);
-				}
+				var behindRight = behindRightValue();
+				behindRight>0?toggleClass("r", 1):toggleClass("a", 1);
 			}
 		}else if (listPlane == "y" ||  "Y" ){
 
 		}
 	}
-	function scrollFixer(){
-		if(windowResizeHandler.mode == "expanded"){
-			var containerSize = container.clientWidth;
-			var listParentSize = listParent.scrollWidth+extraSpace;
-
-			diff = (containerSize - listParentSize);
-
-			if (diff < 0 && tabsBehindRight == 0 && remToAdd == 0){ //Expansion outside view area
-				toggleClass("a", 1);
-			}else if (diff < 0 && tabsBehindRight >= 0 && remToAdd > 0) { //Expansion within  view area
-				toggleClass("r", 1);
-				var AbsoluteDiff = windowResizeHandler.change;
-		 		tabsBehindRight = tabsBehindRight - parseInt(AbsoluteDiff/scrollSize);
-				remainingFrac = AbsoluteDiff%scrollSize;
-		 		remToAdd = remToAdd - remainingFrac;
-				if (remToAdd > 0){
-					(AbsoluteDiff>scrollSize) ? maxAdd = scrollSize : maxAdd = AbsoluteDiff;
-				}else if(remToAdd <= 0){
-					remToAdd = 0;
-				}
-			}
-		}else if (windowResizeHandler.mode == "shrinked") {
-			if (diff < 0){
-				toggleClass("r", 1);
-				var AbsoluteDiff = windowResizeHandler.change;
-		 		tabsBehindRight =  tabsBehindRight + parseInt(AbsoluteDiff/scrollSize);
-				remainingFrac = AbsoluteDiff%scrollSize;
-				if ((remToAdd + remainingFrac) >= scrollSize){
-					tabsBehindRight =  tabsBehindRight + parseInt(AbsoluteDiff/scrollSize);
-					remainingFrac = remainingFrac + (remToAdd + remainingFrac)%scrollSize;
-					remToAdd = remToAdd + remainingFrac;
-				}else{
-					remToAdd = remToAdd + remainingFrac;
-				}
-
-				if(tabsBehindRight >= 0){
-					maxAdd = scrollSize;
-				}else if (tabsBehindRight == 0 && remToAdd > 0) {
-					maxAdd = AbsoluteDiff;
-				}
-			}else{
-				toggleClass("a", 1);
-			}
-		}
-	};
 	this.config = {};
 	this.initialize = function(){
 			if(listPlane == "x" || "X"){
@@ -1991,10 +1946,9 @@ function listScroller(container, listParent, listType){
 			assignHandlers();
 			ready=1;
 	};
-	this.runScroller = function (){
+	this.onScroller = function (){
 		if(ready == 1){
 			listening = 1;
-
 			addVitalStyles();
 			scrollStatus();
 		}else {
@@ -2041,10 +1995,25 @@ function listScroller(container, listParent, listType){
 				}
 			}
 		},
-		extraSpace: {
+		paddingRight: {
 			set:function(value){
-				if(validateNumber(value, "Numeric value needed for extraSpace property")){
-					extraSpace = value;
+				if(validateNumber(value, "Numeric value needed for 'paddingRight' property")){
+					if(value < 0){
+						paddingRight = 0;
+					}else{
+						paddingRight = value;
+					}
+				}
+			}
+		},
+		paddingLeft:{
+			set:function(value){
+				if(validateNumber(value, "Numeric value needed for 'paddingLeft' property")){
+					if(value < 0){
+						paddingLeft = 0;
+					}else{
+						paddingLeft = value;
+					}
 				}
 			}
 		},
@@ -2078,7 +2047,7 @@ function listScroller(container, listParent, listType){
 	Object.defineProperties(this, {
 		config:{writable:false},
 		initialize:{writable:false},
-		runScroller:{writable:false},
+		onScroller:{writable:false},
 		offScroller:{writable:false}
 	});
 }
@@ -3078,7 +3047,7 @@ function customFormComponent(vWrapper=null){
 
 /************************Form validator**************************/
 function formValidator(){
-	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="";
+	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="", self=this;
 
 	//Create Element
 	function createMessageCon(messageConElement, messageType, location, message, inputVisualFields, maxSize){
@@ -3087,43 +3056,33 @@ function formValidator(){
 			validateArray(inputVisualFields, "-1" , "mixed", "'write' method argument 5 must be an array");
 
 			if (inputVisualFields.length == 1){
-				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
-				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
-				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
+				validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
 			}else if(inputVisualFields.length == 2){
 				//1st element
-				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
-				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
-				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
+				validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
 
-				//2nd element
+				//2nd element placeholder element
 				if (inputVisualFields[1] != null){
-					validateString(inputVisualFields[1], "'write' method argument 5 array 2nd element must either be null or a string");
-					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
-					validateString(inputVisualFields[1], "A string representing placeholder id name is needed as array element 2 of the 'write' method argument 5 ");
+					validateElement(inputVisualFields[1], "write()' method argument 5 array element 2 must be a valid HTML element");
 				}
 			}else if(inputVisualFields.length == 3){
 				//1st element
-				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
-				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
-				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
+				validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
 
-				//2nd element
+				//2nd element placeholder element
 				if (inputVisualFields[1] != null){
-					validateString(inputVisualFields[1], "'write' method argument 5 array 2nd element must either be null or a string");
-					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
-					validateString(inputVisualFields[1], "A string representing placeholder id name is needed as array element 2 of the 'write' method argument 5 ");
+					validateElement(inputVisualFields[1], "write()' method argument 5 array element 2 must be a valid HTML element");
 				}
 
 				//3rd element
-				validateString(inputVisualFields[2], "'write' method argument 5 array 3rd element must be a string");
+				validateElement(inputVisualFields[2], "write()' method argument 5 array element 3 must be a valid HTML element");
 			}
 		}
 
 		if (maxSize != null){
 			validateDimension(maxSize, "A string of valid CSS dimension needed as argument 6 for 'write' method");
 		}
-		//_______________________________________________________________________________________________________________
+		//__________________________//
 
 		var checkExistence = messageConElement.querySelector(".vMsgBox");
 		if (checkExistence == null){
@@ -3232,73 +3191,80 @@ function formValidator(){
 					}
 				}
 			}else{
-				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
+				var inputWrapper =inputVisualFields[0];
 				inputWrapper.classList.add("ierror");
 				if(inputVisualFields[1] != null){
-					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
+					var placeholder = inputVisualFields[1];
 					placeholder.classList.add("lerror");
 				}
 			}
 		}
 	}
 
-	function clearMessage(messageConElement, location, inputVisualFields){
-			if (inputVisualFields != null){
-				validateArray(inputVisualFields, "2" , "mixed", "'write' method argument 5");
-
-				validateString(inputVisualFields[0], "'write' method argument 5 array 1st element must be a string, and cannot be null");
-				var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
-				validateElement(inputWrapper, "A string representing input wrapper id name is needed as array element 1 of the 'write' method argument 5 ");
-
-				if (inputVisualFields[1] != null){
-					validateString(inputVisualFields[1], "'write' method argument 5 array 2nd element must either be null or a string");
-					var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
-					validateString(inputVisualFields[1], "A string representing placeholder id name is needed as array element 2 of the 'write' method argument 5 ");
+	function clearMessage(messageConElement, inputVisualFields){
+			var location = "";
+			var Vbox = messageConElement.querySelector(".vMsgBox");
+			if(Vbox != null){
+				if(DOMelement.findClass(Vbox, "vRight")){
+					location = "right";
+				}else if (DOMelement.findClass(Vbox, "vLeft")) {
+					location = "left";
+				}else if (DOMelement.findClass(Vbox, "vBottom")) {
+					location = "bottom";
 				}
-			};
-			var checkExistence = messageConElement.querySelector(".vMsgBox");
-			if (checkExistence != null){
+				if (inputVisualFields != null){
+					validateArray(inputVisualFields, "2" , "mixed", "'clear' method argument 2");
+					validateElement(inputVisualFields[0], "'clear()' method argument 2 array element 1 must be a valid HTML element");
 
-				if(location  == "left" || location  == "right"){
-					if (checkExistence.classList.contains("vRight") || checkExistence.classList.contains("vLeft")){
-						checkExistence.classList.add("clear");
-						checkExistence.style["color"] = "transparent";
-						checkExistence.style["width"] = "0";
-					}else{
-						throw new Error("No left or right message found to clear, recheck 'clear()' method argument 2");
+					if (inputVisualFields[1] != null){
+						validateElement(inputVisualFields[1], "'clear()' method argument 2 array element 2 must be a valid HTML element");
 					}
-				}else if (location  == "bottom") {
-					if (checkExistence.classList.contains("vBottom")){
-						checkExistence.classList.add("clear");
-						checkExistence.style["color"] = "transparent";
-						checkExistence.style["height"] = "0";
-					}else{
-						throw new Error("No bottom message found to clear, recheck 'clear()' method argument 2");
-					}
-				}
+				};
 
-				if (inputVisualFields == null){
-					if (inputWrapperClass != ""){
-						var inputWrapper = messageConElement.querySelector("."+inputWrapperClass);
-						if(inputWrapper != null){
-							inputWrapper.classList.remove("ierror");
+				var checkExistence = messageConElement.querySelector(".vMsgBox");
+				if (checkExistence != null){
+
+					if(location  == "left" || location  == "right"){
+						if (checkExistence.classList.contains("vRight") || checkExistence.classList.contains("vLeft")){
+							checkExistence.classList.add("clear");
+							checkExistence.style["color"] = "transparent";
+							checkExistence.style["width"] = "0";
+						}else{
+							throw new Error("No left or right message found to clear, recheck 'clear()' method argument 2");
+						}
+					}else if (location  == "bottom") {
+						if (checkExistence.classList.contains("vBottom")){
+							checkExistence.classList.add("clear");
+							checkExistence.style["color"] = "transparent";
+							checkExistence.style["height"] = "0";
+						}else{
+							throw new Error("No bottom message found to clear, recheck 'clear()' method argument 2");
 						}
 					}
-					if (placeholderClass != ""){
-						var placeholder = messageConElement.querySelector("."+placeholderClass);
-						if(placeholder != null){
-							placeholder.classList.remove("lerror");
+
+					if (inputVisualFields == null){
+						if (inputWrapperClass != ""){
+							var inputWrapper = messageConElement.querySelector("."+inputWrapperClass);
+							if(inputWrapper != null){
+								inputWrapper.classList.remove("ierror");
+							}
 						}
-					}
-				}else{
-					var inputWrapper = messageConElement.querySelector("#"+inputVisualFields[0]);
-					inputWrapper.classList.remove("ierror");
-					if(inputVisualFields[1] != null){
-						var placeholder = messageConElement.querySelector("#"+inputVisualFields[1]);
-						placeholder.classList.remove("lerror");
+						if (placeholderClass != ""){
+							var placeholder = messageConElement.querySelector("."+placeholderClass);
+							if(placeholder != null){
+								placeholder.classList.remove("lerror");
+							}
+						}
+					}else{
+						inputVisualFields[0].classList.remove("ierror");
+						if(inputVisualFields[1] != null){
+							inputVisualFields[1].classList.remove("lerror");
+						}
 					}
 				}
 			}
+
+
 	}
 
 	//Attach event handler
@@ -3311,6 +3277,7 @@ function formValidator(){
 			}else if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false){
 				e.target.style["color"] = "#2b9030";
 			}else if (e.target.classList.contains("vMsgBox")  && e.target.classList.contains("clear")){
+				console.log(888);
 				e.target.parentNode.removeChild(e.target);
 			}
 		});
@@ -3387,10 +3354,9 @@ function formValidator(){
 
 	/*Message*/
 	this.message = {
-
 		write: function(messageConElement, messageType, location, message, inputVisualFields=null, maxSize=null){
 			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
-			//(optinal) inputVisualFields [a,b, c] : a => inputWrapper, b => placeholder, c => custom top position for left|right location
+			//(optinal) inputVisualFields [a,b,c] : a => inputWrapper, b => placeholder, c => custom top position for left|right location
 			//(optinal) maxSize: A valid dimension for messageBox, its height when location = bottom and width when location = left | right
 
 			if (initialized == true){
@@ -3418,16 +3384,11 @@ function formValidator(){
 				InIError("write");
 			}
 		},
-		clear: function(messageConElement, location, inputVisualFields=null){
+		clear: function(messageConElement, inputVisualFields=null){
 			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
-			//inputVisualFields [a,b] : a => inputWrapper, b => placeholder
+			//inputVisualFields [a,b] : a => inputWrapper, b => placeholder, only needed if it was specified in the write method to be cleared
 			if (initialized == true){
 				validateElement(messageConElement, "'write' method needs a valid HTML element as argument 1");
-				if(validateString(location, "'write' method needs a string as argument 3")){
-					if(!(location == "bottom" || location == "left" || location == "right")){
-						throw new Error ("'write' method argument 3 must be string value of either: 'bottom', 'left', or 'right'");
-					}
-				};
 				if(inputVisualFields == null && inputWrapperClass==""){
 						throw new Error("'write method'argument 5 and 'inputWrapperClass' property cannot be simultaneously emtpy, specify either 1");
 				}
@@ -3435,7 +3396,7 @@ function formValidator(){
 						throw new Error("'write method'argument 5 and 'placeholderClass' property cannot be simultaneously emtpy, specify either 1");
 				}
 
-				clearMessage(messageConElement, location, inputVisualFields);
+				clearMessage(messageConElement,inputVisualFields);
 			}else {
 				InIError("clear");
 			}
@@ -3445,9 +3406,11 @@ function formValidator(){
 
 	/*Initialize*/
 	this.initialize = function(){
-		setStyleSheet();
-		addEventhandler();
-		initialized =true;
+		if (initialized == false){
+			setStyleSheet();
+			addEventhandler();
+			initialized =true;
+		}
 	}
 	/**********/
 
@@ -3497,9 +3460,37 @@ function formValidator(){
 		  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
 		},
 		integerField:function(inputElement){
+			validateElement(inputElement, "'integerField()' argument must be a valid HTML Element");
+			if (inputElement.getAttribute("type" != "text")){
+				throw new Error("'integerField()' argument must be an INPUT element of type 'text'");
+			}
 			inputElement.addEventListener("keyup", function(){
 				var inputValue = sanitizeInteger(inputElement.value);
 				inputElement.value = inputValue;
+			}, false);
+		},
+		fullNameField:function(inputElement){
+			validateElement(inputElement, "'fullNameField()' argument must be a valid HTML Element");
+			if (inputElement.getAttribute("type" != "text")){
+				throw new Error("'fullNameField()' argument must be an INPUT element of type 'text'");
+			}
+			inputElement.addEventListener("focusout", function(){
+				var cleansed = "";
+				var splitted = inputElement.value.split(" ");
+				if(splitted.length > 1){
+					for(var x=0; x<splitted.length;x++){
+						if(splitted[x] != ""){
+							if(x==0){
+								cleansed += splitted[x];
+							}else {
+								cleansed += " "+splitted[x];
+							}
+						}
+					}
+
+					//Update input value with cleansed name
+					inputElement.value = cleansed;
+				}
 			}, false);
 		}
 	}
@@ -3508,40 +3499,125 @@ function formValidator(){
 	/*validator*/
 	this.validate = {
 		alpha: function(input){
-			var target = /^[A-Za-z]+$/.test(input); //checks for other characters except A-Za-z
-			return target;
+			validateString(input, "'alpha()' method, argument 1 must be a string");
+			var target = /[^A-Za-z]+/.test(input); //checks for other characters except A-Za-z
+			if(target==true){
+				return false;
+			}else {
+				return true;
+			}
 		},
 		alphaNumeric : function(input){
-			var target= /^[A-Za-z0-9]+$/.test(input); //checks for other characters except A-Za-z0-9
-			return target;
+			validateString(input, "'emailAddress()' method, argument 1 must be a string");
+			var target= /[^A-Za-z0-9]+/.test(input); //checks for other characters except A-Za-z0-9
+			if(target==true){
+				return false;
+			}else {
+				return true;
+			}
 		},
 		emailAddress : function(email){
+			validateString(email, "'emailAddress()' method, argument 1 must be a string");
 			var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{2,3}$/.test(email);//matches email address pattern
 			return email_filter;
+		},
+		custom:function(text, PatternArray){
+			// PatternArray => Array of unwanted characters
+			var status=null;
+			validateString(text, "'custom()' method, argument 1 must be a string");
+			validateArray(PatternArray, -1,"string","custom()");
+
+			for(var x=0; x<PatternArray.length; x++){
+				var rg = new RegExp(PatternArray[x]);
+				if(rg.test(text)){//found
+					status = false;
+					break;
+				}else {//not found
+					if(x == PatternArray.length-1){
+						status = true;
+					}
+				}
+			}
+			return status;
 		},
 		integer:function(n){
 			return Number(n) === n && n % 1 === 0;
 		},
 		float:function(n){
 			return Number(n) === n && n % 1 !== 0;
+		},
+		fullName:function(value, n, seperator){
+			var returnType=null, cleanedName=[], n=0;
+			var test = self.validate.integer(n);
+			if(test){
+				if(value < 2){
+					throw new Error("'fullName()' method argument 1, must be greater than ");
+				}
+			}else{
+				throw new Error("'fullName()' method argument 1, must be an integer");
+			}
+
+			var split = value.split(" ");
+
+			//clean name
+			var tn = split.length;
+			console.log(split);
+
+
+
+
+			if(tn >= tn){
+				//clean name
+				for(var x = 0; x<tn; x++){
+					if(split[x] != " "){
+						cleanedName[cleanedName.length] = split[x];
+					}
+					if(x == tn-1){
+						n = cleanedName.length;
+					}
+				}
+
+				//Check for non alpha
+				for(var x=0; x<tn;x++){
+					if(self.validate.alpha(split[x]) == false){
+						returnType = 2; //All names must be alphabets
+						break;
+					}
+					console.log(self.validate.alpha(split[x]));
+				}
+
+				//Check length
+				for(var x=0; x<tn;x++){
+					if(split[x].length <= 2){
+						returnType = 3; //Name cannot be less than 3 characters
+						break;
+					}
+					if(x == tn-1){
+						returnType = 4; //All names are more than 3 characters
+					}
+				}
+
+			}else {
+				returnType = 1; //incomplete names
+			}
+
+			return returnType;
 		}
 	}
 	/**********/
 	Object.defineProperties(this.validate, {
-		alpha:{
-			writable:false
-		},
-		alphaNumeric:{
-			writable:false
-		},
-		emailAddress:{
-			writable:false
-		}
+		alpha:{writable:false},
+		alphaNumeric:{writable:false},
+		emailAddress:{writable:false},
+		integer:{writable:false},
+		float:{writable:false},
+		fullName:{ writable:false}
 	});
 	Object.defineProperties(this.format, {
 		toCurrency:{writable:false},
 		roundToDec:{writable:false},
-		integerField:{writable:false}
+		integerField:{writable:false},
+		fullNameField:{writable:false}
 	});
 	Object.defineProperties(this.config, {
 		bottomConStyle:{
@@ -5122,7 +5198,7 @@ function datePicker(){
 			listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
 			listControllerObj.config.effects = [0.4, "cubic-bezier(0,.99,0,1)"];
 			listControllerObj.config.scrollSize = 302;
-			listControllerObj.config.extraSpace = 0;
+			listControllerObj.config.paddingRight = 0;
 			listControllerObj.initialize();
 			listControllerObj.runScroller();
 		}else{
