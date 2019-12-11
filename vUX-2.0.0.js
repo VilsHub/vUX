@@ -80,105 +80,72 @@ function matchNumbers(number, NumbersArr, msg = null){
 		}
 	}
 }
-function validateArray(array, totalMember, type, id=null){
-	//id => property name
-	if (Array.isArray(array)){
-		if(totalMember != -1){ //fixed length
-			if(array.length == totalMember){
-					for (var x = 0; x < totalMember; x++){
-						if(type == "string"){
-							if (id != null){
-								var msg = "Invalid datatype as member for "+ id+ " property  value, string array member needed";
-							}else{
-								var msg = null;
-							}
-							if (validateString(array[x], msg)){
-								if (x == totalMember-1){
-									return true;
-								}
-							}
-						}else if(type == "number"){
-							if (id != null){
-								var msg = "Invalid datatype as member for "+ id+ " property value, numeric array member needed";
-							}else{
-								var msg = null;
-							}
-							if (validateNumber(array[x], msg)){
-								if (x == totalMember-1){
-									return true;
-								}
-							}
-						}else if(type == "HTMLObject"){
-							if (id != null){
-								var msg = "Invalid datatype as member for "+ id+ " property value, HTMLElement array member needed";
-							}else{
-								var msg = null;
-							}
-							if (validateElement(array[x], msg)){
-								if (x == totalMember-1){
-									return true;
-								}
-							}
-						}else if(type == "mixed"){
-							return true;
-						}
-					}
-			}else{
-				if(id != null){
-					throw new Error("Incomplete member error: "+ totalMember +" member(s) needed for "+ id +" property");
-				}else{
-					throw new Error("Incomplete member error: "+ totalMember +" member(s) needed");
-				}
-			}
-		}else if (totalMember == -1){//-1 = no specific length
-			var len = array.length;
-			for (var x = 0; x < len; x++){
-				if(type == "string"){
-					if (id != null){
-						var msg = "Invalid datatype as member for "+ id+ " property value, string array member needed";
-					}else{
-						var msg = null;
-					}
-					if (validateString(array[x], msg)){
-						if (x == len-1){
-							return true;
-						}
-					}
-				}else if(type == "number"){
-					if (id != null){
-						var msg = "Invalid datatype as member for "+ id+ " property value, numeric array member needed";
-					}else{
-						var msg = null;
-					}
-					if (validateNumber(array[x], msg)){
-						if (x == len-1){
-							return true;
-						}
-					}
-				}else if(type == "HTMLObject"){
-					if (id != null){
-						var msg = "Invalid datatype as member for "+ id+ " property value, HTMLElement array member needed";
-					}else{
-						var msg = null;
-					}
-					if (validateElement(array[x], msg)){
-						if (x == len-1){
-							return true;
-						}
-					}
-				}else if(type == "mixed"){
-					return true;
-				}
-			}
-		}
-	}else{
-		if (id != null){
-			throw new TypeError("Invalid datatype assigned for "+ id+ " property, value must be an array");
+function validateArray(array, msg=null){
+	if (!Array.isArray(array)){
+		if (msg != null){
+			throw new TypeError(msg);
 		}else{
 			throw new TypeError("Please provide an array");
 		}
 	}
 };
+function validateArrayLength(array, totalMember, msg=null){
+	if(array.length != totalMember){
+		if(msg != null){
+			throw new Error(msg);
+		}else{
+			throw new Error("Incomplete member error: "+ totalMember +" member(s) needed");
+		}
+	}
+}
+function validateArrayMembers(array, type, msg=null){
+	switch (type) {
+   case "string":
+	 	for(var x=0; x<array.length; x++){
+			if(typeof array[x] != "string"){
+				if(msg != null){
+					throw new Error(msg);
+				}
+			}
+		}
+   	break;
+   case "number":
+ 	 	for(var x=0; x<array.length; x++){
+ 			if(typeof array[x] != "number"){
+ 				if(msg != null){
+ 					throw new Error(msg);
+ 				}
+ 			}
+ 		}
+    break;
+	case "HTMLObject":
+		for(var x=0; x<array.length; x++){
+ 			if(Object.getPrototypeOf(array[x]).constructor.name != "NodeList"){
+ 				if(msg != null){
+ 					throw new Error(msg);
+ 				}
+ 			}
+ 		}
+		break;
+	case "dimension":
+		for(var x=0; x<array.length; x++){
+ 			if(validateDimension(array[x], "bool") == false){
+ 				if(msg != null){
+					throw new Error(msg);
+ 				}
+ 			}
+ 		}
+		break;
+	case "HTMLElement":
+		for(var x=0; x<array.length; x++){
+ 			if(validateElement(array[x], "bool") == false){
+ 				if(msg != null){
+ 					throw new Error(msg);
+ 				}
+ 			}
+ 		}
+	}
+}
 function validateBoolean(boolean, msg=null){
 	if (typeof boolean != "boolean"){
 		if(msg != null){
@@ -209,7 +176,11 @@ function validateElement (element,  msg = null){ //A single element
 		return true;
 	}else{
 		if(msg != null){
-			throw new TypeError(msg);
+			if(msg == "bool"){
+				return false;
+			}else {
+				throw new TypeError(msg);
+			}
 		}else{
 			throw new TypeError("Invalid data type : HTML Element must be provide");
 		}
@@ -277,7 +248,11 @@ function validateDimension(dimension, msg=null){
 		if(msg == null){
 			throw new Error("Unrecognized dimension specified");
 		}else{
+			if(msg == "bool"){
+				return false;
+			}else {
 				throw new Error(msg);
+			}
 		}
 	}
 
@@ -428,8 +403,7 @@ var timing = {
 	}
 }
 /****************************************************************/
-/***************************CSS Style getter***************************/
-/****************************************************************/
+
 /*****************************Cross XHR creator******************/
 function ajax(){
 }
@@ -813,20 +787,24 @@ function gridBorderRectangle(){
 			},
 			segment :{
 				set: function(value){
-					if(validateArray(value, 2, "number")){
-						if(value[0]>0 && value[1]>0){
-							FRsegment = value;
-						}else{
-							throw new Error("Array members for 'segment' property value must all be positive integers");
-						}
+					var temp = "fixedRectangle.config.segment property value must be an array ";
+					validateArray(value, temp);
+					validateArrayLength(value, 2, temp+"of 2 Elements");
+					validateArrayMembers(value, "number", temp+"of numeric elements");
+					if(value[0]>0 && value[1]>0){
+						FRsegment = value;
+					}else{
+						throw new Error("Array members for 'segment' property value must all be positive integers");
 					}
 				}
 			},
 			origin :{
 				set: function(value){
-					if(validateArray(value, 2, "number")){
-							FROrigin = value;
-					}
+					var temp = "fixedRectangle.config.origin property value must be an array";
+					validateArray(value, temp);
+					validateArrayLength(value, 2, temp+"of 2 Elements");
+					validateArrayMembers(value, "number", temp+"of numeric elements");
+					FROrigin = value;
 				}
 			},
 	});
@@ -912,19 +890,17 @@ function gridBorderRectangle(){
 	Object.defineProperties(this.animatedRectangle.config, {
 			lineColor :{
 				set: function(value){
-					if(validateString(value)){
-						ARlinecolor = value;
-					}
+					validateString(value, "'config.lineColor' property value must be a string");
+					ARlinecolor = value;
 				}
 			},
 			lineWidth :{
 				set: function(value){
-					if(validateNumber(value)){
-						if(value > 0){
-							ARlinewidth  = value;
-						}else{
-							ARlinewidth = 1;
-						}
+					validateNumber(value);
+					if(value > 0){
+						ARlinewidth  = value;
+					}else{
+						ARlinewidth = 1;
 					}
 				}
 			},
@@ -957,20 +933,24 @@ function gridBorderRectangle(){
 			},
 			segment :{
 				set: function(value){
-					if(validateArray(value, 2, "number")){
-						if(value[0]>0 && value[1]>0){
-							ARsegment = value;
-						}else{
-							throw new Error("Array members for 'segment' property value must all be positive integers");
-						}
+					var temp = "animatedRectangle.config.segment property value must be an array ";
+					validateArray(value, temp);
+					validateArrayLength(value, 2, temp+"of 2 Elements");
+					validateArrayMembers(value, "number", temp+"of numeric elements");
+					if(value[0]>0 && value[1]>0){
+						ARsegment = value;
+					}else{
+						throw new Error("Array members for 'segment' property value must all be positive integers");
 					}
 				}
 			},
 			origin :{
 				set: function(value){
-					if(validateArray(value, 2, "number")){
-							AROrigin = value;
-					}
+					var temp = "animatedRectangle.config.origin property value must be an array";
+					validateArray(value, temp);
+					validateArrayLength(value, 2, temp+"of 2 Elements");
+					validateArrayMembers(value, "number", temp+"of numeric elements");
+					AROrigin = value;
 				}
 			},
 			easing :{
@@ -1510,7 +1490,8 @@ function typeWriter(){
 	}
 	this.writeParagraphText = function (paragraphs, texts, fn){
 		validateHTMLObject(paragraphs);
-		validateArray(texts, -1, "string");
+		validateArray(texts, "writeParagraphText.write() argument 2 must be an array");
+		validateArrayMembers(texts, "writeParagraphText.write() argument 2 array elements must all be string");
 		validateFunction(fn);
 		n = getRandomInt(speed[0], speed[1]);
 		if(ActiveParagraph < paragraphs.length){
@@ -1549,8 +1530,14 @@ function typeWriter(){
 		},
 		speed:{
 			set:function(value){
-				if(validateArray(value, 2, "number")){
-					speed = value
+				var temp = "writeParagraphText.config.speed property value must be an array ";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+"of 2 Elements");
+				validateArrayMembers(value, "number", temp+"of numeric elements");
+				if(value[0]>0 && value[1]>0){
+					speed = value;
+				}else{
+					throw new Error("Array members for 'speed' property value must all be positive integers");
 				}
 			}
 		}
@@ -1725,6 +1712,19 @@ DOMelement.findClass = function (element, className){
 	}else{
 		return false;
 	}
+}
+DOMelement.checkedItems= function(groupCollection){
+	validateHTMLObject(groupCollection, "'validate.checkField()' method argument 1 must be an HTML collection");
+	var collection=[];
+
+	//group all checked
+	for(var x=0;x<groupCollection.length;x++){
+		if(groupCollection[x].checked){
+			collection[x] = collection[x].value;
+		}
+	}
+	collection.length == 0?collection=null:null;
+	return collection;
 }
 /****************************************************************/
 
@@ -1976,16 +1976,20 @@ function listScroller(container, listParent){
 		},
 		Xbuttons: {
 			set:function(value){
-				if(validateArray(value, 2, "HTMLObject", "Xbuttons")){
-					Xbuttons = value;
-				}
+				var temp = "listScroller.config.Xbuttons property value must be an array ";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+"of 2 Elements");
+				validateArrayMembers(value, "HTMLElement", temp+"of HTMLElements");
+				Xbuttons = value;
 			}
 		},
 		Ybuttons: {
 			set:function(value){
-				if(validateArray(value, 2, "HTMLObject", "Ybuttons")){
-					Ybuttons = value;
-				}
+				var temp = "listScroller.config.Ybuttons property value must be an array ";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+"of 2 Elements");
+				validateArrayMembers(value, "HTMLElement", temp+"of HTMLElements");
+				Ybuttons = value;
 			}
 		},
 		scrollSize: {
@@ -2019,28 +2023,28 @@ function listScroller(container, listParent){
 		},
 		inactiveButtonsClassName:{
 			set:function(value){
-				if(validateArray(value, -1, "string", "inactiveButtonsClassName")){
-					if (value.length == 0 ){
-						throw new Error ("'config.inactiveButtonsClassName' property value cannot be an empty array");
+				var temp = "inactiveButtonsClassName property value must be an array ";
+				validateArray(value, temp);
+				validateArrayMembers(value, "string", temp+"of strings");
+				if (value.length == 0 ){
+					throw new Error ("'inactiveButtonsClassName' property value cannot be an empty array");
+				}else{
+					if(value.length > 2){
+						throw new Error ("'config.inactiveButtonsClassName' property value must be an array of either 1 or 2 members");
 					}else{
-						if(value.length > 2){
-							throw new Error ("'config.inactiveButtonsClassName' property value must be an array of either 1 or 2 members");
-						}else{
-							inactiveButtonsClassName = value;
-						}
+						inactiveButtonsClassName = value;
 					}
 				}
 			}
 		},
 		effects:{
 			set:function(value){
-				if(validateArray(value, 2, "mixed", "effects")){
-					if(validateNumber(value[0], "Effects array 1st element must be an numeric type, which represents the speed")){
-						if(validateString(value[1], "Effects array 2nd element must be a string type, which represents the effect (A CSS valid effect value e.g 'linear')")){
-							effects = value;
-						}
-					}
-				}
+				var temp = "'config.effects' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateNumber(value[0], temp+", having its 1st element to be an numeric type, which represents the speed");
+				validateString(value[1], temp+", having its 2nd element to be a string type, which represents the effect (A CSS valid effect value e.g 'linear')");
+				effects = value;
 			}
 		}
 	});
@@ -2461,13 +2465,11 @@ function customFormComponent(vWrapper=null){
 		},
 		selectSize:{
 			set:function(value){
-				if(validateArray(value, 2, "string", "selectSize")){
-					if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'selectSize' property")){
-						if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'selectSize' property")){
-							selectDim = value;
-						}
-					}
-				}
+				var temp = "'config.selectSize' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayMembers(value, "dimension", temp+"of strings CSS dimensions");
+				selectDim = value;
 			}
 		},
 		wrapperStyle:{
@@ -2711,13 +2713,10 @@ function customFormComponent(vWrapper=null){
 		},
 		radioButtonSize:{
 			set:function(value){
-				if(validateArray(value, 2, "string", "radioButtonSize")){
-					if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'radioButtonSize' property")){
-						if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'radioButtonSize' property")){
-							radioDim = value;
-						}
-					}
-				}
+				var temp = "'config.radioButtonSize' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayMembers(value, "dimension", temp+"of strings CSS dimensions");
 			}
 		},
 		wrapperStyle:{
@@ -2786,9 +2785,11 @@ function customFormComponent(vWrapper=null){
 		},
 		mouseEffectStyle:{
 			set:function(value){
-				if(validateArray(value, 2, "string", "mouseEffectStyle")){
-					mouseEffect = value;
-				}
+				var temp = "'config.mouseEffectStyle' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayMembers(value, "string", temp+" of strings");
+				mouseEffect = value;
 			}
 		},
 	})
@@ -2960,13 +2961,11 @@ function customFormComponent(vWrapper=null){
 		},
 		checkBoxSize:{
 			set:function(value){
-				if(validateArray(value, 2, "string", "checkBoxSize")){
-					if(validateDimension(value[0], "Invalid dimension specified for 'width' in 'checkBoxSize' property")){
-						if(validateDimension(value[1], "Invalid dimension specified for 'height' in 'checkBoxSize' property")){
-							checkBoxDim = value;
-						}
-					}
-				}
+				var temp = "'config.checkBoxSize' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayMembers(value, "dimension", temp+" of strings CSS dimensions");
+				checkBoxDim = value;
 			}
 		},
 		wrapperStyle:{
@@ -3035,9 +3034,11 @@ function customFormComponent(vWrapper=null){
 		},
 		mouseEffectStyle:{
 			set:function(value){
-				if(validateArray(value, 2, "string", "mouseEffectStyle")){
-					mouseEffect = value;
-				}
+				var temp = "'config.mouseEffectStyle' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayMembers(value, "string", temp+" of strings");
+				checkBoxDim = value;
 			}
 		},
 	})
@@ -3048,18 +3049,20 @@ function customFormComponent(vWrapper=null){
 /************************Form validator**************************/
 function formValidator(){
 	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="", self=this;
-
+	var errorLog = {}, logStatus=null, n=0;
 	//Create Element
 	function createMessageCon(messageConElement, messageType, location, message, inputVisualFields, maxSize){
 		//Validations
 		if (inputVisualFields != null){
-			validateArray(inputVisualFields, "-1" , "mixed", "'write' method argument 5 must be an array");
-
+			var temp = "'write()' method argument 5 must be an array";
+			validateArray(inputVisualFields, temp);
 			if (inputVisualFields.length == 1){
-				validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
+				validateElement(inputVisualFields[0], "'write()' method argument 5 array element 1 must be a valid HTML element");
 			}else if(inputVisualFields.length == 2){
 				//1st element
-				validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
+				if(inputVisualFields[0] != null){
+					validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
+				}
 
 				//2nd element placeholder element
 				if (inputVisualFields[1] != null){
@@ -3067,7 +3070,9 @@ function formValidator(){
 				}
 			}else if(inputVisualFields.length == 3){
 				//1st element
-				validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
+				if(inputVisualFields[0] != null){
+					validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
+				}
 
 				//2nd element placeholder element
 				if (inputVisualFields[1] != null){
@@ -3075,14 +3080,22 @@ function formValidator(){
 				}
 
 				//3rd element
-				validateElement(inputVisualFields[2], "write()' method argument 5 array element 3 must be a valid HTML element");
+				validateString(inputVisualFields[2], "write()' method argument 5 array element 3 must be a string of valid CSS left or right property style");
 			}
 		}
 
 		if (maxSize != null){
 			validateDimension(maxSize, "A string of valid CSS dimension needed as argument 6 for 'write' method");
 		}
+
 		//__________________________//
+		//create log status
+		if(messageConElement.getAttribute("data-logStatus") == null){
+			messageConElement.setAttribute("data-logStatus", "1");
+			messageConElement.setAttribute("data-fieldId", "f"+(n+1));
+			n++;
+		}
+
 
 		var checkExistence = messageConElement.querySelector(".vMsgBox");
 		if (checkExistence == null){
@@ -3146,6 +3159,9 @@ function formValidator(){
 			messageConElement.appendChild(messageBoxWrapper);
 			messageConElement.style["color"] = "transparent";
 
+			//Log error
+			errorLog[messageConElement.getAttribute("data-fieldId")] = 1;
+
 			if (location == "left"){
 				var m = messageConElement.querySelector(".vLeft");
 				sendBehind(m, location, 15, maxSize);
@@ -3172,6 +3188,8 @@ function formValidator(){
 				checkExistence.style["height"] = "auto";
 				checkExistence.style["min-height"] = DOMelement.cssStyle(checkExistence, "height");
 				checkExistence.innerHTML = message;
+				//Log error
+				errorLog[messageConElement.getAttribute("data-fieldId")] = 1;
 			}
 		}
 
@@ -3191,8 +3209,9 @@ function formValidator(){
 					}
 				}
 			}else{
-				var inputWrapper =inputVisualFields[0];
-				inputWrapper.classList.add("ierror");
+				if(inputVisualFields[0] != null){
+					inputVisualFields[0].classList.add("ierror");
+				}
 				if(inputVisualFields[1] != null){
 					var placeholder = inputVisualFields[1];
 					placeholder.classList.add("lerror");
@@ -3202,7 +3221,7 @@ function formValidator(){
 	}
 
 	function clearMessage(messageConElement, inputVisualFields){
-			var location = "";
+			var location = "", fieldId=null;
 			var Vbox = messageConElement.querySelector(".vMsgBox");
 			if(Vbox != null){
 				if(DOMelement.findClass(Vbox, "vRight")){
@@ -3213,9 +3232,10 @@ function formValidator(){
 					location = "bottom";
 				}
 				if (inputVisualFields != null){
-					validateArray(inputVisualFields, "2" , "mixed", "'clear' method argument 2");
+					var temp = "'clear()' method argument 2 must be an array";
+					validateArray(inputVisualFields, temp);
+					validateArrayLength(inputVisualFields, 2, temp+" of 2 Elements");
 					validateElement(inputVisualFields[0], "'clear()' method argument 2 array element 1 must be a valid HTML element");
-
 					if (inputVisualFields[1] != null){
 						validateElement(inputVisualFields[1], "'clear()' method argument 2 array element 2 must be a valid HTML element");
 					}
@@ -3226,9 +3246,15 @@ function formValidator(){
 
 					if(location  == "left" || location  == "right"){
 						if (checkExistence.classList.contains("vRight") || checkExistence.classList.contains("vLeft")){
+							checkExistence.style["width"] = checkExistence.scrollWidth+"px";
+							checkExistence.scrollWidth;
 							checkExistence.classList.add("clear");
 							checkExistence.style["color"] = "transparent";
 							checkExistence.style["width"] = "0";
+
+							//Clear error log
+							fieldId =  messageConElement.getAttribute("data-fieldId");
+							delete errorLog[fieldId];
 						}else{
 							throw new Error("No left or right message found to clear, recheck 'clear()' method argument 2");
 						}
@@ -3237,6 +3263,10 @@ function formValidator(){
 							checkExistence.classList.add("clear");
 							checkExistence.style["color"] = "transparent";
 							checkExistence.style["height"] = "0";
+
+							//Clear error log
+							fieldId =  messageConElement.getAttribute("data-fieldId");
+							delete errorLog[fieldId];
 						}else{
 							throw new Error("No bottom message found to clear, recheck 'clear()' method argument 2");
 						}
@@ -3263,8 +3293,6 @@ function formValidator(){
 					}
 				}
 			}
-
-
 	}
 
 	//Attach event handler
@@ -3276,8 +3304,7 @@ function formValidator(){
 				e.target.style["color"] = "#e97514";
 			}else if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false){
 				e.target.style["color"] = "#2b9030";
-			}else if (e.target.classList.contains("vMsgBox")  && e.target.classList.contains("clear")){
-				console.log(888);
+			}else	if (e.target.classList.contains("vMsgBox")  && e.target.classList.contains("clear")){
 				e.target.parentNode.removeChild(e.target);
 			}
 		});
@@ -3289,7 +3316,7 @@ function formValidator(){
 	//create style styleSheet
 	function setStyleSheet(){
 		var css = " .vMsgBox {box-sizing:border-box; padding:0 10px 0 10px; text-align:center; white-space: nowrap; font-size:13px; line-height:250%; color:transparent; border-radius:5px;}";
-		css += " .vLeft, .vRight{width:auto; height:100%; position:absolute; top:0; transition:width 0.2s cubic-bezier(0,.81,.22,1);}";
+		css += " .vLeft, .vRight{width:auto; height:100%; position:absolute; top:0; transition:width .2s cubic-bezier(0,.81,.22,1);}";
 		css += " .vBottom{width:100%; height:auto; position:relative; transition:height 0.2s cubic-bezier(0,.81,.22,1);margin-bottom:10px; margin-top:18px;}";
 		css += " .vBottom::before{width:0px; height:0px; top:-11px; border-left: 8px solid transparent; border-right: 8px solid transparent; left:10px; z-index:10; content:''; position:absolute;}";
 		css += " .vLeft::before, .vRight::before{border-top: 8px solid transparent; border-bottom: 8px solid transparent;position:absolute; content:''; top:6px;  z-index:10;}";
@@ -3352,11 +3379,17 @@ function formValidator(){
 			element.style["height"] = height+"px";
 	}
 
+	/*errorLog*/
+	function addErrorLog(id){
+
+	}
+
 	/*Message*/
 	this.message = {
 		write: function(messageConElement, messageType, location, message, inputVisualFields=null, maxSize=null){
 			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
-			//(optinal) inputVisualFields [a,b,c] : a => inputWrapper, b => placeholder, c => custom top position for left|right location
+			//(optinal) inputVisualFields [a,b,c] : a => inputWrapper, b => placeholder, c => custom top position for left|right location (e.g: [null, null, 'top:5px;']).
+																							//'c' can also be messageConElement
 			//(optinal) maxSize: A valid dimension for messageBox, its height when location = bottom and width when location = left | right
 
 			if (initialized == true){
@@ -3525,8 +3558,9 @@ function formValidator(){
 			// PatternArray => Array of unwanted characters
 			var status=null;
 			validateString(text, "'custom()' method, argument 1 must be a string");
-			validateArray(PatternArray, -1,"string","custom()");
-
+			var temp = "'custom()' method argument 2 must be an array";
+			validateArray(PatternArray, temp);
+			validateArrayMembers(PatternArray, "string", temp+" of strings");
 			for(var x=0; x<PatternArray.length; x++){
 				var rg = new RegExp(PatternArray[x]);
 				if(rg.test(text)){//found
@@ -3602,16 +3636,60 @@ function formValidator(){
 			}
 
 			return returnType;
+		},
+		checkField:function(groupCollection){
+			validateHTMLObject(groupCollection, "'validate.checkField()' method argument 1 must be an HTML collection");
+			var status=false;
+
+			//check for any selected
+			for(var x=0;x<groupCollection.length;x++){
+				if(groupCollection[x].checked){
+					status==false?status = true:null;
+					break;
+				}
+			}
+			return status;
+		},
+		phoneNumber:function(input){
+			validateString(input, "'phoneNumber()' method, argument 1 must be a string");
+			var input_filter = /^(\+|[0-9])[0-9]+$/.test(input);//matches phone number pattern
+			return input_filter;
 		}
 	}
 	/**********/
+
+	/*Form validation status*/
+	this.formOk = function(){
+		if(Object.keys(errorLog).length > 0){
+			return false;
+		}else {
+			return true;
+		}
+	}
+
+	/*value getter*/
+	this.getChecked = function(groupCollection){
+				validateHTMLObject(groupCollection, "'validate.checkField()' method argument 1 must be an HTML collection");
+				var data=null;
+
+				//check for any selected
+				for(var x=0;x<groupCollection.length;x++){
+					if(groupCollection[x].checked){
+						data==null?data = groupCollection[x].value:null;
+						break;
+					}
+				}
+				return data;
+			},
+
 	Object.defineProperties(this.validate, {
 		alpha:{writable:false},
 		alphaNumeric:{writable:false},
 		emailAddress:{writable:false},
 		integer:{writable:false},
 		float:{writable:false},
-		fullName:{ writable:false}
+		fullName:{ writable:false},
+		checkField:{writable:false}
 	});
 	Object.defineProperties(this.format, {
 		toCurrency:{writable:false},
@@ -3667,6 +3745,12 @@ function formValidator(){
 		} ///Used if input wrapper is not specified in write method
 	});
 	Object.defineProperties(this.message, {
+		write:{writable:false}
+	});
+	Object.defineProperties(this.formOk, {
+		write:{writable:false}
+	});
+	Object.defineProperties(this.getChecked, {
 		write:{writable:false}
 	});
 
@@ -4057,6 +4141,7 @@ function modalDisplayer(){
 	function addEventhandler(){
 		var scrollHandler = new  verticalScroll();
 		var sbpoint = new ScreenBreakPoint(brkpoints);
+		var mainModal = document.querySelector(".modalSpace");
 		window.addEventListener("scroll", function(e){
 			if(scrollable == true){
 				//Scrolling
@@ -4171,7 +4256,10 @@ function modalDisplayer(){
 					mainModal.style["width"] = modalWidths[2];
 				}
 			}
-		})
+		});
+		mainModal.addEventListener("resize", function(){
+			console.log(777);
+		}, false);
 		if (closeButton != null){
 			document.body.addEventListener("click", function(e){
 				if (e.target.id == closeButton.id){
@@ -4254,11 +4342,13 @@ function modalDisplayer(){
 		}
 	};
 	this.initialize = function(){
-		totalHeight = document.querySelector("html").scrollHeight;
-		createStyles();
-		createElements();
-		addEventhandler();
-		initialized = true;
+		if(initialized == false){
+			totalHeight = document.querySelector("html").scrollHeight;
+			createStyles();
+			createElements();
+			addEventhandler();
+			initialized = true;
+		}
 	}
 	Object.defineProperties(this, {
 		config:{writable:false},
@@ -4330,27 +4420,34 @@ function modalDisplayer(){
 		},
 		modalWidths:{ // Needed only for active browser resiszing
 			set:function(value){
-				if(validateArray(value, 3, "string", "modalWidths")){
-					function msg(n){
-						return "'modalWidths' property array value member "+n+" must be a valid dimension";
-					}
-					if(validateDimension(value[0], msg(1)) && validateDimension(value[1], msg(2)) && validateDimension(value[2]), msg(3)){
-						modalWidths = value;
-					}
+				var temp = "'config.modalWidths' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 3, temp+" of 3 Elements");
+				validateArrayMembers(value, "string", temp+" of strings");
+
+				function msg(n){
+					return "'modalWidths' property array value member "+n+" must be a valid dimension";
+				}
+				if(validateDimension(value[0], msg(1)) && validateDimension(value[1], msg(2)) && validateDimension(value[2]), msg(3)){
+					modalWidths = value;
 				}
 			}
 		},
 		screenBreakPoints:{ // Needed only for active browser resiszing
 			set:function(value){
-				if(validateArray(value, 2, "number", "screenBreakPoints")){
-					function msg(n){
-						return "'screenBreakPoints' property array value member "+n+" must be an integer";
-					}
-					var test = new formValidator();
-					if(test.validate.integer(value[0], msg(1)) && test.validate.integer(value[1], msg(2))){
-						brkpoints["largeStart"] = value[0];
-						brkpoints["mediumStart"] = value[1];
-					}
+				var temp = "'config.screenBreakPoints' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayMembers(value, "number", temp+" of number");
+
+
+				function msg(n){
+					return "'screenBreakPoints' property array value member "+n+" must be an integer";
+				}
+				var test = new formValidator();
+				if(test.validate.integer(value[0], msg(1)) && test.validate.integer(value[1], msg(2))){
+					brkpoints["largeStart"] = value[0];
+					brkpoints["mediumStart"] = value[1];
 				}
 			}
 		}
@@ -5417,60 +5514,62 @@ function datePicker(){
 		},
 		furtureStopDate:{
 			set:function(value){
-				if(validateArray(value, "3", "number", 'furtureStopDate')){
-					var validator = new formValidator();
-					if (validator.validate.integer(value[0]) && validator.validate.integer(value[1]) && validator.validate.integer(value[2])){
-						if(value[1] > 0 && value[1] < 13){
-							if(value[1]==4 || value[1]==6 || value[1]==9 || value[1]==9){
-								if(value[2] > 0 && value[2] < 31){
+				var temp = "'config.furtureStopDate' property value must be an array";
+				validateArray(value, temp);
+				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayMembers(value, "number", temp+" of number");
+				var validator = new formValidator();
+				if (validator.validate.integer(value[0]) && validator.validate.integer(value[1]) && validator.validate.integer(value[2])){
+					if(value[1] > 0 && value[1] < 13){
+						if(value[1]==4 || value[1]==6 || value[1]==9 || value[1]==9){
+							if(value[2] > 0 && value[2] < 31){
+								if(compareDate(value, "future") == "valid"){
+									furtureStopDate = value;
+								}else{
+									throw new Error("Future date must be ahead of current time");
+								}
+							}else {
+								throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 30' for the specified month");
+							}
+						}else if (value[1] == 2){
+							var leapYear = parseInt(yearValue)%4;
+							if(leapYear == 0){
+								if(value[2] > 0 && value[2] < 30){
 									if(compareDate(value, "future") == "valid"){
 										furtureStopDate = value;
 									}else{
 										throw new Error("Future date must be ahead of current time");
 									}
 								}else {
-									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 30' for the specified month");
-								}
-							}else if (value[1] == 2){
-								var leapYear = parseInt(yearValue)%4;
-								if(leapYear == 0){
-									if(value[2] > 0 && value[2] < 30){
-										if(compareDate(value, "future") == "valid"){
-											furtureStopDate = value;
-										}else{
-											throw new Error("Future date must be ahead of current time");
-										}
-									}else {
-										throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 29' for the specified month");
-									}
-								}else{
-									if(value[2] > 0 && value[2] < 29){
-										if(compareDate(value, "future") == "valid"){
-											furtureStopDate = value;
-										}else{
-											throw new Error("Future date must be ahead of current time");
-										}
-									}else {
-										throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 28' for the specified month");
-									}
+									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 29' for the specified month");
 								}
 							}else{
-								if(value[2] > 0 && value[2] < 32){
+								if(value[2] > 0 && value[2] < 29){
 									if(compareDate(value, "future") == "valid"){
 										furtureStopDate = value;
 									}else{
 										throw new Error("Future date must be ahead of current time");
 									}
 								}else {
-									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 31' for the specified month");
+									throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 28' for the specified month");
 								}
 							}
 						}else{
-								throw new Error("Array member 2 value of 'config.furtureStopDate' property must be between the range '1 - 12'");
+							if(value[2] > 0 && value[2] < 32){
+								if(compareDate(value, "future") == "valid"){
+									furtureStopDate = value;
+								}else{
+									throw new Error("Future date must be ahead of current time");
+								}
+							}else {
+								throw new Error("Array member 3 value of 'config.furtureStopDate' property must be between the range '1 - 31' for the specified month");
 							}
+						}
 					}else{
-						throw new Error("Array members value of 'config.furtureStopDate' property must all be an integers");
-					}
+							throw new Error("Array member 2 value of 'config.furtureStopDate' property must be between the range '1 - 12'");
+						}
+				}else{
+					throw new Error("Array members value of 'config.furtureStopDate' property must all be an integers");
 				}
 			}
 		},
@@ -5646,6 +5745,222 @@ function toolTip(){
 		set:{writable:false},
 		on:{writable:false},
 		off:{writable:false}
+	})
+}
+/****************************************************************/
+
+/***************************Carousel*****************************/
+function carousel(container, viewport){
+	validateElement(container, "'carousel()' argument 1 must be an HTML Element");
+	validateElement(viewport, "'carousel()' argument 2 must be an HTML Element");
+	var self = this;
+	var viewportId = viewport.getAttribute("id");
+	var sliders = container.querySelectorAll("#"+viewportId+"> div");
+	var current = 0, buttonId=0,forceSld = 0, pauseMode = 0, completed = 1, started = 0,delay = 4000, speed =1000, initialized=0, buttonStyle=null;
+
+	//Assign buttons event
+	function assingnHandlers(){
+		container.onclick = function(e){
+			if(e.target.classList.contains("vButton") && e.target.nodeName == "DIV"){
+				var id = e.target.getAttribute("data-ratio");
+				forceSld = 1;
+				viewport.style["transition-delay"] = "0ms";
+				buttonId = id;
+				forceSlide(id);
+			}
+		};
+	}
+	function forceSlide(ratio){
+		var leftValue = parseInt(ratio)*100;
+		viewport.style["left"] = -leftValue+"%";
+		completed = 0;
+	}
+	function checkNext(current){
+		var check = current.nextElementSibling;
+		if(check!=null){
+			return true;
+		}else {
+			return false
+		}
+	}
+	function nextSlide(ele){
+		if(pauseMode == 0 && completed== 1){
+			var currentView =  viewport.querySelector("div[data-activeDisplay='1']");
+			if(checkNext(currentView)){
+				current = current+100;
+				ele.style["left"] = -current+"%";
+			}else{
+				ele.style["left"] = "0";
+				current = 0;
+			}
+			completed = 0;
+		}
+	}
+	function createControls(){
+		var controlArea = document.createElement("DIV");
+		var buttonsCons = document.createElement("DIV");
+
+		controlArea.setAttribute("class", "vControlArea");
+		buttonsCons.setAttribute("class", "vControlButtonsCon");
+
+		for(var x=0;x<sliders.length;x++){
+			var buttonsShell = document.createElement("DIV");
+			var button = document.createElement("DIV");
+			var id = x+1;
+			buttonsShell.setAttribute("class", "vControlButtonsShell");
+			x == 0?button.setAttribute("class", "vButton active"):button.setAttribute("class", "vButton");
+			button.setAttribute("id", "b"+id);
+			button.setAttribute("data-ratio", x);
+			buttonsShell.appendChild(button);
+			buttonsCons.appendChild(buttonsShell);
+		}
+
+		controlArea.appendChild(buttonsCons);
+		container.appendChild(controlArea) != null?assingnHandlers():null;
+	}
+	function createControlStyles(){
+		var css = ".vControlArea{width:100%; background-color:transparent; position: absolute; bottom: 0; z-index: 4; height: 50px;}";
+		css += ".vControlButtonsCon{width:97%; height: 100%; margin: 0 auto;}";
+		css += ".vControlButtonsShell{width:20px; height: 100%; margin-right: 8px; float: left;}";
+		css += ".vButton{width:20px; height: 20px; background-color: #C2C5AF; border-radius: 50%; cursor: pointer;}";
+		css += ".vButton.active{box-shadow: 0 0 5px 0 #B826C7; background-color: #B826C7;}";
+
+		if(buttonStyle != null){
+			css += ".vButton{"+buttonStyle[0]+"}"; //Normal button
+			if(buttonStyle[1] != null){
+				css += ".vButton.active{"+buttonStyle[1]+"}"; //active button
+			}
+		}
+
+		var styleElement = document.createElement("style");
+		styleElement.setAttribute("type", "text/css");
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+		  styleElement.appendChild(document.createTextNode(css));
+		}
+		document.getElementsByTagName('head')[0].appendChild(styleElement);
+	}
+	this.initialize = function(){
+		if(initialized == 0){
+			viewport.style["transition-delay"] = delay+"ms";
+			viewport.style["transition-duration"] = speed+"ms";
+
+			//Place sliders in order
+			Object.values(sliders).forEach(function(itemContent, arrayIndex, targetArray){
+				var leftValue = arrayIndex*100;
+				itemContent.style["left"] = leftValue+"%";
+				arrayIndex==0?itemContent.setAttribute("data-activeDisplay", "1"):itemContent.setAttribute("data-activeDisplay", "0");
+				itemContent.setAttribute("data-ratio", arrayIndex);
+			});
+
+			//Assign event listeners
+			container.onmouseenter = function (){
+				if (started == 1){
+					pauseMode = 1;
+				}
+			}
+			container.onmouseleave = function (){
+				if (started == 1){
+					pauseMode = 0;
+					nextSlide(viewport);
+				}
+			}
+
+			container.addEventListener("transitionend", function(e){
+				if (e.target.nodeName == "DIV"  && e.target.id == "holder"){
+					var activeButton = document.querySelector(".vControlButtonsShell .active");
+					var previousActive =  viewport.querySelector("div[data-activeDisplay='1']");
+					var id = null;
+					if(forceSld == 0){
+						//Assign new active
+						if(checkNext(previousActive)){
+							//set next
+							previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
+							id = 	previousActive.nextElementSibling.getAttribute("data-ratio");
+						}else {// reached the last
+							//set the 1st child
+							sliders[0].setAttribute("data-activeDisplay", "1");
+							id = 0;
+						}
+
+						// unset previous
+						previousActive.setAttribute("data-activeDisplay", "0");
+
+						//Set buttons
+						activeButton.classList.remove("active");//remove previous
+						var nextActiveButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+id+"']");
+						nextActiveButton.classList.add("active");//remove previous
+						completed = 1;
+						nextSlide(viewport);
+					}else if (forceSld == 1) {
+						//unset any current view
+						previousActive.setAttribute("data-activeDisplay", "0");
+
+
+						var x = viewport.querySelector("div[data-ratio='"+buttonId+"']");
+						x.setAttribute("data-activeDisplay", "1");
+
+
+						//Set buttons
+						activeButton.classList.remove("active");//remove previous
+						var selectedButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+buttonId+"']");
+						selectedButton.classList.add("active");//remove previous
+
+						completed = 1;
+						viewport.style["transition-delay"] = delay+"ms";
+						forceSld=0;
+					}
+
+				}
+			}, false);
+
+			createControlStyles();
+			createControls();
+			initialized = 1;
+		}
+	}
+	this.start = function (){
+		if(started==0){
+			nextSlide(viewport);
+			started=1;
+		}
+	};
+	this.config = {
+
+	}
+	Object.defineProperties(this, {
+		initialize:{
+			writable:false
+		},
+		start:{
+			writable:false
+		},
+		config:{
+			writable:false
+		}
+	});
+	Object.defineProperties(this.config, {
+		delay:{
+			set:function (value){
+				validateNumber(value, "'config.delay' property value must be numeric");
+				value<0?value=0:null;
+				delay = value;
+			}
+		},
+		speed:{
+			set:function (value){
+				validateNumber(value, "'config.speed' property value must be numeric");
+				value<0?value=0:null;
+				speed = value;
+			}
+		},
+		buttonStyle:{
+			set:function(value){
+				validateString(value, "'config.buttonStyle' property value must be a string");
+				buttonStyle = value;
+			}
+		}
 	})
 }
 /****************************************************************/
