@@ -2235,7 +2235,7 @@ function customFormComponent(vWrapper=null){
 		}
 	}
 	function createStyleSheet(){
-		var css = "."+vWrapper + " {width:"+selectDim[0]+"; height:"+selectDim[1]+";}";
+		var css = "."+vWrapper + " {width:"+selectDim[0]+"; height:"+selectDim[1]+"; z-index: 60;}";
 		css += "."+vWrapper + " .sfield {position:absolute; width:100%; height:100%; z-index:1; line-height:"+selectDim[1]+"; padding-left:5px; cursor:pointer; box-sizing: border-box; background-color:#ccc;}";
 		css += "."+vWrapper + " .optionsCon {position:absolute; width:100%; height:0px; z-index:2; top:100%; transition:height 0.2s linear; overflow-y:hidden; display:none}";
 		css += "."+vWrapper + " .optionsCon .option {position:static; width:100%; height:"+selectDim[1]+"; padding-left:5px; box-sizing:border-box; line-height:"+selectDim[1]+";border-bottom:solid 1px #ccc;}";
@@ -2687,7 +2687,7 @@ function customFormComponent(vWrapper=null){
 				throw new Error("A radio input element needed, please specify a valid radio input element");
 			}
 			if (radioDim.length == 0){
-				throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioDimension' property");
+				throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioButtonSize' property");
 			}
 			var existingSheet = document.querySelector("#v"+vWrapper);
 			existingSheet == null?radioStyleSheet():null;
@@ -2717,6 +2717,7 @@ function customFormComponent(vWrapper=null){
 				validateArray(value, temp);
 				validateArrayLength(value, 2, temp+" of 2 Elements");
 				validateArrayMembers(value, "dimension", temp+"of strings CSS dimensions");
+				radioDim = value;
 			}
 		},
 		wrapperStyle:{
@@ -2954,9 +2955,8 @@ function customFormComponent(vWrapper=null){
 	Object.defineProperties(this.checkBox.config, {
 		afterSelectionFn : {//Function to call after selection
 			set:function(value){
-				if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
-					CheckBoxAfterSelectionFn = value;
-				}
+				validateFunction(value, "Function needed as value for the 'afterSelectionFn' property");
+				CheckBoxAfterSelectionFn = value;
 			}
 		},
 		checkBoxSize:{
@@ -2970,66 +2970,61 @@ function customFormComponent(vWrapper=null){
 		},
 		wrapperStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
-					checkBoxWrapperStyle = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property");
+				checkBoxWrapperStyle = value;
 			}
 		},
 		checkBoxStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'checkBoxStyle' property")){
-					checkBoxStyle = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'checkBoxStyle' property");
+				checkBoxStyle = value;
 			}
 		},
 		checkedStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS style(s) needed for the 'checkedStyle' property")){
-					checkedStyle = value;
-				}
+				validateString(value, "A string of valid CSS style(s) needed for the 'checkedStyle' property");
+				checkedStyle = value;
 			}
 		},
 		uncheckedStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS style(s) value needed for the 'uncheckedStyle' property")){
-					uncheckedStyle = value;
-				}
+				validateString(value, "A string of valid CSS style(s) value needed for the 'uncheckedStyle' property");
+				uncheckedStyle = value;
 			}
 		},
 		groupAxis:{
 			set:function(value){
-				if(validateString(value, "A string value needed for the 'groupAxis' property")){
-					if(value.toLowerCase() == "x" || "y"){
-						var existingSheet = document.querySelector("#v"+vWrapper);
-						if(existingSheet == null){
-							groupAxis = value;
-						}else{
-							var allCheckBoxes = document.querySelectorAll("."+vWrapper);
-							if(value.toLowerCase() == "x"){
-								var cssObj = {
-									width:"auto",
-									marginBottom:"auto"
-								}
-								cssGroupStyler(allCheckBoxes, cssObj);
-							}else{
-								var cssObj = {
-									width:"100%",
-									marginBottom:"5px"
-								}
-								cssGroupStyler(allCheckBoxes, cssObj);
+				validateString(value, "A string value needed for the 'groupAxis' property");
+				if(value.toLowerCase() == "x" || "y"){
+					var existingSheet = document.querySelector("#v"+vWrapper);
+					if(existingSheet == null){
+						groupAxis = value;
+					}else{
+						var allCheckBoxes = document.querySelectorAll("."+vWrapper);
+						if(value.toLowerCase() == "x"){
+							var cssObj = {
+								width:"auto",
+								marginBottom:"auto"
 							}
+							cssGroupStyler(allCheckBoxes, cssObj);
+						}else{
+							var cssObj = {
+								width:"100%",
+								marginBottom:"5px"
+							}
+							cssGroupStyler(allCheckBoxes, cssObj);
 						}
-					}else {
-						throw new Error("String value can either be 'x' or 'y' (Case insensitive)");
 					}
+				}else {
+					throw new Error("String value can either be 'x' or 'y' (Case insensitive)");
 				}
+
 			}
 		},
 		labelStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property")){
-					checkBoxLabelStyle = value;
-				}
+				validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property");
+				checkBoxLabelStyle = value;
 			}
 		},
 		mouseEffectStyle:{
@@ -3038,7 +3033,7 @@ function customFormComponent(vWrapper=null){
 				validateArray(value, temp);
 				validateArrayLength(value, 2, temp+" of 2 Elements");
 				validateArrayMembers(value, "string", temp+" of strings");
-				checkBoxDim = value;
+				mouseEffect = value;
 			}
 		},
 	})
@@ -3047,11 +3042,21 @@ function customFormComponent(vWrapper=null){
 /****************************************************************/
 
 /************************Form validator**************************/
-function formValidator(){
+function formValidator(form){
 	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="", self=this;
-	var errorLog = {}, logStatus=null, n=0;
+	var errorLog = {}, logStatus=null, n=0, selectedProgressType="rotate", customAnimate=null, progressIndicatorStyle=null, feedBackUrl=null, formSubmitted=false, smallView=866, screenMode= "large";
+	var progressType = {
+				rotate:["@keyframes vRotate{from{transform:rotate(0deg) translateY(-50%) translateX(-50%);} to{transform:rotate(360deg) translateY(-50%) translateX(-50%);}}", "vRotate"]
+			}, modal=null;
+	validateElement(form, "'formValidator()' constructor argument 1 must be an element");
 	//Create Element
 	function createMessageCon(messageConElement, messageType, location, message, inputVisualFields, maxSize){
+		if(location == "left" || location == "right"){
+			if(innerWidth < smallView){
+				location = "bottom";
+			}
+		}
+
 		//Validations
 		if (inputVisualFields != null){
 			var temp = "'write()' method argument 5 must be an array";
@@ -3098,22 +3103,17 @@ function formValidator(){
 
 
 		var checkExistence = messageConElement.querySelector(".vMsgBox");
-		if (checkExistence == null){
+		function createMsgBox(){
+			screenMode == "large"?messageConElement.setAttribute("data-vp", "large"):messageConElement.setAttribute("data-vp", "small");
+			//Fix left and right
 			var messageBoxWrapper = document.createElement("DIV");
-
-			if(location == "left"){
-				if (messageType == "error"){
-					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft error le");
-				}else if (messageType == "warning") {
-					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft warning lw");
-				}else if (messageType == "success") {
-					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft success ls");
-				}
+			function styleLeft(){
 
 				if(leftConStyle != ""){
 					if(inputVisualFields != null && inputVisualFields.length == 3){
 						messageBoxWrapper.setAttribute("style", leftConStyle+"; "+inputVisualFields[2]);
 					}else {
+
 						messageBoxWrapper.setAttribute("style", leftConStyle);
 					}
 				}else{
@@ -3121,15 +3121,8 @@ function formValidator(){
 						messageBoxWrapper.setAttribute("style", inputVisualFields[2]);
 					}
 				}
-			}else if (location == "right") {
-				if (messageType == "error"){
-					messageBoxWrapper.setAttribute("class", "vMsgBox vRight error re");
-				}else if (messageType == "warning") {
-					messageBoxWrapper.setAttribute("class", "vMsgBox vRight warning rw");
-				}else if (messageType == "success") {
-					messageBoxWrapper.setAttribute("class", "vMsgBox vRight success rs");
-				}
-
+			}
+			function styleRight(){
 				if(rightConStyle != ""){
 					if( inputVisualFields != null && inputVisualFields.length == 3){
 						messageBoxWrapper.setAttribute("style", rightConStyle+"; "+inputVisualFields[2]);
@@ -3141,6 +3134,33 @@ function formValidator(){
 						messageBoxWrapper.setAttribute("style", inputVisualFields[2]);
 					}
 				}
+			}
+			function styleBottom(){
+				if(bottomConStyle != ""){
+					messageBoxWrapper.setAttribute("style", bottomConStyle);
+				}
+			}
+
+			if(location == "left"){
+				if (messageType == "error"){
+					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft error le");
+				}else if (messageType == "warning") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft warning lw");
+				}else if (messageType == "success") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vLeft success ls");
+				}
+				//styleLeft
+				styleLeft();
+			}else if (location == "right") {
+				if (messageType == "error"){
+					messageBoxWrapper.setAttribute("class", "vMsgBox vRight error re");
+				}else if (messageType == "warning") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vRight warning rw");
+				}else if (messageType == "success") {
+					messageBoxWrapper.setAttribute("class", "vMsgBox vRight success rs");
+				}
+				//styleRight
+				styleRight();
 			}else if (location == "bottom") {
 				if (messageType == "error"){
 					messageBoxWrapper.setAttribute("class", "vMsgBox vBottom error be");
@@ -3149,10 +3169,8 @@ function formValidator(){
 				}else if (messageType == "success") {
 					messageBoxWrapper.setAttribute("class", "vMsgBox vBottom success bs");
 				}
-
-				if(bottomConStyle != ""){
-					messageBoxWrapper.setAttribute("style", bottomConStyle);
-				}
+				//StyleBottom
+				styleBottom();
 			}
 
 			messageBoxWrapper.appendChild(document.createTextNode(message));
@@ -3172,7 +3190,8 @@ function formValidator(){
 				var	m = messageConElement.querySelector(".vBottom");
 				drop(m);
 			}
-		}else{
+		}
+		function updateMsgBox(){
 			if(location == "left" || location == "right" ){
 				if (maxSize != null){
 					checkExistence.style["width"] = maxSize;
@@ -3183,17 +3202,26 @@ function formValidator(){
 					checkExistence.style["white-space"] = "nowrap";
 					checkExistence.style["line-height"] = "250%";
 				}
-
 				checkExistence.style["text-align"] = "left";
 				checkExistence.style["height"] = "auto";
 				checkExistence.style["min-height"] = DOMelement.cssStyle(checkExistence, "height");
-				checkExistence.innerHTML = message;
-				//Log error
-				errorLog[messageConElement.getAttribute("data-fieldId")] = 1;
+			}
+			checkExistence.innerHTML = message;
+
+			//Log error
+			errorLog[messageConElement.getAttribute("data-fieldId")] = 1;
+		}
+		if (checkExistence == null){
+			createMsgBox();
+		}else{
+			if(screenMode != messageConElement.getAttribute("data-vp")){
+				var currentMsg = messageConElement.querySelector(".vMsgBox");
+				messageConElement.removeChild(currentMsg);
+				createMsgBox();
+			}else{
+				updateMsgBox();
 			}
 		}
-
-
 		if(messageType == "error"){
 			if (inputVisualFields == null){
 				if (inputWrapperClass != ""){
@@ -3308,6 +3336,19 @@ function formValidator(){
 				e.target.parentNode.removeChild(e.target);
 			}
 		});
+		window.addEventListener("resize", function(){
+			innerWidth < smallView?screenMode = "small":screenMode="large";
+		},false);
+		form.addEventListener("click", function(e){
+			if(e.target.getAttribute("data-rs") == "suc" && e.target.getAttribute("id") == "fbBtn"){
+				var loader = form.querySelector(".vFormOverlay");
+				loader.style["display"] = "none";
+				modal.close();
+			}else if(e.target.getAttribute("data-rs") != "suc" && e.target.getAttribute("id") == "fbBtn"){
+				var loader = form.querySelector(".vFormOverlay");
+				loader.style["display"] = "none";
+			}
+		}, false);
 	}
 
 	function InIError(methodName){
@@ -3317,7 +3358,7 @@ function formValidator(){
 	function setStyleSheet(){
 		var css = " .vMsgBox {box-sizing:border-box; padding:0 10px 0 10px; text-align:center; white-space: nowrap; font-size:13px; line-height:250%; color:transparent; border-radius:5px;}";
 		css += " .vLeft, .vRight{width:auto; height:100%; position:absolute; top:0; transition:width .2s cubic-bezier(0,.81,.22,1);}";
-		css += " .vBottom{width:100%; height:auto; position:relative; transition:height 0.2s cubic-bezier(0,.81,.22,1);margin-bottom:10px; margin-top:18px;}";
+		css += " .vBottom{width:auto; height:auto; position:absolute; transition:height 0.2s cubic-bezier(0,.81,.22,1); top:CALC(100% + 12px); z-index:50; left:0;}";
 		css += " .vBottom::before{width:0px; height:0px; top:-11px; border-left: 8px solid transparent; border-right: 8px solid transparent; left:10px; z-index:10; content:''; position:absolute;}";
 		css += " .vLeft::before, .vRight::before{border-top: 8px solid transparent; border-bottom: 8px solid transparent;position:absolute; content:''; top:6px;  z-index:10;}";
 		css += " .vLeft::before{right:-11px;}";
@@ -3342,6 +3383,31 @@ function formValidator(){
 		css += " .bw::before{ border-bottom:11px solid #e97514;}";
 		css += " .be::before{ border-bottom:11px solid #d82323;}";
 		css += " .bs::before{ border-bottom:11px solid #2b9030;}";
+
+		css += " .vFormOverlay {position:absolute; z-index:888; top:0; width:100%; height:100%; background-color:HSLA(0, 0%, 100%, 0.68); display:none;}";
+		css += " .vFormLoader {position:absolute; z-index:999; width:50px; height:50px; background-color:transparent; animation-duration: 1.3s; animation-iteration-count:infinite; animation-timing-function:linear;}";
+		css += " .FbMsgBox{width: 320px; height:auto;	border:solid 1px #e0dddd;	border-radius: 7px;	position:absolute;background-color: white;overflow: hidden;}";
+		css += " .FbMsgBox .ttl{width:100%;	height:46px;box-shadow: 0 0 3px black;color:white;text-align: center;font-size: 24px;font-weight: bold;line-height: 46px;}";
+		css += " .FbMsgBox .tsuc{background-image: linear-gradient(to bottom, #6ac261 0%, #689f61 100%);}";
+		css += " .FbMsgBox .terr{background-image: linear-gradient(to bottom, #c28761 0%, #9f6161 100%);}";
+		css += " .FbMsgBox .twrn{background-image: linear-gradient(to bottom, #c2b761 0%, #9f9661 100%);}";
+		css += " .FbMsgBox .msuc{color:green;}";
+		css += " .FbMsgBox .merr{color:red;}";
+		css += " .FbMsgBox .mwrn{color:#f90;}";
+		css += " .FbMsgBox .buttonCon{width:100%;height:auto;	padding-top: 23px;}";
+		css += " .FbMsgBox .msgCon{padding-top: 46px;text-align: center;	font-style: italic;}";
+		css += " .FbMsgBox button{margin: 15px auto;display: block;	width: 70px;height: 35px;	background-image: linear-gradient(to bottom, #e9e9e9 0%, #7c807c 100%);border-radius: 30px;cursor: pointer;}";
+
+		if (selectedProgressType != "custom"){
+			css += progressType[selectedProgressType][0];
+			css += " .vFormLoader {animation-name:"+progressType[selectedProgressType][1]+"; transform-origin:0 0;}";
+			css += " .vFormLoader::before {width:100%; height:100%; position:absolute; top:0; color:black;line-height:50px;text-align:center;}";
+			progressIndicatorStyle != null? css += " .vFormLoader::before {"+progressIndicatorStyle+"}":null;
+		}else {
+			css +=  customAnimate[0]; //@keframe
+			css +=  ".vFormLoader {"+customAnimate[1]+"}"; //loader style
+			css += " .vFormLoader ::before{"+customAnimate[2]+"}"; // icon style
+		}
 
 		var styleElement = document.createElement("style");
 		styleElement.setAttribute("type", "text/css");
@@ -3381,6 +3447,85 @@ function formValidator(){
 
 	/*errorLog*/
 	function addErrorLog(id){
+
+	}
+
+	function createLoader(){
+		var overLay = document.createElement("DIV");
+		var loader = document.createElement("DIV");
+		overLay.setAttribute("class", "vFormOverlay");
+		loader.setAttribute("class", "vFormLoader");
+		DOMelement.center(loader);
+		overLay.appendChild(loader);
+		form.appendChild(overLay);
+	}
+
+	function createFeedBack(messageType, msgTxt){
+		var ui = null;
+		if(messageType=="error"){
+			ui = ["terr", "merr"] ;
+		}else if (messageType=="warning") {
+			ui = ["twrn", "mwrn"] ;
+		}else if (messageType=="success") {
+			ui = ["tsuc", "msuc"] ;
+		}
+
+		var con = document.createElement("DIV");
+		var ttl = document.createElement("DIV");
+		var msg = document.createElement("DIV");
+		var btCon = document.createElement("DIV");
+		var btn = document.createElement("BUTTON");
+
+		DOMelement.center(con);
+		con.setAttribute("class", "FbMsgBox");
+		ttl.setAttribute("class", "ttl "+ui[0]);
+		msg.setAttribute("class", "msgCon "+ui[1]);
+		btCon.setAttribute("class", "buttonCon");
+		btn.setAttribute("id", "fbBtn");
+
+		ttl.appendChild(document.createTextNode("Submission Feedback"));
+		msg.appendChild(document.createTextNode(msgTxt));
+		if(ui[0]=="terr"){
+			btn.setAttribute("data-rs", "err");
+			btn.appendChild(document.createTextNode("Try again"));
+		}else {
+			btn.setAttribute("data-rs", "suc");
+			btn.appendChild(document.createTextNode("OK"));
+		}
+		btCon.appendChild(btn);
+		con.appendChild(ttl);
+		con.appendChild(msg);
+		con.appendChild(btCon);
+
+		return con;
+	}
+
+	function showFeedBack(url=null){
+		if(url!=null){
+			var xhr = ajax.create();
+			xhr.open("POST", url, true);
+			xhr.addEventListener("readystatechange", function(){
+				if(xhr.readyState == 2){//sent
+				}else if (xhr.readyState == 4) {//sent and received
+					if(xhr.status == 200){
+						form.innerHTML = xhr.responseText;
+					}else {
+						//Show default could not receive response but sumitted successfully
+						var overlay = form.querySelector(".vFormOverlay");
+						var loader = form.querySelector(".vFormLoader");
+						overlay.removeChild(loader);
+						overlay.appendChild(createFeedBack("warning", "Form submitted but may not be successfully"));
+					}
+				}
+			}, false);
+			xhr.send(data);
+		}else {
+			//show default
+			var overlay = form.querySelector(".vFormOverlay");
+			var loader = form.querySelector(".vFormLoader");
+			overlay.removeChild(loader);
+			overlay.appendChild(createFeedBack("success", "Form submitted successfully"));
+		}
 
 	}
 
@@ -3440,7 +3585,9 @@ function formValidator(){
 	/*Initialize*/
 	this.initialize = function(){
 		if (initialized == false){
+			innerWidth < smallView?screenMode = "small":screenMode="large";
 			setStyleSheet();
+			createLoader();
 			addEventhandler();
 			initialized =true;
 		}
@@ -3667,6 +3814,30 @@ function formValidator(){
 		}
 	}
 
+	/*Submit back*/
+	this.submit = function(data, url, headers=null){
+		validateString(url, "'feedBack()' method argument 2 must be a string specifying the URL");
+		var loader = form.querySelector(".vFormOverlay");
+		loader.style["display"] = "block";
+		var xhr = ajax.create();
+		xhr.open("POST", url, true);
+		xhr.addEventListener("readystatechange", function(){
+			if(xhr.readyState == 2){//sent
+				formSubmitted = true;
+			}else if (xhr.readyState == 4) {//sent and received
+				if(xhr.status == 200){
+					if(feedBackUrl != null){ //Has feedBack page declared
+						showFeedBack(feedBackUrl);
+					}else { //No feedBack page declared, default used
+						//Show default success page
+						showFeedBack();
+					}
+				}
+			}
+		}, false);
+		xhr.send(data);
+	}
+
 	/*value getter*/
 	this.getChecked = function(groupCollection){
 				validateHTMLObject(groupCollection, "'validate.checkField()' method argument 1 must be an HTML collection");
@@ -3700,65 +3871,74 @@ function formValidator(){
 	Object.defineProperties(this.config, {
 		bottomConStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS style(s) needed for the 'bottomConStyle' property")){
-					bottomConStyle = value;
-				}
+				validateString(value, "A string of valid CSS style(s) needed for the 'bottomConStyle' property")
+				bottomConStyle = value;
 			}
 		},
 		leftConStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS style(s) needed for the 'leftConStyle' property")){
-					leftConStyle = value;
-				}
+				validateString(value, "A string of valid CSS style(s) needed for the 'leftConStyle' property")
+				leftConStyle = value;
 			}
 		},
 		rightConStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS style(s) needed for the 'rightConStyle' property")){
-					rightConStyle = value;
-				}
+				validateString(value, "A string of valid CSS style(s) needed for the 'rightConStyle' property")
+				rightConStyle = value;
 			}
 		},
 		placeholderClass:{
 			set:function(value){
-				if(validateString(value, "A string needed for the 'placeholderClass' property")){
-					var elmentTest = document.querySelector("."+value);
-					if(elmentTest != null){
-						placeholderClass = value;
-					}else{
-						throw new Error("A string representing input placeholder class name needed as value for 'placeholderClass' property");
-					}
+				validateString(value, "A string needed for the 'placeholderClass' property")
+				var elmentTest = document.querySelector("."+value);
+				if(elmentTest != null){
+					placeholderClass = value;
+				}else{
+					throw new Error("A string representing input placeholder class name needed as value for 'placeholderClass' property");
 				}
 			}
 		}, // Used if input placeholder is not specified in write method
 		inputWrapperClass:{
 			set:function(value){
-				if(validateString(value, "A string needed for the 'inputWrapperClass' property")){
-					var elmentTest = document.querySelector("."+value);
-					if(elmentTest != null){
-						inputWrapperClass = value;
-					}else{
+				validateString(value, "A string needed for the 'inputWrapperClass' property")
+				var elmentTest = document.querySelector("."+value);
+				if(elmentTest != null){
+					inputWrapperClass = value;
+				}else{
 						throw new Error("A string representing input inputWrapperClass class name needed as value for 'inputWrapperClass' property");
 					}
-				}
 			}
-		} ///Used if input wrapper is not specified in write method
+		}, ///Used if input wrapper is not specified in write method
+		progressIndicatorStyle:{
+			set:function(value){
+				progressIndicatorStyle = value
+			}
+		},
+		feedBackURL:{
+			set:function(value){
+				feedBackUrl = value;
+			}
+		},
+		modal:{
+			set:function(value){
+				validateElement(value, "'config.modal' property must be an element");
+				modal=value;
+			}
+		}
 	});
 	Object.defineProperties(this.message, {
 		write:{writable:false}
 	});
-	Object.defineProperties(this.formOk, {
-		write:{writable:false}
+	Object.defineProperties(this, {
+		config:{write:{writable:false}},
+		format:{write:{writable:false}},
+		validate:{write:{writable:false}},
+		message:{write:{writable:false}},
+		initialize:{write:{writable:false}},
+		getChecked:{write:{writable:false}},
+		submit:{write:{writable:false}},
+		formOk:{write:{writable:false}}
 	});
-	Object.defineProperties(this.getChecked, {
-		write:{writable:false}
-	});
-
-	Object.defineProperty(this, "config", {writable:false});
-	Object.defineProperty(this, "format", {writable:false});
-	Object.defineProperty(this, "validate", {writable:false});
-	Object.defineProperty(this, "message", {writable:false});
-	Object.defineProperty(this, "initialize", {writable:false});
 }
 /****************************************************************/
 
@@ -4371,9 +4551,8 @@ function modalDisplayer(){
 	Object.defineProperties(this.config, {
 		effect:{
 			set:function(value){
-				if(validateObjectMember(effects, value, "Invalid effect type specified for the 'effect' property")){
-					effectName = value;
-				}
+				validateObjectMember(effects, value, "Invalid effect type specified for the 'effect' property")
+				effectName = value;
 			}
 		},
 		overlayType:{
@@ -4385,13 +4564,11 @@ function modalDisplayer(){
 		},
 		colorOverlayStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS style(s) needed for the 'colorOverlayStyle' property")){
-					if (overlayType == "color"){
-						colorOverlayStyle = value
-					}else{
-						throw new Error("Overlay type must be set to 'color' before setting the 'colorOverlayStyle' property");
-					}
-
+				validateString(value, "A string of valid CSS style(s) needed for the 'colorOverlayStyle' property");
+				if (overlayType == "color"){
+					colorOverlayStyle = value
+				}else{
+					throw new Error("Overlay type must be set to 'color' before setting the 'colorOverlayStyle' property");
 				}
 			}
 		},
@@ -4409,12 +4586,11 @@ function modalDisplayer(){
 		},
 		closeButton:{
 			set:function(value){
-				if(validateElement(value, "A valid HTML Element needed as 'closeButton' property, invalid HTML element specified")){
-					if(value.getAttribute("id") != null){
-						closeButton = value;
-					}else{
-						throw new Error("The specified close button element must have an id attribute set, please set and try again");
-					}
+				validateElement(value, "A valid HTML Element needed as 'closeButton' property, invalid HTML element specified")
+				if(value.getAttribute("id") != null){
+					closeButton = value;
+				}else{
+					throw new Error("The specified close button element must have an id attribute set, please set and try again");
 				}
 			}
 		},
@@ -4439,8 +4615,6 @@ function modalDisplayer(){
 				validateArray(value, temp);
 				validateArrayLength(value, 2, temp+" of 2 Elements");
 				validateArrayMembers(value, "number", temp+" of number");
-
-
 				function msg(n){
 					return "'screenBreakPoints' property array value member "+n+" must be an integer";
 				}
@@ -5516,7 +5690,7 @@ function datePicker(){
 			set:function(value){
 				var temp = "'config.furtureStopDate' property value must be an array";
 				validateArray(value, temp);
-				validateArrayLength(value, 2, temp+" of 2 Elements");
+				validateArrayLength(value, 3, temp+" of 3 Elements");
 				validateArrayMembers(value, "number", temp+" of number");
 				var validator = new formValidator();
 				if (validator.validate.integer(value[0]) && validator.validate.integer(value[1]) && validator.validate.integer(value[2])){
@@ -5827,7 +6001,7 @@ function carousel(container, viewport){
 
 		if(buttonStyle != null){
 			css += ".vButton{"+buttonStyle[0]+"}"; //Normal button
-			if(buttonStyle[1] != null){
+			if(buttonStyle[1] != undefined || buttonStyle[1] != undefined){
 				css += ".vButton.active{"+buttonStyle[1]+"}"; //active button
 			}
 		}
@@ -5957,7 +6131,13 @@ function carousel(container, viewport){
 		},
 		buttonStyle:{
 			set:function(value){
-				validateString(value, "'config.buttonStyle' property value must be a string");
+				var temp = "'config.buttonStyle' property value must be an array";
+				validateArray(value, temp);
+				if(value.length>2){
+					throw new Error(" of either 1 or 2 element(s)");
+				}
+				validateString(value[0], " of strings");
+				value[1] != undefined?validateString(value[1], " of strings"):null;
 				buttonStyle = value;
 			}
 		}
