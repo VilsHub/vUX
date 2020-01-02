@@ -18,9 +18,10 @@
 - window vertical scroll Handler
 - Date picker
 - Tool tip creator
-- Added iterationCount option to 	animatedRectangle module
-- Added callback option to animatedRectangle module
-- Added horizontal and vertical element centralizer
+- IterationCount option to 	animatedRectangle module
+- Callback option to animatedRectangle module
+- Horizontal and vertical element centralizer
+- Carousel
 
 ### Changed
 - Changed method call, from: 	Object.fixedRectangle.draw(CanvasObject, canvasElement) to Object.fixedRectangle.draw(canvasElement)

@@ -1,15 +1,45 @@
 /*
- * vUX JavaScript framework v2.0.0
+ * vUX JavaScript library v2.0.0
  * https://library.vilshub.com/lib/vUX/
  *
  *
  * Released under the MIT license
  * https://library.vilshub.com/lib/vUX/license
  *
- * Date: 2019-06-20T22:30Z
+ * Date: 2020-01-2T22:30Z
  */
 
 "use strict";
+var assetURL="";
+var styles = {};
+window.addEventListener("load", function(){
+	//set asset path
+	var allScripts = document.getElementsByTagName("script");
+	var temp = null;
+	for(var x=0; x<	Object.values(allScripts).length; x++){
+		if (allScripts[x].getAttribute("src").search("vUX") != -1){
+			temp = allScripts[x].getAttribute("src");
+			break;
+		}
+	}
+	var splited = temp.split("/");
+	splited.splice(1,1, "//");
+	splited.splice(splited.length-1,1);
+	for (var x=0; x<splited.length; x++){
+		x<3?assetURL += splited[x]:assetURL += "/"+splited[x];
+	}
+	assetURL += "/assets/";
+
+	//Load needed styles
+	loadStyleSheet("css", "selectFormComponent.css");
+	loadStyleSheet("css", "radioFormComponent.css");
+	loadStyleSheet("css", "checkBoxFormComponent.css");
+	loadStyleSheet("css", "formValidator.css");
+	loadStyleSheet("css", "modalDisplayer.css");
+	loadStyleSheet("css", "datePicker.css");
+	loadStyleSheet("css", "toolTip.css");
+	loadStyleSheet("css", "carousel.css");
+}, false);
 
 /*************************Helper functions***********************/
 function cssGroupStyler(elementObj, StyleObject){
@@ -20,6 +50,7 @@ function cssGroupStyler(elementObj, StyleObject){
 		}
 	}
 }
+
 function camelToCSSstandard(cameledName){
 	return cameledName.replace(/[A-Z]/g, m => "-" + m.toLowerCase());
 }
@@ -205,11 +236,24 @@ function validateHTMLObject(HTMLCollection){ //Group of elements
 			throw new TypeError("Invalid HTML Collection : HTML collection must be provide");
 	}
 }
-function validateObjectLiteral(object){
+function validateObjectLiteral(object, msg=null){
 	if (object.__proto__.isPrototypeOf(new Object()) == true){
 		return true;
 	}else {
-		throw new TypeError("Type error : literal object needed");
+		if(msg != null){
+			throw new TypeError(msg);
+		}else {
+			throw new TypeError("Type error : literal object needed");
+		}
+	}
+}
+function validateObject(object, msg=null){
+	if (typeof object == "object"){
+		return true;
+	}else {
+		if(msg != null){
+			throw new TypeError(msg);
+		}
 	}
 }
 function validateObjectMembers(object, ObjectBase){
@@ -347,6 +391,52 @@ function getDayName(year, month, day){
 
 	return dayFullName;
 }
+function loadStyleSheet(type, name){
+	var defaultURL = "http://library.vilshub.com/lib/vUX/assets/";
+	var set = assetURL+type;
+	var useSet = 1;
+	function setStyleName(name, value){
+		switch (name) {
+			case "selectFormComponent.css":
+				styles["selectFormComponent"] = value;
+				break;
+			case "radioFormComponent.css":
+				styles["radioFormComponent"] = value;
+				break;
+			case "checkBoxFormComponent.css":
+				styles["checkBoxFormComponent"] = value;
+		}
+	}
+	function get(){
+		var xhr = ajax.create();
+		useSet==1?xhr.open("POST", set+"/"+name, true):xhr.open("POST", defaultURL+type+"/"+name, true);
+		xhr.addEventListener("readystatechange", function(){
+			if(xhr.readyState == 4 && xhr.status == 200 && useSet == 1){
+				setStyleName(name, xhr.responseText);
+			}else if (xhr.readyState == 4 && xhr.status != 200 && useSet == 1){
+				useSet = 0;
+				xhr.abort();
+				get();
+			}else if (xhr.readyState == 4 && xhr.status == 200 && useSet == 0) {
+				setStyleName(name, xhr.responseText);
+			}
+		},false);
+		xhr.send();
+	}
+	function setStyle(){
+		var linkEle = document.createElement("link");
+		linkEle.setAttribute("rel", "stylesheet");
+		linkEle.setAttribute("type", "text/css");
+		linkEle.setAttribute("href", set+"/"+name);
+		document.head.appendChild(linkEle);
+	}
+	if(name.search("Form") != -1){
+		get();
+	}else {
+		setStyle();
+	}
+}
+
 /****************************************************************/
 
 /*****************************Timing*****************************/
@@ -1336,6 +1426,8 @@ function resourceIO(){
 		}
 	}
 	this.download = function(resource){
+		validateArray(resource, "download() method argument 1 must be an array");
+		validateArrayMembers(resource, "type", "download() method argument 1 must be an array of strings specifying the resource URL");
 		initializeResource(resource);
 	}
 	this.upload = function(resource){}
@@ -1355,6 +1447,16 @@ function resourceIO(){
 		}
 	});
 	Object.defineProperties(this.downloader, {
+		config:{
+			writable:false
+		},
+		progress:{
+			get:function(){
+				return parseInt(total);
+			}
+		}
+	});
+	Object.defineProperties(this.uploader, {
 		config:{
 			writable:false
 		},
@@ -1571,11 +1673,11 @@ function ScreenBreakPoint(breakPoints){
 		screen : {
 			get:function(){
 				if(innerWidth > baseBeakPoints["largeStart"]){
-					return {Mode:"large", actualSize:innerWidth};
+					return {mode:"large", actualSize:innerWidth};
 				}else if (innerWidth >= baseBeakPoints["mediumStart"] && innerWidth < baseBeakPoints["largeStart"]) {
-					return {Mode:"medium", actualSize:innerWidth};
+					return {mode:"medium", actualSize:innerWidth};
 				}else {
-					return {Mode:"small", actualSize:innerWidth};
+					return {mode:"small", actualSize:innerWidth};
 				}
 			}
 		}
@@ -1712,19 +1814,6 @@ DOMelement.findClass = function (element, className){
 	}else{
 		return false;
 	}
-}
-DOMelement.checkedItems= function(groupCollection){
-	validateHTMLObject(groupCollection, "'validate.checkField()' method argument 1 must be an HTML collection");
-	var collection=[];
-
-	//group all checked
-	for(var x=0;x<groupCollection.length;x++){
-		if(groupCollection[x].checked){
-			collection[x] = collection[x].value;
-		}
-	}
-	collection.length == 0?collection=null:null;
-	return collection;
 }
 /****************************************************************/
 
@@ -2235,27 +2324,19 @@ function customFormComponent(vWrapper=null){
 		}
 	}
 	function createStyleSheet(){
-		var css = "."+vWrapper + " {width:"+selectDim[0]+"; height:"+selectDim[1]+"; z-index: 60;}";
-		css += "."+vWrapper + " .sfield {position:absolute; width:100%; height:100%; z-index:1; line-height:"+selectDim[1]+"; padding-left:5px; cursor:pointer; box-sizing: border-box; background-color:#ccc;}";
-		css += "."+vWrapper + " .optionsCon {position:absolute; width:100%; height:0px; z-index:2; top:100%; transition:height 0.2s linear; overflow-y:hidden; display:none}";
-		css += "."+vWrapper + " .optionsCon .option {position:static; width:100%; height:"+selectDim[1]+"; padding-left:5px; box-sizing:border-box; line-height:"+selectDim[1]+";border-bottom:solid 1px #ccc;}";
-		css += "."+vWrapper + " .optionsCon .option[data-disabled='false'] { cursor:pointer; }";
-		css += "."+vWrapper + " .optionsCon .option[data-disabled='true'] { cursor:not-allowed; background-color:#2f2a2a; color:#595454!important;}";
-		css += "."+vWrapper + " .optionsCon .option:last-of-type {border-bottom:none!important;}";
-		css += "."+vWrapper + " .optionsCon .hovered {background-color:rgba(255, 255, 255, 0.3)}";
-		css += "."+vWrapper + " .optionsCon .selected {background-color:rgba(255, 255, 255, 0.5)}";
-		css += "."+vWrapper + " .arrowCon {width:"+selectDim[1]+"; height:100%; background-color:rgb(255, 255, 255); content:''; border-left:solid 1px black; position:absolute; right:0; top:0; box-sizing:border-box; z-index:5; cursor:pointer;}";
-		css += "."+vWrapper + " .arrowCon::before {position:absolute; left:0; top:0; width:100%; height:100%; text-align:center; line-height:"+selectDim[1]+"; transition: color 0.1s linear;}";
-		css += "."+vWrapper + " .arrowCon:hover::before {color:rgba(255, 255, 255, 0.3)!important;}";
-		css += "."+vWrapper + " .arrowCon:active::before {color:rgba(255, 255, 255, 0.6)!important;}";
-
+		//set wrapper class name
+		var css = styles["selectFormComponent"].replace(/shell/g, vWrapper);
+		css += "."+vWrapper + " {width:"+selectDim[0]+"; height:"+selectDim[1]+"; z-index: 60;}";
+		css += "."+vWrapper + " .sfield {line-height:"+selectDim[1]+";}";
+		css += "."+vWrapper + " .optionsCon .option {height:"+selectDim[1]+";line-height:"+selectDim[1]+";}";
+		css += "."+vWrapper + " .arrowCon {width:"+selectDim[1]+";}";
+		css += "."+vWrapper + " .arrowCon::before {line-height:"+selectDim[1]+";}";
 		if(arrowIconClose != ""){
 			css += "."+vWrapper + " .arrowCon::before {"+arrowIconClose+"}"
 		}
 		if(arrowIconOpen != ""){
 			css += "."+vWrapper + " .opened::before {"+arrowIconOpen+"}"
 		}
-
 		var styleElement = document.createElement("style");
 		styleElement.setAttribute("type", "text/css");
 		if (styleElement.styleSheet) {
@@ -2535,12 +2616,11 @@ function customFormComponent(vWrapper=null){
 	function radioStyleSheet(){
 			(groupAxis == "x" | "X")?width="auto":width="100%";
 			(groupAxis == "x" | "X")?mbottom="auto":mbottom="5px";
-			var css = "."+vWrapper + " {width:"+width+"; height:auto;display:block; float:left; margin-bottom:"+mbottom+"}";
-			css +=  "."+vWrapper + " .vRadioButton {cursor:pointer;  box-sizing:border-box; width:"+radioDim[0]+"; border-radius:100%; height:"+radioDim[1]+"; border:solid 1px black; float:left; transition:all 0.2s linear; position:relative;}";
-			css +=  "."+vWrapper + " .vRadioButton::before {width:100%; height:100%; position:absolute; content:''; border-radius:100%}";
-			css +=  "."+vWrapper + " .selected::before {background-color:black;}";
-			css +=  "."+vWrapper + " .deselected::before{background-color:white;}";
-			css +=  "."+vWrapper + " .label {width:auto; height:"+radioDim[1]+"; line-height:"+radioDim[1]+"; float:left; cursor:pointer;}";
+
+		 	var css = styles["radioFormComponent"].replace(/shell/g, vWrapper);
+			css += "."+vWrapper + " {width:"+width+"; margin-bottom:"+mbottom+"}";
+			css +=  "."+vWrapper + " .vRadioButton {width:"+radioDim[0]+";height:"+radioDim[1]+";}";
+			css +=  "."+vWrapper + " .label {height:"+radioDim[1]+"; line-height:"+radioDim[1]+";}";
 			css +=  "."+vWrapper + " .deselected:hover::before{"+mouseEffect[0]+";}";
 			css +=  "."+vWrapper + " .deselected:active::before{"+mouseEffect[1]+";}";
 
@@ -2798,8 +2878,8 @@ function customFormComponent(vWrapper=null){
 
 
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom checkBox builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-	var CheckBoxAfterSelectionFn=function(){}, checkBoxDim =[], checkBoxWrapperStyle="", checkBoxStyle="", checkedStyle = "", uncheckedStyle ="", checkBoxLabelStyle ="", groupAxis= "x", width="", mbottom="",
-	mouseEffect = [];
+	var CheckBoxAfterSelectionFn=null, checkBoxDim =[], checkBoxWrapperStyle="", checkBoxStyle="", checkedStyle = "", uncheckedStyle ="", checkBoxLabelStyle ="", groupAxis= "x", width="", mbottom="",
+	mouseEffect = [], thisCheckBox=null;
 	/************************************************************************************/
 	//checkBoxDim[a,b] a=> width of checkbox cElement , b=> height of checkbox cElemt
 	//mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
@@ -2808,12 +2888,12 @@ function customFormComponent(vWrapper=null){
 	function checkBoxStyleSheet(){
 			(groupAxis == "x" | "X")?width="auto":width="100%";
 			(groupAxis == "x" | "X")?mbottom="auto":mbottom="5px";
-			var css = "."+vWrapper + " {width:"+width+"; height:auto;display:block; float:left; margin-bottom:"+mbottom+"}";
-			css +=  "."+vWrapper + " .vcheckBox {background-color:transparent;cursor:pointer;  box-sizing:border-box; width:"+checkBoxDim[0]+"; border-radius:3px; height:"+checkBoxDim[1]+";float:left; transition:all 0.2s linear; position:relative;}";
-			css +=  "."+vWrapper + " .vcheckBox::before {color:red;width:100%;height:100%;content:'';position:absolute;top:0; text-align:center;line-height:"+checkBoxDim[1]+"}";
-			css +=  "."+vWrapper + " .checked::before {background-color:black;}";
-			css +=  "."+vWrapper + " .unchecked::before{background-color:white;}";
-			css +=  "."+vWrapper + " .label {width:auto; height:"+checkBoxDim[1]+"; line-height:"+checkBoxDim[1]+"; float:left; cursor:pointer;}";
+
+			var css = styles["checkBoxFormComponent"].replace(/shell/g, vWrapper);
+			css += "."+vWrapper + " {width:"+width+"; margin-bottom:"+mbottom+"}";
+			css +=  "."+vWrapper + " .vcheckBox {width:"+checkBoxDim[0]+"; height:"+checkBoxDim[1]+";}";
+			css +=  "."+vWrapper + " .vcheckBox::before {line-height:"+checkBoxDim[1]+";}";
+			css +=  "."+vWrapper + " .label {height:"+checkBoxDim[1]+"; line-height:"+checkBoxDim[1]+";}";
 			css +=  "."+vWrapper + " .vcheckBox[data-checked='0']:hover{"+mouseEffect[0]+";}";
 			css +=  "."+vWrapper + " .vcheckBox[data-checked='0']:active{"+mouseEffect[1]+";}";
 
@@ -2836,6 +2916,7 @@ function customFormComponent(vWrapper=null){
 	}
 	function checkCheckBox(e){
 		var maincheckedButton = e.target.parentNode.nextElementSibling;
+		thisCheckBox = maincheckedButton;
 		if(e.target.classList.contains("label") == false){//custom checkBox
 			if(e.target.getAttribute("data-checked") == "0"){//unchecked
 				e.target.setAttribute("data-checked","1");
@@ -2862,6 +2943,7 @@ function customFormComponent(vWrapper=null){
 				maincheckedButton.checked = false;
 			}
 		}
+		CheckBoxAfterSelectionFn == null?null:CheckBoxAfterSelectionFn();
 	}
 	function reCreateCheckBox (CheckBoxElement){
 		var checkBoxWrapper = document.createElement("DIV");
@@ -2943,14 +3025,21 @@ function customFormComponent(vWrapper=null){
 			reCreateCheckBox(CheckBoxElement);
 			assignCheckBoxEventHanler(CheckBoxElement);
 		},
-		config:{}
+		config:{},
+		target:{}
 	}
 	Object.defineProperty(this, "checkBox", {
 		writable:false
 	});
 	Object.defineProperties(this.checkBox, {
 		build:{writable:false},
-		config:{writable:false}
+		config:{writable:false},
+		thisCheckBox:{writable:false},
+		target:{
+			get:function(){
+				return thisCheckBox;
+			}
+		}
 	})
 	Object.defineProperties(this.checkBox.config, {
 		afterSelectionFn : {//Function to call after selection
@@ -3035,28 +3124,34 @@ function customFormComponent(vWrapper=null){
 				validateArrayMembers(value, "string", temp+" of strings");
 				mouseEffect = value;
 			}
-		},
+		}
 	})
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 }
 /****************************************************************/
 
 /************************Form validator**************************/
-function formValidator(form){
+function formValidator(form=null){
+	form != null?validateElement(form, "'config.form' property must be an element"):null;
 	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="", self=this;
-	var errorLog = {}, logStatus=null, n=0, selectedProgressType="rotate", customAnimate=null, progressIndicatorStyle=null, feedBackUrl=null, formSubmitted=false, smallView=866, screenMode= "large";
+	var errorLog = {}, logStatus=null, n=0, selectedProgressType="rotate", customAnimate=null, progressIndicatorStyle=null, formSubmitted=false, smallView=866, screenMode= "large";
 	var progressType = {
 				rotate:["@keyframes vRotate{from{transform:rotate(0deg) translateY(-50%) translateX(-50%);} to{transform:rotate(360deg) translateY(-50%) translateX(-50%);}}", "vRotate"]
-			}, modal=null;
-	validateElement(form, "'formValidator()' constructor argument 1 must be an element");
+			};
+	var modal=null;
+	var controller=null;
+	// 2=> incomplete names
+	// 3=> All names must be alphabets
+	// 4=> Name cannot be less than 2 characters
+
+
 	//Create Element
-	function createMessageCon(messageConElement, messageType, location, message, inputVisualFields, maxSize){
+	function createMessageCon(messageConElement, messageType, location, message, inputVisualFields=null, customStyles=null){
 		if(location == "left" || location == "right"){
 			if(innerWidth < smallView){
 				location = "bottom";
 			}
 		}
-
 		//Validations
 		if (inputVisualFields != null){
 			var temp = "'write()' method argument 5 must be an array";
@@ -3068,10 +3163,9 @@ function formValidator(form){
 				if(inputVisualFields[0] != null){
 					validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
 				}
-
 				//2nd element placeholder element
 				if (inputVisualFields[1] != null){
-					validateElement(inputVisualFields[1], "write()' method argument 5 array element 2 must be a valid HTML element");
+					validateElement(inputVisualFields[1], "'write()' method argument 5 array element 2 must be a valid HTML element");
 				}
 			}else if(inputVisualFields.length == 3){
 				//1st element
@@ -3089,8 +3183,13 @@ function formValidator(form){
 			}
 		}
 
-		if (maxSize != null){
-			validateDimension(maxSize, "A string of valid CSS dimension needed as argument 6 for 'write' method");
+		if (customStyles != null){
+			validateArray(customStyles, "'write()' method argument 6 must be an array");
+			if(customStyles.length > 2){
+				throw new Error("'write()' method argument 6 array element cannot be more than 2 elements");
+			}
+			customStyles[0] != null?validateString(customStyles[0], "'write()' method argument 6 array element 1 must be a string which specify the CSS style for bottom message display"):null;
+			customStyles[1] != null?validateString(customStyles[1], "'write()' method argument 6 array element 2 must be a string which specify the CSS style for left or right message display"):null;
 		}
 
 		//__________________________//
@@ -3100,10 +3199,10 @@ function formValidator(form){
 			messageConElement.setAttribute("data-fieldId", "f"+(n+1));
 			n++;
 		}
-
-
 		var checkExistence = messageConElement.querySelector(".vMsgBox");
 		function createMsgBox(){
+			var overlay = form.querySelector(".vFormOverlay");
+			overlay.style["display"] == "block"? overlay.style["display"] == "none":null;
 			screenMode == "large"?messageConElement.setAttribute("data-vp", "large"):messageConElement.setAttribute("data-vp", "small");
 			//Fix left and right
 			var messageBoxWrapper = document.createElement("DIV");
@@ -3182,10 +3281,10 @@ function formValidator(form){
 
 			if (location == "left"){
 				var m = messageConElement.querySelector(".vLeft");
-				sendBehind(m, location, 15, maxSize);
+				sendBehind(m, location, 15, customStyles);
 			}else if (location == "right") {
 			 	var m = messageConElement.querySelector(".vRight");
-				sendBehind(m, location, 15, maxSize);
+				sendBehind(m, location, 15, customStyles);
 			}else if (location == "bottom") {
 				var	m = messageConElement.querySelector(".vBottom");
 				drop(m);
@@ -3193,21 +3292,23 @@ function formValidator(form){
 		}
 		function updateMsgBox(){
 			if(location == "left" || location == "right" ){
-				if (maxSize != null){
-					checkExistence.style["width"] = maxSize;
-					checkExistence.style["line-height"] = "23px";
-					checkExistence.style["white-space"] = "normal";
-				}else{
-					checkExistence.style["width"] = "auto";
-					checkExistence.style["white-space"] = "nowrap";
-					checkExistence.style["line-height"] = "250%";
-				}
+				checkExistence.style["white-space"] = "nowrap";
+				checkExistence.style["line-height"] = "250%";
+				checkExistence.style["width"] = "auto";
 				checkExistence.style["text-align"] = "left";
 				checkExistence.style["height"] = "auto";
 				checkExistence.style["min-height"] = DOMelement.cssStyle(checkExistence, "height");
+
+				if (customStyles != null){
+					var m = null;
+					location == "left"?m = messageConElement.querySelector(".vLeft"):m = messageConElement.querySelector(".vRight");;
+					if(customStyles[1] != null || customStyles[1] != undefined ){
+						var currentStyle = m.getAttribute("style");
+						m.setAttribute("style", currentStyle+ customStyles[1]);
+					}
+				}
 			}
 			checkExistence.innerHTML = message;
-
 			//Log error
 			errorLog[messageConElement.getAttribute("data-fieldId")] = 1;
 		}
@@ -3333,7 +3434,8 @@ function formValidator(form){
 			}else if(e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false){
 				e.target.style["color"] = "#2b9030";
 			}else	if (e.target.classList.contains("vMsgBox")  && e.target.classList.contains("clear")){
-				e.target.parentNode.removeChild(e.target);
+				var parent = e.target.parentNode;
+				parent != null?e.target.parentNode.removeChild(e.target):null;
 			}
 		});
 		window.addEventListener("resize", function(){
@@ -3356,52 +3458,10 @@ function formValidator(form){
 	}
 	//create style styleSheet
 	function setStyleSheet(){
-		var css = " .vMsgBox {box-sizing:border-box; padding:0 10px 0 10px; text-align:center; white-space: nowrap; font-size:13px; line-height:250%; color:transparent; border-radius:5px;}";
-		css += " .vLeft, .vRight{width:auto; height:100%; position:absolute; top:0; transition:width .2s cubic-bezier(0,.81,.22,1);}";
-		css += " .vBottom{width:auto; height:auto; position:absolute; transition:height 0.2s cubic-bezier(0,.81,.22,1); top:CALC(100% + 12px); z-index:50; left:0;}";
-		css += " .vBottom::before{width:0px; height:0px; top:-11px; border-left: 8px solid transparent; border-right: 8px solid transparent; left:10px; z-index:10; content:''; position:absolute;}";
-		css += " .vLeft::before, .vRight::before{border-top: 8px solid transparent; border-bottom: 8px solid transparent;position:absolute; content:''; top:6px;  z-index:10;}";
-		css += " .vLeft::before{right:-11px;}";
-		css += " .vRight::before{left:-11px;}";
-		css += " .ierror{border:solid 1px #d82323!important; background-color: #bc949499!important;}";
-		css += " .iwarning{border:solid 1px #d82323!important; background-color: #bc949499!important;}";
-		css += " .isuccess{border:solid 1px #d82323!important; background-color: #2b9030!important;}";
-		css += " .lerror{color: #d82323!important;}";
-
-		css += " .error {background-color:#e3b4b4; border:solid 1px #d82323;}";
-		css += " .warning {background-color:#e3e1b4; border:solid 1px #e97514;}";
-		css += " .success {background-color:#c2e3b4; border:solid 1px #2b9030;}";
-
-		css += " .lw::before{ border-left:11px solid #e97514;}";
-		css += " .le::before{ border-left:11px solid #d82323;}";
-		css += " .ls::before{ border-left:11px solid #2b9030;}";
-
-		css += " .rw::before{ border-right:11px solid #e97514;}";
-		css += " .re::before{ border-right:11px solid #d82323;}";
-		css += " .rs::before{ border-right:11px solid #2b9030;}";
-
-		css += " .bw::before{ border-bottom:11px solid #e97514;}";
-		css += " .be::before{ border-bottom:11px solid #d82323;}";
-		css += " .bs::before{ border-bottom:11px solid #2b9030;}";
-
-		css += " .vFormOverlay {position:absolute; z-index:888; top:0; width:100%; height:100%; background-color:HSLA(0, 0%, 100%, 0.68); display:none;}";
-		css += " .vFormLoader {position:absolute; z-index:999; width:50px; height:50px; background-color:transparent; animation-duration: 1.3s; animation-iteration-count:infinite; animation-timing-function:linear;}";
-		css += " .FbMsgBox{width: 320px; height:auto;	border:solid 1px #e0dddd;	border-radius: 7px;	position:absolute;background-color: white;overflow: hidden;}";
-		css += " .FbMsgBox .ttl{width:100%;	height:46px;box-shadow: 0 0 3px black;color:white;text-align: center;font-size: 24px;font-weight: bold;line-height: 46px;}";
-		css += " .FbMsgBox .tsuc{background-image: linear-gradient(to bottom, #6ac261 0%, #689f61 100%);}";
-		css += " .FbMsgBox .terr{background-image: linear-gradient(to bottom, #c28761 0%, #9f6161 100%);}";
-		css += " .FbMsgBox .twrn{background-image: linear-gradient(to bottom, #c2b761 0%, #9f9661 100%);}";
-		css += " .FbMsgBox .msuc{color:green;}";
-		css += " .FbMsgBox .merr{color:red;}";
-		css += " .FbMsgBox .mwrn{color:#f90;}";
-		css += " .FbMsgBox .buttonCon{width:100%;height:auto;	padding-top: 23px;}";
-		css += " .FbMsgBox .msgCon{padding-top: 46px;text-align: center;	font-style: italic;}";
-		css += " .FbMsgBox button{margin: 15px auto;display: block;	width: 70px;height: 35px;	background-image: linear-gradient(to bottom, #e9e9e9 0%, #7c807c 100%);border-radius: 30px;cursor: pointer;}";
-
+		var css = "";
 		if (selectedProgressType != "custom"){
 			css += progressType[selectedProgressType][0];
-			css += " .vFormLoader {animation-name:"+progressType[selectedProgressType][1]+"; transform-origin:0 0;}";
-			css += " .vFormLoader::before {width:100%; height:100%; position:absolute; top:0; color:black;line-height:50px;text-align:center;}";
+			css += " .vFormLoader {animation-name:"+progressType[selectedProgressType][1]+";}";
 			progressIndicatorStyle != null? css += " .vFormLoader::before {"+progressIndicatorStyle+"}":null;
 		}else {
 			css +=  customAnimate[0]; //@keframe
@@ -3420,7 +3480,7 @@ function formValidator(form){
 	}
 
 	//For right and left display
-	function sendBehind(element, direction, offset, maxSize){
+	function sendBehind(element, direction, offset, customStyles){
 		var width = element.scrollWidth;
 		if(direction == "left"){
 			element.style["right"] = "calc(100% + "+offset+"px)";
@@ -3430,11 +3490,14 @@ function formValidator(form){
 
 		element.style["width"] = "0px";
 		element.scrollWidth;
-		if(maxSize != null){
-			element.style["width"] = maxSize;
-		}else{
-			element.style["width"] = width+"px";
+		if(customStyles != null){
+			if(customStyles[1] != null || customStyles[1] != undefined ){
+				var currentStyle = element.getAttribute("style");
+				element.setAttribute("style", currentStyle+ customStyles[1]);
+			}
 		}
+		element.style["width"] = width+"px";
+
 	}
 
 	//For bottom display
@@ -3586,6 +3649,9 @@ function formValidator(form){
 	this.initialize = function(){
 		if (initialized == false){
 			innerWidth < smallView?screenMode = "small":screenMode="large";
+			if(form == null){
+				throw new Error("Cannot initialize without settinig a form to perform validation on, use 'Obj.config.form', to set target form")
+			}
 			setStyleSheet();
 			createLoader();
 			addEventhandler();
@@ -3680,7 +3746,7 @@ function formValidator(form){
 	this.validate = {
 		alpha: function(input){
 			validateString(input, "'alpha()' method, argument 1 must be a string");
-			var target = /[^A-Za-z]+/.test(input); //checks for other characters except A-Za-z
+			var target = /[^A-Za-z\ ]+/.test(input); //checks for other characters except A-Za-z and space
 			if(target==true){
 				return false;
 			}else {
@@ -3701,7 +3767,7 @@ function formValidator(form){
 			var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{2,3}$/.test(email);//matches email address pattern
 			return email_filter;
 		},
-		custom:function(text, PatternArray){
+		customData:function(text, PatternArray){
 			// PatternArray => Array of unwanted characters
 			var status=null;
 			validateString(text, "'custom()' method, argument 1 must be a string");
@@ -3727,27 +3793,13 @@ function formValidator(form){
 		float:function(n){
 			return Number(n) === n && n % 1 !== 0;
 		},
-		fullName:function(value, n, seperator){
+		fullName:function(value){
 			var returnType=null, cleanedName=[], n=0;
-			var test = self.validate.integer(n);
-			if(test){
-				if(value < 2){
-					throw new Error("'fullName()' method argument 1, must be greater than ");
-				}
-			}else{
-				throw new Error("'fullName()' method argument 1, must be an integer");
-			}
-
 			var split = value.split(" ");
 
 			//clean name
 			var tn = split.length;
-			console.log(split);
-
-
-
-
-			if(tn >= tn){
+			if(tn >= 2){
 				//clean name
 				for(var x = 0; x<tn; x++){
 					if(split[x] != " "){
@@ -3758,34 +3810,34 @@ function formValidator(form){
 					}
 				}
 
-				//Check for non alpha
-				for(var x=0; x<tn;x++){
-					if(self.validate.alpha(split[x]) == false){
-						returnType = 2; //All names must be alphabets
-						break;
-					}
-					console.log(self.validate.alpha(split[x]));
-				}
 
-				//Check length
 				for(var x=0; x<tn;x++){
-					if(split[x].length <= 2){
-						returnType = 3; //Name cannot be less than 3 characters
+					//Check length
+					if(split[x].length <= 1){
+						returnType = 4; //Name cannot be less than 2 characters
 						break;
 					}
-					if(x == tn-1){
-						returnType = 4; //All names are more than 3 characters
+
+					//Check for non alpha
+					if(self.validate.alpha(split[x]) == false){
+						returnType = 3; //All names must be alphabets
+						break;
 					}
+
+					if(x == tn-1){
+						returnType = true; //All names are more than 2 characters
+					}
+
 				}
 
 			}else {
-				returnType = 1; //incomplete names
+				returnType = 2; //incomplete names
 			}
 
 			return returnType;
 		},
-		checkField:function(groupCollection){
-			validateHTMLObject(groupCollection, "'validate.checkField()' method argument 1 must be an HTML collection");
+		selectField:function(groupCollection){
+			validateHTMLObject(groupCollection, "'validate.selectField()' method argument 1 must be an HTML collection");
 			var status=false;
 
 			//check for any selected
@@ -3826,11 +3878,10 @@ function formValidator(form){
 				formSubmitted = true;
 			}else if (xhr.readyState == 4) {//sent and received
 				if(xhr.status == 200){
-					if(feedBackUrl != null){ //Has feedBack page declared
-						showFeedBack(feedBackUrl);
-					}else { //No feedBack page declared, default used
-						//Show default success page
-						showFeedBack();
+					if(controller != null){
+						controller(xhr.responseText);
+					}else {
+						self.showFeedBack();
 					}
 				}
 			}
@@ -3839,19 +3890,26 @@ function formValidator(form){
 	}
 
 	/*value getter*/
-	this.getChecked = function(groupCollection){
-				validateHTMLObject(groupCollection, "'validate.checkField()' method argument 1 must be an HTML collection");
-				var data=null;
+	this.getSelected = function(groupCollection){
+		validateHTMLObject(groupCollection, "'validate.getSelected()' method argument 1 must be an HTML collection");
+		var data=[];
+		//check for any selected
+		for(var x=0;x<Object.keys(groupCollection).length;x++){
+			if(groupCollection[x].checked){
+				data[data.length] = groupCollection[x].value;
+			}
+		}
+		return data;
+	}
 
-				//check for any selected
-				for(var x=0;x<groupCollection.length;x++){
-					if(groupCollection[x].checked){
-						data==null?data = groupCollection[x].value:null;
-						break;
-					}
-				}
-				return data;
-			},
+	this.showFeedBack = function(feedBackUrl=null){
+		if(feedBackUrl != null){ //Has feedBack page declared
+			showFeedBack(feedBackUrl);
+		}else { //No feedBack page declared, default used
+			//Show default success page
+			showFeedBack();
+		}
+	}
 
 	Object.defineProperties(this.validate, {
 		alpha:{writable:false},
@@ -3860,7 +3918,9 @@ function formValidator(form){
 		integer:{writable:false},
 		float:{writable:false},
 		fullName:{ writable:false},
-		checkField:{writable:false}
+		selectField:{writable:false},
+		customData:{writable:false},
+		phoneNumber:{writable:false}
 	});
 	Object.defineProperties(this.format, {
 		toCurrency:{writable:false},
@@ -3909,20 +3969,16 @@ function formValidator(form){
 					}
 			}
 		}, ///Used if input wrapper is not specified in write method
-		progressIndicatorStyle:{
-			set:function(value){
-				progressIndicatorStyle = value
-			}
-		},
-		feedBackURL:{
-			set:function(value){
-				feedBackUrl = value;
-			}
-		},
 		modal:{
 			set:function(value){
-				validateElement(value, "'config.modal' property must be an element");
+				validateObject(value, "'config.modal' property must be an object");
 				modal=value;
+			}
+		},
+		feedBackController:{
+			set:function (value){
+				validateFunction(value, "'config.feedBackController' property value must be a function");
+				controller = value;
 			}
 		}
 	});
@@ -3935,9 +3991,10 @@ function formValidator(form){
 		validate:{write:{writable:false}},
 		message:{write:{writable:false}},
 		initialize:{write:{writable:false}},
-		getChecked:{write:{writable:false}},
+		getSelected:{write:{writable:false}},
 		submit:{write:{writable:false}},
-		formOk:{write:{writable:false}}
+		formOk:{write:{writable:false}},
+		showFeedBack:{write:{writable:false}}
 	});
 }
 /****************************************************************/
@@ -4428,11 +4485,11 @@ function modalDisplayer(){
 		window.addEventListener("resize", function(){
 			if(modalOn == true){
 				var mainModal = document.querySelector(".modalSpace");
-				if (sbpoint.screen.Mode == "large"){
+				if (sbpoint.screen.mode == "large"){
 					mainModal.style["width"] = modalWidths[0];
-				}else if (sbpoint.screen.Mode == "medium") {
+				}else if (sbpoint.screen.mode == "medium") {
 					mainModal.style["width"] = modalWidths[1];
-				}else if (sbpoint.screen.Mode == "small") {
+				}else if (sbpoint.screen.mode == "small") {
 					mainModal.style["width"] = modalWidths[2];
 				}
 			}
@@ -4454,20 +4511,6 @@ function modalDisplayer(){
 		oldModal.style["display"] = "none";
 		oldModal.style["width"] = cssWidth;
 		oldModal.innerHTML = mainFormConInner;
-	}
-	function createStyles(){
-		var css = " .vModal{position:absolute; top:0; width:100%; height:100vh; z-index:999; display:none; min-width:320px;}";
-		css += ".show {display:block}";
-		css += " .vModal .modalSpace {height:auto; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); position:absolute;}";
-		css += " .vModal .modalSpace #newModal{width:100%;}";
-		var styleElement = document.createElement("style");
-		styleElement.setAttribute("type", "text/css");
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-		  styleElement.appendChild(document.createTextNode(css));
-		}
-		document.getElementsByTagName('head')[0].appendChild(styleElement);
 	}
 	function createElements(){
 		//Create
@@ -4524,7 +4567,6 @@ function modalDisplayer(){
 	this.initialize = function(){
 		if(initialized == false){
 			totalHeight = document.querySelector("html").scrollHeight;
-			createStyles();
 			createElements();
 			addEventhandler();
 			initialized = true;
@@ -4641,85 +4683,14 @@ function datePicker(){
 		completed:false
 	};
 	function createStyles(){
-		var css = ".vDateIcon {position:absolute; width:36px; top:0; right:0; height:100%; box-sizing:border-box;z-index:4;}";
-		css += ".vDateIcon::before {transition:color .2s linear; cursor:pointer; text-align:center; line-height:200%;position:absolute; width:100%; right:0; height:100%; box-sizing:border-box; content:''; border:solid 1px #ccc; border-radius:0 4px 4px 0; background-image:linear-gradient(to bottom, #ccc 0%, #c6bfbf 100%);}";
-		css += ".vDateIcon:hover::before {color:rgba(255, 255, 255, 0.25)}";
-		css += ".vDateIcon:active::before {color:rgba(255, 255, 255, 0.75)}";
-		css += ".vDateBoxTool {transition:height 0.2s linear; overflow:hidden;display:none;width:300px; height:0px; position:absolute; top:calc(100% + 2px); left:0;}";
-		css += ".vDateBoxTool .vDateBox {box-sizing: border-box;overflow:hidden; border-radius:5px;width:100%; height:auto; position:absolute; top:10px; left:0; border:solid 1px #ccc;}";
-		css += ".vDateBoxTool .vDateBoxArrow {width:300px; height:10px; position:absolute;top:0}";
-		css += ".vDateBoxTool .shift::before {left:50%; margin-left:-5px;}";
-		css += ".vDateBoxTool .normalShift::before {left:10px;}";
-		css += ".vDateBoxTool .vDateBoxArrow::before {width:0; height:0; position:absolute; content:''; top:0px;border-left:solid 7px transparent; border-right:solid 7px transparent;border-bottom:solid 10px #ccc;}";
-		css += ".vDateBoxTool .vDateBoxHeader {font-synthesis: unset;color:#c5c5c5; font-weight: bold;position:relative; box-shadow:0 2px 4px 0 #7e7979; width:100%; height:36px; background-image:linear-gradient(to top, black 0% , #4a4949 100%); text-align:center; line-height:36px;}";
-		css += ".vDateBoxTool .vDateBoxDisplayCon {position: relative;width:100%; height:200px; background-color:white;}";
-		css += ".vDateBoxTool .vDateRangeCon, .vDateBoxTool .vFutureYearsCon{opacity:1;overflow: hidden;top: 50%;transform: translateY(-50%);left:0;position: absolute;width:auto; height:100%;}";
-		css += ".vDateBoxTool .vDateRangeConTrans,.vDateBoxTool .vFutureYearsCon{transition:all .15s linear!important;}";
-		css += ".vDateBoxTool .rangeBox, .vDateBoxTool .yearsBox{flex-shrink:0; flex-basis:300px; justify-content: start; align-content: center; height:100%;box-sizing: border-box;padding:20px 0 20px 20px;display: flex; flex-wrap: wrap;width:300px}";
-		css += ".vDateBoxTool .range, .vDateBoxTool .yearsBox>.year{transition:all .1s linear; cursor:pointer;margin-right:5px;background-color: #e9e9e9; font-size:13px;flex-basis:80px; color: #f817ed; border: 1px solid #d2d4d5; height:30px; text-align:center;line-height:30px; margin-bottom:5px}";
-		css += ".vDateBoxTool .yearsBox>.year:hover, .vDateBoxTool .range:hover,.vDateBoxTool .vYearsCon>.year:hover,.vDateBoxTool .month:hover,.vDateBoxTool .day:hover{background-color: #cecece; color:black;}";
-		css += ".vDateBoxTool .range:active,.vDateBoxTool .year:active,.vDateBoxTool .month:active,.vDateBoxTool .day:active{background-color: black; color:white;}";
-		css += ".vDateBoxTool .vDateBoxControlCon {position:relative;width:100%; height:36px; background-color:#c0bfbf; box-shadow:0 -2px 4px 0 #7e7979;}";
-		css += ".vDateBoxTool .vDateBoxControlCon button{border:none;cursor:pointer;top:0;transform:none;}";
-		css += ".vDateBoxTool .vDateBoxControlCon button::before{position:absolute; content:''; top:8px;left:50%; transform:translateX(-50%);}";
-		css += ".vDateBoxTool .vPrev{width:36px; height:36px; position:absolute; left:0;}";
-		css += ".vDateBoxTool .vPrev::before{width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent;border-right:15px solid black;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .linactive::before{border-right:15px solid #ccc;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .linactive{cursor:not-allowed;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .vBack{border:solid 1px #9e9e9e; background-image:linear-gradient(to bottom, #ccc 0%, white 100%);border-radius:15px;top:5px; width:70px; height:27px; background-color:#ccc; position:absolute; left:25%;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .vClose{border:solid 1px #9e9e9e; background-image:linear-gradient(to bottom, #ccc 0%, white 100%);border-radius:15px;top:5px; width:70px; height:27px; background-color:#ccc; position:absolute; left:50%;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .vbActive:active, .vDateBoxTool .vDateBoxControlCon .vClose:active{background-image:linear-gradient(to top, #ccc 0%, white 100%);}";
-		css += ".vDateBoxTool .vDateBoxControlCon .vbActive:hover, .vDateBoxTool .vDateBoxControlCon .vClose:hover{color:#32a13f;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .vbInactive{cursor:not-allowed;background-image:none;color:#b3a5a5;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .vNext{width:36px; height:36px; position:absolute; right:0;left:auto;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .vNext::before{width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-left:15px solid black;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .rinactive::before{border-left:15px solid #ccc;}";
-		css += ".vDateBoxTool .vDateBoxControlCon .rinactive{cursor:not-allowed;}";
-		css += ".vDateBoxTool .vYearsCon,.vDateBoxTool .vMonthsCon, .vDateBoxTool .vDaysCon,.vDateBoxTool .vTimeCon{opacity:0;flex-wrap:wrap;padding:30px 0 20px 2px;overflow:hidden;transition:all .15s linear;align-content: center;justify-content: space-around;box-sizing: border-box;display:none;position:absolute;width:0%; height:0%; left:50%;top:50%; transform:translateX(-50%) translateY(-50%);}";
-		css += ".vDateBoxTool .vYearsCon .year,.vDateBoxTool .month, .vDateBoxTool .day{flex-shrink: 0;cursor:pointer;margin:0 2px 10px 0 ;background-color: #e9e9e9; font-size:13px;flex-basis:80px; color: #f817ed; border: 1px solid #d2d4d5; height:25px; text-align:center;line-height:25px;}";
-		css += ".vDateBoxTool .vMonthsCon{justify-content:center;}";
-		css += ".vDateBoxTool .month{flex-basis:80px; height:25px;line-height:25px;}";
-		css += ".vDateBoxTool .vDaysCon{justify-content:start;padding:30px 0 20px 13px;}";
-		css += ".vDateBoxTool .day{flex-basis:30px; height:25px;line-height:25px;}";
-		css += ".vDateBox .vTimeCon{padding:0;}";
-		css += ".vDateBox .meridianCon{width:100%; height:40px;top: 0;position: absolute;}";
-		css += ".vDateBox .meridian{width:60px; height:30px;top: 5px;position: relative;margin:0 auto;}";
-		css += ".vDateBox .meridian::before, .vDateBox .vDateBoxDisplayCon .vTimeCon .meridianCon .meridian::after{width:30px; height:30px;position: absolute; text-align:center;line-height:30px;top:0;font-weight: 400;}";
-		css += ".vDateBox .meridian::before{left:-30px;content:'AM';}";
-		css += ".vDateBox .AMon::before{color:purple}";
-		css += ".vDateBox .meridian::after{right:-30px;content:'PM'}";
-		css += ".vDateBox .PMon::after{color:purple}";
-		css += ".vDateBox .meridianSwitchCon{box-shadow: inset 0 0px 4px 0px #ccc6c6;cursor:pointer;width:100%;height:20px;border: solid 1px #cfcece;border-radius: 20px;top: 5px;position: relative;box-sizing: border-box;}";
-		css += ".vDateBox .meridianSwitchCon::before{transition:left .2s linear; width:24px;height:24px;border-radius:50%;background-color:purple;content:'';position:absolute;top:-3px;}";
-		css += ".vDateBox .am::before{left:0}";
-		css += ".vDateBox .pm::before{left:35px}";
-		css += ".vDateBox .timpePropertiesCon{width:100%; height:100px;top: 40px;position: absolute;}";
-		css += ".vDateBox .hourCon,.vDateBox .minCon,.vDateBox .secCon{box-sizing:border-box;border:solid 1px #ccc; top:36px;height:50px;width:50px;position:absolute;}";
-		css += ".vDateBox .vDateBoxDisplayCon .vTimeCon .timpePropertiesCon .hourCon{left:50px;}";
-		css += ".vDateBox .hourCon::before,.vDateBox .minCon::before,.vDateBox .secCon::before{text-align:center;line-height:20px;width:100%;height:20px;position:absolute;top:-22px;}";
-		css += ".vDateBox .hourCon::before{content:'h'}";
-		css += ".vDateBox .minCon::before{content:'m'}";
-		css += ".vDateBox .secCon::before{content:'s'}";
-		css += ".vDateBox .hourCon::after, .vDateBox .minCon::after{width:20px;height:100%; right:-24px; top:0; content:':';color:#398000;font-size:30px; text-align:center;line-height:40px;position:absolute;}";
-		css += ".vDateBox .minCon{left:50%;transform:translateX(-50%);}";
-		css += ".vDateBox .secCon{right:50px;}";
-		css += ".vDateBox input[type='text']{border:none;width:100%;height:100%;padding-left:0px; text-align:center;line-height:50px;color:#398000;font-size:30px;}";
-		css += ".vDateBox button{transition:all .1s linear; width:80px;position:absolute; top: 150px; left:50%; transform:translateX(-50%); height:40px;border: none;border-radius: 5px;}";
-		css += ".vDateBox .tbuttonActive{cursor:pointer; background-color:#800080cc; color:white;}";
-		css += ".vDateBox .tbuttonActive:hover{color:black; background-color:purple;}";
-		css += ".vDateBox .tbuttonActive:active{color:white;}";
-		css += ".vDateBox .tbuttonInactive{cursor:not-allowed;}";
-
+		var css = "";
 		if(includeTime == true){
 			css += ".vDateBoxTool .vDateBox .vDateBoxDisplayCon .vTimeCon{display:none;width:100%; height:100%; position:absolute;}";
 		}
-
 		if(dateInputIcon != ""){
 			css += ".vDateIcon::before {"+dateInputIcon+"}";
 		}
-
 		var styleElement = document.createElement("style");
-
 		styleElement.setAttribute("type", "text/css");
 		if (styleElement.styleSheet) {
 			styleElement.styleSheet.cssText = css;
@@ -4938,7 +4909,6 @@ function datePicker(){
 					timeCon.style["width"] = "100%";
 					timeCon.style["opacity"] = "1";
 					dayValue = "-"+day;
-					status["completed"] = true;
 					writeToInput();
 				}else{
 					var daysCon = e.target.parentNode;
@@ -4996,6 +4966,13 @@ function datePicker(){
 				}
 			}else	if(e.target.classList.contains("vClose")){//close button clicked
 				if(show==1){
+					if(includeTime == true){
+						if(displayTimeValue[2] != ""){
+							status["completed"] = true;
+						}
+					}else {
+						dayValue != ""?status["completed"] = true:null;
+					}
 					self.closeDateBox();
 				}
 			}else	if(e.target.classList.contains("tbuttonActive")){//Done button clicked
@@ -5792,9 +5769,7 @@ function toolTip(){
 	var sy=0,sx=0, ini=false, tipBoxStyle="", arrowColor="", tipId="", initialized=0;
 	// var scrollHandler =
 	function createStyles(){
-		var css = ".vToolTip {display:none;box-shadow:0 0 4px 0 black;font-size:13px;background-color:#c08bc0;color:white;position:absolute;width:auto;height:auto;z-index:10000;padding: 5px;box-sizing: border-box;border-radius:5px;}";
-		css += ".vToolTip::before{position:absolute;content:'';}";
-		css += ".vToolTipTop::before{position:absolute;content:'';top:CALC(100%);border-left:5px solid transparent; border-right:5px solid transparent; border-top:10px solid #c08bc0;}";
+		var css = "";
 		if(tipBoxStyle != ""){
 			css += ".vToolTip{"+tipBoxStyle+"}";
 		}
@@ -5993,12 +5968,7 @@ function carousel(container, viewport){
 		container.appendChild(controlArea) != null?assingnHandlers():null;
 	}
 	function createControlStyles(){
-		var css = ".vControlArea{width:100%; background-color:transparent; position: absolute; bottom: 0; z-index: 4; height: 50px;}";
-		css += ".vControlButtonsCon{width:97%; height: 100%; margin: 0 auto;}";
-		css += ".vControlButtonsShell{width:20px; height: 100%; margin-right: 8px; float: left;}";
-		css += ".vButton{width:20px; height: 20px; background-color: #C2C5AF; border-radius: 50%; cursor: pointer;}";
-		css += ".vButton.active{box-shadow: 0 0 5px 0 #B826C7; background-color: #B826C7;}";
-
+		var css = "";
 		if(buttonStyle != null){
 			css += ".vButton{"+buttonStyle[0]+"}"; //Normal button
 			if(buttonStyle[1] != undefined || buttonStyle[1] != undefined){

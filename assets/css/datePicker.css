@@ -1,0 +1,431 @@
+.vDateIcon {
+  position:absolute;
+  width:36px;
+  top:0;
+  right:0;
+  height:100%;
+  box-sizing:border-box;
+  z-index:4;
+}
+.vDateIcon::before {
+  transition:color .2s linear;
+  cursor:pointer;
+  text-align:center;
+  line-height:200%;
+  position:absolute;
+  width:100%;
+  right:0;
+  height:100%;
+  box-sizing:border-box; content:'';
+  border:solid 1px #ccc;
+  border-radius:0 4px 4px 0;
+  background-image:linear-gradient(to bottom, #ccc 0%, #c6bfbf 100%);
+}
+.vDateIcon:hover::before {
+  color:rgba(255, 255, 255, 0.25)
+}
+.vDateIcon:active::before {
+  color:rgba(255, 255, 255, 0.75);
+}
+.vDateBoxTool {
+  transition:height 0.2s linear;
+  overflow:hidden;
+  display:none;
+  width:300px;
+  height:0px;
+  position:absolute;
+  top:calc(100% + 2px);
+  left:0;
+}
+.vDateBoxTool .vDateBox {
+  box-sizing: border-box;
+  overflow:hidden;
+  border-radius:5px;
+  width:100%;
+  height:auto;
+  position:absolute;
+  top:10px;
+  left:0;
+  border:solid 1px #ccc;
+}
+.vDateBoxTool .vDateBoxArrow {
+  width:300px;
+  height:10px;
+  position:absolute;
+  top:0;
+}
+.vDateBoxTool .shift::before {
+  left:50%;
+  margin-left:-5px;
+}
+.vDateBoxTool .normalShift::before {
+  left:10px;
+}
+.vDateBoxTool .vDateBoxArrow::before {
+  width:0;
+  height:0;
+  position:absolute;
+  content:'';
+  top:0px;
+  border-left:solid 7px transparent;
+  border-right:solid 7px transparent;
+  border-bottom:solid 10px #ccc;
+}
+.vDateBoxTool .vDateBoxHeader {
+  font-synthesis: unset;
+  color:#c5c5c5;
+  font-weight: bold;
+  position:relative;
+  box-shadow:0 2px 4px 0 #7e7979;
+  width:100%;
+  height:36px;
+  background-image:linear-gradient(to top, black 0% , #4a4949 100%);
+  text-align:center;
+  line-height:36px;
+}
+.vDateBoxTool .vDateBoxDisplayCon {
+  position: relative;
+  width:100%;
+  height:200px;
+  background-color:white;
+}
+.vDateBoxTool .vDateRangeCon, .vDateBoxTool .vFutureYearsCon{
+  opacity:1;
+  overflow: hidden;
+  top: 50%;
+  transform: translateY(-50%);
+  left:0;
+  position: absolute;
+  width:auto;
+  height:100%;
+}
+.vDateBoxTool .vDateRangeConTrans,.vDateBoxTool .vFutureYearsCon{
+  transition:all .15s linear!important;
+}
+.vDateBoxTool .rangeBox, .vDateBoxTool .yearsBox{
+  flex-shrink:0;
+  flex-basis:300px;
+  justify-content: start;
+  align-content: center;
+  height:100%;
+  box-sizing: border-box;
+  padding:20px 0 20px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  width:300px;
+}
+.vDateBoxTool .range, .vDateBoxTool .yearsBox>.year{
+  transition:all .1s linear;
+  cursor:pointer;
+  margin-right:5px;
+  background-color: #e9e9e9;
+  font-size:13px;
+  flex-basis:80px;
+  color: #f817ed;
+  border: 1px solid #d2d4d5;
+  height:30px;
+  text-align:center;
+  line-height:30px;
+  margin-bottom:5px;
+}
+.vDateBoxTool .yearsBox>.year:hover, .vDateBoxTool .range:hover,.vDateBoxTool .vYearsCon>.year:hover,.vDateBoxTool .month:hover,.vDateBoxTool .day:hover{
+  background-color: #cecece;
+  color:black;
+}
+.vDateBoxTool .range:active,.vDateBoxTool .year:active,.vDateBoxTool .month:active,.vDateBoxTool .day:active{
+  background-color: black;
+  color:white;
+}
+.vDateBoxTool .vDateBoxControlCon {
+  position:relative;width:100%;
+  height:36px;
+  background-color:#c0bfbf;
+  box-shadow:0 -2px 4px 0 #7e7979;
+}
+.vDateBoxTool .vDateBoxControlCon button{
+  border:none;
+  cursor:pointer;
+  top:0;
+  transform:none;
+}
+.vDateBoxTool .vDateBoxControlCon button::before{
+  position:absolute;
+  content:'';
+  top:8px;
+  left:50%;
+  transform:translateX(-50%);
+}
+.vDateBoxTool .vPrev{
+  width:36px;
+  height:36px;
+  position:absolute;
+  left:0;
+}
+.vDateBoxTool .vPrev::before{
+  width:0;
+  height:0;
+  border-top:10px solid transparent;
+  border-bottom:10px solid transparent;
+  border-right:15px solid black;
+}
+.vDateBoxTool .vDateBoxControlCon .linactive::before{
+  border-right:15px solid #ccc;
+}
+.vDateBoxTool .vDateBoxControlCon .linactive{
+  cursor:not-allowed;
+}
+.vDateBoxTool .vDateBoxControlCon .vBack{
+  border:solid 1px #9e9e9e;
+  background-image:linear-gradient(to bottom, #ccc 0%, white 100%);
+  border-radius:15px;
+  top:5px;
+  width:70px;
+  height:27px;
+  background-color:#ccc;
+  position:absolute;
+  left:25%;
+}
+.vDateBoxTool .vDateBoxControlCon .vClose{
+  border:solid 1px #9e9e9e;
+  background-image:linear-gradient(to bottom, #ccc 0%, white 100%);
+  border-radius:15px;
+  top:5px;
+  width:70px;
+  height:27px;
+  background-color:#ccc;
+  position:absolute;
+  left:50%;
+}
+.vDateBoxTool .vDateBoxControlCon .vbActive:active, .vDateBoxTool .vDateBoxControlCon .vClose:active{
+  background-image:linear-gradient(to top, #ccc 0%, white 100%);
+}
+.vDateBoxTool .vDateBoxControlCon .vbActive:hover, .vDateBoxTool .vDateBoxControlCon .vClose:hover{
+  color:#32a13f;
+}
+.vDateBoxTool .vDateBoxControlCon .vbInactive{
+  cursor:not-allowed;
+  background-image:none;
+  color:#b3a5a5;
+}
+.vDateBoxTool .vDateBoxControlCon .vNext{
+  width:36px;
+  height:36px;
+  position:absolute;
+  right:0;
+  left:auto;
+}
+.vDateBoxTool .vDateBoxControlCon .vNext::before{
+  width:0;
+  height:0;
+  border-top:10px solid transparent;
+  border-bottom:10px solid transparent;
+  border-left:15px solid black;
+}
+.vDateBoxTool .vDateBoxControlCon .rinactive::before{
+  border-left:15px solid #ccc;
+}
+.vDateBoxTool .vDateBoxControlCon .rinactive{
+  cursor:not-allowed;
+}
+.vDateBoxTool .vYearsCon,.vDateBoxTool .vMonthsCon, .vDateBoxTool .vDaysCon,.vDateBoxTool .vTimeCon{
+  opacity:0;
+  flex-wrap:wrap;
+  padding:30px 0 20px 2px;
+  overflow:hidden;
+  transition:all .15s linear;
+  align-content: center;
+  justify-content: space-around;
+  box-sizing: border-box;
+  display:none;
+  position:absolute;
+  width:0%;
+  height:0%;
+  left:50%;
+  top:50%;
+  transform:translateX(-50%) translateY(-50%);
+}
+.vDateBoxTool .vYearsCon .year,.vDateBoxTool .month, .vDateBoxTool .day{
+  flex-shrink: 0;
+  cursor:pointer;
+  margin:0 2px 10px 0 ;
+  background-color: #e9e9e9;
+  font-size:13px;
+  flex-basis:80px;
+  color: #f817ed;
+  border: 1px solid #d2d4d5;
+  height:25px;
+  text-align:center;
+  line-height:25px;
+}
+.vDateBoxTool .vMonthsCon{
+  justify-content:center;
+}
+.vDateBoxTool .month{
+  flex-basis:80px;
+  height:25px;
+  line-height:25px;
+}
+.vDateBoxTool .vDaysCon{
+  justify-content:start;
+  padding:30px 0 20px 13px;
+}
+.vDateBoxTool .day{
+  flex-basis:30px;
+  height:25px;
+  line-height:25px;
+}
+.vDateBox .vTimeCon{
+  padding:0;
+}
+.vDateBox .meridianCon{
+  width:100%;
+  height:40px;
+  top: 0;
+  position: absolute
+}
+.vDateBox .meridian{
+  width:60px;
+  height:30px;
+  top: 5px;
+  position: relative;
+  margin:0 auto;
+}
+.vDateBox .meridian::before, .vDateBox .vDateBoxDisplayCon .vTimeCon .meridianCon .meridian::after{
+  width:30px;
+  height:30px;
+  position: absolute;
+  text-align:center;
+  line-height:30px;
+  top:0;
+  font-weight: 400;
+}
+.vDateBox .meridian::before{
+  left:-30px;
+  content:'AM';
+}
+.vDateBox .AMon::before{
+  color:purple;
+}
+.vDateBox .meridian::after{
+  right:-30px;
+  content:'PM';
+}
+.vDateBox .PMon::after{
+  color:purple;
+}
+.vDateBox .meridianSwitchCon{
+  box-shadow: inset 0 0px 4px 0px #ccc6c6;
+  cursor:pointer;
+  width:100%;
+  height:20px;
+  border: solid 1px #cfcece;
+  border-radius: 20px;
+  top: 5px;
+  position: relative;
+  box-sizing: border-box;
+}
+.vDateBox .meridianSwitchCon::before{
+  transition:left .2s linear;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background-color:purple;
+  content:'';
+  position:absolute;
+  top:-3px;
+}
+.vDateBox .am::before{
+  left:0;
+}
+.vDateBox .pm::before{
+  left:35px;
+}
+.vDateBox .timpePropertiesCon{
+  width:100%;
+  height:100px;
+  top: 40px;
+  position: absolute;
+}
+.vDateBox .hourCon,.vDateBox .minCon,.vDateBox .secCon{
+  box-sizing:border-box;
+  border:solid 1px #ccc;
+  top:36px;
+  height:50px;
+  width:50px;
+  position:absolute;
+}
+.vDateBox .vDateBoxDisplayCon .vTimeCon .timpePropertiesCon .hourCon{
+  left:50px;
+}
+.vDateBox .hourCon::before,.vDateBox .minCon::before,.vDateBox .secCon::before{
+  text-align:center;
+  line-height:20px;
+  width:100%;
+  height:20px;
+  position:absolute;
+  top:-22px;
+}
+.vDateBox .hourCon::before{
+  content:'h';
+}
+.vDateBox .minCon::before{
+  content:'m';
+}
+.vDateBox .secCon::before{
+  content:'s';
+}
+.vDateBox .hourCon::after, .vDateBox .minCon::after{
+  width:20px;
+  height:100%;
+  right:-24px;
+  top:0;
+  content:':';
+  color:#398000;
+  font-size:30px;
+  text-align:center;
+  line-height:40px;
+  position:absolute;
+}
+.vDateBox .minCon{
+  left:50%;
+  transform:translateX(-50%);
+}
+.vDateBox .secCon{
+  right:50px;
+}
+.vDateBox input[type='text']{
+  border:none;
+  width:100%;
+  height:100%;
+  padding-left:0px;
+  text-align:center;
+  line-height:50px;
+  color:#398000;
+  font-size:30px;
+}
+.vDateBox button{
+  transition:all .1s linear;
+  width:80px;
+  position:absolute;
+  top: 150px;
+  left:50%;
+  transform:translateX(-50%);
+  height:40px;
+  border: none;
+  border-radius: 5px;
+}
+.vDateBox .tbuttonActive{
+  cursor:pointer;
+  background-color:#800080cc;
+  color:white;
+}
+.vDateBox .tbuttonActive:hover{
+  color:black;
+  background-color:purple;
+}
+.vDateBox .tbuttonActive:active{
+  color:white;
+}
+.vDateBox .tbuttonInactive{
+  cursor:not-allowed;
+}

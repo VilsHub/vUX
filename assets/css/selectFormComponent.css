@@ -1,0 +1,74 @@
+.shell{
+  z-index: 60;
+}
+.shell .sfield {
+  position:absolute;
+  width:100%;
+  height:100%;
+  z-index:1;
+  padding-left:5px;
+  cursor:pointer;
+  box-sizing: border-box;
+  background-color:#ccc;
+}
+.shell .optionsCon {
+  position:absolute;
+  width:100%;
+  height:0px;
+  z-index:2;
+  top:100%;
+  transition:height 0.2s linear;
+  overflow-y:hidden;
+  display:none;
+}
+.shell  .optionsCon .option {
+  position:static;
+  width:100%;
+  padding-left:5px;
+  box-sizing:border-box;
+  border-bottom:solid 1px #ccc;
+}
+.shell .optionsCon .option[data-disabled='false'] {
+  cursor:pointer;
+}
+.shell .optionsCon .option[data-disabled='true'] {
+  cursor:not-allowed;
+  background-color:#2f2a2a;
+  color:#595454!important;
+}
+.shell .optionsCon .option:last-of-type {
+  border-bottom:none!important;
+}
+.shell .optionsCon .hovered {
+  background-color:rgba(255, 255, 255, 0.3);
+}
+.shell .optionsCon .selected {
+  background-color:rgba(255, 255, 255, 0.5);
+}
+.shell .arrowCon {
+  height:100%;
+  background-color:rgb(255, 255, 255);
+  content:'';
+  border-left:solid 1px black;
+  position:absolute;
+  right:0;
+  top:0;
+  box-sizing:border-box;
+  z-index:5;
+  cursor:pointer;
+}
+.shell .arrowCon::before {
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  text-align:center;
+  transition: color 0.1s linear;
+}
+.shell .arrowCon:hover::before {
+  color:rgba(255, 255, 255, 0.3)!important;
+}
+.shell .arrowCon:active::before {
+  color:rgba(255, 255, 255, 0.6)!important;
+}

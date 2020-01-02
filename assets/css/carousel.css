@@ -1,0 +1,30 @@
+.vControlArea{
+  width:100%;
+  background-color:transparent;
+  position: absolute;
+  bottom: 0;
+  z-index: 4;
+  height: 50px;
+}
+.vControlButtonsCon{
+  width:97%;
+  height: 100%;
+  margin: 0 auto;
+}
+.vControlButtonsShell{
+  width:20px;
+  height: 100%;
+  margin-right: 8px;
+  float: left;
+}
+.vButton{
+  width:20px;
+  height: 20px;
+  background-color: #C2C5AF;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.vButton.active{
+  box-shadow: 0 0 5px 0 #B826C7;
+  background-color: #B826C7;
+}

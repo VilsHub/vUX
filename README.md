@@ -9,15 +9,24 @@ vUX is strictly built on JavaScript and has no dependencies, other than a JavaSc
 
 To use vUX, include the script **vUX-x.y.z.js** where **x y z** represents the version. Example is shown below:
 
-    <script src="vUX/vUX-0.1.0.js"></script>
+    <script src="vUX/vUX-2.0.0.js"></script>
     or
-    <script src="vUX/vUX-0.1.0.min.js"></script>
+    <script src="vUX/vUX-2.0.0.min.js"></script>
+
 
 **Note**
 
-You can rename the JS file if you wish to.
+The file name should not be changed, as its needed to auto load assets need by the library
 
 ## Features
+Latest release ( **v2.0.0** ), has the following features added:
+- Modal displayer
+- Form validator
+- Date picker
+- Tool tip
+- Carousel
+- And other sub modules features
+
 The first release ( **v1.0.0** ), has the following features:
 - Custom timing for non CSS animation
 - Animated RGB to Gray scale converter and vice versa
@@ -26,11 +35,12 @@ The first release ( **v1.0.0** ), has the following features:
 - Real time resource(s) loader
 - Typewriter
 
-**Features to be included in v1.1.0**
+See more details... [See change Log](ChangeLog.md)
 
-- Modal creator
+**Features to be included in v2.1.0**
+
+- Accordion
 - 5 Star rating creator
-- Date picker
 
 ## Demo
 **RGB to Gray Animator**
@@ -38,12 +48,8 @@ The first release ( **v1.0.0** ), has the following features:
     //////// RGB To GRAY  ///////////
       //gets canvas element
     	var TargetCanvas = document.getElementById("canvas");
-    	var DrawingHandler = TargetCanvas.getContext('2d'); //initialization
-
       var imgUrl = "http://www.example.com/img/gd.jpg";
     	var im = new imageManipulator(DrawingHandler, imgUrl);
-    	im.dimension.height = 300;
-    	im.dimension.width = 300;
     	im.initializeRgbToGray(3);
 
     	setTimeout(function(){
@@ -60,12 +66,8 @@ The first release ( **v1.0.0** ), has the following features:
     //////// RGB To GRAY  ///////////
       //gets canvas element
       var TargetCanvas = document.getElementById("canvas");
-      var DrawingHandler = TargetCanvas.getContext('2d'); //initialization
-
       var imgUrl = "http://www.example.com/img/gd.jpg";
       var im = new imageManipulator(DrawingHandler, imgUrl);
-      im.dimension.height = 300;
-      im.dimension.width = 300;
       im.initializeGrayToRgb(3);
 
       setTimeout(function(){
@@ -77,28 +79,24 @@ The first release ( **v1.0.0** ), has the following features:
 
 ![Gray to RGB Output](https://imgur.com/gxxGDN1.gif)
 
-
 **Animated rectangular border drawer**
 
     //////// grid border rectangle  ///////////
       //gets canvas element
     	var TargetCanvas = document.getElementById("canvas");
-    	var DrawingHandler = TargetCanvas.getContext('2d'); //initialization
 
 
     	var gbr = new gridBorderRectangle();
-    	gbr.fixedRectangle.lineColor = "red";
-    	gbr.fixedRectangle.segment = [5, 4];
-    	gbr.fixedRectangle.draw(DrawingHandler, TargetCanvas);
+    	gbr.fixedRectangle.config.lineColor = "red";
+    	gbr.fixedRectangle.config.segment = [5, 4];
+    	gbr.fixedRectangle.draw(TargetCanvas);
 
     	setTimeout(function(){
-    		gbr.animatedRectangle.stop = 0; //Must be set to 0
-    		gbr.animatedRectangle.active = TargetCanvas.id; //Must be set
-    		gbr.animatedRectangle.easing = "swingEaseIn";
-    		gbr.animatedRectangle.duration = 800;
-    		gbr.animatedRectangle.segment = [5, 4];
-    		gbr.animatedRectangle.lineColor = "red";
-    		gbr.animatedRectangle.draw(DrawingHandler, TargetCanvas);
+    		gbr.animatedRectangle.config.easing = "swingEaseIn";
+    		gbr.animatedRectangle.config.duration = 800;
+    		gbr.animatedRectangle.config.segment = [5, 4];
+    		gbr.animatedRectangle.config.lineColor = "red";
+    		gbr.animatedRectangle.draw(TargetCanvas);
     	}, 2000);
     ////////////////////////////
 
@@ -111,4 +109,4 @@ The first release ( **v1.0.0** ), has the following features:
 
 ## Documentation ##
 
-The documentation for this framework will be provided soon, you may **Watch**, this repo for further updates.
+The documentation for this library will be provided soon, you may **Watch**, this repo for further updates.

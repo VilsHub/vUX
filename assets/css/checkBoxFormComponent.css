@@ -1,0 +1,34 @@
+.shell{
+  height:auto;
+  display:block;
+  float:left;
+}
+.shell .vcheckBox {
+  background-color:transparent;
+  cursor:pointer;
+  box-sizing:border-box;
+  border-radius:3px;
+  float:left;
+  transition:all 0.2s linear;
+  position:relative;
+}
+.shell .vcheckBox::before {
+  color:red;
+  width:100%;
+  height:100%;
+  content:'';
+  position:absolute;
+  top:0;
+  text-align:center;
+}
+.shell .checked::before {
+  background-color:black;
+}
+.shell .unchecked::before{
+  background-color:white;
+}
+.shell .label {
+  width:auto;
+  float:left;
+  cursor:pointer;
+}
