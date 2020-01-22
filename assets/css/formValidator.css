@@ -107,7 +107,6 @@
 .bs::before{
   border-bottom:11px solid #2b9030;
 }
-
 .vFormOverlay {
   position:absolute;
   z-index:888;
@@ -116,6 +115,9 @@
   height:100%;
   background-color:HSLA(0, 0%, 100%, 0.68);
   display:none;
+}
+.vFormOverlayShow {
+  display:block;
 }
 .vFormLoader {
   position:absolute;
@@ -182,6 +184,8 @@
   padding-top: 46px;
   text-align: center;
   font-style: italic;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 .FbMsgBox button{
   margin: 15px auto;

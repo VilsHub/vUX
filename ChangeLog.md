@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.1.0
+### Fixed
+- validator module bugs
+- date picker bug (setting future date)
+- multiple style sheet creation for modules depending on style sheets
+
+### Added
+- Away clicked to exit modal, in modal displayer module
+
 ## v2.0.0
 ### Optimised
 - Protected all unprotected properties
