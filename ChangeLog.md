@@ -5,9 +5,11 @@
 - validator module bugs
 - date picker bug (setting future date)
 - multiple style sheet creation for modules depending on style sheets
+- Modal overflow smooth scroll
 
 ### Added
 - Away clicked to exit modal, in modal displayer module
+- Animator, for non CSS and CSS animation
 
 ## v2.0.0
 ### Optimised

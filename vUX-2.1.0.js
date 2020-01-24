@@ -202,7 +202,7 @@ function validateObjectMember(object, propery, msg=null){
 		}
 	}
 }
-function validateElement (element,  msg = null){ //A single element
+function validateElement (element,  msg = null){//A single element
 	if (element instanceof Element){
 		return true;
 	}else{
@@ -436,20 +436,19 @@ function loadStyleSheet(type, name){
 		setStyle();
 	}
 }
+function timeFraction(startTime, duration){
+	//startTime and Duration in milliseconds
+	var timeFragment = (Date.now() - startTime) / duration;
+	if (timeFragment > 1) {
+		timeFragment = 1;
+	}
+	return timeFragment;
+}
 
 /****************************************************************/
 
 /*****************************Timing*****************************/
 var timing = {
-	//time difference
-	timeFraction		: function(startTime, duration){
-		//startTime and Duration in milliseconds
-		var timeFragment = (Date.now() - startTime) / duration;
-		if (timeFragment > 1) {
-			timeFragment = 1;
-		}
-		return timeFragment;
-	},
 	//Linear easing
 	linear				: function(timeFrac){
 		//startTime and Duration in milliseconds
@@ -945,7 +944,7 @@ function gridBorderRectangle(){
 
 					var animationStart = Date.now();
 					requestAnimationFrame(function animate(){
-						var tf = timing.timeFraction (animationStart, duration);
+						var tf = timeFraction (animationStart, duration);
 						var progress = timing[easing](tf);
 
 						if(direction == true){ //clockwise
@@ -1246,9 +1245,6 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 				if(validateString(value, "'labelFontColor' property value must be string of valid CSS color")){
 					LabelFontColor = value;
 				}
-			},
-			get:function(){
-				console.log(555);
 			}
 		},
 		labelFont:{
@@ -1814,6 +1810,35 @@ DOMelement.findClass = function (element, className){
 	}else{
 		return false;
 	}
+}
+DOMelement.animate = function (draw, value, duration, timingFn="linear" ){
+	//draw(x) the value for duration using the the timing function
+	//duration is in seconds
+	validateFunction(draw, "'DOMelement.animate()' method argument 1 must be a function");
+	validateNumber(value, "'DOMelement.animate()' method argument 2 must be numeric");
+	if(value < 0){
+		throw new Error ("'DOMelement.animate()' method argument 2 must be greater than 0");
+	}
+	validateNumber(duration, "'DOMelement.animate()' method argument 3 must be numeric");
+	if(duration < 0){
+		throw new Error ("'DOMelement.animate()' method argument 3 must be greater than 0");
+	}
+	validateObjectMember(timing, timingFn, "'DOMelement.animate()' method argument 4 value invalid ");
+		
+
+	var start = performance.now();
+	requestAnimationFrame(function animate(time) {
+		// timeFraction goes from 0 to 1
+		var timeFrac = (time - start) / duration;
+		if (timeFrac > 1) timeFrac = 1;
+
+		// calculate the current animation state
+		var progress = timing[timingFn](timeFrac);
+		draw(progress*value); // draw it
+		if (timeFrac < 1) {
+			requestAnimationFrame(animate);
+		}
+	})
 }
 /****************************************************************/
 
@@ -4036,7 +4061,7 @@ function formValidator(form=null){
 
 /****************************Modal*******************************/
 function modalDisplayer(){
-	var self=this,cssWidth="",currentForm=null,id=null, effectName="none", bodyOldPosition = "", mainFormCon = "", closeButton=null, mainFormConInner="", overlayType="", colorOverlayStyle="", maxupScrollUpStop =0, totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, computedModalHeight=0, computedModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50, reachedBottom=0;
+	var self=this,cssWidth="",currentForm=null,id=null, effectName="none", bodyOldPosition = "", mainFormCon = "", closeButton=null, mainFormConInner="", overlayType="", colorOverlayStyle="", totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, computedModalHeight=0, computedModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50;
 	var modalWidths = ["500px", "500px", "86%"], brkpoints={largeStart:1000, mediumStart:520};
 
 	//modalWidths => [a, b, c] => a = large; b = medium; c = small
@@ -4374,15 +4399,13 @@ function modalDisplayer(){
 			var heightBelow = verticalScroll.query(parseInt(DOMelement.cssStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
 			if (heightBelow >= modalHeigthBelow){
 				modal.style["top"] = "50px";
+				modal.style["padding-bottom"] = "50px";
 				modal.style["transform"] = "translateY(0%) translateX(-50%)";
-				reachedBottom =0;
 			}else{
 				modalHeigthAbove = ((paddingTop*2)+computedModalHeight)-window.innerHeight;
-				maxupScrollUpStop = scrollY - modalHeigthAbove;
 				var newTop = modalHeigthBelow-paddingTop;
 				modal.style["top"] = "-"+newTop+"px";
 				modal.style["transform"] = "translateY(0%) translateX(-50%)";
-				reachedBottom = 1;
 			}
 		}
 		if (modalOn == true){
@@ -4415,38 +4438,6 @@ function modalDisplayer(){
 		var sbpoint = new ScreenBreakPoint(brkpoints);
 		var mainModal = document.querySelector(".modalSpace");
 		var modalWindow = document.querySelector(".vModal");
-		window.addEventListener("scroll", function(e){
-			if(scrollable == true){
-				//Scrolling
-				if((sY + modalHeigthBelow) - scrollY > 0){
-					var modal = document.querySelector(".vModal .modalSpace");
-					if(scrollY >= sY && reachedBottom == 0){
-						var diff = (sY+paddingTop)-scrollY;
-						modal.style['top'] = diff+"px";
-						endSy = scrollY;
-					}else if(scrollY < sY && reachedBottom == 0){//scroll up stop
-						modal.style['top'] = paddingTop+"px";
-						scrollTo(0, sY);
-					}else if (reachedBottom == 1){
-						if(scrollY > maxupScrollUpStop){
-							var currentTop = parseInt(DOMelement.cssStyle(modal, "top"),"px");
-							if (scrollHandler.query["direction"] == "up"){
-							  var newTop = currentTop + scrollHandler.query["change"];
-								modal.style['top'] = newTop+"px";
-							}else if (scrollHandler.query["direction"] == "down") {
-								var newTop = currentTop - scrollHandler.query["change"];
-								modal.style['top'] = newTop+"px";
-							}
-						}else if (scrollY < maxupScrollUpStop) {
-							scrollTo(0, maxupScrollUpStop);
-							modal.style['top'] = paddingTop+"px";
-						}
-					}
-				}else {//scroll Down stop
-					scrollTo(0, endSy);
-				}
-			}
-		}, false)
 		document.body.addEventListener("keydown", function(e){
 			if(modalOn == true){
 				if (keyboardEventHanler(e)["handled"] == true){
@@ -4581,7 +4572,6 @@ function modalDisplayer(){
 		validateElement(modal,"'show()' method accepts a valid HTML element");
 		if(initialized==true){
 			sY = scrollY;
-			document.querySelector(".vModal").style["top"] = sY+"px";
 			currentForm = modal;
 			modal.id!=null?id=modal.id:null;
 			computedModalHeight = getDimensionOfHidden(modal)["height"];
