@@ -1812,8 +1812,9 @@ DOMelement.findClass = function (element, className){
 	}
 }
 DOMelement.animate = function (draw, value, duration, timingFn="linear" ){
-	//draw(x) the value for duration using the the timing function
-	//duration is in seconds
+	//draw =>  the function that handles the actual drawing, it must accept an argument, which would be used for the animation
+	//draw(x) means, draw the value 'x' for duration using the the timing function
+	//duration is in miliseconds
 	validateFunction(draw, "'DOMelement.animate()' method argument 1 must be a function");
 	validateNumber(value, "'DOMelement.animate()' method argument 2 must be numeric");
 	if(value < 0){
@@ -1840,6 +1841,17 @@ DOMelement.animate = function (draw, value, duration, timingFn="linear" ){
 		}
 	})
 }
+DOMelement.attachEventHandler = function (event, DomClass, fn){
+	validateString(event, "'DOMelement.attachEventHandler()' argument 1 must be a string specifying the event type");
+	validateString(DomClass, "'DOMelement.attachEventHandler()' argument 2 must be a string specifying the class name of the element(s)");
+	validateFunction(fn, "'DOMelement.attachEventHandler()' argument 3 must be a function to be called on the trigger");
+
+	document.body.addEventListener(event, function(e){
+		if(e.target.classList.contains(DomClass)){
+			fn(e);
+		}
+	}, false);
+};
 /****************************************************************/
 
 /********************Verticalal scroll handler*******************/
@@ -2044,29 +2056,27 @@ function listScroller(container, listParent){
 	}
 	this.config = {};
 	this.initialize = function(){
-			if(listPlane == "x" || "X"){
-				if(Xbuttons.length == 0 ){
-					throw new Error("Setup error: Xbuttons not specified");
-				}
-			}else if(listPlane == "y" || "Y"){
-				if(Ybuttons.length == 0 ){
-					throw new Error("Setup error: Ybuttons not specified");
-				}
+		if(listPlane == "x" || "X"){
+			if(Xbuttons.length == 0 ){
+				throw new Error("Setup error: Xbuttons not specified");
 			}
-			if(inactiveButtonsClassName.length == 0){
-				throw new Error("Setup error: Buttons class not specified");
+		}else if(listPlane == "y" || "Y"){
+			if(Ybuttons.length == 0 ){
+				throw new Error("Setup error: Ybuttons not specified");
 			}
-			addVitalStyles();
-			assignHandlers();
-			ready=1;
+		}
+		if(inactiveButtonsClassName.length == 0){
+			throw new Error("Setup error: Buttons class not specified");
+		}
+		addVitalStyles();
+		assignHandlers();
+		ready=1;
 	};
 	this.onScroller = function (){
 		if(ready == 1){
 			listening = 1;
 			addVitalStyles();
 			scrollStatus();
-		}else {
-			throw new Error("Initialization incomplete, complete initialization 1st before executing 'runScroller()' method");
 		}
 	}
 	this.offScroller = function (){
@@ -2074,8 +2084,6 @@ function listScroller(container, listParent){
 			listening = 0;
 			toggleClass("a", 0);
 			toggleClass("a", 1);
-		}else {
-			throw new Error("Initialization incomplete, complete initialization 1st before executing 'runScroller()' method");
 		}
 	};
 	Object.defineProperties(this.config, {
@@ -4403,9 +4411,13 @@ function modalDisplayer(){
 				modal.style["transform"] = "translateY(0%) translateX(-50%)";
 			}else{
 				modalHeigthAbove = ((paddingTop*2)+computedModalHeight)-window.innerHeight;
-				var newTop = modalHeigthBelow-paddingTop;
-				modal.style["top"] = "-"+newTop+"px";
-				modal.style["transform"] = "translateY(0%) translateX(-50%)";
+				if(modalHeigthAbove > 0){
+					modal.style["top"] = "50"+"px";
+					modal.style["padding-bottom"] = "50px";
+					modal.style["transform"] = "translateY(0%) translateX(-50%)";
+				}else{
+					DOMelement.center(modal);
+				}
 			}
 		}
 		if (modalOn == true){
@@ -5411,44 +5423,44 @@ function datePicker(){
 		}
 	};
 	function generateFurtureYears (){
-			var displayCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon");
-			var yearsBox = displayCon.querySelectorAll(".yearsBox");
-			var year = document.createElement("DIV");
-			year.setAttribute("class", "year");
-			year.appendChild(document.createTextNode(presentYear.toString()));
-			yearsBox[0].appendChild(year);
-			var diff = (furtureStopDate[0] - presentYear);
-			if(diff > 0){
-				if (diff > 3){
-					yearsBox[0].style["justify-content"] = "start";
-					yearsBox[0].style["padding"] = "20px 0 20px 20px";
-				}else {
-					yearsBox[0].style["justify-content"] = "center";
-					yearsBox[0].style["padding"] = "20px 0 20px 0px";
-				}
-				var c =0;
-				for (var x=0; x<numberOfyearsConBoxes; x++){
-					for (var y=0; y<11; y++){
-						if(c != n){
-							c++;
-							presentYear += 1;
-							var year = document.createElement("DIV");
-							year.setAttribute("class", "year");
-							year.appendChild(document.createTextNode(presentYear.toString()));
-							yearsBox[x].appendChild(year);
-							if (y== 10){
-								break;
-							}
-						}else{
-							break;
-						}
-					}
-				}
-			}else{
+		var displayCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon");
+		var yearsBox = displayCon.querySelectorAll(".yearsBox");
+		var year = document.createElement("DIV");
+		year.setAttribute("class", "year");
+		year.appendChild(document.createTextNode(presentYear.toString()));
+		yearsBox[0].appendChild(year);
+		var diff = (furtureStopDate[0] - presentYear);
+		if(diff > 0){
+			if (diff > 3){
+				yearsBox[0].style["justify-content"] = "start";
+				yearsBox[0].style["padding"] = "20px 0 20px 20px";
+			}else {
 				yearsBox[0].style["justify-content"] = "center";
 				yearsBox[0].style["padding"] = "20px 0 20px 0px";
 			}
-		};
+			var c =0;
+			for (var x=0; x<numberOfyearsConBoxes; x++){
+				for (var y=0; y<11; y++){
+					if(c != n){
+						c++;
+						presentYear += 1;
+						var year = document.createElement("DIV");
+						year.setAttribute("class", "year");
+						year.appendChild(document.createTextNode(presentYear.toString()));
+						yearsBox[x].appendChild(year);
+						if (y== 10){
+							break;
+						}
+					}else{
+						break;
+					}
+				}
+			}
+		}else{
+			yearsBox[0].style["justify-content"] = "center";
+			yearsBox[0].style["padding"] = "20px 0 20px 0px";
+		}
+	};
 	function createToolTip(){
 		var b = document.querySelectorAll(".vDaysCon .day");
 		b[b.length-1].addEventListener("mouseover", function(e){
@@ -5465,6 +5477,7 @@ function datePicker(){
 		daysToolTip==true?createToolTip():null;
 	}
 	function toggleListScroller(){
+		
 		if(dateType == "past"){
 			var listCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vDateRangeCon");
 			var list = textInputElement.parentNode.querySelectorAll(".vDateBox .vDateBoxDisplayCon .vDateRangeCon .rangeBox");
@@ -5472,12 +5485,13 @@ function datePicker(){
 			var listCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon");
 			var list = textInputElement.parentNode.querySelectorAll(".vDateBox .vDateBoxDisplayCon .vFutureYearsCon .yearsBox");
 		}
-		if (list.length > 1 && DOMelement.cssStyle(listCon, "display") != "none"){
-			var listConParent = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon");
-			var LeftBt = textInputElement.parentNode.querySelector("#vPrev");
-			var RightBt = textInputElement.parentNode.querySelector("#vNext");
 
-			listControllerObj = new  listScroller(listConParent, listCon, "div");
+		var listConParent = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon");
+		var LeftBt = textInputElement.parentNode.querySelector("#vPrev");
+		var RightBt = textInputElement.parentNode.querySelector("#vNext");
+		var listControllerObj = new  listScroller(listConParent, listCon);
+		
+		if (list.length > 1 && DOMelement.cssStyle(listCon, "display") != "none"){	
 			listControllerObj.config.listPlane = "x";
 			listControllerObj.config.Xbuttons = [LeftBt, RightBt];
 			listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
@@ -5485,7 +5499,7 @@ function datePicker(){
 			listControllerObj.config.scrollSize = 302;
 			listControllerObj.config.paddingRight = 0;
 			listControllerObj.initialize();
-			listControllerObj.runScroller();
+			listControllerObj.onScroller();
 		}else{
 			listControllerObj.offScroller();
 		}

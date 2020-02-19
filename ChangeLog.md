@@ -10,6 +10,7 @@
 ### Added
 - Away clicked to exit modal, in modal displayer module
 - Animator, for non CSS and CSS animation
+- Event handler attacher, with support for appended elements
 
 ## v2.0.0
 ### Optimised
