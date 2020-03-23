@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v2.0.0
+ * vUX JavaScript library v2.1.0
  * https://library.vilshub.com/lib/vUX/
  *
  *
@@ -39,6 +39,7 @@ window.addEventListener("load", function(){
 	loadStyleSheet("css", "datePicker.css");
 	loadStyleSheet("css", "toolTip.css");
 	loadStyleSheet("css", "carousel.css");
+	loadStyleSheet("css", "contentLoader.css");
 }, false);
 
 /*************************Helper functions***********************/
@@ -443,6 +444,17 @@ function timeFraction(startTime, duration){
 		timeFragment = 1;
 	}
 	return timeFragment;
+}
+function attachStyleSheet(dataID, css){
+	var styleElement = document.createElement("style");
+	styleElement.setAttribute("type", "text/css");
+	styleElement.setAttribute("data-id", dataID);
+	if (styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = css;
+	} else {
+		styleElement.appendChild(document.createTextNode(css));
+	}
+	document.getElementsByTagName('head')[0].appendChild(styleElement);
 }
 
 /****************************************************************/
@@ -1700,6 +1712,9 @@ DOMelement.cssStyle = function (element, property){
 		var styleHandler = element.currentStyle;
 	}
 	var propertyValue = styleHandler[property];
+	if(propertyValue.length == 0){//No computed value, try from style attribute
+		propertyValue = element.style[property];
+	}
 	return propertyValue;
 },
 DOMelement.centerY = function (element){
@@ -1802,13 +1817,6 @@ DOMelement.center = function (element){
 		window.addEventListener("resize", function(){
 			centerY();
 		}, false);
-	}
-}
-DOMelement.findClass = function (element, className){
-	if (element.classList.contains(className)){
-		return true;
-	}else{
-		return false;
 	}
 }
 DOMelement.animate = function (draw, value, duration, timingFn="linear" ){
@@ -2371,15 +2379,7 @@ function customFormComponent(vWrapper=null){
 			if(arrowIconOpen != ""){
 				css += "."+vWrapper + " .opened::before {"+arrowIconOpen+"}"
 			}
-			var styleElement = document.createElement("style");
-			styleElement.setAttribute("type", "text/css");
-			styleElement.setAttribute("data-id", "v"+vWrapper);
-			if (styleElement.styleSheet) {
-				styleElement.styleSheet.cssText = css;
-			} else {
-			  styleElement.appendChild(document.createTextNode(css));
-			}
-			document.getElementsByTagName('head')[0].appendChild(styleElement);
+			attachStyleSheet("v"+vWrapper, css)
 		}
 	}
 	function reCreateSelect (SelectElement){
@@ -2669,14 +2669,7 @@ function customFormComponent(vWrapper=null){
 			if(deselectedStyle != ""){
 				css +=  "."+vWrapper + " .deselected::before{"+deselectedStyle+"}";
 			}
-			styleElement.setAttribute("type", "text/css");
-			styleElement.setAttribute("id", "v"+vWrapper);
-			if (styleElement.styleSheet) {
-				styleElement.styleSheet.cssText = css;
-			} else {
-			  styleElement.appendChild(document.createTextNode(css));
-			}
-			document.getElementsByTagName('head')[0].appendChild(styleElement);
+			attachStyleSheet("v"+vWrapper, css)
 		}
 	}
 	function selectRadioButton(e, RadioElement){
@@ -2944,16 +2937,8 @@ function customFormComponent(vWrapper=null){
 			if(uncheckedStyle != ""){
 				css +=  "."+vWrapper + " .unchecked::before{"+uncheckedStyle+"}";
 			}
-			styleElement.setAttribute("type", "text/css");
-			styleElement.setAttribute("id", "v"+vWrapper);
-			if (styleElement.styleSheet) {
-				styleElement.styleSheet.cssText = css;
-			} else {
-			  styleElement.appendChild(document.createTextNode(css));
-			}
-			document.getElementsByTagName('head')[0].appendChild(styleElement);
+			attachStyleSheet("v"+vWrapper, css)
 		}
-
 	}
 	function checkCheckBox(e){
 		var maincheckedButton = e.target.parentNode.nextElementSibling;
@@ -3390,11 +3375,11 @@ function formValidator(form=null){
 			var location = "", fieldId=null;
 			var Vbox = messageConElement.querySelector(".vMsgBox");
 			if(Vbox != null){
-				if(DOMelement.findClass(Vbox, "vRight")){
+				if(Vbox.classList.contains("vRight")){
 					location = "right";
-				}else if (DOMelement.findClass(Vbox, "vLeft")) {
+				}else if (Vbox.classList.contains("vLeft")) {
 					location = "left";
-				}else if (DOMelement.findClass(Vbox, "vBottom")) {
+				}else if (Vbox.classList.contains("vBottom")) {
 					location = "bottom";
 				}
 				if (inputVisualFields != null){
@@ -3513,16 +3498,7 @@ function formValidator(form=null){
 				css +=  ".vFormLoader {"+customAnimate[1]+"}"; //loader style
 				css += " .vFormLoader ::before{"+customAnimate[2]+"}"; // icon style
 			}
-
-			var styleElement = document.createElement("style");
-			styleElement.setAttribute("type", "text/css");
-			styleElement.setAttribute("data-id", "formValidatorStyles");
-			if (styleElement.styleSheet) {
-				styleElement.styleSheet.cssText = css;
-			} else {
-			  styleElement.appendChild(document.createTextNode(css));
-			}
-			document.getElementsByTagName('head')[0].appendChild(styleElement);
+			attachStyleSheet("formValidatorStyles", css)
 		}
 	}
 
@@ -3555,10 +3531,6 @@ function formValidator(form=null){
 			element.style["height"] = height+"px";
 	}
 
-	/*errorLog*/
-	function addErrorLog(id){
-
-	}
 	function createLoader(){
 		var overLay = document.createElement("DIV");
 		var loader = document.createElement("DIV");
@@ -4737,15 +4709,7 @@ function datePicker(){
 			if(dateInputIcon != ""){
 				css += ".vDateIcon::before {"+dateInputIcon+"}";
 			}
-			var styleElement = document.createElement("style");
-			styleElement.setAttribute("type", "text/css");
-			styleElement.setAttribute("data-id", "datePickerStyles");
-			if (styleElement.styleSheet) {
-				styleElement.styleSheet.cssText = css;
-			} else {
-			  styleElement.appendChild(document.createTextNode(css));
-			}
-			document.getElementsByTagName('head')[0].appendChild(styleElement);
+			attachStyleSheet("datePickerStyles", css);
 		}
 	}
 	function AddEventHandlers(){
@@ -5826,17 +5790,7 @@ function toolTip(){
 			if(arrowColor != ""){
 				css += ".vToolTipTop::before{border-top:10px solid "+arrowColor+";}";
 			}
-
-			var styleElement = document.createElement("style");
-
-			styleElement.setAttribute("type", "text/css");
-			styleElement.setAttribute("data-id", "toolTipStyles");
-			if (styleElement.styleSheet) {
-				styleElement.styleSheet.cssText = css;
-			} else {
-			  styleElement.appendChild(document.createTextNode(css));
-			}
-			document.getElementsByTagName('head')[0].appendChild(styleElement);
+			attachStyleSheet("toolTipStyles", css);
 		}
 	}
 	function createTipElement(){
@@ -6028,16 +5982,7 @@ function carousel(container, viewport){
 					css += ".vButton.active{"+buttonStyle[1]+"}"; //active button
 				}
 			}
-
-			var styleElement = document.createElement("style");
-			styleElement.setAttribute("type", "text/css");
-			styleElement.setAttribute("data-id", "carouselStyles");
-			if (styleElement.styleSheet) {
-				styleElement.styleSheet.cssText = css;
-			} else {
-			  styleElement.appendChild(document.createTextNode(css));
-			}
-			document.getElementsByTagName('head')[0].appendChild(styleElement);
+			attachStyleSheet("carouselStyles", css);
 		}
 	}
 	this.initialize = function(){
@@ -6169,3 +6114,224 @@ function carousel(container, viewport){
 	})
 }
 /****************************************************************/
+
+/***************************content loader*****************************/
+function contentLoader(){
+	var customStyle="", initialize=false, targetElement=null, cache=false, tempStoarage={}, activeProperties=null, autoLoad=false;
+	this.loadFrom = function(url=null, element=null){
+		validateString(url, "loadFrom(x) method argument 1, must be a string");
+		if(initialize == false){
+			throw new Error("Must initialize first before calling the loadFrom() method");
+		}
+		if(activeProperties != null){//2nd argument needed, for setting active link
+			if(autoLoad == false){
+				validateElement(element, "loadFrom(.x) method argument 2 must be an element");
+			}
+		}
+		if(cache){//Attempt load from storage
+			if(typeof(Storage) !== "undefined"){ //Supports web storage
+				if(sessionStorage.pageLink != undefined){//atleast a page has been cached
+					var existingLinks 	= JSON.parse(sessionStorage.getItem("pageLink"));
+					var urlArr 			= Object.values(existingLinks);
+					if(urlArr.indexOf(url) != -1){//link exist, so get content
+						var index 		= urlArr.indexOf(url);
+						var content 	= JSON.parse(sessionStorage.getItem("linkContent"))
+						var arrContent	= Object.values(content);
+						insertData(arrContent[index], element);
+					}else{//link does not exist, get from server
+						getContent(url, element);
+					}
+				}else{//pageContent has no data, load from server and create data
+					getContent(url, element);
+				}
+			}else{//Does not support web storage, use object
+				if(tempStoarage.pageLink != undefined){//atleast a page has been cached
+					var existingLinks 	= JSON.parse(tempStoarage["pageLink"]);
+					var urlArr 			= Object.values(existingLinks);
+					if(urlArr.indexOf(url) != -1){//link exist, so get content
+						var index 		= urlArr.indexOf(url);
+						var content 	= JSON.parse(tempStoarage["linkContent"]);
+						var arrContent	= Object.values(content);
+						insertData(arrContent[index], element);
+					}else{//link does not exist, get from server
+						getContent(url, element);
+					}
+				}else{//pageContent has no data, load from server and create data
+					getContent(url, element);
+				}
+			}
+		}else{//Load from server
+			getContent(url, element);
+		}
+	}
+	this.initialize = function(){
+		if(initialize == false){
+			if(targetElement == null){
+				throw new Error("Parent container not specified, please specify using the config.targetElement() method, and try initializing again");
+			}
+			if(autoLoad == true){//Attach event handler to links
+				//link class must be supplied;
+				//link data- attribute for url must be supplied
+	
+			}
+			if(customStyle != ""){ //Custom style set
+				addCustomStyle();
+			}
+			targetElement.classList.add("xcon");
+			initialize = true;
+		}
+	}
+	this.config = {}
+	function getContent(url, e){
+		var xhr = ajax.create();
+		xhr.addEventListener("load", function(){
+			//Set active link, if enabled
+			activeProperties != null?setActiveLink(e):null;
+
+			//insert
+			//targetElement.style["opacity"] = 0;
+			//targetElement.classList.remove("xforce");
+			targetElement.innerHTML = xhr.responseText;
+			//targetElement.scollHeight;
+			//targetElement.style["opacity"] = 1;
+			
+			if(cache){//insert and cache data
+				//cache
+				if(typeof(Storage) !== "undefined"){ //Supports web storage
+					if(sessionStorage.pageLink == undefined){
+						sessionStorage.pageLink 	= JSON.stringify({});
+						sessionStorage.linkContent 	= JSON.stringify({});
+					}
+					var pageLink 		= JSON.parse(sessionStorage.pageLink);
+					var linkContent		= JSON.parse(sessionStorage.linkContent);
+					
+					var length 			= Object.keys(pageLink).length;
+					
+					pageLink[length] 	= url;
+					linkContent[length] = xhr.responseText;
+
+					//rebuild
+					sessionStorage.pageLink 	= JSON.stringify(pageLink);
+					sessionStorage.linkContent 	= JSON.stringify(linkContent);
+				}else{//Does not support web storage, use object
+					if(tempStoarage.pageLink == undefined){
+						tempStoarage.pageLink		= JSON.stringify({});
+						tempStoarage.linkContent 	= JSON.stringify({});
+					}
+					var pageLink 		= JSON.parse(tempStoarage.pageLink);
+					var linkContent		= JSON.parse(tempStoarage.linkContent);
+					
+					var length 			= Object.keys(pageLink).length;
+					
+					pageLink[length] 	= url;
+					linkContent[length] = xhr.responseText;
+
+					//rebuild
+					tempStoarage.pageLink 	= JSON.stringify(pageLink);
+					tempStoarage.linkContent 	= JSON.stringify(linkContent);
+				}
+			}
+		});
+		xhr.open("POST", url, true);
+		//show loader here
+		//targetElement.classList.add("xforce");
+		insertLoader();
+		xhr.send();
+	}
+	function insertData(data, e){
+		//Set active link, if enabled
+		activeProperties != null?setActiveLink(e):null;
+		targetElement.innerHTML = data;
+	}
+	function setActiveLink(e){//
+		var parent = document.querySelector("#"+activeProperties[0]);
+		var prevActive = parent.querySelector("."+activeProperties[1]);
+		prevActive != null?prevActive.classList.remove(activeProperties[1]):null;
+		e.classList.toggle(activeProperties[1]);
+	}
+	function insertLoader(){
+		var con = document.createElement("DIV");
+		con.setAttribute("id", "loaderCon");
+		var spinner = document.createElement("DIV");
+		spinner.setAttribute("id", "xSpin");
+		DOMelement.center(spinner);
+		con.appendChild(spinner);
+		targetElement.appendChild(con);
+	}
+	function addCustomStyle(){
+		var css = "";
+		if(customStyle[0] != ""){//overlay style
+			css += "#loaderCon{"+customStyle[0]+"}";
+		}
+		if(customStyle[1] != ""){//loaderBox style
+			css += "#loaderCon #xSpin{"+customStyle[1]+"}";
+		}
+		if(customStyle[2] != ""){//loaderIcon style
+			css += "#loaderCon #xSpin::before{"+customStyle[2]+"}";
+		}
+		attachStyleSheet("contentLoader", css);
+	}
+	Object.defineProperties(this, {
+		loadFrom:{writable:false},
+		config:{writable:false},
+		initialize:{writable:false}
+	})
+	Object.defineProperties(this.config, {
+		targetElement:{
+			set:function (value){
+				validateElement(value, "config.targetElement property must be a valid HTML element");
+				targetElement = value;
+			}
+		},
+		cache:{
+			set: function (value){
+				validateBoolean(value, "config.cache property must be boolean");
+				cache = value;
+			}
+		},
+		activeProperties :{
+			set:function(value){
+				var temp ="config.activeProperties property value must be an array";
+				validateArray(value, temp);
+				if(value.length == 2){
+					//[a, b] => a= link parent id, b= links class name  
+					var temp2 = "with element 1 being a string, which sets the id name of link elements parent";
+					validateString(value[0], temp+temp2);
+					validateString(value[1], temp+temp2+ " and element 2 a string of class name of links");
+					if(document.querySelector("#"+value[0]) == null){//check if parent exist
+						throw new Error(temp+" element 1 ID name is not in use");
+					}
+					activeProperties = value;
+				}else{
+					throw new Error(temp + " of 2 elements");
+				}
+			}
+		},
+		autoLoad:{//This property if enable loads data into target parent onclick
+			set: function (value){
+				validateBoolean(value, "config.autoLoad property must be boolean");
+				autoLoad = value;
+			}
+		},
+		customStyle :{
+			set:function(value){
+				var temp1 = "config.customStyle property";
+				var temp2 = temp1+" value must ";
+				function temp3 (n){return " array value element "+n+" must be a string or null"}
+				validateArray(value, temp2+" be an array");
+				validateArrayLength(value, 3, temp2+"be an array of 3 members");
+				if(value[0] != null){ //has overlay style
+					validateString(value[0], temp1 + temp3(1));
+				}
+				if(value[1] != null){ //has loaderBox style
+					validateString(value[1], temp1 + temp3(2));
+				}
+				if(value[2] != null){ //has loaderIcon style
+					validateString(value[2], temp1 + temp3(2));
+				}
+				customStyle = value;
+			}
+		}
+	})
+}
+/**********************************************************************/
