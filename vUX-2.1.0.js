@@ -4930,7 +4930,7 @@ function datePicker(){
 					daysCon.style["width"] = "0%";
 					daysCon.style["opacity"] = "0";
 					daysCon.classList.remove("monthToDay");
-					dayValue = day;
+					dayValue = "-"+day;
 					writeToInput();
 					status["completed"] = true;
 					//Close Date picker Box
@@ -5813,7 +5813,6 @@ function toolTip(){
 				vTipCon.style["display"] == "none"?vTipCon.style["display"] = "block":null;
 				var y = (e.clientY+sy)-vTipCon.scrollHeight;
 				var x = ( e.clientX+sx) - 10;
-				console.log(e.clientY + " : : total=> " +y);
 				vTipCon.innerHTML = mainTip;
 				vTipCon.style["top"] = y+"px";
 				vTipCon.style["left"] =x+"px";
@@ -6118,6 +6117,7 @@ function carousel(container, viewport){
 /***************************content loader*****************************/
 function contentLoader(){
 	var customStyle="", initialize=false, targetElement=null, cache=false, tempStoarage={}, activeProperties=null, autoLoad=false;
+	var defaultURL="", callBackFn= null;
 	this.loadFrom = function(url=null, element=null){
 		validateString(url, "loadFrom(x) method argument 1, must be a string");
 		if(initialize == false){
@@ -6178,16 +6178,21 @@ function contentLoader(){
 				addCustomStyle();
 			}
 			targetElement.classList.add("xcon");
+			if(defaultURL != ""){
+				getContent(defaultURL, null, true);
+			}
 			initialize = true;
 		}
 	}
 	this.config = {}
-	function getContent(url, e){
+	function getContent(url, e=null, initCall = false){
 		var xhr = ajax.create();
 		xhr.addEventListener("load", function(){
 			//Set active link, if enabled
-			activeProperties != null?setActiveLink(e):null;
-
+			if(initCall != true){
+				activeProperties != null?setActiveLink(e):null;
+			}
+			
 			//insert
 			//targetElement.style["opacity"] = 0;
 			//targetElement.classList.remove("xforce");
@@ -6231,6 +6236,9 @@ function contentLoader(){
 					tempStoarage.linkContent 	= JSON.stringify(linkContent);
 				}
 			}
+
+			//call callback function if enable
+			callBackFn != null? callBackFn(e):null;
 		});
 		xhr.open("POST", url, true);
 		//show loader here
@@ -6330,6 +6338,18 @@ function contentLoader(){
 					validateString(value[2], temp1 + temp3(2));
 				}
 				customStyle = value;
+			}
+		},
+		defaultURL:{
+			set:function(value){
+				validateString("config.default property value must be a string");
+				defaultURL = value;
+			}
+		},
+		callBackFn:{
+			set:function(value){
+				validateFunction(value, "config.callBackFn proerty value must be a function");
+				callBackFn = value;
 			}
 		}
 	})
