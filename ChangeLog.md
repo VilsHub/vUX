@@ -6,11 +6,14 @@
 - date picker bug (setting future date)
 - multiple style sheet creation for modules depending on style sheets
 - Modal overflow smooth scroll
+- date picker bug (wrong format of date in date only mode)
 
 ### Added
 - Away clicked to exit modal, in modal displayer module
-- Animator, for non CSS and CSS animation
-- Event handler attacher, with support for appended elements
+- Animator module, for non CSS and CSS animation 
+- Event handler attacher module, with support for appended elements
+- content Loader module
+- hasParent module
 
 ## v2.0.0
 ### Optimised

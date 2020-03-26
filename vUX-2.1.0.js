@@ -1860,6 +1860,35 @@ DOMelement.attachEventHandler = function (event, DomClass, fn){
 		}
 	}, false);
 };
+DOMelement.hasParent = function(element, parentId){
+	var temp 	= "DOMelement.hasParent(.x) static method argument 2 must be a string", status=null;
+	//parentId => class name , if not exist, then id name
+	validateElement(element, "DOMelement.hasParent(x.) static method argument 1 must be a valid HTML element");
+	validateString(parentId, temp);
+	
+	if(document.querySelector("."+parentId) != null){//Has class
+		while(element){
+			element = element.parentNode;
+			if(element != null){
+				if(element.classList.contains(parentId)){
+					status = true;
+					break;
+				}
+			}
+		}
+	}else if(document.querySelector("#"+parentId) != null){//Has id
+		while(element){
+			element = element.parentNode;
+			if(element != null){
+				if(element.id == parentId){
+					status = true;
+					break;
+				}
+			}
+		}
+	}
+	return status;
+}
 /****************************************************************/
 
 /********************Verticalal scroll handler*******************/
