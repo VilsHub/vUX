@@ -1955,9 +1955,9 @@ function listScroller(container, listParent){
 
 		}
 	}
-	function assignHandlers(){
-		//List Container
-		listParent.addEventListener("transitionend", function(e){
+	//event function
+	function transitionEndHandler(e){
+		if(e.target.classList.contains("vlistCon")){
 			if (listPlane == "X" || listPlane == "x"){
 				if(listParent.classList.contains("to_left")){
 					toggleClass("r", 0);
@@ -1976,27 +1976,36 @@ function listScroller(container, listParent){
 					running=0;
 				}
 			}else if (listPlane == "Y" || listPlane == "y") {
-
+	
 			}
-		});
-
+		}	
+	}
+	function clickHandler(e){
 		//button left
-		Xbuttons[0].addEventListener("click", function(e){
+		if(e.target.classList.contains("vListBt-Left")){
 			if (listening == 1){
 				if (running == 0){
 					scrollToRight(e);
 				}
 			}
-		}, false);
+		}
 
 		//button Right
-		Xbuttons[1].addEventListener("click", function(e){
+		if(e.target.classList.contains("vListBt-Right")){
 			if (listening == 1){
 				if(running == 0){
 					scrollToleft(e);
 				}
 			}
-		}, false);
+		}
+	}
+
+	function assignHandlers(){
+		//List Container
+		DOMelement.attachEventHandler ("transitionend", "vlistCon", transitionEndHandler);
+
+		//Buttons
+		DOMelement.attachEventHandler ("click", "vListBt", clickHandler);
 
 		window.addEventListener("resize", function (){
 			if(listening == 1){
@@ -2105,6 +2114,7 @@ function listScroller(container, listParent){
 		if(inactiveButtonsClassName.length == 0){
 			throw new Error("Setup error: Buttons class not specified");
 		}
+		listParent.classList.add("vlistCon");
 		addVitalStyles();
 		assignHandlers();
 		ready=1;
@@ -2139,6 +2149,9 @@ function listScroller(container, listParent){
 				validateArray(value, temp);
 				validateArrayLength(value, 2, temp+"of 2 Elements");
 				validateArrayMembers(value, "HTMLElement", temp+"of HTMLElements");
+				//Add ids
+				value[0].classList.add("vListBt", "vListBt-Left");
+				value[1].classList.add("vListBt", "vListBt-Right");
 				Xbuttons = value;
 			}
 		},
@@ -5668,6 +5681,9 @@ function datePicker(){
 			show=0;
 		}
 	}
+	this.reset = function(){
+		textInputElement.value = "";
+	}
 	Object.defineProperties(this, {
 		showDateBox:{writable:false},
 		initialize:{writable:false},
@@ -5677,6 +5693,9 @@ function datePicker(){
 			get:function(){
 				return status;
 			}
+		},
+		reset:{
+			writable:false
 		}
 	});
 	Object.defineProperties(this.config, {

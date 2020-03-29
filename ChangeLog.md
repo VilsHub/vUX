@@ -14,6 +14,7 @@
 - Event handler attacher module, with support for appended elements
 - content Loader module
 - hasParent module
+- reset functionality to date picker module
 
 ## v2.0.0
 ### Optimised
