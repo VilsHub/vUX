@@ -7,6 +7,9 @@
 - multiple style sheet creation for modules depending on style sheets
 - Modal overflow smooth scroll
 - date picker bug (wrong format of date in date only mode)
+- Multiple select field with one custom builder instance bug
+- carousel dependent id name (no more ID dependent)
+- Tool tip arrow color and box style not updating
 
 ### Added
 - Away clicked to exit modal, in modal displayer module
@@ -15,6 +18,8 @@
 - content Loader module
 - hasParent module
 - reset functionality to date picker module
+- Auto positioning of potential custom select element parent
+- Option to change font color and background color of datePicker label and day tool tip
 
 ## v2.0.0
 ### Optimised

@@ -1,0 +1,30 @@
+/*list parent container */
+.vlistParentXContainer, .vlistParentYContainer{
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+    height: 100%;
+}
+
+/*Style list parent */
+.vlistParentX, .vlistParentY{
+    display: flex;
+    white-space: nowrap;
+    position: absolute;
+    padding: 0px;
+    list-style: none;
+}
+.vlistParentX{
+    flex-direction: row;
+}
+
+.vlistParentY{
+    flex-direction: column;
+}
+
+/*Style list */
+.vlist{
+    flex-shrink: 0;
+}
+
+/*  */

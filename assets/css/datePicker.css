@@ -88,6 +88,7 @@
   width:100%;
   height:200px;
   background-color:white;
+  color:purple;
 }
 .vDateBoxTool .vDateRangeCon, .vDateBoxTool .vFutureYearsCon{
   opacity:1;
@@ -121,7 +122,6 @@
   background-color: #e9e9e9;
   font-size:13px;
   flex-basis:80px;
-  color: #f817ed;
   border: 1px solid #d2d4d5;
   height:30px;
   text-align:center;
@@ -251,7 +251,7 @@
   background-color: #e9e9e9;
   font-size:13px;
   flex-basis:80px;
-  color: #f817ed;
+  color:inherit;
   border: 1px solid #d2d4d5;
   height:25px;
   text-align:center;

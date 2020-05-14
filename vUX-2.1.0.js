@@ -40,6 +40,7 @@ window.addEventListener("load", function(){
 	loadStyleSheet("css", "toolTip.css");
 	loadStyleSheet("css", "carousel.css");
 	loadStyleSheet("css", "contentLoader.css");
+	loadStyleSheet("css", "listScroller.css");
 }, false);
 
 /*************************Helper functions***********************/
@@ -51,7 +52,6 @@ function cssGroupStyler(elementObj, StyleObject){
 		}
 	}
 }
-
 function camelToCSSstandard(cameledName){
 	return cameledName.replace(/[A-Z]/g, m => "-" + m.toLowerCase());
 }
@@ -456,7 +456,6 @@ function attachStyleSheet(dataID, css){
 	}
 	document.getElementsByTagName('head')[0].appendChild(styleElement);
 }
-
 /****************************************************************/
 
 /*****************************Timing*****************************/
@@ -1930,14 +1929,15 @@ verticalScroll.query = function(totalHeight=null){
 
 /************************ListScroller****************************/
 function listScroller(container, listParent){
+	//listParent 	=> the ul element
+	//container		=> Element housing the ul element
 	validateElement(container, "An HTML element needed as list parent container");
 	validateElement(listParent, "List parent is not a valid HTML element");
-	var windowResizeHandler = new browserResizeProperty();
 	var maxAdd = 0, ini = 0, paddingRight = 0,	ready = 0, listening=0, running=0;
-	var listPlane = "x", Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonsClassName = [], paddingLeft=0;
+	var listPlane = "x", menuWidth = 170, Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonsClassName = [], paddingLeft=0, paddingY=[], menuHeight=23,paddingY=[0,0], wrapperStyle="width:100%";
 	//Xbuttons[0] = left buttons, Xbuttons[1] = Right buttons
 	function toggleClass(type, id){
-		if(listPlane == "X" || listPlane == "x"){
+		if(listPlane == "x"){
 			if (type == "r"){//remove
 				if (inactiveButtonsClassName.length == 2){
 					Xbuttons[id].classList.remove(inactiveButtonsClassName[id]);
@@ -1952,7 +1952,11 @@ function listScroller(container, listParent){
 				}
 			}
 		}else{
-
+			if (inactiveButtonsClassName.length == 2){
+				Ybuttons[id].classList.add(inactiveButtonsClassName[id]);
+			}else{
+				Ybuttons[id].classList.add(inactiveButtonsClassName[0]);
+			}
 		}
 	}
 	//event function
@@ -1998,8 +2002,23 @@ function listScroller(container, listParent){
 				}
 			}
 		}
+		//button top
+		if(e.target.classList.contains("vListBt-Top")){
+			if (listening == 1){
+				if(running == 0){
+					scrollToTop(e);
+				}
+			}
+		}
+		//button Right
+		if(e.target.classList.contains("vListBt-Bottom")){
+			if (listening == 1){
+				if(running == 0){
+					// scrollTolBottom(e);
+				}
+			}
+		}
 	}
-
 	function assignHandlers(){
 		//List Container
 		DOMelement.attachEventHandler ("transitionend", "vlistCon", transitionEndHandler);
@@ -2026,25 +2045,14 @@ function listScroller(container, listParent){
 		return diff;
 	}
 	function addVitalStyles(){
-		if(listPlane == "x" || "X" ){
-			if (listening == 1){
-				var listItems = listParent.children;
-				var children = listItems.length;
-				listParent.style["display"] = "flex";
-				listParent.style["width"] = (children*scrollSize)+"px";
-				listParent.style["white-space"] = "nowrap";
-				listParent.style["transition"] = "left "+ effects[0]+"s "+effects[1]+", right "+effects[0]+"s " +effects[1];
-
-				if (children > 0){
-					for (var list of listItems) {
-						list.style["flex-shrink"] = "0";
-					}
-					scrollStatus();
-				}else{
-					throw new Error("Setup error: No list item found, check the listType specified in the contructor");
-				}
-			}
+		listParent.style["transition"] = "left "+ effects[0]+"s "+effects[1]+", top "+effects[0]+"s " +effects[1];
+		container.setAttribute("style", wrapperStyle);
+		if(listPlane.toLowerCase() == "x"){
+			styleXplane();
+		}else if(listPlane.toLowerCase() == "y"){
+			styleYplane();
 		}
+		scrollStatus();
 	}
 	function scrollToleft(e){
 		if (e.button == 0){
@@ -2091,38 +2099,89 @@ function listScroller(container, listParent){
 		}
 	}
 	function scrollStatus(){
-		if (listPlane == "x" ||  "X" ){
+		if (listPlane == "x"){
 			if(listening == 1){ //started
 				var behindRight = behindRightValue();
 				behindRight>0?toggleClass("r", 1):toggleClass("a", 1);
 			}
-		}else if (listPlane == "y" ||  "Y" ){
+		}else if (listPlane == "y"){
+			toggleClass("a", 1);
+		}
+	}
+	function styleXplane(){
+		var listItems = listParent.children;
+		var children = listItems.length;
+		//style list parent container
+		container.classList.add("vlistParentXContainer");
 
+		//Style list parent
+		listParent.classList.add("vlistParentX");
+		listParent.style["width"] = (children*scrollSize)+"px";
+		listParent.style["left"] = paddingLeft+"px";
+
+		//Style list
+		for (var list of listItems) {
+			list.classList.add("vlist");
+			list.style["width"] = menuWidth+"px";
+		}
+	}
+	function styleYplane(){
+		var listItems = listParent.children;
+		var children = listItems.length;
+		//style list parent container
+		container.classList.add("vlistParentYContainer");
+
+		//Style list parent
+		listParent.classList.add("vlistParentY");
+		listParent.style["height"] = (children*scrollSize)+"px";
+		listParent.style["top"] = paddingY[0]+"px";
+		listParent.style["left"] = "0px";
+		listParent.style["width"] = "100%";
+
+		//Style list
+		for (var list of listItems) {
+			list.classList.add("vlist");
+			list.style["height"] = menuHeight+"px";
+			list.style["width"] = "100%";
 		}
 	}
 	this.config = {};
 	this.initialize = function(){
-		if(listPlane == "x" || "X"){
-			if(Xbuttons.length == 0 ){
-				throw new Error("Setup error: Xbuttons not specified");
+		if(ready == 0){//Not initialized
+			var listItems = listParent.children;
+			var children = listItems.length;
+			if(inactiveButtonsClassName.length == 0){
+				throw new Error("Setup error: Buttons class not specified");
 			}
-		}else if(listPlane == "y" || "Y"){
-			if(Ybuttons.length == 0 ){
-				throw new Error("Setup error: Ybuttons not specified");
+			if(listPlane.toLowerCase() == "x"){
+				if(Xbuttons.length == 0 ){
+					throw new Error("Setup error: Xbuttons not specified");
+				}
+				listParent.classList.remove("vlistParentY");
+				Xbuttons[0].classList.add(inactiveButtonsClassName[0]);
+				Xbuttons[1].classList.add(inactiveButtonsClassName[0]);
+			}else if(listPlane.toLowerCase() == "y"){
+				if(Ybuttons.length == 0 ){
+					throw new Error("Setup error: Ybuttons not specified");
+				}
+				Ybuttons[0].classList.add(inactiveButtonsClassName[0]);
+				Ybuttons[1].classList.add(inactiveButtonsClassName[0]);
 			}
+
+			if (children < 0){
+				throw new Error("Setup error: No list item found, check the listType specified in the contructor");
+			}
+			listParent.classList.add("vlistCon");
+			addVitalStyles();
+			assignHandlers();
+			ready = 1;//initialized
+		}else{
+			addVitalStyles();
 		}
-		if(inactiveButtonsClassName.length == 0){
-			throw new Error("Setup error: Buttons class not specified");
-		}
-		listParent.classList.add("vlistCon");
-		addVitalStyles();
-		assignHandlers();
-		ready=1;
 	};
 	this.onScroller = function (){
 		if(ready == 1){
 			listening = 1;
-			addVitalStyles();
 			scrollStatus();
 		}
 	}
@@ -2136,9 +2195,41 @@ function listScroller(container, listParent){
 	Object.defineProperties(this.config, {
 		listPlane:{
 			set: function(value){
-				if (validateString(value, "String needed as listPlane value")){
-					if(matchString(value, ["x", "y", "X", "Y"], "listPlane value can either be 'x' or 'y', case insensitive")){
-						listPlane = value;
+				
+				validateString(value, "String needed as listPlane property value");
+				var value = value.toLowerCase();
+				matchString(value, ["x", "y", "xy"], "listPlane value can either be 'x' 'y' or 'xy', case insensitive");
+				listPlane = value;
+				function emsg(axis){
+					return "setting config.listPlane property to "+axis+" requires the "+axis+" axis buttons to be set first. Use the  Obj.config."+axis+"buttons property to set buttons";
+				}
+				if(value == "x"){
+					if(Xbuttons.length == 0){
+						throw new Error(emsg("X"));
+					}
+					listParent.classList.remove("vlistParentY");
+					Xbuttons[0].classList.add("vListBt-Left");
+					Xbuttons[1].classList.add("vListBt-Right");
+					
+					try {
+						Ybuttons[0].classList.remove("vListBt-Top");
+						Ybuttons[1].classList.remove("vListBt-Bottom");
+					} catch (error) {
+						
+					}
+					
+				}else{
+					if(Ybuttons.length == 0){
+						throw new Error(emsg("Y"));
+					}
+					listParent.classList.remove("vlistParentX");
+					Ybuttons[0].classList.add("vListBt-Top");
+					Ybuttons[1].classList.add("vListBt-Bottom");
+					try {
+						Xbuttons[0].classList.remove("vListBt-Left");
+						Xbuttons[1].classList.remove("vListBt-Right");
+					} catch (error) {
+						
 					}
 				}
 			}
@@ -2152,6 +2243,10 @@ function listScroller(container, listParent){
 				//Add ids
 				value[0].classList.add("vListBt", "vListBt-Left");
 				value[1].classList.add("vListBt", "vListBt-Right");
+
+				//Add styles
+				value[0].style["cursor"] = "pointer";
+				value[1].style["cursor"] = "pointer";
 				Xbuttons = value;
 			}
 		},
@@ -2166,9 +2261,8 @@ function listScroller(container, listParent){
 		},
 		scrollSize: {
 			set:function(value){
-				if(validateNumber(value, "Numeric value needed for scrollSize property")){
-					scrollSize = value;
-				}
+				validateNumber(value, "Numeric value needed for scrollSize property");
+				scrollSize = value;
 			}
 		},
 		paddingRight: {
@@ -2184,13 +2278,23 @@ function listScroller(container, listParent){
 		},
 		paddingLeft:{
 			set:function(value){
-				if(validateNumber(value, "Numeric value needed for 'paddingLeft' property")){
-					if(value < 0){
-						paddingLeft = 0;
-					}else{
-						paddingLeft = value;
-					}
+				validateNumber(value, "Numeric value needed for 'paddingLeft' property");
+				if(value < 0){
+					paddingLeft = 0;
+				}else{
+					paddingLeft = value;
 				}
+			}
+		},
+		paddingY:{
+			set:function(value){
+				var temp = "paddingY property expects an array";
+				validateArray(value, temp);
+				if(value.length > 2){
+					throw new Error(temp+" of 1 or 2 members");
+				}
+				validateArrayMembers(value, "number", temp+" of numeric members");
+				paddingY = value;
 			}
 		},
 		inactiveButtonsClassName:{
@@ -2217,6 +2321,24 @@ function listScroller(container, listParent){
 				validateNumber(value[0], temp+", having its 1st element to be an numeric type, which represents the speed");
 				validateString(value[1], temp+", having its 2nd element to be a string type, which represents the effect (A CSS valid effect value e.g 'linear')");
 				effects = value;
+			}
+		},
+		menuWidth:{
+			set:function(value){
+				validateNumber(value, "Numeric value needed for menuWidth property");
+				menuWidth = value;
+			}
+		},
+		menuHeight:{
+			set:function(value){
+				validateNumber(value, "Numeric value needed for menuHeight property");
+				menuHeight = value;
+			}
+		},
+		wrapperStyle:{
+			set:function(value){
+				validateString(value, "wrapperStyle property expects a string as value");
+				wrapperStyle = value;
 			}
 		}
 	});
@@ -2275,11 +2397,15 @@ function customFormComponent(vWrapper=null){
 
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	function selectOptions(listOptionCon){
-		var currentSelected = document.querySelector("."+vWrapper + " .optionsCon .selected");
-		var sfield = document.querySelector("."+vWrapper + " .sfield");
-		currentSelected.classList.remove("selected");
-		var currentHovered = document.querySelector("."+vWrapper + " .optionsCon .hovered");
-		var mainSelect = document.querySelector("."+vWrapper).nextElementSibling;
+		var listParent = listOptionCon.parentNode.parentNode;
+		if(listParent.querySelector("."+vWrapper + " .optionsCon .selected") != null){
+			var currentSelected = listParent.querySelector("."+vWrapper + " .optionsCon .selected");
+			currentSelected.classList.remove("selected");
+		};
+		var sfield = listParent.querySelector("."+vWrapper + " .sfield");
+		
+		var currentHovered = listParent.querySelector("."+vWrapper + " .optionsCon .hovered");
+		var mainSelect = listParent.querySelector("."+vWrapper).nextElementSibling;
 
 		//Select the clicked item
 		currentHovered.classList.add("selected");
@@ -2518,11 +2644,11 @@ function customFormComponent(vWrapper=null){
 	}
 	function assignEventHandler(SelectElement){
 		var listParent = SelectElement.parentNode;
-		var listOptionCon = document.querySelector("."+vWrapper + " .optionsCon");
-		var arrowCon = document.querySelector("."+vWrapper + " .arrowCon");
+		var listOptionCon = listParent.querySelector("."+vWrapper + " .optionsCon");
+		var arrowCon = listParent.querySelector("."+vWrapper + " .arrowCon");
 		listParent.addEventListener("mousedown", function(e){
 			if (e.button == 0){
-				if (e.target.classList.contains("sfield") | e.target.classList.contains("arrowCon")){
+				if (e.target.classList.contains("sfield") || e.target.classList.contains("arrowCon")){
 					toggleOptionList(listOptionCon);
 				}else if (e.target.classList.contains("option")) {
 					if (multipleSelection == false && e.target.getAttribute("data-disabled") == "false"){
@@ -2531,7 +2657,7 @@ function customFormComponent(vWrapper=null){
 				}
 			}
 		}, false);
-		document.body.addEventListener("click", function(e){
+		listParent.addEventListener("click", function(e){
 			if (e.target.classList.contains("sfield") == false && e.target.classList.contains("arrowCon") == false && e.target.classList.contains("option") == false){
 				if (selOpen == 1) {//list opened
 					hideList(listOptionCon);
@@ -2602,6 +2728,8 @@ function customFormComponent(vWrapper=null){
 			if (selectDim.length == 0){
 				throw new Error("Setup imcomplete: list dimension needed, specify using the 'selectDimension' property");
 			}
+			var selectParent = SelectElement.parentNode;
+			DOMelement.cssStyle(selectParent, "position") == "static"?selectParent.style["position"] = "relative":null;
 			reCreateSelect(SelectElement);
 			assignEventHandler(SelectElement);
 		},
@@ -2652,9 +2780,9 @@ function customFormComponent(vWrapper=null){
 				}
 			}
 		},
-		optionsContainerStyle:{
+		optionswrapperStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'optionsContainerStyle' property")){
+				if(validateString(value, "A string of valid CSS styles needed for the 'optionswrapperStyle' property")){
 					optionsContainerCustomStyle = value;
 				}
 			}
@@ -2674,12 +2802,12 @@ function customFormComponent(vWrapper=null){
 			}
 		},
 		arrowIconOpen:{
-				set:function(value){
-					if(validateString(value, "A string of valid CSS styles needed for the 'arrowIconOpen' property")){
-						arrowIconOpen = value;
-					}
+			set:function(value){
+				if(validateString(value, "A string of valid CSS styles needed for the 'arrowIconOpen' property")){
+					arrowIconOpen = value;
 				}
-			},
+			}
+		},
 	})
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
@@ -4737,7 +4865,7 @@ function datePicker(){
 	var currentYear = today.getFullYear();
 	currentYear <2019?currentYear=2019:currentYear= parseInt(currentYear);
 	var startYear=0,self=this, tooTipHandler= null,presentYear=0, selectedSeries=0, meridian = "am", show=0,textInputElement=null, includeTime = false, endYear=0, dateType="past", wrapperHeight = 0, n=0 , pastDateRange=[1900, currentYear-1], furtureStopDate=[], initialized = 0, dateInputIcon="", singleDateField=true, styled=false, numberOfRangeBoxes=0,
-	yearValue="",daysToolTip=false,pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], shiftPoint=320;
+	yearValue="",daysToolTip=false,pastStopDate=[currentYear, today.getMonth(), today.getDate()-1], monthValue="",dayValue="",timeValue=["","",""],displayTimeValue=["","",""],forward=true,numberOfyearsConBoxes=0,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], shiftPoint=320, labelProperties=[], daysToolTipProperties=[];
 	var status = {
 		set:false,
 		completed:false
@@ -4815,6 +4943,7 @@ function datePicker(){
 					for (var x=0; x<=stop; x++){
 						var month = document.createElement("DIV");
 						month.setAttribute("class", "month");
+						addVitalStyle(month);
 						x<9?month.setAttribute("data-value", "0"+(x+1).toString()):month.setAttribute("data-value", x+1);
 						month.append(document.createTextNode(months[x]))
 						monthsCon.appendChild(month);
@@ -4860,7 +4989,7 @@ function datePicker(){
 				forward=true;
 				dateType=="future"?toggleBackButton():null;
 				status["set"] = true;
-			}else	if(e.target.classList.contains("month")){//hide monthCon and show days
+			}else if(e.target.classList.contains("month")){//hide monthCon and show days
 				var month = parseInt(e.target.getAttribute("data-value"));
 				var monthsCon = e.target.parentNode;
 				var daysCon = textInputElement.parentNode.querySelector(".vDaysCon");
@@ -5187,6 +5316,7 @@ function datePicker(){
 		for(var x=0; x<10;x++){
 			var year = document.createElement("DIV");
 			year.setAttribute("class", "year");
+			addVitalStyle(year);
 			year.appendChild(document.createTextNode(yearSeries));
 			yearsCon.appendChild(year);
 			yearSeries++;
@@ -5196,6 +5326,8 @@ function datePicker(){
 	function generateMonths(x, monthsCon){
 		var month = document.createElement("DIV");
 		month.setAttribute("class", "month");
+		addVitalStyle(month);
+		console.log("dsds");
 		x<9?month.setAttribute("data-value", "0"+(x+1).toString()):month.setAttribute("data-value", x+1);
 		month.append(document.createTextNode(months[x]))
 		monthsCon.appendChild(month);
@@ -5226,6 +5358,10 @@ function datePicker(){
 		//DateBox displayCon
 		var dateBoxDisplayConElement = document.createElement("DIV");
 		dateBoxDisplayConElement.setAttribute("class", "vDateBoxDisplayCon");
+
+		if(labelProperties[1] != undefined){ //FontColor
+			dateBoxDisplayConElement["style"]["color"] = labelProperties[1];
+		}
 
 		if (dateType == "past"){
 			//Date range Box
@@ -5365,7 +5501,6 @@ function datePicker(){
 			dateBoxDisplayConElement.appendChild(futureYearsConElement);
 		}
 
-
 		// Append months container to displayCon Element
 		dateBoxDisplayConElement.appendChild(monthsConElement);
 
@@ -5374,7 +5509,6 @@ function datePicker(){
 
 		// Append Time container to displayCon Element
 		includeTime == true?dateBoxDisplayConElement.appendChild(timeConElement):null;
-
 
 		//Append  prev element to controlCon Element
 		dateBoxControlConElement.appendChild(previousButtonElement);
@@ -5400,12 +5534,22 @@ function datePicker(){
 		// Append datebox tool parent to wrapper input
 		dateInputWrapper.appendChild(dateBoxToolElement);
 	}
+	function addVitalStyle(ele){
+		if(labelProperties[0] != undefined){ //backgroundColor
+			ele["style"]["background-color"] = labelProperties[0];
+		}
+		if(labelProperties[2] != undefined){ //border
+			ele["style"]["border"] = labelProperties[2];
+		}
+	}
 	function generateYearRange (){
+		
 		var displayCon = textInputElement.parentNode.querySelector(".vDateBox .vDateBoxDisplayCon .vDateRangeCon");
 		var rangeBox = displayCon.querySelectorAll(".rangeBox");
 		var range = document.createElement("DIV");
 		range.setAttribute("class", "range");
 		range.setAttribute("data-range", startYear);
+		addVitalStyle(range);
 		range.appendChild(document.createTextNode(startYear.toString()+"'s..."));
 		rangeBox[0].appendChild(range);
 		var c =0;
@@ -5417,6 +5561,7 @@ function datePicker(){
 					var range = document.createElement("DIV");
 					range.setAttribute("class", "range");
 					range.setAttribute("data-range", startYear);
+					addVitalStyle(range);
 					range.appendChild(document.createTextNode(startYear.toString()+"'s..."));
 					rangeBox[x].appendChild(range);
 					if (y== 10){
@@ -5477,6 +5622,7 @@ function datePicker(){
 	function generateDays(x, daysCon){
 		var day = document.createElement("DIV");
 		day.setAttribute("class", "day");
+		addVitalStyle(day);
 		x<9?day.setAttribute("data-value", "0"+(x+1).toString()):day.setAttribute("data-value", x+1);
 		day.append(document.createTextNode(x+1));
 		daysCon.appendChild(day);
@@ -5634,6 +5780,10 @@ function datePicker(){
 		}
 		if(daysToolTip==true){
 			tooTipHandler = new toolTip();
+			if(daysToolTipProperties[0] != undefined){
+				var color = daysToolTipProperties[1] == undefined?"white":daysToolTipProperties[1];
+				tooTipHandler.config.tipBoxProperties = [daysToolTipProperties[0], color];
+			}
 			tooTipHandler.initialize();
 		};
 		initialized=1;
@@ -5820,6 +5970,30 @@ function datePicker(){
 					throw new Error("'shiftPoint' property value must be an integer");
 				}
 			}
+		},
+		labelProperties:{
+			set:function(value){
+				//[a,b,c] => a= backgroundColr; b= fontColor ; c= borderStyle
+				var temp = "config.labelProperties property array members";
+				validateArray(value, "config.labelProperties property expects an array as value");
+				if(value.length > 3){
+					throw new Error(temp+" cannot be more than 3");
+				}
+				validateArrayMembers(value, "string", temp+ "must all be string");
+				labelProperties = value;
+			}
+		},
+		daysToolTipProperties:{
+			set:function(value){
+				//[a,b] => a = backgrondColor; b = fontColor
+				var temp = "config.daysToolTipProperties property array members";
+				validateArray(value, "config.daysToolTipProperties property expects an array as value");
+				if(value.length > 2){
+					throw new Error(temp+" cannot be more than 2");
+				}
+				validateArrayMembers(value, "string", temp+ "must all be string");
+				daysToolTipProperties = value;
+			}
 		}
 	});
 }
@@ -5827,16 +6001,17 @@ function datePicker(){
 
 /***************************Tool tip*****************************/
 function toolTip(){
-	var sy=0,sx=0, ini=false, tipBoxStyle="", arrowColor="", tipId="", initialized=0;
+	var sy=0,sx=0, ini=false, tipBoxProperties=[],tipId="", initialized=0;
 	// var scrollHandler =
 	function createStyles(){
 		if (document.querySelector("style[data-id='toolTipStyles']") == null){
 			var css = "";
-			if(tipBoxStyle != ""){
-				css += ".vToolTip{"+tipBoxStyle+"}";
+			if(tipBoxProperties[0] != undefined){
+				css += ".vToolTipTop::before{border-top:10px solid "+tipBoxProperties[0]+";}";
+				css += ".vToolTip{background-color:"+tipBoxProperties[0]+"}";
 			}
-			if(arrowColor != ""){
-				css += ".vToolTipTop::before{border-top:10px solid "+arrowColor+";}";
+			if(tipBoxProperties[1] != undefined){
+				css += ".vToolTip{color:"+tipBoxProperties[1]+"}";
 			}
 			attachStyleSheet("toolTipStyles", css);
 		}
@@ -5856,11 +6031,10 @@ function toolTip(){
 			sy=scrollY;sx=scrollX;
 		},false)
 		element.addEventListener("mousemove", function(e){
-
 			if(	element.getAttribute("data-vToolTipSwitch") == "ON"){
 				vTipCon.style["display"] == "none"?vTipCon.style["display"] = "block":null;
 				var y = (e.clientY+sy)-vTipCon.scrollHeight;
-				var x = ( e.clientX+sx) - 10;
+				var x = (e.clientX+sx) - 10;
 				vTipCon.innerHTML = mainTip;
 				vTipCon.style["top"] = y+"px";
 				vTipCon.style["left"] =x+"px";
@@ -5930,16 +6104,17 @@ function toolTip(){
 		}
 	}
 	Object.defineProperties(this.config, {
-		arrowColor:{
+		tipBoxProperties:{
 			set:function(value){
-
+				var temp = "config.tipBoxProperties property array members";
+				validateArray(value, "config.arrowColor property expects an arry");
+				if(value.length > 2){
+					throw new Error(temp+" cannot be more than 2");
+				}
+				validateArrayMembers(value, "string", temp+ "must all be string");
+				tipBoxProperties = value;
 			}
 		},
-		tipBoxStyle:{
-			set:function(value){
-
-			}
-		}
 	})
 	Object.defineProperties(this, {
 		initialize:{writable:false},
@@ -6036,7 +6211,7 @@ function carousel(container, viewport){
 		if(initialized == 0){
 			viewport.style["transition-delay"] = delay+"ms";
 			viewport.style["transition-duration"] = speed+"ms";
-
+			// viewport.classList.add("vViewPort");
 			//Place sliders in order
 			Object.values(sliders).forEach(function(itemContent, arrayIndex, targetArray){
 				var leftValue = arrayIndex*100;
@@ -6058,51 +6233,49 @@ function carousel(container, viewport){
 				}
 			}
 
-			container.addEventListener("transitionend", function(e){
-				if (e.target.nodeName == "DIV"  && e.target.id == "holder"){
-					var activeButton = document.querySelector(".vControlButtonsShell .active");
-					var previousActive =  viewport.querySelector("div[data-activeDisplay='1']");
-					var id = null;
-					if(forceSld == 0){
-						//Assign new active
-						if(checkNext(previousActive)){
-							//set next
-							previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
-							id = 	previousActive.nextElementSibling.getAttribute("data-ratio");
-						}else {// reached the last
-							//set the 1st child
-							sliders[0].setAttribute("data-activeDisplay", "1");
-							id = 0;
-						}
-
-						// unset previous
-						previousActive.setAttribute("data-activeDisplay", "0");
-
-						//Set buttons
-						activeButton.classList.remove("active");//remove previous
-						var nextActiveButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+id+"']");
-						nextActiveButton.classList.add("active");//remove previous
-						completed = 1;
-						nextSlide(viewport);
-					}else if (forceSld == 1) {
-						//unset any current view
-						previousActive.setAttribute("data-activeDisplay", "0");
-
-
-						var x = viewport.querySelector("div[data-ratio='"+buttonId+"']");
-						x.setAttribute("data-activeDisplay", "1");
-
-
-						//Set buttons
-						activeButton.classList.remove("active");//remove previous
-						var selectedButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+buttonId+"']");
-						selectedButton.classList.add("active");//remove previous
-
-						completed = 1;
-						viewport.style["transition-delay"] = delay+"ms";
-						forceSld=0;
+			viewport.addEventListener("transitionend", function(e){
+				var activeButton = document.querySelector(".vControlButtonsShell .active");
+				var previousActive =  viewport.querySelector("div[data-activeDisplay='1']");
+				var id = null;
+				if(forceSld == 0){
+					//Assign new active
+					if(checkNext(previousActive)){
+						//set next
+						previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
+						id = 	previousActive.nextElementSibling.getAttribute("data-ratio");
+					}else {// reached the last
+						//set the 1st child
+						sliders[0].setAttribute("data-activeDisplay", "1");
+						id = 0;
 					}
 
+					// unset previous
+					previousActive.setAttribute("data-activeDisplay", "0");
+
+					//Set buttons
+					activeButton.classList.remove("active");//remove previous
+					var nextActiveButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+id+"']");
+					nextActiveButton.classList.add("active");//remove previous
+					completed = 1;
+					nextSlide(viewport);
+					console.log("here");
+				}else if (forceSld == 1) {
+					//unset any current view
+					previousActive.setAttribute("data-activeDisplay", "0");
+
+
+					var x = viewport.querySelector("div[data-ratio='"+buttonId+"']");
+					x.setAttribute("data-activeDisplay", "1");
+
+
+					//Set buttons
+					activeButton.classList.remove("active");//remove previous
+					var selectedButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+buttonId+"']");
+					selectedButton.classList.add("active");//remove previous
+
+					completed = 1;
+					viewport.style["transition-delay"] = delay+"ms";
+					forceSld=0;
 				}
 			}, false);
 
@@ -6148,6 +6321,7 @@ function carousel(container, viewport){
 		},
 		buttonStyle:{
 			set:function(value){
+				//value = [a, b] => a = string styles for normal button state; b =>  string styles for active button state
 				var temp = "'config.buttonStyle' property value must be an array";
 				validateArray(value, temp);
 				if(value.length>2){
@@ -6186,6 +6360,7 @@ function contentLoader(){
 						var content 	= JSON.parse(sessionStorage.getItem("linkContent"))
 						var arrContent	= Object.values(content);
 						insertData(arrContent[index], element);
+						callBackFn != null? callBackFn(element):null;
 					}else{//link does not exist, get from server
 						getContent(url, element);
 					}
@@ -6201,6 +6376,7 @@ function contentLoader(){
 						var content 	= JSON.parse(tempStoarage["linkContent"]);
 						var arrContent	= Object.values(content);
 						insertData(arrContent[index], element);
+						callBackFn != null? callBackFn(element):null;
 					}else{//link does not exist, get from server
 						getContent(url, element);
 					}
