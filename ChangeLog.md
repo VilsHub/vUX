@@ -20,6 +20,7 @@
 - reset functionality to date picker module
 - Auto positioning of potential custom select element parent
 - Option to change font color and background color of datePicker label and day tool tip
+- TouchHandler module
 
 ## v2.0.0
 ### Optimised

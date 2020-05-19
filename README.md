@@ -16,7 +16,7 @@ To use vUX, include the script **vUX-x.y.z.js** where **x y z** represents the v
 
 **Note**
 
-The file name should not be changed, as its needed to auto load assets need by the library
+The file name should not be changed, as its needed to auto load assets needed by the library
 
 ## Features
 Latest release ( **v2.0.0** ), has the following features added:
