@@ -41,6 +41,7 @@ window.addEventListener("load", function(){
 	loadStyleSheet("css", "carousel.css");
 	loadStyleSheet("css", "contentLoader.css");
 	loadStyleSheet("css", "listScroller.css");
+	loadStyleSheet("css", "touchHandler.css");
 }, false);
 
 /*************************Helper functions***********************/
@@ -6128,12 +6129,13 @@ function toolTip(){
 
 /***************************Carousel*****************************/
 function carousel(container, viewport){
-	validateElement(container, "'carousel()' argument 1 must be an HTML Element");
-	validateElement(viewport, "'carousel()' argument 2 must be an HTML Element");
+	validateElement(container, "'carousel(x,.)' constructor argument 1 must be an HTML Element");
+	validateElement(viewport, "'carousel(.,x)' constructor argument 2 must be an HTML Element");
 	var self = this;
 	var viewportId = viewport.getAttribute("id");
 	var sliders = container.querySelectorAll("#"+viewportId+"> div");
 	var current = 0, buttonId=0,forceSld = 0, pauseMode = 0, completed = 1, started = 0,delay = 4000, speed =1000, initialized=0, buttonStyle=null;
+	var Interval=null, touchResponse=true;
 
 	//Assign buttons event
 	function assingnHandlers(){
@@ -6207,11 +6209,35 @@ function carousel(container, viewport){
 			attachStyleSheet("carouselStyles", css);
 		}
 	}
+	function startSlide(){
+		var m_delay = delay + speed;
+		clearTimeout(Interval)
+		Interval = setTimeout(function(){
+			if(pauseMode == 0){
+				nextSlide(viewport);
+			}
+		}, m_delay);		
+	}
+	function forceSetCurrent(activeButton, previousActive, node){
+		//unset any current view
+		previousActive.setAttribute("data-activeDisplay", "0");
+
+		var x = viewport.querySelector("div[data-ratio='"+node+"']");
+		x.setAttribute("data-activeDisplay", "1");
+
+		//Set buttons
+		activeButton.classList.remove("active");//remove previous
+		var selectedButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+node+"']");
+		selectedButton.classList.add("active");//remove previous
+	}
+	function touchEndCallBack(node){
+		var activeButton = document.querySelector(".vControlButtonsShell .active");
+		var previousActive =  viewport.querySelector("div[data-activeDisplay='1']");
+		forceSetCurrent(activeButton, previousActive, node);
+	}
 	this.initialize = function(){
 		if(initialized == 0){
-			viewport.style["transition-delay"] = delay+"ms";
 			viewport.style["transition-duration"] = speed+"ms";
-			// viewport.classList.add("vViewPort");
 			//Place sliders in order
 			Object.values(sliders).forEach(function(itemContent, arrayIndex, targetArray){
 				var leftValue = arrayIndex*100;
@@ -6222,21 +6248,21 @@ function carousel(container, viewport){
 
 			//Assign event listeners
 			container.onmouseenter = function (){
-				if (started == 1){
-					pauseMode = 1;
-				}
+				pauseMode = 1;	
+				completed = 1;			
 			}
 			container.onmouseleave = function (){
-				if (started == 1){
-					pauseMode = 0;
-					nextSlide(viewport);
-				}
+				pauseMode = 0;
+				startSlide();
 			}
 
 			viewport.addEventListener("transitionend", function(e){
 				var activeButton = document.querySelector(".vControlButtonsShell .active");
 				var previousActive =  viewport.querySelector("div[data-activeDisplay='1']");
 				var id = null;
+				if(e.target.classList.contains("posUpdate")){
+					return;
+				}
 				if(forceSld == 0){
 					//Assign new active
 					if(checkNext(previousActive)){
@@ -6257,28 +6283,24 @@ function carousel(container, viewport){
 					var nextActiveButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+id+"']");
 					nextActiveButton.classList.add("active");//remove previous
 					completed = 1;
-					nextSlide(viewport);
-					console.log("here");
+					startSlide();
 				}else if (forceSld == 1) {
 					//unset any current view
 					previousActive.setAttribute("data-activeDisplay", "0");
-
-
-					var x = viewport.querySelector("div[data-ratio='"+buttonId+"']");
-					x.setAttribute("data-activeDisplay", "1");
-
-
-					//Set buttons
-					activeButton.classList.remove("active");//remove previous
-					var selectedButton = document.querySelector(".vControlButtonsShell div[data-ratio='"+buttonId+"']");
-					selectedButton.classList.add("active");//remove previous
-
+					forceSetCurrent(activeButton, previousActive, buttonId);
 					completed = 1;
-					viewport.style["transition-delay"] = delay+"ms";
 					forceSld=0;
 				}
 			}, false);
-
+			
+			//Enable touch if specified
+			if(touchResponse){
+				var touchHdr = new touchHandler(container);
+				touchHdr.config.slideCallBack = touchEndCallBack;
+				touchHdr.config.viewPortTransition = "all 1500ms cubic-bezier(0,.98,0,.98) 0s";
+				touchHdr.initialize();
+				touchHdr.enableTouch();
+			}
 			createControlStyles();
 			createControls();
 			initialized = 1;
@@ -6286,7 +6308,7 @@ function carousel(container, viewport){
 	}
 	this.start = function (){
 		if(started==0){
-			nextSlide(viewport);
+			startSlide();
 			started=1;
 		}
 	};
@@ -6330,6 +6352,12 @@ function carousel(container, viewport){
 				validateString(value[0], " of strings");
 				value[1] != undefined?validateString(value[1], " of strings"):null;
 				buttonStyle = value;
+			}
+		},
+		touchResponse:{
+			set:function(value){
+				validateBoolean(value, "config.touchResponse property expects a boolean");
+				touchResponse = value;
 			}
 		}
 	})
@@ -6574,6 +6602,287 @@ function contentLoader(){
 			set:function(value){
 				validateFunction(value, "config.callBackFn proerty value must be a function");
 				callBackFn = value;
+			}
+		}
+	})
+}
+/**********************************************************************/
+
+/***************************Touch handler*****************************/
+function touchHandler(frame){
+	var initialTouchPos={}, slideCallBack=null, mode="slider", hasMoved =false, lastTouchPos={}, lastPoint={x:0,y:0},usePoint=0, initialized=false, enabled=false, rafPending=false, currentPosition={x:0,y:0}, pan="x",pressed=false, viewPort=null;
+	var pointerDownName = 'pointerdown', slopeValue=0, pointerUpName = 'pointerup', pointerMoveName = 'pointermove', pointerCancelName="pointercancel", viewPortTransition="";
+	var moved = 0, node=0, enableTouch=false, maxStop=0, targetDirection=null, SLIDE_LEFT = 1, SLIDE_RIGHT = 2, SLIDE_TOP = 3, SLIDE_BOTTOM = 4, DEFAULT=5, lastPos=0;
+	function addTouchEventHandler(){
+		if (window.PointerEvent) {
+			// Add Pointer Event Listener
+			frame.addEventListener(pointerDownName, handleGestureStart, false);
+			frame.addEventListener(pointerMoveName, handleGestureMove, false);
+			frame.addEventListener(pointerUpName, handleGestureEnd, false);
+			frame.addEventListener(pointerCancelName, handleGestureEnd, false);
+		}else{
+			// Add Touch Listener
+			frame.addEventListener('touchstart', handleGestureStart, false);
+			frame.addEventListener('touchmove', handleGestureMove, false);
+			frame.addEventListener('touchend', handleGestureEnd, false);
+			// frame.addEventListener('touchcancel', handleGestureCancel, false);
+
+			// Add Mouse Listener
+			frame.addEventListener('mousedown', handleGestureStart, false);
+		}
+		frame.addEventListener("transitionend", function(e){
+			if(mode == "slider"){
+				if(e.target.classList.contains("posUpdate")){
+					e.target.classList.remove("posUpdate");
+					viewPortTransition != ""? viewPort.style.transition = viewPortTransition:null;
+					hasMoved = false;
+					slideCallBack != null?slideCallBack(node):null;
+				}
+			}
+		}, false);
+		window.addEventListener("resize", function(){
+			calculateSlope();
+		}, false);
+	}
+	function checkSupport(){
+		 /* // [START pointereventsupport] */   
+		 if(window.navigator.msPointerEnabled) {
+		   pointerDownName = 'MSPointerDown';
+		   pointerUpName = 'MSPointerUp';
+		   pointerMoveName = 'MSPointerMove';
+		   pointerCancelName = 'MSPointerCancel';
+		 }
+   
+		 // Simple way to check if some form of pointerevents is enabled or not
+		 window.PointerEventsSupport = false;
+		 if(window.PointerEvent || window.navigator.msPointerEnabled) {
+		   window.PointerEventsSupport = true;
+		 }
+		 /* // [END pointereventsupport] */
+	}
+	function handleGestureStart(e){
+		e.preventDefault();
+		
+		if(e.touches && e.touches.length > 1) {
+		  return;
+		}
+		if(enableTouch){
+			document.addEventListener(pointerUpName, handleGestureEnd, false);
+			var prop = getCurrentPosition();
+			usePoint = pan=="x"?prop["x"]:prop["y"];
+			node = prop["n"];
+
+			frame.classList.add("grab");
+			initialTouchPos = getPoints(e);
+			viewPort.style.transition = 'initial';
+			pressed=true;
+		}
+	}
+	function getCurrentPosition(){
+		var frameWidth = frame.clientWidth;
+		var offset = viewPort.offsetLeft;
+		var nPoint = Math.floor(Math.abs(offset/frameWidth));
+		nPoint = nPoint>maxStop?nPoint=maxStop:nPoint
+		return{
+			x:offset,
+			y:0,
+			n:nPoint
+		}
+	}
+	function handleGestureMove(e){
+		e.preventDefault();
+		if(pressed){
+			
+			if(!initialTouchPos) {
+				return;
+			}
+
+			lastTouchPos = getPoints(e);
+
+			if(rafPending) {
+				return;
+			}
+			
+			rafPending = true;
+			
+			window.requestAnimationFrame(move);
+		}
+	}
+	function getPoints(e){
+		var point = {};
+		if(e.targetTouches) {
+			point.x = e.targetTouches[0].clientX;
+			point.y = e.targetTouches[0].clientY;
+		} else {
+			// Either Mouse event or Pointer Event
+			point.x = e.clientX;
+			point.y = e.clientY;
+		}
+
+		return point;
+	}
+	function move(){
+		if(!rafPending) {
+			return;
+		}
+		if(pan == "x"){
+			var diff = initialTouchPos.x - lastTouchPos.x;
+		}else{
+			var diff = initialTouchPos.y - lastTouchPos.y;
+		}
+
+		var newValue = (usePoint - diff);
+		lastPoint = newValue;
+		moved = diff;
+		hasMoved=true;
+		
+		//use new value here
+		viewport.style.left = newValue+"px";
+		rafPending = false;
+	}
+	function handleGestureEnd(e){
+		e.preventDefault();
+		if(e.touches && e.touches.length > 0) {
+		  	return;
+		}
+		rafPending = false;
+		document.removeEventListener(pointerUpName, handleGestureEnd, false);
+		if(hasMoved){
+			mode =="slider"?updateSliderPosition():updateListPosition();
+		}		
+		hasMoved == false?viewPort.style.transition = viewPortTransition:null;
+		frame.classList.remove("grab");
+		initialTouchPos = null;
+	}
+	function calculateSlope(){
+		var frameWidth = frame.clientWidth;
+		slopeValue = frameWidth * (1/4);
+	}
+	function updateSliderPosition(){
+		viewPort.style.transition = "all .2s cubic-bezier(0,.99,0,.99) 0s";
+		viewport.classList.add("posUpdate");
+		if(Math.abs(moved) > slopeValue) {
+			//change position
+			if(moved < 0){
+				targetDirection = pan == "x"?SLIDE_RIGHT:SLIDE_BOTTOM;
+			}else{
+				targetDirection = pan == "x"?SLIDE_LEFT:SLIDE_TOP;
+			}
+		}else{
+			//return to default position
+			targetDirection = DEFAULT;
+		}
+
+		//log current position
+		logPosition("slider");
+
+		var property = pan == "x"?"left":"top";
+		if(targetDirection == DEFAULT){
+			viewport.style[property] = usePoint+"px";
+		}else if (targetDirection == SLIDE_RIGHT){
+			if(node == 0){//no further movement
+				viewport.style[property] = "0px";
+			}else{//slide right
+				viewport.style[property] = -(node*100)+"%";
+			}
+		}else if (targetDirection == SLIDE_LEFT){
+			if(node == maxStop){//no further movement
+				viewport.style[property] = -(maxStop*100)+"%";
+			}else{//slide left
+				viewport.style[property] = -(node*100)+"%";;
+			}
+		}
+		
+	}
+	function updateListPosition(){
+
+	}
+	function logPosition(mode){
+		if(mode == "slider"){
+			var pWidth = frame.clientWidth;
+			switch (targetDirection) {
+				case SLIDE_LEFT:
+					node++;
+					node=node>maxStop?node=maxStop:node;
+					var pxValue = ((node*100)/100)*pWidth;
+					usePoint = -1*pxValue;
+					break;
+				case SLIDE_RIGHT:
+					node--;
+					node=node<0?node=0:node;
+					var pxValue = ((node*100)/100)*pWidth;
+					usePoint = -1*pxValue;
+					break;
+				default:
+					break;
+			}
+		}else{
+
+		}
+	}
+	this.initialize = function(){
+		validateElement(frame, "Contructor argument must be a valid HTML element");
+		viewPort = frame.children[0];
+		var totalChildren = viewPort.childElementCount;
+		maxStop = totalChildren-1;
+		checkSupport();
+		calculateSlope();
+		addTouchEventHandler();
+		initialized = true;
+	}
+	this.enableTouch = function(){
+		if(initialized == false){
+			throw new Error ("Call Obj.initialize() method 1st before calling the obj.enableTouch() method");
+		}
+		enableTouch = true;
+		frame.classList.add("vTouchHandler");
+	}
+	this.disableTouch = function(){
+		if(enableTouch == true){
+			enableTouch = false;
+			frame.classList.remove("vTouchHandler");
+		}
+	}
+	this.config = {}
+	Object.defineProperties(this, {
+		initialize:{writable:false},
+		config:{writable:false},
+		enable:{writable:false},
+		disable:{writable:false}
+	})
+	Object.defineProperties(this.config, {
+		pan:{
+			set:function(value){
+				var temp = "config.pan property expects a string";
+				value = value.toLowerCase();
+				validateString(value, temp);
+				if(value != "x" && value != "y"){
+					throw new Error(temp+" value of 'x' or 'y'");
+				}
+				pan = value;
+			}
+		},
+		viewPortTransition:{
+			set:function(value){
+				validateString(value, "config.viewPortTransition property expects a string as value");
+				viewPortTransition = value;
+			}
+		},
+		mode:{
+			set:function(value){
+				var temp = "config.mode property expects a string value";
+				validateString(value, temp);
+				value = value.toLowerCase();
+				if(value != "list" && value != "slider"){
+					throw new Error(temp+" of 'list' or 'slider'");
+				}
+				mode = value;
+			}
+		},
+		slideCallBack:{
+			set:function(value){
+				validateFunction(value, "config.slideCallBack property expects a function as value");
+				slideCallBack = value;
 			}
 		}
 	})
