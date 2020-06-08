@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.1.0
+## v3.0.0
 ### Fixed
 - validator module bugs
 - date picker bug (setting future date)
@@ -21,6 +21,7 @@
 - Auto positioning of potential custom select element parent
 - Option to change font color and background color of datePicker label and day tool tip
 - TouchHandler module
+- getParent Module
 
 ## v2.0.0
 ### Optimised

@@ -13,6 +13,7 @@
 var assetURL="";
 var styles = {};
 window.addEventListener("load", function(){
+	
 	//set asset path
 	var allScripts = document.getElementsByTagName("script");
 	var temp = null;
@@ -456,6 +457,90 @@ function attachStyleSheet(dataID, css){
 		styleElement.appendChild(document.createTextNode(css));
 	}
 	document.getElementsByTagName('head')[0].appendChild(styleElement);
+}
+function validateAlpha(input){
+	var target = /[^A-Za-z\ ]+/.test(input); //checks for other characters except A-Za-z and space
+	if(target==true){
+		return false;
+	}else {
+		return true;
+	}
+}
+function alphaNumeric(input){
+	var target= /[^A-Za-z0-9]+/.test(input); //checks for other characters except A-Za-z0-9
+	if(target==true){
+		return false;
+	}else {
+		return true;
+	}
+}
+function validateEmailAddress(input){
+	var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{1,}$/.test(input);//matches email address pattern
+	return email_filter;
+}
+function validateInteger(n){
+	return Number(n) === n && n % 1 === 0;
+}
+function validateFloat(n){
+	return Number(n) === n && n % 1 !== 0;
+}
+function validateFullName(value){
+	//Return values
+	// 2=> incomplete names
+	// 3=> All names must be alphabets
+	// 4=> Name cannot be less than 2 characters
+
+	var returnType=null, cleanedName=[], n=0;
+	var split = value.split(" ");
+	//clean name
+	var tn = split.length;
+	if(tn >= 2){
+		//clean name
+		for(var x = 0; x<tn; x++){
+			if(split[x] != " "){
+				cleanedName[cleanedName.length] = split[x];
+			}
+			if(x == tn-1){
+				n = cleanedName.length;
+			}
+		}
+		for(var x=0; x<tn;x++){
+			//Check length
+			if(split[x].length <= 1){
+				returnType = 4; //Name cannot be less than 2 characters
+				break;
+			}
+
+			//Check for non alpha
+			if(self.validate.alpha(split[x]) == false){
+				returnType = 3; //All names must be alphabets
+				break;
+			}
+
+			if(x == tn-1){
+				returnType = true; //All names are more than 2 characters
+			}
+
+		}
+	}else {
+		returnType = 2; //incomplete names
+	}
+	return returnType;
+}
+function validateSelectField(groupCollection){
+	var status=false;
+	//check for any selected
+	for(var x=0;x<groupCollection.length;x++){
+		if(groupCollection[x].checked){
+			status==false?status = true:null;
+			break;
+		}
+	}
+	return status;
+}
+function validatePhoneNumber(){
+	var input_filter = /^(\+|[0-9])[0-9]+$/.test(input);//matches phone number pattern
+	return input_filter;
 }
 /****************************************************************/
 
@@ -1545,7 +1630,7 @@ function resourceIO(){
 /****************************************************************/
 
 /**********************ToBaseGridMultiple************************/
-function  ToBaseGridMultiple(){
+function ToBaseGridMultiple(){
 }
 ToBaseGridMultiple.setHeight = function(targetElement, height){
 	validateNumber(height);
@@ -1855,6 +1940,7 @@ DOMelement.attachEventHandler = function (event, DomClass, fn){
 	validateFunction(fn, "'DOMelement.attachEventHandler()' argument 3 must be a function to be called on the trigger");
 
 	document.body.addEventListener(event, function(e){
+		e.stopImediatePropagation;
 		if(e.target.classList.contains(DomClass)){
 			fn(e);
 		}
@@ -1888,6 +1974,44 @@ DOMelement.hasParent = function(element, parentId){
 		}
 	}
 	return status;
+}
+DOMelement.getParent = function(element, parentIDorLevel){
+	var temp 	= "DOMelement.getParent(.x) static method argument 2 must be a string", type=null, foundElement=null;
+	//parentIDorLevel => class name or DOM level
+	validateElement(element, "DOMelement.getParent(x.) static method argument 1 must be a valid HTML element");
+	if(!(typeof parentIDorLevel != "number" && typeof parentIDorLevel != "string")){
+		throw new Error("DOMelement.getParent(.x) static method argument 2 must either be a string or number");
+	}else{
+		if(typeof parentIDorLevel == "number"){
+			type = "number";
+		}else{
+			type = "string";
+		}
+	}
+	if(type == "string"){
+		while(element){
+			element = element.parentNode;
+			if(element != null){
+				if(element.classList.contains(parentIDorLevel)){
+					foundElement = element;
+					break;
+				}
+			}
+		}
+	}else{
+		parentIDorLevel = parentIDorLevel < 0?0:parentIDorLevel;
+		for(var x = 0; x<parentIDorLevel;x++){
+			element = element.parentNode;
+			if(element == null){
+				foundElement = element;
+				break;
+			}
+			if(x == parentIDorLevel-1){
+				foundElement = element;
+			}
+		}
+	}
+	return foundElement;
 }
 /****************************************************************/
 
@@ -3329,103 +3453,76 @@ function customFormComponent(vWrapper=null){
 
 /************************Form validator**************************/
 function formValidator(form=null){
-	form != null?validateElement(form, "'config.form' property must be an element"):null;
-	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", placeholderClass="", inputWrapperClass="", self=this;
-	var errorLog = {}, logStatus=null, n=0, selectedProgressType="rotate", customAnimate=null, progressIndicatorStyle=null, formSubmitted=false, smallView=866, screenMode= "large";
+	if(form != null){
+		validateElement(form, "'config.form' property must be an element");
+		var positionType = DOMelement.cssStyle(form, "position");
+		positionType == "static"?form.style["position"] = "ralative":null;
+	}
+	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", self=this;
+	var errorLog = {}, logStatus=null, n=0, selectedProgressType="rotate", customAnimate=null, progressIndicatorStyle=null, formSubmitted=false, smallView=866, screenMode= "large", preferedWrapperClass="", wrapperDataAtrribute=null;
 	var progressType = {
 				rotate:["@keyframes vRotate{from{transform:rotate(0deg) translateY(-50%) translateX(-50%);} to{transform:rotate(360deg) translateY(-50%) translateX(-50%);}}", "vRotate"]
 			};
-	var modal=null;
+	var modal=null, queue=[];
 	var controller=null;
+	var supportedRules = {
+		required:1,
+		minLength:1,
+		maxLength:1,
+		pattern:1,
+		string:1,
+		integer:1,
+		float:1,
+		ext:1,
+		minSize:1,
+		maxSize:1,
+		callBack:1,
+		email:1,
+		file:1
+	}
 
 	//Create Element
-	function createMessageCon(messageConElement, messageType, location, message, inputVisualFields=null, customStyles=null){
+	function createMessageCon(inputWrapper, messageType, location, message, customStyles=null, paintWrapper = false){
 		//customStyles[a,b] : a=> bottom message box style, b=> left or right message box style
-
 		if(location == "left" || location == "right"){
 			if(innerWidth < smallView){
 				location = "bottom";
 			}
 		}
 		//Validations
-		if (inputVisualFields != null){
-			var temp = "'write()' method argument 5 must be an array";
-			validateArray(inputVisualFields, temp);
-			if (inputVisualFields.length == 1){
-				validateElement(inputVisualFields[0], "'write()' method argument 5 array element 1 must be a valid HTML element");
-			}else if(inputVisualFields.length == 2){
-				//1st element
-				if(inputVisualFields[0] != null){
-					validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
-				}
-				//2nd element placeholder element
-				if (inputVisualFields[1] != null){
-					validateElement(inputVisualFields[1], "'write()' method argument 5 array element 2 must be a valid HTML element");
-				}
-			}else if(inputVisualFields.length == 3){
-				//1st element
-				if(inputVisualFields[0] != null){
-					validateElement(inputVisualFields[0], "write()' method argument 5 array element 1 must be a valid HTML element");
-				}
-
-				//2nd element placeholder element
-				if (inputVisualFields[1] != null){
-					validateElement(inputVisualFields[1], "write()' method argument 5 array element 2 must be a valid HTML element");
-				}
-
-				//3rd element
-				validateString(inputVisualFields[2], "write()' method argument 5 array element 3 must be a string of valid CSS left or right property style");
-			}
-		}
-
 		if (customStyles != null){
-			validateArray(customStyles, "'write()' method argument 6 must be an array");
+			validateArray(customStyles, "'write()' method argument 5 must be an array");
 			if(customStyles.length > 2){
 				throw new Error("'write()' method argument 6 array element cannot be more than 2 elements");
 			}
-			customStyles[0] != null?validateString(customStyles[0], "'write()' method argument 6 array element 1 must be a string which specify the CSS style for bottom message display"):null;
-			customStyles[1] != null?validateString(customStyles[1], "'write()' method argument 6 array element 2 must be a string which specify the CSS style for left or right message display"):null;
+			customStyles[0] != null?validateString(customStyles[0], "'write()' method argument 5 array element 1 must be a string which specify the CSS style for bottom message display"):null;
+			customStyles[1] != null?validateString(customStyles[1], "'write()' method argument 5 array element 2 must be a string which specify the CSS style for left or right message display"):null;
 		}
 
 		//__________________________//
 		//create log status
-		if(messageConElement.getAttribute("data-logStatus") == null){
-			messageConElement.setAttribute("data-logStatus", "1");
-			messageConElement.setAttribute("data-fieldId", "f"+(n+1));
+		if(inputWrapper == null){
+
+		}
+		if(inputWrapper.getAttribute("data-logStatus") == null){
+			inputWrapper.setAttribute("data-logStatus", "1");
+			inputWrapper.setAttribute("data-fieldId", "f"+(n+1));
 			n++;
 		}
-		var checkExistence = messageConElement.querySelector(".vMsgBox");
+		var checkExistence = inputWrapper.querySelector(".vMsgBox");
 		function createMsgBox(){
-			hideProgress();
-			screenMode == "large"?messageConElement.setAttribute("data-vp", "large"):messageConElement.setAttribute("data-vp", "small");
+			screenMode == "large"?inputWrapper.setAttribute("data-vp", "large"):inputWrapper.setAttribute("data-vp", "small");
 			//Fix left and right
 			var messageBoxWrapper = document.createElement("DIV");
+
 			function styleLeft(){
-
 				if(leftConStyle != ""){
-					if(inputVisualFields != null && inputVisualFields.length == 3){
-						messageBoxWrapper.setAttribute("style", leftConStyle+"; "+inputVisualFields[2]);
-					}else {
-
-						messageBoxWrapper.setAttribute("style", leftConStyle);
-					}
-				}else{
-					if(inputVisualFields != null && inputVisualFields.length == 3){
-						messageBoxWrapper.setAttribute("style", inputVisualFields[2]);
-					}
+					messageBoxWrapper.setAttribute("style", leftConStyle);
 				}
 			}
 			function styleRight(){
 				if(rightConStyle != ""){
-					if( inputVisualFields != null && inputVisualFields.length == 3){
-						messageBoxWrapper.setAttribute("style", rightConStyle+"; "+inputVisualFields[2]);
-					}else {
-						messageBoxWrapper.setAttribute("style", rightConStyle);
-					}
-				}else{
-					if( inputVisualFields != null && inputVisualFields.length == 3){
-						messageBoxWrapper.setAttribute("style", inputVisualFields[2]);
-					}
+					messageBoxWrapper.setAttribute("style", rightConStyle);
 				}
 			}
 			function styleBottom(){
@@ -3466,21 +3563,27 @@ function formValidator(form=null){
 				styleBottom();
 			}
 
+			if(messageType == "error"){
+				if(paintWrapper){
+					inputWrapper.classList.add("wError")
+				}
+				
+			}
 			messageBoxWrapper.appendChild(document.createTextNode(message));
-			messageConElement.appendChild(messageBoxWrapper);
-			messageConElement.style["color"] = "transparent";
-
+			inputWrapper.appendChild(messageBoxWrapper);
+			
 			//Log error
-			errorLog[messageConElement.getAttribute("data-fieldId")] = 1;
+			errorLog[inputWrapper.getAttribute("data-fieldId")] = 1;
 
+			console.log("fdfdfd=>", inputWrapper.getAttribute("data-fieldId"));
 			if (location == "left"){
-				var m = messageConElement.querySelector(".vLeft");
+				var m = inputWrapper.querySelector(".vLeft");
 				sendBehind(m, location, 15, customStyles);
 			}else if (location == "right") {
-			 	var m = messageConElement.querySelector(".vRight");
+			 	var m = inputWrapper.querySelector(".vRight");
 				sendBehind(m, location, 15, customStyles);
 			}else if (location == "bottom") {
-				var	m = messageConElement.querySelector(".vBottom");
+				var	m = inputWrapper.querySelector(".vBottom");
 				drop(m);
 			}
 		}
@@ -3494,7 +3597,7 @@ function formValidator(form=null){
 				checkExistence.style["min-height"] = DOMelement.cssStyle(checkExistence, "height");
 				if (customStyles != null){
 					var m = null;
-					location == "left"?m = messageConElement.querySelector(".vLeft"):m = messageConElement.querySelector(".vRight");;
+					location == "left"?m = inputWrapper.querySelector(".vLeft"):m = inputWrapper.querySelector(".vRight");;
 					if(customStyles[1] != null || customStyles[1] != undefined ){
 						var currentStyle = m.getAttribute("style");
 						m.setAttribute("style", currentStyle+ customStyles[1]);
@@ -3503,118 +3606,67 @@ function formValidator(form=null){
 			}
 			checkExistence.innerHTML = message;
 			//Log error
-			errorLog[messageConElement.getAttribute("data-fieldId")] = 1;
+			errorLog[inputWrapper.getAttribute("data-fieldId")] = 1;
 		}
 		if (checkExistence == null){
 			createMsgBox();
 		}else{
-			if(screenMode != messageConElement.getAttribute("data-vp")){
-				var currentMsg = messageConElement.querySelector(".vMsgBox");
-				messageConElement.removeChild(currentMsg);
+			if(screenMode != inputWrapper.getAttribute("data-vp")){
+				var currentMsg = inputWrapper.querySelector(".vMsgBox");
+				inputWrapper.removeChild(currentMsg);
 				createMsgBox();
 			}else{
 				updateMsgBox();
 			}
 		}
 		if(messageType == "error"){
-			if (inputVisualFields == null){
-				if (inputWrapperClass != ""){
-					var inputWrapper = messageConElement.querySelector("."+inputWrapperClass);
-					if(inputWrapper != null){
-						inputWrapper.classList.add("ierror");
-					}
-				}
-				if (placeholderClass != ""){
-					var placeholder = messageConElement.querySelector("."+placeholderClass);
-					if(placeholder != null){
-						placeholder.classList.add("lerror");
-					}
-				}
-			}else{
-				if(inputVisualFields[0] != null){
-					inputVisualFields[0].classList.add("ierror");
-				}
-				if(inputVisualFields[1] != null){
-					var placeholder = inputVisualFields[1];
-					placeholder.classList.add("lerror");
-				}
-			}
+			inputWrapper.classList.add("lerror");
 		}
 	}
 
-	function clearMessage(messageConElement, inputVisualFields){
-			var location = "", fieldId=null;
-			var Vbox = messageConElement.querySelector(".vMsgBox");
-			if(Vbox != null){
-				if(Vbox.classList.contains("vRight")){
-					location = "right";
-				}else if (Vbox.classList.contains("vLeft")) {
-					location = "left";
-				}else if (Vbox.classList.contains("vBottom")) {
-					location = "bottom";
-				}
-				if (inputVisualFields != null){
-					var temp = "'clear()' method argument 2 must be an array";
-					validateArray(inputVisualFields, temp);
-					validateArrayLength(inputVisualFields, 2, temp+" of 2 Elements");
-					validateElement(inputVisualFields[0], "'clear()' method argument 2 array element 1 must be a valid HTML element");
-					if (inputVisualFields[1] != null){
-						validateElement(inputVisualFields[1], "'clear()' method argument 2 array element 2 must be a valid HTML element");
-					}
-				};
+	function clearMessage(inputWrapper){	
+		var location = "", fieldId=null;
+		var Vbox = inputWrapper.querySelector(".vMsgBox");
+		if(Vbox != null){
+			if(Vbox.classList.contains("vRight")){
+				location = "right";
+			}else if (Vbox.classList.contains("vLeft")) {
+				location = "left";
+			}else if (Vbox.classList.contains("vBottom")) {
+				location = "bottom";
+			}
+			var checkExistence = inputWrapper.querySelector(".vMsgBox");
+			if (checkExistence != null){
+				if(location  == "left" || location  == "right"){
+					if (checkExistence.classList.contains("vRight") || checkExistence.classList.contains("vLeft")){
+						checkExistence.style["width"] = checkExistence.scrollWidth+"px";
+						checkExistence.scrollWidth;
+						checkExistence.classList.add("clear");
+						checkExistence.style["color"] = "transparent";
+						checkExistence.style["width"] = "0";
 
-				var checkExistence = messageConElement.querySelector(".vMsgBox");
-				if (checkExistence != null){
-
-					if(location  == "left" || location  == "right"){
-						if (checkExistence.classList.contains("vRight") || checkExistence.classList.contains("vLeft")){
-							checkExistence.style["width"] = checkExistence.scrollWidth+"px";
-							checkExistence.scrollWidth;
-							checkExistence.classList.add("clear");
-							checkExistence.style["color"] = "transparent";
-							checkExistence.style["width"] = "0";
-
-							//Clear error log
-							fieldId =  messageConElement.getAttribute("data-fieldId");
-							delete errorLog[fieldId];
-						}else{
-							throw new Error("No left or right message found to clear, recheck 'clear()' method argument 2");
-						}
-					}else if (location  == "bottom") {
-						if (checkExistence.classList.contains("vBottom")){
-							checkExistence.classList.add("clear");
-							checkExistence.style["color"] = "transparent";
-							checkExistence.style["height"] = "0";
-
-							//Clear error log
-							fieldId =  messageConElement.getAttribute("data-fieldId");
-							delete errorLog[fieldId];
-						}else{
-							throw new Error("No bottom message found to clear, recheck 'clear()' method argument 2");
-						}
-					}
-
-					if (inputVisualFields == null){
-						if (inputWrapperClass != ""){
-							var inputWrapper = messageConElement.querySelector("."+inputWrapperClass);
-							if(inputWrapper != null){
-								inputWrapper.classList.remove("ierror");
-							}
-						}
-						if (placeholderClass != ""){
-							var placeholder = messageConElement.querySelector("."+placeholderClass);
-							if(placeholder != null){
-								placeholder.classList.remove("lerror");
-							}
-						}
+						//Clear error log
+						fieldId =  inputWrapper.getAttribute("data-fieldId");
+						delete errorLog[fieldId];
 					}else{
-						inputVisualFields[0].classList.remove("ierror");
-						if(inputVisualFields[1] != null){
-							inputVisualFields[1].classList.remove("lerror");
-						}
+						throw new Error("No left or right message found to clear, recheck 'clear()' method argument 2");
+					}
+				}else if (location  == "bottom") {
+					if (checkExistence.classList.contains("vBottom")){
+						checkExistence.classList.add("clear");
+						checkExistence.style["color"] = "transparent";
+						checkExistence.style["height"] = "0";
+
+						//Clear error log
+						fieldId =  inputWrapper.getAttribute("data-fieldId");
+						delete errorLog[fieldId];
+					}else{
+						throw new Error("No bottom message found to clear, recheck 'clear()' method argument 2");
 					}
 				}
 			}
+			inputWrapper.classList.remove("lerror", "rerror", "berror", "wError");
+		}
 	}
 
 	//Attach event handler
@@ -3646,11 +3698,13 @@ function formValidator(form=null){
 
 	function showProgress(){
 		var loader = form.querySelector(".vFormOverlay");
+		loader.classList.remove("vFormOverlayHide");
 		loader.classList.add("vFormOverlayShow");
 	}
 	function hideProgress(){
 		var loader = form.querySelector(".vFormOverlay");
 		loader.classList.remove("vFormOverlayShow");
+		loader.classList.add("vFormOverlayHide");
 	}
 
 	function InIError(methodName){
@@ -3675,23 +3729,25 @@ function formValidator(form=null){
 
 	//For right and left display
 	function sendBehind(element, direction, offset, customStyles){
-		var width = element.scrollWidth;
+		
 		if(direction == "left"){
 			element.style["right"] = "calc(100% + "+offset+"px)";
 		}else if (direction == "right") {
 			element.style["left"] = "calc(100% + "+offset+"px)";
 		}
-
+		
+		var width = element.scrollWidth;
 		element.style["width"] = "0px";
 		element.scrollWidth;
 		if(customStyles != null){
 			if(customStyles[1] != null || customStyles[1] != undefined ){
 				var currentStyle = element.getAttribute("style");
-				element.setAttribute("style", currentStyle+ customStyles[1]);
+				element.setAttribute("style", currentStyle + customStyles[1]);
 			}
 		}
+		
+		// element.scrollWidth;
 		element.style["width"] = width+"px";
-
 	}
 
 	//For bottom display
@@ -3753,6 +3809,11 @@ function formValidator(form=null){
 	}
 
 	function showFeedBack(url, msg, type){
+		var oldVbox = document.querySelector(".FbMsgBox");
+		if(oldVbox != null){
+			oldVbox.parentNode.removeChild(oldVbox);
+		}
+
 		if(url!=null){
 			var xhr = ajax.create();
 			xhr.open("POST", url, true);
@@ -3781,52 +3842,72 @@ function formValidator(form=null){
 
 	}
 
+	function tempClearMessage(inputWrapper){
+		document.body.addEventListener("focusin", function(e){
+			e.stopImediatePropagation;
+			if(e.target.classList.contains("vItem")){
+				// if(!self.formOk()){
+					console.log(e.target);
+					self.message.clear(e.target, inputWrapper);
+				// }
+			}
+		}, false);
+	}
+
 	/*Message*/
-	this.message = {
-		write: function(messageConElement, messageType, location, message, inputVisualFields=null, customStyles=null){
-			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
-			//(optinal) inputVisualFields [a,b,c] : a => inputWrapper, b => placeholder, c => custom top position for left|right location (e.g: [null, null, 'top:5px;']).
-																							//'c' can also be messageConElement
-			//(optinal) customStyles: A valid CSS styles for bottom or right or left messageBox
-
+	this.message = {                   
+		write: function(inputField, messageType, location, message, customStyles=null){
+			//(optional) customStyles: A valid CSS styles for bottom or right or left messageBox
 			if (initialized == true){
-				validateElement(messageConElement, "'write' method needs a valid HTML element as argument 1");
-				if(validateString(messageType, "'write' method needs a string as argument 2")){
-					if(!(messageType == "success" || messageType == "error" || messageType == "warning")){
-						throw new Error ("'write' method argument 2 must be string value of either: 'success', 'warning', or 'error'");
-					}
-				};
-				if(validateString(location, "'write' method needs a string as argument 3")){
-					if(!(location == "bottom" || location == "left" || location == "right")){
-						throw new Error ("'write' method argument 3 must be string value of either: 'bottom', 'left', or 'right'");
-					}
-				};
-				validateString(message, "'write' method needs a string (The message) as argument 4");
+				var inputType={val:null};
+				
+				validateInputElement(inputField, inputType, "Obj.message()");
+				var xField = inputField;
+				hideProgress();
+				inputField = inputType.val=="single"?inputField:inputField[0];
+				var inputWrapper = getInputWrapper(inputField);
+				inputWrapper.style.position = "relative";
 
-				if(inputVisualFields == null && inputWrapperClass==""){
-						throw new Error("'write method'argument 5 and 'inputWrapperClass' property cannot be simultaneously emtpy, specify either 1");
+				var paintWrapper = false;
+				if(inputField.getAttribute("type") != "radio" && inputField.getAttribute("type") != "checkbox"){
+					paintWrapper = true;
 				}
-				if(inputVisualFields == null && placeholderClass==""){
-						throw new Error("'write method'argument 5 and 'placeholderClass' property cannot be simultaneously emtpy, specify either 1");
+
+				if(inputType.val == "single"){
+					if(!xField.classList.contains("vItem")){
+						xField.classList.add("vItem");
+					}
+				}else{
+					if(!xField[0].classList.contains("vItem")){
+						for(var x=0;x<xField.length;x++){
+							xField[x].classList.add("vItem");
+						}
+					}
 				}
-				createMessageCon(messageConElement, messageType, location, message, inputVisualFields, customStyles);
+				if(validateString(messageType, "'Obj.write()' method needs a string as argument 2")){
+					if(!(messageType == "success" || messageType == "error" || messageType == "warning")){
+						throw new Error ("'Obj.write()' method argument 2 must be string value of either: 'success', 'warning', or 'error'");
+					}
+				};
+				if(validateString(location, "'Obj.write()' method needs a string as argument 3")){
+					if(!(location == "bottom" || location == "left" || location == "right")){
+						throw new Error ("'Obj.write()' method argument 3 must be string value of either: 'bottom', 'left', or 'right'");
+					}
+				};
+				validateString(message, "'Obj.write()' method needs a string (The message) as argument 4");
+				createMessageCon(inputWrapper, messageType, location, message, customStyles, paintWrapper);
+				
+				tempClearMessage(inputWrapper);
 			}else{
 				InIError("write");
 			}
 		},
-		clear: function(messageConElement, inputVisualFields=null){
+		clear: function(inputField){
 			//messageConElement =>  must be the container housing the input element and the placeholder element, which defines the width for them
-			//inputVisualFields [a,b] : a => inputWrapper, b => placeholder, only needed if it was specified in the write method to be cleared
 			if (initialized == true){
-				validateElement(messageConElement, "'write' method needs a valid HTML element as argument 1");
-				if(inputVisualFields == null && inputWrapperClass==""){
-						throw new Error("'write method'argument 5 and 'inputWrapperClass' property cannot be simultaneously emtpy, specify either 1");
-				}
-				if(inputVisualFields == null && placeholderClass==""){
-						throw new Error("'write method'argument 5 and 'placeholderClass' property cannot be simultaneously emtpy, specify either 1");
-				}
-
-				clearMessage(messageConElement,inputVisualFields);
+				validateElement(inputField, "'write' method needs a valid HTML element as argument 1");
+				var inputWrapper =  getInputWrapper(inputField);
+				clearMessage(inputWrapper);
 			}else {
 				InIError("clear");
 			}
@@ -3929,123 +4010,283 @@ function formValidator(form=null){
 			}, false);
 		}
 	}
-  /**********/
+  	/**********/
 
 	/*validator*/
-	this.validate = {
-		alpha: function(input){
-			validateString(input, "'alpha()' method, argument 1 must be a string");
-			var target = /[^A-Za-z\ ]+/.test(input); //checks for other characters except A-Za-z and space
-			if(target==true){
-				return false;
-			}else {
-				return true;
+	this.validate = function(inputField, rules, messages, location){
+		if (initialized == true){
+			var inputType={
+				val:null
+			};
+			validateInputElement(inputField, inputType, "Obj.validate()");
+			
+			validateArray(rules, "'Obj.validate()' method argument 2 expects an array");
+			validateArray(messages, "'Obj.validate()' method argument 3 expects an array");
+			validateString(location, "'Obj.validate()' method argument 4 expects a string");
+			var inputWrapper = getInputWrapper(inputField);
+			var rulesInUse = {}
+			var tempIds = {}
+			//build available contraints
+			for(var x=0; x<rules.length; x++){
+				//check for sub value
+
+				if(typeof rules[x] == "string"){
+					var check = rules[x].split(":");
+					if(check.length == 2){//has sub
+						checkRule(check, rulesInUse, "sub", tempIds);
+					}else{//no sub
+						checkRule(rules[x], rulesInUse, null, tempIds);
+					}
+				}else if(rules[x].__proto__.isPrototypeOf(new Object()) == true){
+					checkRule(rules[x], rulesInUse, null, tempIds, true);
+				}
+				
 			}
-		},
-		alphaNumeric : function(input){
-			validateString(input, "'emailAddress()' method, argument 1 must be a string");
-			var target= /[^A-Za-z0-9]+/.test(input); //checks for other characters except A-Za-z0-9
-			if(target==true){
-				return false;
-			}else {
-				return true;
+
+			if(rulesInUse["required"] != undefined){
+				var keyVal = rulesInUse["required"] == 1?"":":"+rulesInUse["required"];
+				var xField = inputField;
+				inputField = inputType.val=="single"?inputField:inputField[0];
+
+				if(!checkRequired(xField, inputType.val, rulesInUse)){
+					var matchMessage = getMessageDetails(messages[getMessageIndex("required"+keyVal, tempIds)]);
+					var messageType = matchMessage[0];
+					var messageBody = matchMessage[1];
+					
+					self.message.write(xField, messageType, location, messageBody);	
+					return;
+				}else{
+					clearLastError(rules, keyVal, inputField, inputWrapper)
+				}
 			}
-		},
-		emailAddress : function(email){
-			validateString(email, "'emailAddress()' method, argument 1 must be a string");
-			var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{2,}$/.test(email);//matches email address pattern
-			return email_filter;
-		},
-		customData:function(text, PatternArray){
-			// PatternArray => Array of unwanted characters
-			var status=null;
-			validateString(text, "'custom()' method, argument 1 must be a string");
-			var temp = "'custom()' method argument 2 must be an array";
-			validateArray(PatternArray, temp);
-			validateArrayMembers(PatternArray, "string", temp+" of strings");
-			for(var x=0; x<PatternArray.length; x++){
-				var rg = new RegExp(PatternArray[x]);
-				if(rg.test(text)){//found
-					status = false;
-					break;
-				}else {//not found
-					if(x == PatternArray.length-1){
-						status = true;
+			if(rulesInUse["minLength"] != undefined){			
+				var keyVal = rulesInUse["minLength"]
+				if(!minimumLength(inputField, keyVal)){
+					var matchMessage = getMessageDetails(messages[getMessageIndex("minLength"+":"+keyVal, tempIds)]);
+					var messageType = matchMessage[0];
+					var messageBody = matchMessage[1];
+					self.message.write(inputField, messageType, location, messageBody);
+					return;
+				}else{
+					clearLastError(rules, keyVal, inputField, inputWrapper)
+				}
+			}
+			if(rulesInUse["maxLength"] != undefined){			
+				var keyVal = rulesInUse["maxLength"];
+				if(!maximumLength(inputField, keyVal)){
+					var matchMessage = getMessageDetails(messages[getMessageIndex("maxLength"+":"+keyVal, tempIds)]);
+					var messageType = matchMessage[0];
+					var messageBody = matchMessage[1];
+					self.message.write(inputField, messageType, location, messageBody);
+					return;
+				}else{
+					clearLastError(rules, keyVal, inputField, inputWrapper)
+				}
+			}
+			if(rulesInUse["email"] != undefined){
+				var keyVal = rulesInUse["email"] == 1?"":":"+rulesInUse["email"];
+				if(!isEmailAddress(inputField, inputType.val)){
+					var matchMessage = getMessageDetails(messages[getMessageIndex("email"+keyVal, tempIds)]);
+					var messageType = matchMessage[0];
+					var messageBody = matchMessage[1];
+					self.message.write(inputField, messageType, location, messageBody);	
+					return;
+				}else{
+					clearLastError(rules, keyVal, inputField, inputWrapper)
+				}
+			}
+			if(rulesInUse["callBack"] != undefined){
+				var response = rulesInUse["callBack"](self);
+				if(typeof response == "number"){
+					if(response != -1){//
+						var index = rules.findIndex(x => Object.keys(x)[0] ==="callBack");
+						if(messages[index][response] != undefined){
+							var message = messages[index][response];
+							var matchMessage = getMessageDetails(message);
+							var messageType = matchMessage[0];
+							var messageBody = matchMessage[1];
+							self.message.write(inputField, messageType, location, messageBody);	
+							return;
+						}
+					}
+				}else if(typeof response == "boolean"){
+					if(response == true){
+						clearLastError(rules, "callBack", inputField, inputWrapper)
 					}
 				}
 			}
-			return status;
-		},
-		integer:function(n){
-			return Number(n) === n && n % 1 === 0;
-		},
-		float:function(n){
-			return Number(n) === n && n % 1 !== 0;
-		},
-		fullName:function(value){
-			//Return values
-				// 2=> incomplete names
-				// 3=> All names must be alphabets
-				// 4=> Name cannot be less than 2 characters
-
-			var returnType=null, cleanedName=[], n=0;
-			var split = value.split(" ");
-			//clean name
-			var tn = split.length;
-			if(tn >= 2){
-				//clean name
-				for(var x = 0; x<tn; x++){
-					if(split[x] != " "){
-						cleanedName[cleanedName.length] = split[x];
-					}
-					if(x == tn-1){
-						n = cleanedName.length;
-					}
-				}
-				for(var x=0; x<tn;x++){
-					//Check length
-					if(split[x].length <= 1){
-						returnType = 4; //Name cannot be less than 2 characters
-						break;
-					}
-
-					//Check for non alpha
-					if(self.validate.alpha(split[x]) == false){
-						returnType = 3; //All names must be alphabets
-						break;
-					}
-
-					if(x == tn-1){
-						returnType = true; //All names are more than 2 characters
-					}
-
-				}
-			}else {
-				returnType = 2; //incomplete names
-			}
-			return returnType;
-		},
-		selectField:function(groupCollection){
-			validateHTMLObject(groupCollection, "'validate.selectField()' method argument 1 must be an HTML collection");
-			var status=false;
-
-			//check for any selected
-			for(var x=0;x<groupCollection.length;x++){
-				if(groupCollection[x].checked){
-					status==false?status = true:null;
-					break;
-				}
-			}
-			return status;
-		},
-		phoneNumber:function(input){
-			validateString(input, "'phoneNumber()' method, argument 1 must be a string");
-			var input_filter = /^(\+|[0-9])[0-9]+$/.test(input);//matches phone number pattern
-			return input_filter;
+		}else{
+			InIError("validate");
 		}
 	}
 	/**********/
+	function checkRule(rule, saveRule, sub, tmpIds, obj=false){
+		if(sub == null && obj == false){
+			if(supportedRules[rule] != undefined){
+				saveRule[rule] = 1;
+				tmpIds[rule] = tmpIds[rule];
+			}else{
+				throw new Error("This rule " + rule+ " is not supported");
+			}
+		}else if(sub != null&&  obj == false){
+			if(supportedRules[rule[0]] != undefined){
+				var fullKey = rule.join(":");
+				saveRule[rule[0]] = rule[1];
+				tmpIds[fullKey] = tmpIds[fullKey];
+			}else{
+				throw new Error("This rule " +fullKey+ " is not supported");
+			}
+		}else if(obj){
+			var check = Object.keys(rule)[0];
+			if(supportedRules[check] != undefined){
+				saveRule[check] = rule[check];
+			}else{
+				throw new Error("This rule " +check+ " is not supported");
+			}
+		}
+	}
+	function getMessageIndex(ruleName, tempIds){
+		return Object.keys(tempIds).indexOf(ruleName);
+	}
+	function getMessageDetails(msg){
+		var ids = {
+			e:"error",
+			w:"warning",
+			s:"success"
+		}
+		
+		var msplit = msg.split(":");
+		if(msplit.length == 2){
+			var key = msplit[0].toLowerCase();
+			if( key == undefined){//Not Found
+				return ["error", msplit];
+			}else{//found
+				return [ids[key], msplit[1]];
+			}
+		}else{
+			return ["error", msplit[0]];
+		}
+	}
+	function checkRequired(inputField, inputType, rulesInUse){
+		if(inputType == "single"){
+			if(isTextField(inputField)){//text field
+				if(!textField(inputField)){
+					return false;
+				}else{
+					return true;
+				}
+			}else if(isCheckField(inputField)){//check field
+				if(!checkField(inputField)){
+					return false;
+				}else{
+					return true;
+				}
+			}		
+		}else{
+			var status=false;
+			for(var x=0;x<inputField.length;x++){
+				if(inputField[x].getAttribute("type") == "radio" || inputField[x].getAttribute("type") == "checkbox"){
+					if(inputField[x].checked){
+						status= true;
+						break;
+					}
+				}
+				
+			}
+			return status;
+		}
+		function textField(x){
+			if(x.value.length < 1){
+				return false;
+			}else{
+				return true;
+			}
+		}
+		function checkField(x){
+			if(x.checked){
+				return true;
+			}else{
+				return false;
+			}
+		}
+	}
+	function minimumLength(inputField, min){
+		if(inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA"){//text field
+			if(inputField.value.length < min){
+				return false;
+			}else{
+				return true;
+			}
+			
+		}
+	}
+	function maximumLength(inputField, max){
+		if(inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA"){//text field
+			if(inputField.value.length > max){
+				return false;
+			}else{
+				return true;
+			}
+			
+		}
+	}
+	function isTextField(inputField){
+		if(inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA"){//text field
+			return true;
+		}else{
+			return false;
+		}
+	}
+	function isCheckField(inputField){
+		if(inputField.getAttribute("type") == "radio" || inputField.getAttribute("type") == "checkbox" ){//check field
+			return true;
+		}else{
+			return false;
+		}
+	}
+	function isEmailAddress(inputField, inputType){
+		if(inputType == "single"){
+			if(inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA"){
+				if(!validateEmailAddress(inputField.value)){
+					return false;
+				}
+				return true;
+			}
+		}
+	}
+	function clearLastError(rules, key, inputField, preferedWrapper){
+		if(rules[rules.length-1] == key || Object.keys(rules[rules.length-1])[0] == key){
+			self.message.clear(inputField, preferedWrapper);
+		}
+	}
+	function validateInputElement(inputField, flag, objName){					
+		if (inputField instanceof Element){
+			flag.val = "single";
+		}else{
+			try {
+				if(Object.getPrototypeOf(inputField).constructor.name == "NodeList"){
+					flag.val = "group";	
+				}
+			}catch (error) {
+				throw new Error("'"+objName+"' method argument 1 expects a valid HTML element or HTMLCollection");
+			}
+		}
+	}
 
+	function getInputWrapper(inputField){
+		if(wrapperDataAtrribute != null){//has prefered data atrribute set
+			if(inputField.getAttribute(wrapperDataAtrribute) == null){//no prefered wrapper
+				var inputWrapper = inputField.parentNode;
+			}else{//get prefered wrapper
+				if(preferedWrapperClass != ""){
+					var inputWrapper = DOMelement.getParent(inputField, preferedWrapperClass);
+				}
+			}
+		}else{ //use default
+			var inputWrapper = inputField.parentNode;
+		}
+		return inputWrapper;
+	}
 	/*Form validation status*/
 	this.formOk = function(){
 		if(Object.keys(errorLog).length > 0){
@@ -4070,9 +4311,12 @@ function formValidator(form=null){
 				}else if (xhr.readyState == 4) {//sent and received
 					if(xhr.status == 200){
 						if(controller != null){
-							controller(xhr.responseText);
+							var delayCall = setTimeout(function(){
+								controller(self, xhr.responseText);
+								clearTimeout(delayCall);
+							}, 1000);
 						}else {
-							// self.showFeedBack();
+							self.showFeedBack();
 						}
 					}
 				}
@@ -4081,38 +4325,15 @@ function formValidator(form=null){
 		}
 	}
 
-	/*value getter*/
-	this.getSelected = function(groupCollection){
-		validateHTMLObject(groupCollection, "'validate.getSelected()' method argument 1 must be an HTML collection");
-		var data=[];
-		//check for any selected
-		for(var x=0;x<Object.keys(groupCollection).length;x++){
-			if(groupCollection[x].checked){
-				data[data.length] = groupCollection[x].value;
+	this.showFeedBack = function(feedBackUrl=null, msg=null, type=null){
+		if(type != null){
+			if(type.toLowerCase() != "warning" && type.toLowerCase() != "success" && type.toLowerCase() != "error"){
+				throw new Error("'showFeedBack()' method argument 3 must either be: null, 'error', 'warning' or 'success'");
 			}
 		}
-		return data;
-	}
-
-	this.showFeedBack = function(feedBackUrl=null, msg=null, type=null){
-		if(type.toLowerCase() != "warning" && type.toLowerCase() != "success" && type.toLowerCase() != "error"){
-			console.log(type);
-			throw new Error("'showFeedBack()' method argument 3 must either be: null, 'error', 'warning' or 'success'");
-		}
+	
 		showFeedBack(feedBackUrl, msg, type);
 	}
-
-	Object.defineProperties(this.validate, {
-		alpha:{writable:false},
-		alphaNumeric:{writable:false},
-		emailAddress:{writable:false},
-		integer:{writable:false},
-		float:{writable:false},
-		fullName:{ writable:false},
-		selectField:{writable:false},
-		customData:{writable:false},
-		phoneNumber:{writable:false}
-	});
 	Object.defineProperties(this.format, {
 		toCurrency:{writable:false},
 		roundToDec:{writable:false},
@@ -4138,28 +4359,6 @@ function formValidator(form=null){
 				rightConStyle = value;
 			}
 		},
-		placeholderClass:{
-			set:function(value){
-				validateString(value, "A string needed for the 'placeholderClass' property")
-				var elmentTest = document.querySelector("."+value);
-				if(elmentTest != null){
-					placeholderClass = value;
-				}else{
-					throw new Error("A string representing input placeholder class name needed as value for 'placeholderClass' property");
-				}
-			}
-		}, // Used if input placeholder is not specified in write method
-		inputWrapperClass:{
-			set:function(value){
-				validateString(value, "A string needed for the 'inputWrapperClass' property")
-				var elmentTest = document.querySelector("."+value);
-				if(elmentTest != null){
-					inputWrapperClass = value;
-				}else{
-						throw new Error("A string representing input inputWrapperClass class name needed as value for 'inputWrapperClass' property");
-					}
-			}
-		}, ///Used if input wrapper is not specified in write method
 		modal:{
 			set:function(value){
 				validateObject(value, "'config.modal' property must be an object");
@@ -4186,6 +4385,18 @@ function formValidator(form=null){
 				}
 				smallView = value;
 			}
+		},
+		preferedWrapperClass:{
+			set:function(value){
+				validateString(value, "config.preferedWrapperClass property value expects a string");
+				preferedWrapperClass = value;
+			}
+		},
+		wrapperDataAtrribute:{
+			set:function(value){
+				validateString(value, "config.wrapperDataAtrribute property value expects a string");
+				wrapperDataAtrribute = value;
+			}
 		}
 	});
 	Object.defineProperties(this.message, {
@@ -4197,7 +4408,6 @@ function formValidator(form=null){
 		validate:{write:{writable:false}},
 		message:{write:{writable:false}},
 		initialize:{write:{writable:false}},
-		getSelected:{write:{writable:false}},
 		submit:{write:{writable:false}},
 		formOk:{write:{writable:false}},
 		showFeedBack:{write:{writable:false}},
@@ -6297,7 +6507,7 @@ function carousel(container, viewport){
 			if(touchResponse){
 				var touchHdr = new touchHandler(container);
 				touchHdr.config.slideCallBack = touchEndCallBack;
-				touchHdr.config.viewPortTransition = "all 1500ms cubic-bezier(0,.98,0,.98) 0s";
+				touchHdr.config.viewPortTransition = "all "+speed+"ms cubic-bezier(0,.98,0,.98)";
 				touchHdr.initialize();
 				touchHdr.enableTouch();
 			}
@@ -6610,9 +6820,9 @@ function contentLoader(){
 
 /***************************Touch handler*****************************/
 function touchHandler(frame){
-	var initialTouchPos={}, slideCallBack=null, mode="slider", hasMoved =false, lastTouchPos={}, lastPoint={x:0,y:0},usePoint=0, initialized=false, enabled=false, rafPending=false, currentPosition={x:0,y:0}, pan="x",pressed=false, viewPort=null;
+	var initialTouchPos={}, slideCallBack=null, mode="slider", hasMoved =false, lastTouchPos={}, lastPoint={x:0,y:0},usePoint=0, initialized=false, rafPending=false, pan="x",pressed=false, viewPort=null;
 	var pointerDownName = 'pointerdown', slopeValue=0, pointerUpName = 'pointerup', pointerMoveName = 'pointermove', pointerCancelName="pointercancel", viewPortTransition="";
-	var moved = 0, node=0, enableTouch=false, maxStop=0, targetDirection=null, SLIDE_LEFT = 1, SLIDE_RIGHT = 2, SLIDE_TOP = 3, SLIDE_BOTTOM = 4, DEFAULT=5, lastPos=0;
+	var moved = 0, node=0, enableTouch=false, maxStop=0, targetDirection=null, SLIDE_LEFT = 1, SLIDE_RIGHT = 2, SLIDE_TOP = 3, SLIDE_BOTTOM = 4, DEFAULT=5;
 	function addTouchEventHandler(){
 		if (window.PointerEvent) {
 			// Add Pointer Event Listener
