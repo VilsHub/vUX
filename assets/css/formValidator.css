@@ -18,12 +18,13 @@
   }
   .vBottom{
     width:auto;
-    height:auto;
+    height:0px;
     position:absolute;
-    transition:height 0.2s cubic-bezier(0,.81,.22,1);
+    transition:height .2s cubic-bezier(0,.81,.22,1);
     top:CALC(100% + 12px);
     z-index:50;
     left:0;
+    min-height: 0px;
   }
   .vBottom::before{
     width:0px;
@@ -63,12 +64,12 @@
     background-color: #2b9030!important;
   }
   .lerror{
+    border:solid 1px #d82323!important;
     color: #d82323!important;
   }
-  
   .error , .wError{
     background-color:#e3b4b4;
-    border:solid 1px #d82323;
+    border:solid 1px #d82323!important;
   }
   .warning {
     background-color:#e3e1b4;

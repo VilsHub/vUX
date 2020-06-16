@@ -3438,7 +3438,7 @@ function formValidator(form=null){
 		positionType == "static"?form.style["position"] = "ralative":null;
 	}
 	var bottomConStyle ="", initialized=false, leftConStyle="", rightConStyle="", self=this;
-	var errorLog = {}, logStatus=null, n=0, selectedProgressType="rotate", customAnimate=null, progressIndicatorStyle=null, formSubmitted=false, smallView=866, screenMode= "large", preferedWrapperClass="", wrapperDataAtrribute=null;
+	var errorLog = {}, logStatus=null, n=0, selectedProgressType="rotate", customAnimate=null, progressIndicatorStyle=null, formSubmitted=false, smallView=866, screenMode= "large", wrapperDataAtrribute=null;
 	var progressType = {
 				rotate:["@keyframes vRotate{from{transform:rotate(0deg) translateY(-50%) translateX(-50%);} to{transform:rotate(360deg) translateY(-50%) translateX(-50%);}}", "vRotate"]
 			};
@@ -3459,7 +3459,16 @@ function formValidator(form=null){
 		email:1,
 		file:1
 	}
-
+	function validatCustomRules(customStyles, objName){
+		if (customStyles != null){
+			validateArray(customStyles, "'"+objName+"' method argument 5 must be an array");
+			if(customStyles.length > 2){
+				throw new Error("'"+objName+"' method argument 6 array element cannot be more than 2 elements");
+			}
+			customStyles[0] != null?validateString(customStyles[0], "'"+objName+"' method argument 5 array element 1 must be a string which specify the CSS style for bottom message display"):null;
+			customStyles[1] != null?validateString(customStyles[1], "'"+objName+"' method argument 5 array element 2 must be a string which specify the CSS style for left or right message display"):null;
+		}
+	}
 	//Create Element
 	function createMessageCon(inputWrapper, messageType, location, message, customStyles=null, paintWrapper = false){
 		//customStyles[a,b] : a=> bottom message box style, b=> left or right message box style
@@ -3469,14 +3478,7 @@ function formValidator(form=null){
 			}
 		}
 		//Validations
-		if (customStyles != null){
-			validateArray(customStyles, "'write()' method argument 5 must be an array");
-			if(customStyles.length > 2){
-				throw new Error("'write()' method argument 6 array element cannot be more than 2 elements");
-			}
-			customStyles[0] != null?validateString(customStyles[0], "'write()' method argument 5 array element 1 must be a string which specify the CSS style for bottom message display"):null;
-			customStyles[1] != null?validateString(customStyles[1], "'write()' method argument 5 array element 2 must be a string which specify the CSS style for left or right message display"):null;
-		}
+		validatCustomRules(customStyles, "write()");
 
 		//__________________________//
 		//create log status
@@ -3544,9 +3546,8 @@ function formValidator(form=null){
 
 			if(messageType == "error"){
 				if(paintWrapper){
-					inputWrapper.classList.add("wError")
+					inputWrapper.classList.add("wError");
 				}
-				
 			}
 			messageBoxWrapper.appendChild(document.createTextNode(message));
 			inputWrapper.appendChild(messageBoxWrapper);
@@ -3554,7 +3555,6 @@ function formValidator(form=null){
 			//Log error
 			errorLog[inputWrapper.getAttribute("data-fieldId")] = 1;
 
-			console.log("fdfdfd=>", inputWrapper.getAttribute("data-fieldId"));
 			if (location == "left"){
 				var m = inputWrapper.querySelector(".vLeft");
 				sendBehind(m, location, 15, customStyles);
@@ -3633,14 +3633,13 @@ function formValidator(form=null){
 				}else if (location  == "bottom") {
 					if (checkExistence.classList.contains("vBottom")){
 						checkExistence.classList.add("clear");
+						checkExistence.scrollHeight;
 						checkExistence.style["color"] = "transparent";
 						checkExistence.style["height"] = "0";
 
 						//Clear error log
 						fieldId =  inputWrapper.getAttribute("data-fieldId");
 						delete errorLog[fieldId];
-					}else{
-						throw new Error("No bottom message found to clear, recheck 'clear()' method argument 2");
 					}
 				}
 			}
@@ -3671,6 +3670,9 @@ function formValidator(form=null){
 				modal!=null?modal.close():null;
 			}else if(e.target.getAttribute("data-rs") != "suc" && e.target.getAttribute("id") == "fbBtn"){
 				hideProgress();
+			}
+			if(e.target.classList.contains("vItem")){
+				self.message.clear(e.target);
 			}
 		}, false);
 	}
@@ -3732,8 +3734,10 @@ function formValidator(form=null){
 	//For bottom display
 	function drop(element){
 			var height = element.scrollHeight;
+			height =height<35?35:height;
 			element.style["height"] = "0px";
 			element.scrollHeight;
+			console.log(height);
 			element.style["height"] = height+"px";
 	}
 
@@ -3821,18 +3825,6 @@ function formValidator(form=null){
 
 	}
 
-	function tempClearMessage(inputWrapper){
-		document.body.addEventListener("focusin", function(e){
-			e.stopImediatePropagation;
-			if(e.target.classList.contains("vItem")){
-				// if(!self.formOk()){
-					// console.log(e.target);
-					self.message.clear(e.target, inputWrapper);
-				// }
-			}
-		}, false);
-	}
-
 	/*Message*/
 	this.message = {                   
 		write: function(inputField, messageType, location, message, customStyles=null){
@@ -3875,8 +3867,6 @@ function formValidator(form=null){
 				};
 				validateString(message, "'Obj.write()' method needs a string (The message) as argument 4");
 				createMessageCon(inputWrapper, messageType, location, message, customStyles, paintWrapper);
-				
-				tempClearMessage(inputWrapper);
 			}else{
 				InIError("write");
 			}
@@ -3992,17 +3982,17 @@ function formValidator(form=null){
   	/**********/
 
 	/*validator*/
-	this.validate = function(inputField, rules, messages, location){
+	this.validate = function(inputField, rules, messages, location, customStyles=null){
 		if (initialized == true){
 			var inputType={
 				val:null
 			};
 			validateInputElement(inputField, inputType, "Obj.validate()");
-			
 			validateArray(rules, "'Obj.validate()' method argument 2 expects an array");
 			validateArray(messages, "'Obj.validate()' method argument 3 expects an array");
 			validateString(location, "'Obj.validate()' method argument 4 expects a string");
-			var inputWrapper = getInputWrapper(inputField);
+			//Validations
+			validatCustomRules(customStyles, "validate()");
 			var rulesInUse = {}
 			var tempIds = {}
 			//build available contraints
@@ -4022,17 +4012,17 @@ function formValidator(form=null){
 				
 			}
 
+			var xField = inputField; //Needed to check HTML Collection
+			inputField = inputType.val=="single"?inputField:inputField[0];
+			var inputWrapper = getInputWrapper(inputField);
+
 			if(rulesInUse["required"] != undefined){
 				var keyVal = rulesInUse["required"] == 1?"":":"+rulesInUse["required"];
-				var xField = inputField;
-				inputField = inputType.val=="single"?inputField:inputField[0];
-
 				if(!checkRequired(xField, inputType.val, rulesInUse)){
 					var matchMessage = getMessageDetails(messages[getMessageIndex("required"+keyVal, tempIds)]);
 					var messageType = matchMessage[0];
 					var messageBody = matchMessage[1];
-					
-					self.message.write(xField, messageType, location, messageBody);	
+					self.message.write(inputField, messageType, location, messageBody, customStyles);	
 					return;
 				}else{
 					clearLastError(rules, keyVal, inputField, inputWrapper)
@@ -4047,7 +4037,7 @@ function formValidator(form=null){
 					self.message.write(inputField, messageType, location, messageBody);
 					return;
 				}else{
-					clearLastError(rules, keyVal, inputField, inputWrapper)
+					clearLastError(rules, keyVal, inputField, inputWrapper, customStyles)
 				}
 			}
 			if(rulesInUse["maxLength"] != undefined){			
@@ -4056,7 +4046,7 @@ function formValidator(form=null){
 					var matchMessage = getMessageDetails(messages[getMessageIndex("maxLength"+":"+keyVal, tempIds)]);
 					var messageType = matchMessage[0];
 					var messageBody = matchMessage[1];
-					self.message.write(inputField, messageType, location, messageBody);
+					self.message.write(inputField, messageType, location, messageBody, customStyles);
 					return;
 				}else{
 					clearLastError(rules, keyVal, inputField, inputWrapper)
@@ -4068,7 +4058,7 @@ function formValidator(form=null){
 					var matchMessage = getMessageDetails(messages[getMessageIndex("email"+keyVal, tempIds)]);
 					var messageType = matchMessage[0];
 					var messageBody = matchMessage[1];
-					self.message.write(inputField, messageType, location, messageBody);	
+					self.message.write(inputField, messageType, location, messageBody, customStyles);	
 					return;
 				}else{
 					clearLastError(rules, keyVal, inputField, inputWrapper)
@@ -4084,7 +4074,7 @@ function formValidator(form=null){
 							var matchMessage = getMessageDetails(message);
 							var messageType = matchMessage[0];
 							var messageBody = matchMessage[1];
-							self.message.write(inputField, messageType, location, messageBody);	
+							self.message.write(inputField, messageType, location, messageBody, customStyles);	
 							return;
 						}
 					}
@@ -4253,19 +4243,25 @@ function formValidator(form=null){
 	}
 
 	function getInputWrapper(inputField){
+		var inputWrapper = null;
 		if(wrapperDataAtrribute != null){//has prefered data atrribute set
-			if(inputField.getAttribute(wrapperDataAtrribute) == null){//no prefered wrapper
-				var inputWrapper = inputField.parentNode;
-			}else{//get prefered wrapper
-				if(preferedWrapperClass != ""){
-					var inputWrapper = DOMelement.getParent(inputField, preferedWrapperClass);
+			try {
+				if(inputField.getAttribute(wrapperDataAtrribute) != null){//configured and set
+					var attribValue = inputField.getAttribute(wrapperDataAtrribute);
+					inputWrapper = DOMelement.getParent(inputField, attribValue);
+				}else{
+					inputWrapper = inputField.parentNode;
 				}
+			}catch(error){
+				inputWrapper = inputField.parentNode;
 			}
 		}else{ //use default
-			var inputWrapper = inputField.parentNode;
+			inputWrapper = inputField.parentNode;
+			
 		}
 		return inputWrapper;
 	}
+	
 	/*Form validation status*/
 	this.formOk = function(){
 		if(Object.keys(errorLog).length > 0){
@@ -4363,12 +4359,6 @@ function formValidator(form=null){
 					throw new Error ("'config.smallView' property must be greater than zero");
 				}
 				smallView = value;
-			}
-		},
-		preferedWrapperClass:{
-			set:function(value){
-				validateString(value, "config.preferedWrapperClass property value expects a string");
-				preferedWrapperClass = value;
 			}
 		},
 		wrapperDataAtrribute:{
