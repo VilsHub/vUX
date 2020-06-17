@@ -1,34 +1,41 @@
-.shell{
+.shell {
   height:auto;
   display:block;
   float:left;
+  clear: both;
+  margin: 0 3px;
+  position:relative;
 }
-.shell .vcheckBox {
-  background-color:transparent;
+.shell .vCheckbox {
   cursor:pointer;
   box-sizing:border-box;
   border-radius:3px;
-  float:left;
-  transition:all 0.2s linear;
-  position:relative;
+  position: absolute;
+  left:0;
+  top:0;
+  width:inherit;
+  height: inherit;
 }
-.shell .vcheckBox::before {
-  color:red;
-  width:100%;
-  height:100%;
+.vCheckboxLabel{
+  cursor:pointer;
+}
+.shell .vCheckbox::before {
   content:'';
   position:absolute;
-  top:0;
   text-align:center;
+  box-sizing: border-box;
+  transition:all .2s linear;
 }
 .shell .checked::before {
   background-color:black;
 }
 .shell .unchecked::before{
   background-color:white;
+  border:1px solid black;
 }
-.shell .label {
-  width:auto;
-  float:left;
-  cursor:pointer;
+.xCnative{
+  visibility: hidden;
+  position: absolute;
+  left: 0;
+  top:0;
 }

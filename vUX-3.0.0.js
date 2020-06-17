@@ -34,7 +34,7 @@ window.addEventListener("load", function(){
 	//Load needed styles
 	loadStyleSheet("css", "selectFormComponent.css");
 	loadStyleSheet("css", "radioFormComponent.css");
-	loadStyleSheet("css", "checkBoxFormComponent.css");
+	loadStyleSheet("css", "checkboxFormComponent.css");
 	loadStyleSheet("css", "formValidator.css");
 	loadStyleSheet("css", "modalDisplayer.css");
 	loadStyleSheet("css", "datePicker.css");
@@ -406,8 +406,8 @@ function loadStyleSheet(type, name){
 			case "radioFormComponent.css":
 				styles["radioFormComponent"] = value;
 				break;
-			case "checkBoxFormComponent.css":
-				styles["checkBoxFormComponent"] = value;
+			case "checkboxFormComponent.css":
+				styles["checkboxFormComponent"] = value;
 		}
 	}
 	function get(){
@@ -2513,14 +2513,36 @@ function customFormComponent(){
 	var selOpen=0, self=this, selectDim=[], arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
 	afterSelectionFn= function(){}, wrapperCustomStyle="", totalOptions = 0 ,selectFieldCustomStyle="", optionCustomStyle="", optionsContainerCustomStyle="", arrowConCustomStyle="";
 
+	/*********Helpers***********/
+	function withLabel(ele){
+		var labelEle = ele.nextElementSibling;
+		if(labelEle != null){
+			if(labelEle.nodeName == "LABEL"){
+				return {
+					status:true,
+					label:labelEle
+				}
+			}else{
+				if(labelEle.nodeName != "DIV"){
+					throw new Error ("All input elements to be made custom must be wrapped with a DIV element");
+				}else{
+					return {
+						status:false,
+						label:labelEle
+					}
+				}
+			}
+		}else{
+			return null;
+		}
+	}
+	/***************************/
+	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	/************************************************************************************/
 	//bgColors[a,b] a=> listBacgroundColor, b=> slectBackground
 	//fontColors[a,b] a=> listFontColor, b=> slectfontColor
 	//selectDim[a,b] a=> width of select cElement , b=> height of select cElemt
-	//vWrapper => A custom name to give to the wrapper of the custom element
 	/************************************************************************************/
-
-	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	function selectOptions(listOptionCon){
 		var listParent = listOptionCon.parentNode.parentNode;
 		if(listParent.querySelector("."+vWrapper + " .optionsCon .selected") != null){
@@ -2948,14 +2970,10 @@ function customFormComponent(){
 		if (document.querySelector("style[data-id='v"+radioClassName+"']") == null){
 		 	var css = styles["radioFormComponent"].replace(/shell/g, "v"+radioClassName);
 			css +=  ".v"+radioClassName + " {width:"+radioDim[0]+"; height:"+radioDim[1]+"}";
-			// css +=  ".v"+radioClassName + " .vRadioButton {margin-left:-"+(parseInt(radioDim[0], "px")/2)+"px;margin-top:-"+(parseInt(radioDim[0], "px")/2)+"px;}";
 			css +=  ".v"+radioClassName + " .deselected:hover::before{"+mouseEffect[0]+";}";
 			css +=  ".v"+radioClassName + " .deselected:active::before{"+mouseEffect[1]+";}";
 			css +=  ".v"+radioClassName + " .selected::before{font-size:"+radioDim[0]+";}";
 			css +=  ".v"+radioClassName + " .deselected::before{font-size:"+radioDim[0]+";}";
-			// css +=  ".v"+radioClassName + " .vRadioButton{width:inherit; height:inherit;}";
-
-			var styleElement = document.createElement("style");
 
 			if(selectedStyle != ""){
 				css +=  ".v"+radioClassName + " .selected::before {"+selectedStyle+"}";
@@ -2969,10 +2987,10 @@ function customFormComponent(){
 	function reCreateRadio (){
 		var allRadios = document.querySelectorAll("."+radioClassName);
 		for(var x=0; x<allRadios.length; x++){
-			runBuild(allRadios[x]);
+			runRadioBuild(allRadios[x]);
 		}		
 	}
-	function runBuild(nativeRadioButton){
+	function runRadioBuild(nativeRadioButton){
 		var hasLabel = withLabel(nativeRadioButton);
 		var parent   = nativeRadioButton.parentNode;
 		var radioParentPosition = DOMelement.cssStyle(parent, "position");
@@ -3028,20 +3046,6 @@ function customFormComponent(){
 		var radioParent = nativeRadioButton.parentNode;
 		radioParent.insertBefore(radioWrapper, nativeRadioButton);
 	}
-	function withLabel(ele){
-		var labelEle = ele.nextElementSibling;
-		if(labelEle.nodeName == "LABEL"){
-			return {
-				status:true,
-				label:labelEle
-			}
-		}else{
-			return {
-				status:false,
-				label:labelEle
-			}
-		}
-	}
 	function assignRadioEventHanler(){
 			DOMelement.attachEventHandler("click", "vRadioButton", function(e){
 				var mainRadio = e.target.parentNode.nextElementSibling;
@@ -3059,7 +3063,6 @@ function customFormComponent(){
 					var nxt = e.target.parentNode.querySelector(".sel");
 					hideClicked(e.target, nxt, "checked");
 				}
-				mainRadio.focus();
 				mainRadio.click();
 			})
 			DOMelement.attachEventHandler("click", "vRadioButtonLabel", function(e){
@@ -3098,14 +3101,13 @@ function customFormComponent(){
 		ele.style["width"] = "0%";
 		ele.style["height"] = "0%";
 	}
-
 	this.radio = {
 		autoBuild: function(){
 			if (radioDim.length == 0){
 				throw new Error("Setup imcomplete: radio component dimension needed, specify using the 'radioButtonSize' property");
 			}
 			if(radioClassName == ""){
-				throw new Error("Setup imcomplete: radio buttons class name must be supllied, specify using the 'config.radioClassName' property");
+				throw new Error("Setup imcomplete: radio buttons class name must be supllied, specify using the 'config.className' property");
 			}
 			var existingSheet = document.querySelector("#v"+radioClassName);
 			setTimeout(function (){
@@ -3121,9 +3123,8 @@ function customFormComponent(){
 			var totalNewRadios = allNewRadios.length;
 			if(totalNewRadios > 0){
 				for (var x=0; x<totalNewRadios; x++){
-					runBuild(allNewRadios[x]);
+					runRadioBuild(allNewRadios[x]);
 				}
-				
 			}
 
 		},
@@ -3189,231 +3190,208 @@ function customFormComponent(){
 
 
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom checkBox builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-	var checkBoxDim =[], checkBoxWrapperStyle="", checkBoxStyle="", checkedStyle = "", uncheckedStyle ="", checkBoxLabelStyle ="", groupAxis= "x", width="", mbottom="",
-	mouseEffect = [], thisCheckBox=null;
+	var checkboxDim =[], checkboxWrapperStyle="", checkedStyle = "", uncheckedStyle ="", checkboxClassName="",
+	mouseEffect = [];
 	/************************************************************************************/
-	//checkBoxDim[a,b] a=> width of checkbox cElement , b=> height of checkbox cElemt
+	//checkboxDim[a,b] a=> width of checkbox cElement , b=> height of checkbox cElemt
 	//mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
 	/************************************************************************************/
 
-	function checkBoxStyleSheet(){
-		if (document.querySelector("style[data-id='v"+vWrapper+"']") == null){
-			(groupAxis == "x" | "X")?width="auto":width="100%";
-			(groupAxis == "x" | "X")?mbottom="auto":mbottom="5px";
-
-			var css = styles["checkBoxFormComponent"].replace(/shell/g, vWrapper);
-			css += "."+vWrapper + " {width:"+width+"; margin-bottom:"+mbottom+"}";
-			css +=  "."+vWrapper + " .vcheckBox {width:"+checkBoxDim[0]+"; height:"+checkBoxDim[1]+";}";
-			css +=  "."+vWrapper + " .vcheckBox::before {line-height:"+checkBoxDim[1]+";}";
-			css +=  "."+vWrapper + " .label {height:"+checkBoxDim[1]+"; line-height:"+checkBoxDim[1]+";}";
-			css +=  "."+vWrapper + " .vcheckBox[data-checked='0']:hover{"+mouseEffect[0]+";}";
-			css +=  "."+vWrapper + " .vcheckBox[data-checked='0']:active{"+mouseEffect[1]+";}";
-
-			var styleElement = document.createElement("style");
+	function checkboxStyleSheet(){
+		if (document.querySelector("style[data-id='v"+checkboxClassName+"']") == null){
+		 	var css = styles["checkboxFormComponent"].replace(/shell/g, "v"+checkboxClassName);
+			css +=  ".v"+checkboxClassName + " {width:"+checkboxDim[0]+"; height:"+checkboxDim[1]+"}";
+			css +=  ".v"+checkboxClassName + " .unchecked:hover::before{"+mouseEffect[0]+";}";
+			css +=  ".v"+checkboxClassName + " .unchecked:active::before{"+mouseEffect[1]+";}";
+			css +=  ".v"+checkboxClassName + " .checked::before{font-size:"+checkboxDim[0]+";}";
+			css +=  ".v"+checkboxClassName + " .unchecked::before{font-size:"+checkboxDim[0]+";}";
 
 			if(checkedStyle != ""){
-				css +=  "."+vWrapper + " .checked::before {"+checkedStyle+"}";
+				css +=  ".v"+checkboxClassName + " .checked::before {"+checkedStyle+"}";
 			}
 			if(uncheckedStyle != ""){
-				css +=  "."+vWrapper + " .unchecked::before{"+uncheckedStyle+"}";
+				css +=  ".v"+checkboxClassName + " .unchecked::before{"+uncheckedStyle+"}";
 			}
-			attachStyleSheet("v"+vWrapper, css)
+			attachStyleSheet("v"+checkboxClassName, css);
 		}
 	}
-	function checkCheckBox(e){
-		var maincheckedButton = e.target.parentNode.nextElementSibling;
-		thisCheckBox = maincheckedButton;
-		if(e.target.classList.contains("label") == false){//custom checkBox
-			if(e.target.getAttribute("data-checked") == "0"){//unchecked
-				e.target.setAttribute("data-checked","1");
-				e.target.classList.add("checked");
-				e.target.classList.remove("unchecked");
-				maincheckedButton.checked = true;
-			}else{//checked
-				e.target.setAttribute("data-checked","0");
-				e.target.classList.remove("checked");
-				e.target.classList.add("unchecked");
-				maincheckedButton.checked = false;
-			}
-		}else {//custom checkbox label
-			var customCheckBox = e.target.previousElementSibling;
-			if(customCheckBox.getAttribute("data-checked") == "0"){//unchecked
-				customCheckBox.setAttribute("data-checked","1");
-				customCheckBox.classList.add("checked");
-				customCheckBox.classList.remove("unchecked");
-				maincheckedButton.checked = true;
-			}else{//checked
-				customCheckBox.setAttribute("data-checked","0");
-				customCheckBox.classList.remove("checked");
-				customCheckBox.classList.add("unchecked");
-				maincheckedButton.checked = false;
+	function reCreateCheckbox (){
+		var allCheckboxes = document.querySelectorAll("."+checkboxClassName);
+		for(var x=0; x<allCheckboxes.length; x++){
+			runCheckboxBuild(allCheckboxes[x]);
+		}		
+	}
+	function runCheckboxBuild(nativeCheckbox){
+		var hasLabel = withLabel(nativeCheckbox);
+		var parent   = nativeCheckbox.parentNode;
+		var checkboxParentPosition = DOMelement.cssStyle(parent, "position");
+		
+		//hideNative
+		nativeCheckbox.classList.add("xCnative", "vItem"); //vItem added for validation module support
+		nativeCheckbox.setAttribute("tabindex", "-1");
+		checkboxParentPosition == "static"?parent.style.position = "relative":null;
+		if(hasLabel != null){
+			if(hasLabel["status"]){
+				hasLabel["label"].style["display"] = "inline-block";
+				hasLabel["label"].style["min-height"] = checkboxDim[1];
+				hasLabel["label"].classList.add("vCheckboxLabel");
 			}
 		}
-	}
-	function reCreateCheckBox (CheckBoxElement){
-		var checkBoxWrapper = document.createElement("DIV");
-		var checkBox = document.createElement("DIV");
-		var checkBoxLabel = document.createElement("DIV");
-		var mainCheckBoxLabel = CheckBoxElement.nextElementSibling;
-		//checkBox Wrapper
-		checkBoxWrapper.setAttribute("class", vWrapper);
 
-		//Radio button
-		checkBox.setAttribute("tabindex", "0");
-		if(CheckBoxElement.checked == true){
-			checkBox.setAttribute("class", "vcheckBox checked");
-			checkBox.setAttribute("data-checked", "1");
+		var checkboxWrapper = document.createElement("DIV");
+		checkboxWrapper.setAttribute("class", "v"+checkboxClassName);
+		
+		var customCheckboxChecked = document.createElement("DIV");
+		var customCheckboxUnchecked = document.createElement("DIV");
+
+		
+		var checkedIndex = 0;
+		var uncheckedIndex = 0;
+		if(nativeCheckbox.checked){
+			checkedIndex = 1;
+			checkboxWrapper.setAttribute("data-checked", 1);
+			customCheckboxChecked.setAttribute("tabindex", "0");
+			customCheckboxChecked.setAttribute("class", "vCheckbox checked");
+			customCheckboxUnchecked.setAttribute("tabindex", "-1");
 		}else{
-			checkBox.setAttribute("class", "vcheckBox unchecked");
-			checkBox.setAttribute("data-checked", "0");
+			uncheckedIndex = 1;
+			customCheckboxUnchecked.setAttribute("class", "vCheckbox unchecked");
+			checkboxWrapper.setAttribute("data-checked", 0);
+			customCheckboxUnchecked.setAttribute("tabindex", "0");
+			customCheckboxChecked.setAttribute("tabindex", "-1");
 		}
-		checkBox.setAttribute("id", CheckBoxElement.getAttribute("id"));
-		checkBox.setAttribute("value", CheckBoxElement.getAttribute("value"));
-		checkBox.setAttribute("name", CheckBoxElement.getAttribute("name"));
+		
+		customCheckboxUnchecked.classList.add("vCheckbox", "unchk");
+		customCheckboxChecked.classList.add("vCheckbox", "chk");
+		customCheckboxChecked.setAttribute("style", "z-index:"+checkedIndex);
+		customCheckboxUnchecked.setAttribute("style", "z-index:"+uncheckedIndex);
+		
 
-
-		//Radio Label
-		checkBoxLabel.setAttribute("class", "label");
-		checkBoxLabel.setAttribute("data-for", mainCheckBoxLabel.getAttribute("for"));
-	  // main label content
-		var content = mainCheckBoxLabel.innerHTML;
-		checkBoxLabel.appendChild(document.createTextNode(content));
-
-
-		if(checkBoxWrapperStyle != ""){
-			checkBoxWrapper.setAttribute("style", checkBoxWrapperStyle);
+		if(checkboxWrapperStyle != ""){
+			checkboxWrapper.setAttribute("style", checkboxWrapperStyle);
 		}
 
-		if(checkBoxStyle != ""){
-			checkBox.setAttribute("style", checkBoxStyle);
-		}
-
-		if(checkBoxLabelStyle != ""){
-			checkBoxLabel.setAttribute("style", checkBoxLabelStyle);
-		}
-
-		checkBoxWrapper.appendChild(checkBox);
-		checkBoxWrapper.appendChild(checkBoxLabel);
+		checkboxWrapper.appendChild(customCheckboxChecked);
+		checkboxWrapper.appendChild(customCheckboxUnchecked);
 
 		//Add wrapper before target select;
-		var checkBoxParent = CheckBoxElement.parentNode;
-		checkBoxParent.insertBefore(checkBoxWrapper, CheckBoxElement);
-
-
-		//Hide main radio element
-		CheckBoxElement.style["display"] = "none";
-
-		//Hide main radio label
-		CheckBoxElement.parentNode.querySelector("label[for='"+CheckBoxElement.getAttribute("id")+"']").style["display"] = "none";
+		var checkboxParent = nativeCheckbox.parentNode;
+		checkboxParent.insertBefore(checkboxWrapper, nativeCheckbox);
 	}
-	function assignCheckBoxEventHanler(CheckBoxElement){
-			var checkBoxParent = CheckBoxElement.parentNode;
-			checkBoxParent.addEventListener("click", function(e){
-				if(e.target.nodeName == "DIV" && e.target.getAttribute("id") == CheckBoxElement.getAttribute("id")){
-					checkCheckBox(e);
-				}else if (e.target.nodeName == "DIV" && e.target.classList.contains("label") && e.target.getAttribute("data-for") == CheckBoxElement.getAttribute("id")){
-					checkCheckBox(e);
+	function assignCheckboxEventHanler(){
+			DOMelement.attachEventHandler("click", "vCheckbox", function(e){
+				var mainCheckbox = e.target.parentNode.nextElementSibling;
+				if(e.target.classList.contains("unchk")){ //check action, apply check
+					var nxt = e.target.parentNode.querySelector(".chk");
+					toggleCheckbox(e.target, nxt, "check");
+				}else{
+					var nxt = e.target.parentNode.querySelector(".unchk");
+					toggleCheckbox(e.target, nxt, "unchecked"); //uncheck action, apply uncheck
 				}
-			}, false);
+				mainCheckbox.click();
+			})
+			DOMelement.attachEventHandler("click", "vCheckboxLabel", function(e){
+				var targetCheckbox = e.target.parentNode.querySelector("[tabindex='0']");
+				targetCheckbox != null ? targetCheckbox.click():null;
+			})
 	}
-	this.checkBox = {
-		build: function(CheckBoxElement){
-			validateElement(CheckBoxElement, "An input element needed as argument for the 'build' method, non provided");
-			if(CheckBoxElement.nodeName != "INPUT" && CheckBoxElement.getAttribute("type") != "checkbox"){
-				throw new Error("A checkBox input element needed, please specify a valid checkBox input element");
+	function toggleCheckbox(ele, nxt, type){
+		if(type == "check"){
+			//Show checked checkbox
+			nxt.classList.add("checked");
+			nxt.classList.remove("unchecked");
+			
+			//hide unchecked checkbox
+			ele.classList.remove("unchecked");
+		}else{
+			//Show unchecked checkbox
+			nxt.classList.add("unchecked");
+			nxt.classList.remove("checked");
+
+			//hide checked checkbox
+			ele.classList.remove("checked");
+		}
+
+
+		//style next
+		nxt.setAttribute("tabindex", "0");
+		nxt.style["z-index"] = 1;
+		nxt.style["width"] = "100%";
+		nxt.style["height"] = "100%";
+		
+		//style current
+		ele.setAttribute("tabindex", "-1");
+		ele.style["z-index"] = 0;
+		ele.style["width"] = "0%";
+		ele.style["height"] = "0%";
+		ele.style["visibility"] = "";
+		
+	}
+	this.checkbox = {
+		autoBuild: function(){
+			if (checkboxDim.length == 0){
+				throw new Error("Setup imcomplete: checkbox component dimension needed, specify using the 'checkboxSize' property");
 			}
-			if (checkBoxDim.length == 0){
-				throw new Error("Setup imcomplete: checkBox component dimension needed, specify using the 'checkBoxDimension' property");
+			if(checkboxClassName == ""){
+				throw new Error("Setup imcomplete: checkbox buttons class name must be supllied, specify using the 'config.className' property");
 			}
-			var existingSheet = document.querySelector("#v"+vWrapper);
-			existingSheet == null?checkBoxStyleSheet():null;
-			reCreateCheckBox(CheckBoxElement);
-			assignCheckBoxEventHanler(CheckBoxElement);
+			var existingSheet = document.querySelector("#v"+checkboxClassName);
+			setTimeout(function (){
+				existingSheet == null?checkboxStyleSheet():null;
+				reCreateCheckbox();
+				assignCheckboxEventHanler();
+			}, 1000);
+			
 		},
-		config:{},
-		target:{}
+		refresh:function(parent){
+			validateElement(parent, "radio.refresh() method expects a valid HTML as argument 1");
+			var allNewRadios = parent.querySelectorAll("input[type='radio']:not(.xRnative)");
+			var totalNewRadios = allNewRadios.length;
+			if(totalNewRadios > 0){
+				for (var x=0; x<totalNewRadios; x++){
+					runBuild(allNewRadios[x]);
+				}
+			}
+		},
+		config:{}
 	}
-	Object.defineProperty(this, "checkBox", {
+	Object.defineProperty(this, "checkbox", {
 		writable:false
 	});
-	Object.defineProperties(this.checkBox, {
+	Object.defineProperties(this.checkbox, {
 		build:{writable:false},
 		config:{writable:false},
-		thisCheckBox:{writable:false},
-		target:{
-			get:function(){
-				return thisCheckBox;
-			}
-		}
+		refresh:{writable:false}
 	})
-	Object.defineProperties(this.checkBox.config, {
-
-		checkBoxSize:{
+	Object.defineProperties(this.checkbox.config, {
+		checkboxSize:{
 			set:function(value){
-				var temp = "'config.checkBoxSize' property value must be an array";
+				var temp = "'config.radioButtonSize' property value must be an array";
 				validateArray(value, temp);
 				validateArrayLength(value, 2, temp+" of 2 Elements");
 				validateArrayMembers(value, "dimension", temp+" of strings CSS dimensions");
-				checkBoxDim = value;
+				checkboxDim = value;
 			}
 		},
 		wrapperStyle:{
 			set:function(value){
-				validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property");
-				checkBoxWrapperStyle = value;
-			}
-		},
-		checkBoxStyle:{
-			set:function(value){
-				validateString(value, "A string of valid CSS styles needed for the 'checkBoxStyle' property");
-				checkBoxStyle = value;
-			}
-		},
-		checkedStyle:{
-			set:function(value){
-				validateString(value, "A string of valid CSS style(s) needed for the 'checkedStyle' property");
-				checkedStyle = value;
-			}
-		},
-		uncheckedStyle:{
-			set:function(value){
-				validateString(value, "A string of valid CSS style(s) value needed for the 'uncheckedStyle' property");
-				uncheckedStyle = value;
-			}
-		},
-		groupAxis:{
-			set:function(value){
-				validateString(value, "A string value needed for the 'groupAxis' property");
-				if(value.toLowerCase() == "x" || "y"){
-					var existingSheet = document.querySelector("#v"+vWrapper);
-					if(existingSheet == null){
-						groupAxis = value;
-					}else{
-						var allCheckBoxes = document.querySelectorAll("."+vWrapper);
-						if(value.toLowerCase() == "x"){
-							var cssObj = {
-								width:"auto",
-								marginBottom:"auto"
-							}
-							cssGroupStyler(allCheckBoxes, cssObj);
-						}else{
-							var cssObj = {
-								width:"100%",
-								marginBottom:"5px"
-							}
-							cssGroupStyler(allCheckBoxes, cssObj);
-						}
-					}
-				}else {
-					throw new Error("String value can either be 'x' or 'y' (Case insensitive)");
+				if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
+					checkboxWrapperStyle = value;
 				}
-
 			}
 		},
-		labelStyle:{
+		checkedCheckboxStyle:{
 			set:function(value){
-				validateString(value, "A string of valid CSS style(s) needed for the 'labelStyle' property");
-				checkBoxLabelStyle = value;
+				if(validateString(value, "A string of valid CSS style(s) needed for the 'selectedStyle' property")){
+					checkedStyle = value;
+				}
+			}
+		},
+		uncheckedCheckboxStyle:{
+			set:function(value){
+				if(validateString(value, "A string of valid CSS style(s) value needed for the 'deselectedStyle' property")){
+					uncheckedStyle = value;
+				}
 			}
 		},
 		mouseEffectStyle:{
@@ -3423,6 +3401,13 @@ function customFormComponent(){
 				validateArrayLength(value, 2, temp+" of 2 Elements");
 				validateArrayMembers(value, "string", temp+" of strings");
 				mouseEffect = value;
+			}
+		},
+		className:{
+			set:function(value){
+				if(validateString(value, "config.className property expect a string as value")){
+					checkboxClassName = value;
+				}
 			}
 		}
 	})
@@ -3737,7 +3722,6 @@ function formValidator(form=null){
 			height =height<35?35:height;
 			element.style["height"] = "0px";
 			element.scrollHeight;
-			console.log(height);
 			element.style["height"] = height+"px";
 	}
 
