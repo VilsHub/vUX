@@ -12,25 +12,21 @@
 "use strict";
 var assetURL="";
 var styles = {};
-window.addEventListener("load", function(){
-	
-	//set asset path
-	var allScripts = document.getElementsByTagName("script");
-	var temp = null;
-	for(var x=0; x<	Object.values(allScripts).length; x++){
-		if (allScripts[x].getAttribute("src").search("vUX") != -1){
-			temp = allScripts[x].getAttribute("src");
-			break;
-		}
-	}
-	var splited = temp.split("/");
-	splited.splice(1,1, "//");
-	splited.splice(splited.length-1,1);
-	for (var x=0; x<splited.length; x++){
-		x<3?assetURL += splited[x]:assetURL += "/"+splited[x];
-	}
-	assetURL += "/assets/";
+var temp = null;
+var mainScript = document.querySelector("script[src *='vUX']");
+temp = mainScript.getAttribute("src");
 
+var splited = temp.split("/");
+splited.splice(1,1, "//");
+splited.splice(splited.length-1,1);
+for (var x=0; x<splited.length; x++){
+	x<3?assetURL += splited[x]:assetURL += "/"+splited[x];
+}
+
+//set asset path
+assetURL += "/assets/";
+
+window.addEventListener("load", function(){
 	//Load needed styles
 	loadStyleSheet("css", "selectFormComponent.css");
 	loadStyleSheet("css", "radioFormComponent.css");
@@ -3123,10 +3119,9 @@ function customFormComponent(){
 			var totalNewRadios = allNewRadios.length;
 			if(totalNewRadios > 0){
 				for (var x=0; x<totalNewRadios; x++){
-					runRadioBuild(allNewRadios[x]);
+					allNewRadios[x].classList.contains(radioClassName)?runRadioBuild(allNewRadios[x]):null;
 				}
 			}
-
 		},
 		config:{}
 	}
@@ -3344,12 +3339,13 @@ function customFormComponent(){
 			
 		},
 		refresh:function(parent){
-			validateElement(parent, "radio.refresh() method expects a valid HTML as argument 1");
-			var allNewRadios = parent.querySelectorAll("input[type='radio']:not(.xRnative)");
-			var totalNewRadios = allNewRadios.length;
-			if(totalNewRadios > 0){
-				for (var x=0; x<totalNewRadios; x++){
-					runBuild(allNewRadios[x]);
+			validateElement(parent, "checkbox.refresh() method expects a valid HTML as argument 1");
+			var allNewCheckboxes = parent.querySelectorAll("input[type='checkbox']:not(.xCnative)");
+			var totalNewCheckboxes = allNewCheckboxes.length;
+			console.log(totalNewCheckboxes);
+			if(totalNewCheckboxes > 0){
+				for (var x=0; x<totalNewCheckboxes; x++){
+					allNewCheckboxes[x].classList.contains(checkboxClassName)?runCheckboxBuild(allNewCheckboxes[x]):null;
 				}
 			}
 		},
@@ -4240,8 +4236,7 @@ function formValidator(form=null){
 				inputWrapper = inputField.parentNode;
 			}
 		}else{ //use default
-			inputWrapper = inputField.parentNode;
-			
+			inputWrapper = inputField.parentNode;	
 		}
 		return inputWrapper;
 	}
