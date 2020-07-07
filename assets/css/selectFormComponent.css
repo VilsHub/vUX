@@ -1,51 +1,126 @@
 .shell{
   z-index: 60;
 }
-.shell .sfield {
-  position:absolute;
+.shell .sFieldCon{
+  position: relative;;
   width:100%;
-  height:100%;
   z-index:1;
-  padding-left:5px;
   cursor:pointer;
   box-sizing: border-box;
-  background-color:#ccc;
+  
+  display:flex;
+}
+.shell .sOptionGroup{
+  background-color:#ddd;
+  padding-left: 10px;
+  height: 23px;
+  line-height: 23px;
+  font-weight: bold;
+  color:black;
+}
+.shell .sField{
+  flex:1;
+  padding-left: 10px;
+  background-color:white;
+  border: solid 1px #ccc;
+  border-right: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shell .sIcon{
+  width:35px;
+  background-image: linear-gradient(to bottom, #eaeaea 0%,white 100%);
+  border: solid 1px #dddbdb;
+  position: relative;
+}
+.shell .sIcon::before{
+  width:100%;
+  height: 100%;
+  position: absolute;
+  text-align: center;
+  color: #ccc;
+  font-size: 13px;
+  transition: transform .1s linear;
+  transform: rotate(0deg);
+  content:"v";
+}
+.shell .iconOpen::before{
+  transform: rotate(180deg);
+}
+.shell .iconClose::before{
+  transform: rotate(0deg);
+}
+.shell .sSearchInput{
+  width:98%;
+  margin:0 auto;
+  box-sizing: border-box;
+  display: block;
+  height: 35px;
+  padding:0 35px 0 10px;
+  border: solid 1px #ccc;
+  border-radius: 3px;
+}
+.shell .sOptionCon{
+  max-height:70vh;
+  overflow-y: auto;
+  margin-top: 3px;
+  scrollbar-width: thin;
 }
 .shell .optionsCon {
   position:absolute;
   width:100%;
   height:0px;
   z-index:2;
-  top:100%;
   transition:height 0.2s linear;
-  overflow-y:hidden;
   display:none;
+  background-color: white;
+  border: solid 1px #ccc;
+  box-sizing: border-box;
+  overflow: hidden;
 }
-.shell  .optionsCon .option {
-  position:static;
+.shell .sSearchBox{
+  margin-top:5px;
+  position: relative;
+}
+.shell .sSearchBox::before{
+  width:35px;
+  position: absolute;
+  right:0;
+  top:0;
+
+}
+.shell  .optionsCon .sOption {
+  position:relative;
   width:100%;
-  padding-left:5px;
+  padding-left:10px;
+  height:23px;
   box-sizing:border-box;
-  border-bottom:solid 1px #ccc;
+  font-size: 13px;
+  line-height: 23px;
 }
-.shell .optionsCon .option[data-disabled='false'] {
+.shell .optionsCon .sOption[data-disabled='false'] {
   cursor:pointer;
 }
-.shell .optionsCon .option[data-disabled='true'] {
+.shell .optionsCon .sOption[data-disabled='true'] {
   cursor:not-allowed;
   background-color:#2f2a2a;
   color:#595454!important;
 }
-.shell .optionsCon .option:last-of-type {
+.shell .innerOpt{
+  padding-left: 23px!important;
+}
+.shell .optionsCon .sOption:last-of-type {
   border-bottom:none!important;
 }
 .shell .optionsCon .hovered {
-  background-color:rgba(255, 255, 255, 0.3);
+  background-color:rgba(200, 199, 199, 0.3)
 }
-.shell .optionsCon .selected {
-  background-color:rgba(255, 255, 255, 0.5);
+.shell .optionsCon .vSselected {
+  background-color:rgba(100, 95, 95, 0.5);
+  color:white;
 }
-.shell .arrowCon {
+/* .shell .arrowCon {
   height:100%;
   background-color:rgb(255, 255, 255);
   content:'';
@@ -71,4 +146,13 @@
 }
 .shell .arrowCon:active::before {
   color:rgba(255, 255, 255, 0.6)!important;
+} */
+.shell .sHide{
+  display: none;
+}
+.xSnative{
+  visibility: hidden;
+  position: absolute;
+  left: 0;
+  top:0;
 }

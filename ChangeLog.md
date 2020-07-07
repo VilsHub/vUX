@@ -23,6 +23,16 @@
 - TouchHandler module
 - getParent Module
 
+### Removed
+- set() method from toolTip module, only on() and off() methods used
+
+### Optimised
+- ToolTip  module
+
+
+### Changed
+- DatePicker module now in customFormComponent namespace
+
 ## v2.0.0
 ### Optimised
 - Protected all unprotected properties

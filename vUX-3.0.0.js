@@ -300,11 +300,6 @@ function validateDimension(dimension, msg=null){
 	}
 
 }
-function extractDimensionValue(dimension, unit){
-	var pattern = new RegExp(unit, "g") ;
-	var extract = dimension.replace(pattern, "");
-	return extract;
-}
 function getDimensionOfHidden(element){
 	var height=0, prePos="", width=0;
 	prePos = DOMelement.cssStyle(element, "position");
@@ -1931,14 +1926,32 @@ DOMelement.animate = function (draw, value, duration, timingFn="linear" ){
 	})
 }
 DOMelement.attachEventHandler = function (event, DomClass, fn){
+	var idType = null;
 	validateString(event, "'DOMelement.attachEventHandler()' argument 1 must be a string specifying the event type");
-	validateString(DomClass, "'DOMelement.attachEventHandler()' argument 2 must be a string specifying the class name of the element(s)");
+	if(typeof DomClass == "string"){
+		idType = "single";
+	}else if(Array.isArray(DomClass)){
+		validateArrayMembers(DomClass, "string", "'DOMelement.attachEventHandler()' argument 2 must be an array of string(s)");
+		idType = "multiple";
+	}else{
+		throw new Error ("'DOMelement.attachEventHandler()' argument 2 must be a string or array of string, specifying the class name of the element(s) o");
+	}
 	validateFunction(fn, "'DOMelement.attachEventHandler()' argument 3 must be a function to be called on the trigger");
 
 	document.body.addEventListener(event, function(e){
 		e.stopImediatePropagation;
-		if(e.target.classList.contains(DomClass)){
-			fn(e);
+		if(idType == "single"){
+			if(e.target.classList.contains(DomClass)){
+				fn(e);
+			}
+		}else{
+			var total = DomClass.length;
+			for(var x=0; x<total; x++){
+				if(e.target.classList.contains(DomClass[x])){
+					fn(e, DomClass[x]);
+					break;
+				}
+			}
 		}
 	}, false);
 };
@@ -2506,9 +2519,8 @@ function browserResizeProperty(){
 /********************Custom form component***********************/
 function customFormComponent(){
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-	var selOpen=0, self=this, selectDim=[], arrowIconClose="", arrowIconOpen="", selectedContent="", multipleSelection=false, defaultSet=false, startIndex = 0, scrollIni =0,
-	afterSelectionFn= function(){}, wrapperCustomStyle="", totalOptions = 0 ,selectFieldCustomStyle="", optionCustomStyle="", optionsContainerCustomStyle="", arrowConCustomStyle="";
-
+	var selectDim=[], selectIcon="", wrapperStyle="", toolTipHandler=null, enableToolTip = false, selectFieldStyle="", optionStyle="",  selectClassName="", searchIconStyle="", includeSearchField=true, optionsWrapperStyle="";
+	
 	/*********Helpers***********/
 	function withLabel(ele){
 		var labelEle = ele.nextElementSibling;
@@ -2532,349 +2544,536 @@ function customFormComponent(){
 			return null;
 		}
 	}
+	function dumpOptions(container, sOptions, selectField, isMultiple, pid=null, n={v:0}){
+		var totalOptions = sOptions.length;
+		var parent = DOMelement.getParent(sOptions[0], "xSnative");
+		for(var x=0; x<totalOptions; x++){
+			
+			if(sOptions[x].nodeName == "OPTION"){//An option
+				var optionValue = sOptions[x].innerHTML;
+				var optionEle = document.createElement("DIV");
+				var index = sOptions[x].index;
+				sOptions[x].getAttribute("disable") != null ?optionEle.setAttribute("data-disabled", "true"):optionEle.setAttribute("data-disabled", "false");
+				optionEle.setAttribute("order", ++n.v);
+				if(isMultiple == true){//multiple select
+					if(sOptions[x].selected){
+						var comma = selectField.innerHTML.length>0?", ":"";
+						selectField.innerHTML += comma+sOptions[x].innerHTML;
+						optionEle.classList.add("vSselected");
+					}
+				}else{//single select
+					if(sOptions[x].index === parent.selectedIndex){//Check for selected
+						selectField.innerHTML = sOptions[x].innerHTML;
+						optionEle.classList.add("vSselected");
+					}
+				}				
+				
+				if(sOptions[x].parentNode.nodeName == "OPTGROUP"){
+					optionEle.classList.add("innerOpt");
+					optionEle.setAttribute("data-pid", pid);
+				}
+				optionEle.classList.add("sOption");
+				optionEle.setAttribute("data-index", index);
+				optionEle.setAttribute("tabindex", "0");
+				optionEle.appendChild(document.createTextNode(optionValue));
+				container.appendChild(optionEle);
+			}else{
+				var optionGroupLabel = sOptions[x].getAttribute("Label");
+				var optionGroupEle = document.createElement("DIV");
+				optionGroupEle.classList.add("sOptionGroup");
+				optionGroupEle.setAttribute("data-gid", "g"+x);			
+				optionGroupEle.setAttribute("order", ++n.v);			
+				optionGroupEle.appendChild(document.createTextNode(optionGroupLabel));
+				container.appendChild(optionGroupEle);
+				var allOptions = sOptions[x].children;
+				dumpOptions(container, allOptions, selectField, isMultiple, "g"+x, n);
+			}
+		}
+		if(isMultiple){
+			if(enableToolTip){
+				configureToolTip(selectField);
+			}
+		}
+	}
+	function autoPlace(optionsCon){
+		var sField = optionsCon.previousElementSibling.querySelector(".sField");
+		var sFieldBottomOffset = sField.getBoundingClientRect()["bottom"];
+		var diff = innerHeight - sFieldBottomOffset;
+		var optionsConHeight = getOptionsConHeight(optionsCon);
+		
+		//Display in approriate space
+		if(sFieldBottomOffset >= diff){
+			if(optionsConHeight <= diff){
+				optionsCon.style["top"] = (parseInt(selectDim[1])+1)+"px";
+				optionsCon.style["bottom"] = "auto";
+			}else{
+				optionsCon.style["bottom"] = (parseInt(selectDim[1])+1)+"px";
+				optionsCon.style["top"] = "auto";
+			}
+		}else{
+			optionsCon.style["top"] = (parseInt(selectDim[1])+1)+"px";
+			optionsCon.style["bottom"] = "auto";
+		}
+	}
 	/***************************/
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	/************************************************************************************/
-	//bgColors[a,b] a=> listBacgroundColor, b=> slectBackground
-	//fontColors[a,b] a=> listFontColor, b=> slectfontColor
 	//selectDim[a,b] a=> width of select cElement , b=> height of select cElemt
 	/************************************************************************************/
-	function selectOptions(listOptionCon){
-		var listParent = listOptionCon.parentNode.parentNode;
-		if(listParent.querySelector("."+vWrapper + " .optionsCon .selected") != null){
-			var currentSelected = listParent.querySelector("."+vWrapper + " .optionsCon .selected");
-			currentSelected.classList.remove("selected");
-		};
-		var sfield = listParent.querySelector("."+vWrapper + " .sfield");
-		
-		var currentHovered = listParent.querySelector("."+vWrapper + " .optionsCon .hovered");
-		var mainSelect = listParent.querySelector("."+vWrapper).nextElementSibling;
-
-		//Select the clicked item
-		currentHovered.classList.add("selected");
-
-		//Assign selected value to main select element
-		mainSelect.value = currentHovered.getAttribute("value");
-
-		//Add selected to select field
-		sfield.innerHTML = currentHovered.innerHTML;
-
-		//Hide listCon
-		listOptionCon.style["height"] = "0px";
-		selOpen = 0;
-		afterSelectionFn();
-	};
-	function hideList(listOptionCon){
-			var prevHovered = listOptionCon.querySelector(".hovered");
-			if (prevHovered != null){
-				//Remove to current
-				prevHovered.classList.remove("hovered");
+	function selectOption(ele, nativeSelect){
+		var labelCon = DOMelement.getParent(ele, 2).previousElementSibling.children[0];
+		var optionIndex = ele.getAttribute("data-index");
+		var isMultiple = nativeSelect.getAttribute("multiple");
+		var optionsCon = DOMelement.getParent(ele, 2);
+			
+		if(isMultiple != null){
+			var selectState = ele.classList.contains("vSselected");
+			if(selectState){//deselect
+				var currentLabel = labelCon.innerHTML.split(",");
+				var trimLabels = currentLabel.map(function(val){
+					return val.trim();
+				})
+				var index = trimLabels.indexOf(ele.innerHTML.trim());
+				trimLabels.splice(index, 1);
+				var newLabel = trimLabels.join(", ");
+				labelCon.innerHTML = newLabel;
+				ele.classList.remove("vSselected");
+				nativeSelect.options[optionIndex].selected = false;
+			}else{//select
+				ele.classList.add("vSselected");
+				var comma = labelCon.innerHTML.length>0?", ":"";
+				labelCon.innerHTML += comma+ele.innerHTML;
+				nativeSelect.options[optionIndex].selected = true;
 			}
+			configureToolTip(labelCon);
+		}else{
+			//Set slected option in main select input
+			nativeSelect.selectedIndex = optionIndex;
+			
+			//Update select label
+			labelCon.innerHTML = ele.innerHTML;
 
-			//hide listOptionCon
-			listOptionCon.style["height"] = "0px";
-			selOpen = 0;
+			//unset existing selected
+			var existingSelection = ele.parentNode.querySelector(".vSselected");
+			if(existingSelection != null){
+				existingSelection.classList.remove("vSselected");
+			}
+			ele.classList.add("vSselected");
+			toggleOptionList(optionsCon, "close");
+		}
+
+		//Trigger change event on main select input
+		nativeSelect.dispatchEvent(new Event("change"));
 	};
-	function hover(e, listOptionCon){
+	function configureToolTip(labelCon){
+		var tip = labelCon.innerHTML;
+		var r = tip.replace(/, /g,  "</br>");
+		if(enableToolTip){
+			labelCon.setAttribute("title", r);
+			toolTipHandler.on(labelCon);
+		}else{
+			toolTipHandler.off(labelCon);
+		}
+	}
+	function hover(ele){
+		var any = ele.parentNode.querySelector(".hovered");
+		any != null ? any.classList.remove("hovered"):null;
 		//Add to current
-		var prevHovered = listOptionCon.querySelector(".hovered");
-		if (prevHovered == null){
-			//Add to current
-			e.target.classList.add("hovered");
-		}else{
-			//Add to current
-			prevHovered.classList.remove("hovered");
-
-			//Add to current
-			e.target.classList.add("hovered");
-		}
+		ele.classList.add("hovered");
 	}
-	function unhovered(e, listOptionCon){
-		var prevHovered = listOptionCon.querySelector(".hovered");
-		prevHovered != null?prevHovered.classList.remove("hovered"):null;
+	function unhover(ele){
+		ele.classList.remove("hovered");
 	}
-	function toggleOptionList(listOptionCon){
-		if (selOpen == 0){ //list closed
-			var listOptionsTotal = listOptionCon.childElementCount;
-			//show listOptionCon
-			listOptionCon.style["display"] = "block";
-			listOptionCon.scrollHeight;
-			var heightValue = extractDimensionValue(selectDim[1], "px");
-			listOptionCon.style["height"] = listOptionsTotal*heightValue+"px";
-			selOpen = 1;
-		}else if (selOpen == 1) {//list opened
-			var prevHovered = listOptionCon.querySelector(".hovered");
-			if (prevHovered != null){
-				//Remove to current
-				prevHovered.classList.remove("hovered");
-			}
-
-			//hide listOptionCon
-			listOptionCon.style["height"] = "0px";
-			selOpen = 0;
-		}
-	}
-	function scrollDown(listOptionCon){
-		var activieHovered = listOptionCon.querySelector(".hovered");
-		if (activieHovered == null){
-			var firstSelectable = listOptionCon.querySelector("div[data-disabled='false']");
-			if(firstSelectable != null){
-				firstSelectable.classList.add("hovered");
-			}
-		}else {
-			var index = DOMelement.index(activieHovered);
-			var totalOptions = listOptionCon.childElementCount;
-			if(index != totalOptions){
-				var allOptions = listOptionCon.querySelectorAll(".option");
-				for(var x=1; x<=totalOptions; x++){
-					if(x>index){
-						if(allOptions[x-1].getAttribute("data-disabled") == "false"){
-							activieHovered.classList.remove("hovered");
-							allOptions[x-1].classList.add("hovered");
-							break;
-						}
+	function toggleOptionList(optionsCon, action, fast=null){
+		var sField = optionsCon.previousElementSibling.querySelector(".sField");
+		var selectButton = sField.nextElementSibling;
+		var readyState = (optionsCon.classList.contains("opening") || optionsCon.classList.contains("closing"))?"no":"yes";
+		if(readyState == "yes"){
+			autoPlace(optionsCon);
+			if (action == "open"){ //open list
+				closeAnyOpen(sField);
+				//show listOptionCon
+				optionsCon.style["display"] = "block";
+				var height = optionsCon.scrollHeight;
+				optionsCon.style["height"] = height+"px";
+				optionsCon.classList.add("opening");
+				sField.setAttribute("data-state", "opened");
+				selectButton.classList.add("iconOpen");
+				selectButton.classList.remove("iconClose");
+			}else if (action == "close") {//close list
+				var prevHovered = optionsCon.querySelector(".hovered");
+				var inputEle = optionsCon.querySelector(".sSearchInput");
+				var allHidden = optionsCon.querySelectorAll(".sHide");
+				if (prevHovered != null){
+					//Remove to current
+					prevHovered.classList.remove("hovered");
+				}
+				if(fast != null){
+					optionsCon.style["display"] = "none";
+					optionsCon.style["height"] = "0px";
+					sField.setAttribute("data-state", "closed");
+				}else{
+					//hide optionsCon
+					optionsCon.style["height"] = optionsCon.scrollHeight+"px";
+					optionsCon.scrollHeight;
+					optionsCon.style["height"] = "0px";
+					optionsCon.classList.add("closing");
+					sField.setAttribute("data-state", "closed");
+					sField.classList.remove("sActive");;
+				}
+				
+	
+				//clear search history
+				includeSearchField?inputEle.value = "":null;
+				if(allHidden.length > 0){
+					var total = allHidden.length;
+					for(var x=0; x<total; x++){
+						allHidden[x].classList.remove("sHide");
 					}
+				}
+				selectButton.classList.remove("iconOpen");
+				selectButton.classList.add("iconClose");
+			}
+		}
+	}
+	function scrollOptions(ele, dir){
+		var openState = ele.querySelector(".sField").getAttribute("data-state");
+		var optionsCon = ele.querySelector(".sOptionCon");
+		var nextOption;
+		function getNext(whl=false){
+			if(dir  == "down"){
+				nextOption = whl ==false ?activeHovered.nextElementSibling:nextOption.nextElementSibling;
+				if(nextOption == null){// set to the last
+					var allOptions = ele.querySelectorAll(".sOption[data-disabled='false']");
+					nextOption = allOptions[0];
 				}
 			}else{
-				var allOptions = listOptionCon.querySelectorAll(".option");
-				for(var x=0; x<=totalOptions; x++){
-					if(allOptions[x].getAttribute("data-disabled") == "false"){
-						activieHovered.classList.remove("hovered");
-						allOptions[x].classList.add("hovered");
-						break;
-					}
+				nextOption = whl ==false ? activeHovered.previousElementSibling:nextOption.previousElementSibling;
+				if(nextOption == null){// set to the last
+					var allOptions = ele.querySelectorAll(".sOption[data-disabled='false']");
+					var total = allOptions.length;
+					nextOption = allOptions[total-1];
 				}
 			}
+
 		}
-	}
-	function scrollUp(listOptionCon){
-		var activieHovered = listOptionCon.querySelector(".hovered");
-		if (activieHovered == null){
-			var allSelectable = listOptionCon.querySelectorAll("div[data-disabled='false']");
-			if(allSelectable.length >0){
-				allSelectable[allSelectable.length-1].classList.add("hovered");
-			}
-		}else{
-			var index = DOMelement.index(activieHovered);
-			var totalOptions = listOptionCon.childElementCount;
-			if(index != 1){//scroll up
-				var allOptions = listOptionCon.querySelectorAll(".option");
-				for(var x=index-2; x>=0; x--){
-					if(allOptions[x].getAttribute("data-disabled") == "false"){
-						activieHovered.classList.remove("hovered");
-						allOptions[x].classList.add("hovered");
-						break;
-					}
-				}
+		if(openState == "opened"){
+			var activeHovered = ele.querySelector(".hovered");
+			var optionsCon = ele.querySelector(".sOptionCon");
+			var order;
+			var pixMove; 
+			var scrolled = optionsCon.scrollTop;
+			var targetScroll;
+			if(activeHovered == null){
+				var  startHovered = ele.querySelector(".sOption[data-disabled='false']");
+				startHovered.dispatchEvent(new MouseEvent('mouseover', { 'bubbles': true }));
+				order = startHovered.getAttribute("order");
+				pixMove = startHovered.scrollHeight;
 			}else{
-				activieHovered.classList.remove("hovered");
-				var allSelectable = listOptionCon.querySelectorAll("div[data-disabled='false']");
-				if(allSelectable.length >0){
-					allSelectable[allSelectable.length-1].classList.add("hovered");
+				getNext();
+				while(nextOption.classList.contains("sOptionGroup") || nextOption.getAttribute("data-disabled") == "true"){
+					getNext(true);
+				}
+				activeHovered.dispatchEvent(new MouseEvent('mouseout', { 'bubbles': true }));
+				nextOption.dispatchEvent(new MouseEvent('mouseover', { 'bubbles': true }));
+				order = nextOption.getAttribute("order");
+				pixMove = nextOption.scrollHeight;
+			}
+			targetScroll = (order-1)*pixMove;
+			optionsCon.scrollTo(0,targetScroll);
+		}
+	}
+	function getOptionsConHeight(optionsCon){
+		var children = optionsCon.querySelectorAll(".sOption:not(.sHide)");
+		var height = children.length>0? parseInt(DOMelement.cssStyle(children[0], "height"))*children.length:0;		
+		return height = includeSearchField? height + (parseInt(selectDim[0])+5):height+5;
+	}
+	function closeAnyOpen(ele){
+		var anyOpen = document.querySelectorAll(".sField[data-state='opened']");
+		var total = anyOpen.length;
+		if(total > 0){
+			for(var x=0;x<total;x++){
+				var optionsCon = anyOpen[x].parentNode.nextElementSibling;
+				if(anyOpen[x] != ele){
+					toggleOptionList(optionsCon, "close", "fast");
 				}
 			}
 		}
 	}
-	function createStyleSheet(){
-		if (document.querySelector("style[data-id='v"+vWrapper+"']") == null){
+	function selectStyleSheet(){
+		if (document.querySelector("style[data-id='v"+selectClassName+"']") == null){
 			//set wrapper class name
-			var css = styles["selectFormComponent"].replace(/shell/g, vWrapper);
-			css += "."+vWrapper + " {width:"+selectDim[0]+"; height:"+selectDim[1]+"; z-index: 60;}";
-			css += "."+vWrapper + " .sfield {line-height:"+selectDim[1]+";}";
-			css += "."+vWrapper + " .optionsCon .option {height:"+selectDim[1]+";line-height:"+selectDim[1]+";}";
-			css += "."+vWrapper + " .arrowCon {width:"+selectDim[1]+";}";
-			css += "."+vWrapper + " .arrowCon::before {line-height:"+selectDim[1]+";}";
-			if(arrowIconClose != ""){
-				css += "."+vWrapper + " .arrowCon::before {"+arrowIconClose+"}"
+			var css = styles["selectFormComponent"].replace(/shell/g, "v"+selectClassName);
+			css += ".v"+selectClassName + " {width:"+selectDim[0]+"; height:"+selectDim[1]+"; z-index: 60;}";
+			css += ".v"+selectClassName + " .sField {line-height:"+selectDim[1]+";}";
+			css += ".v"+selectClassName + " .sIcon::before {line-height:"+selectDim[1]+";}";
+			css += ".v"+selectClassName + " .sSearchBox::before {line-height:"+selectDim[1]+";height:"+selectDim[1]+"}";
+			if(selectIcon != ""){
+				css += ".v"+selectClassName + " .sIcon::before {"+selectIcon+"}";
 			}
-			if(arrowIconOpen != ""){
-				css += "."+vWrapper + " .opened::before {"+arrowIconOpen+"}"
+			if(searchIconStyle != ""){
+				css += ".v"+selectClassName + " .sSearchBox::before{"+searchIconStyle+"}";
 			}
-			attachStyleSheet("v"+vWrapper, css)
+			if(optionStyle != ""){
+				css += ".v"+selectClassName + " .sOptionCon .sOption{"+optionStyle+"}";
+			}
+			if(optionsWrapperStyle != ""){
+				css += ".v"+selectClassName + " .sOptionCon{"+optionsWrapperStyle+"}";
+			}
+			attachStyleSheet("v"+selectClassName, css);
 		}
 	}
-	function reCreateSelect (SelectElement){
-		//Set listType
-		if(SelectElement.getAttribute("multiple") != null){
-			//multipleSelection = true;
-			throw new Error("No support yet for multiple selection");
-		}else{
-			//multipleSelection = false;
-		}
+	function reCreateSelect (){
+		var allSelects = document.querySelectorAll("."+selectClassName);
+		for(var x=0; x<allSelects.length; x++){
+			runSelectBuild(allSelects[x]);
+		}	
+	}
+	function runSelectBuild(nativeSelect){
+		var selectParent = nativeSelect.parentNode;
+		var multiple =false;
+		var selectParentPosition = DOMelement.cssStyle(selectParent, "position");
+				
+		//hideNative
+		nativeSelect.classList.add("xSnative", "vItem"); //vItem added for validation module support
+		nativeSelect.setAttribute("tabindex", "-1");
+
+		//Style parent
+		selectParentPosition == "static"?selectParent.style.position = "relative":null;
+		
+		//Set select mode
+		nativeSelect.getAttribute("multiple") != null?multiple=true:null;
+
 		//Wrapper Element
 		var wrapper = document.createElement("DIV");
-		wrapper.setAttribute("class", vWrapper);
+		wrapper.setAttribute("class", "v"+selectClassName);
 		wrapper.setAttribute("tabindex", "0");
-		if(wrapperCustomStyle != ""){
-			wrapper.style = wrapperCustomStyle;
+		if(wrapperStyle != ""){
+			wrapper.style = wrapperStyle;
 		}
 
 		//Select field
+		var selectFieldCon = document.createElement("DIV");
 		var selectField = document.createElement("DIV");
-		selectField.setAttribute("class", "sfield");
-		if(selectFieldCustomStyle != ""){
-			selectField.style = selectFieldCustomStyle;
+		var selectIcon = document.createElement("DIV");
+		if(selectFieldStyle != ""){
+			selectField.style = selectFieldStyle;
+		}
+		selectFieldCon.classList.add("sFieldCon");
+		selectFieldCon.style["height"] = selectDim[1];
+		selectField.classList.add("sField");
+		selectField.setAttribute("data-state", "closed");
+		selectIcon.classList.add("sIcon", "iconClose");
+		selectFieldCon.appendChild(selectField);
+		selectFieldCon.appendChild(selectIcon);
+
+		//append into wrapper
+		wrapper.appendChild(selectFieldCon);
+
+		//Options Field
+		var optionsFieldCon = document.createElement("DIV");
+		var optionsField = document.createElement("DIV");
+		optionsFieldCon.classList.add("optionsCon");
+		optionsField.classList.add("sOptionCon");
+
+		// Search field
+		if(includeSearchField == true){
+			var selectSearchBox = document.createElement("DIV");
+			var selectSearchInput = document.createElement("INPUT");
+			selectSearchBox.classList.add("sSearchBox");
+			selectSearchInput.classList.add("sSearchInput");
+			selectSearchInput.setAttribute("tabindex", "0");
+			selectSearchBox.appendChild(selectSearchInput);
+			optionsFieldCon.appendChild(selectSearchBox);
 		}
 
-		//ArrowCon
-		var arrowCon = document.createElement("DIV");
-		arrowCon.setAttribute("class", "arrowCon");
-		if(arrowConCustomStyle != ""){
-			arrowCon.style = arrowConCustomStyle;
+		//Get native select children
+		var navtieSelectChildren = nativeSelect.children;
+		var totalNavtieSelectChildren = navtieSelectChildren.length;
+		if(totalNavtieSelectChildren > 0){
+			dumpOptions(optionsField, navtieSelectChildren, selectField, multiple);
 		}
+		
+		optionsFieldCon.appendChild(optionsField);
 
-		//selectOptions container
-		var optionsContainer = document.createElement("DIV");
-		optionsContainer.setAttribute("class", "optionsCon");
-		if(optionsContainerCustomStyle != ""){
-			optionsContainer.style = optionsContainerCustomStyle;
-		}
+		//append to wrapper
+		wrapper.appendChild(optionsFieldCon);
 
-		//TotalOptions
-		totalOptions = SelectElement.options.length;
-
-		//Add options to custom
-		for(var x=0;x<totalOptions; x++){
-			var options = document.createElement("DIV");
-			options.setAttribute("class", "option");
-			options.setAttribute("value", SelectElement.options[x].getAttribute("value"));
-			SelectElement.options[x].getAttribute("disabled") != null?options.setAttribute("data-disabled", "true"):options.setAttribute("data-disabled", "false");
-
-			if(optionCustomStyle != ""){
-				options.style = optionCustomStyle;
-			}
-
-
-			//First select option
-			if (multipleSelection == false && defaultSet == false){
-					if (SelectElement.options[x].getAttribute ("selected") != null){//selected
-						options.classList.add("selected");
-						selectField.appendChild(document.createTextNode(SelectElement.options[x].innerHTML));
-						defaultSet = true;
-					}else if (SelectElement.options[x].getAttribute ("selected") == null && x == SelectElement.options.length-1) {
-						selectField.appendChild(document.createTextNode(SelectElement.options[0].innerHTML));
-						defaultSet = false;
-					}
-			}
-			options.appendChild(document.createTextNode(SelectElement.options[x].innerHTML));
-			optionsContainer.appendChild(options);
-		}
-
-		// //Apply Styles
-		createStyleSheet();
-
-		//Add selectField to wrapper
-		wrapper.append(selectField);
-
-		//Add arrowCon
-		wrapper.append(arrowCon);
-
-		//Add selectOptionsContainer to Wrapper
-		wrapper.append(optionsContainer);
-
-		//Add wrapper before target select;
-		var selectParent = SelectElement.parentNode;
-		selectParent.insertBefore(wrapper, SelectElement);
-
-		//Hide main select element
-		SelectElement.style["display"] = "none";
-
-		//Add default if no default specified
-		if (defaultSet == false){
-			var firstListOption = document.querySelector("."+vWrapper + " .optionsCon .option");
-			firstListOption.classList.add("selected");
-		}
+		//insert wrapper before native select
+		selectParent.insertBefore(wrapper, nativeSelect);
 	}
-	function assignEventHandler(SelectElement){
-		var listParent = SelectElement.parentNode;
-		var listOptionCon = listParent.querySelector("."+vWrapper + " .optionsCon");
-		var arrowCon = listParent.querySelector("."+vWrapper + " .arrowCon");
-		listParent.addEventListener("mousedown", function(e){
-			if (e.button == 0){
-				if (e.target.classList.contains("sfield") || e.target.classList.contains("arrowCon")){
-					toggleOptionList(listOptionCon);
-				}else if (e.target.classList.contains("option")) {
-					if (multipleSelection == false && e.target.getAttribute("data-disabled") == "false"){
-						selectOptions(listOptionCon);
+	function selectInputState(ele, id){
+		var status;
+		if(id == "icon"){
+			 status = ele.previousElementSibling.getAttribute("data-state")
+		}else if(id == "sfield"){
+			status = ele.getAttribute("data-state")
+		}
+		return status;
+	}
+	function assignSelectEventHandler(){
+		DOMelement.attachEventHandler("transitionend", "optionsCon", function(e){
+			if(e.target.classList.contains("closing")){//close
+				e.target.style["display"] = "none";
+				e.target.classList.remove("closing");
+			}else if(e.target.classList.contains("opening")){
+				e.target.classList.remove("opening");
+			}
+		})
+		DOMelement.attachEventHandler("click", ["sIcon", "sOption", "sField"], function(e, id){
+			if(id == "sIcon"){
+				var openState = selectInputState(e.target, "icon");
+				var optionsCon = DOMelement.getParent(e.target, 2).querySelector(".optionsCon");			
+				if(openState == "opened"){ //close
+					toggleOptionList(optionsCon, "close");
+				}else{//open
+					toggleOptionList(optionsCon, "open");
+				}
+			}else if(id == "sOption"){
+				if(e.detail == 1){
+					if(e.target.getAttribute("data-disabled") == "false"){
+						var mainSelect = DOMelement.getParent(e.target, 3).nextElementSibling;
+						selectOption(e.target, mainSelect);
 					}
 				}
-			}
-		}, false);
-		listParent.addEventListener("click", function(e){
-			if (e.target.classList.contains("sfield") == false && e.target.classList.contains("arrowCon") == false && e.target.classList.contains("option") == false){
-				if (selOpen == 1) {//list opened
-					hideList(listOptionCon);
+			}else if(id == "sField"){
+				var openState = selectInputState(e.target, "sfield");
+				var optionsCon = e.target.parentNode.nextElementSibling;
+				if(openState == "opened"){ //close
+					toggleOptionList(optionsCon, "close");
+				}else{//open
+					toggleOptionList(optionsCon, "open");
 				}
 			}
-		},false);
-		listOptionCon.addEventListener("transitionend", function(e){
-			if (selOpen == 1){
-				arrowCon.classList.add("opened");
-			}else if (selOpen == 0) {
-				arrowCon.classList.remove("opened");
-				listOptionCon.style["display"] = "none";
+		});
+		DOMelement.attachEventHandler("mouseover", "sOption", function(e){
+			if(e.target.getAttribute("data-disabled") == "false"){
+				hover(e.target);
 			}
-		}, false);
-		listOptionCon.addEventListener("mouseover", function(e){
-			if(e.target.classList.contains("option") && e.target.getAttribute("data-disabled") == "false"){
-				hover(e, listOptionCon);
+		});
+		DOMelement.attachEventHandler("mouseout", "sOption", function(e){
+			unhover(e.target);
+		});
+		DOMelement.attachEventHandler("dblclick", "sOption", function(e){
+			if(e.detail == 2){
+				var selectButton = DOMelement.getParent(e.target, 2).previousElementSibling.children[1];
+				var optionsCon = DOMelement.getParent(e.target, 2);
+				toggleOptionList(optionsCon, "close");
+				selectButton.classList.add("iconClose");
+				selectButton.classList.remove("iconOpen");
 			}
-		}, false);
-		listOptionCon.addEventListener("mouseleave", function(e){
-			unhovered(e, listOptionCon);
-		}, false);
-		listParent.addEventListener("focusin", function (e){
-			if(e.target.classList.contains(vWrapper)){
-				if (selOpen == 0){
-					toggleOptionList(listOptionCon);
-				}
-			}
-		}, false);
-		listParent.addEventListener("focusout", function (e){
-			if(e.target.classList.contains(vWrapper)){
-				if (selOpen == 1){
-					toggleOptionList(listOptionCon);
-				}
-			}
-		}, false);
-		listParent.addEventListener("keydown", function (e){
-			if(e.target.classList.contains(vWrapper)){
-				if (selOpen == 1){
-					var khdlr = keyboardEventHanler(e);
-				  if (khdlr["handled"] == true) {
-				    // Suppress "double action" if event handled
-				    e.preventDefault();
-						if (khdlr["type"]  == 1){
-							if(e.key == "ArrowDown" | "Down"){
-								scrollDown(listOptionCon);
-							}else if (e.key == "ArrowUp" | "Up") {
-								scrollUp(listOptionCon);
-							}else if (e.key == "Enter") {
-								selectOptions(listOptionCon);
-							}
-						}else if(khdlr["type"] == 2){
+		})
+		DOMelement.attachEventHandler("input", "sSearchInput", function(e){
+			var searchQuery = e.target.value.toLowerCase();
+			var optionsCon = e.target.parentNode.nextElementSibling;
+			var allOptions = optionsCon.querySelectorAll("div");
+			var optionsConParent = optionsCon.parentNode;
+			
+			var total = allOptions.length;
 
-						}else if(khdlr["type"] == 3){
-
-						}
-				  }
+			function checkQuery(option){
+				var OptionLabel = option.innerHTML.trim().toLowerCase();
+				var regex = new RegExp(searchQuery);
+				if(regex.test(OptionLabel)){
+					option.classList.remove("sHide");
+				}else{
+					option.classList.add("sHide");
 				}
 			}
-		}, false);
+			for(var x=0;x<total;x++){
+				if(allOptions[x].classList.contains("sOption")){
+					checkQuery(allOptions[x]);
+				}else if(allOptions[x].classList.contains("sOptionGroup")){
+					var id = allOptions[x].getAttribute("data-gid");
+					var groupChildren = allOptions[x].parentNode.querySelectorAll("[data-pid='"+id+"']");
+					var totalGroupChildren = groupChildren.length;	
+					for(var y=0; y<totalGroupChildren; y++){
+						checkQuery(groupChildren[y]);
+					}
+
+					// Hide option group when all children a hidden
+					var allHiddenChildren = allOptions[x].parentNode.querySelectorAll(".sHide[data-pid='"+id+"']");
+					var parsedHiddenLength = allHiddenChildren != null? allHiddenChildren.length:0;
+					if(groupChildren.length == parsedHiddenLength){
+						allOptions[x].classList.add("sHide");
+					}else{
+						allOptions[x].classList.remove("sHide");
+					}
+				}				
+			}
+			optionsConParent.style["height"] = "auto";
+			autoPlace(optionsConParent);
+		})
+		DOMelement.attachEventHandler("keydown", "v"+selectClassName, function(e){
+			var khdlr = keyboardEventHanler(e);
+			var optionsCon = e.target.querySelector(".optionsCon");
+			var sField = e.target.querySelector(".sField");
+			if (khdlr["handled"] == true) {
+				if (khdlr["type"]  == 1){
+					// Suppress "double action" if event handled
+					closeAnyOpen(sField);
+					toggleOptionList(optionsCon, "open");
+					if(e.key == "ArrowDown" | "Down"){
+						e.preventDefault();
+						scrollOptions(e.target, "down");
+					}else if (e.key == "ArrowUp" | "Up") {
+						e.preventDefault();
+						scrollOptions(e.target, "up");
+					}else if (e.key == "Enter") {
+						var ele = e.target.querySelector(".hovered");
+						var nativeSelect = e.target.nextElementSibling;
+						selectOption(ele, nativeSelect);
+					}
+				}else if(khdlr["type"] == 2){
+
+				}else if(khdlr["type"] == 3){
+
+				}
+			}
+		})
+		DOMelement.attachEventHandler("focusin", "sOption", function(e){
+			hover(e.target);
+		})
+		addEventListener("scroll", function(){
+			var anyOpen = document.querySelector(".sField[data-state='opened']");
+			if(anyOpen != null){
+				var optionsCon = anyOpen.parentNode.nextElementSibling;
+				autoPlace(optionsCon);
+			}
+		},false)
 	}
 	this.select = {
-		build: function(SelectElement){
-			validateElement(SelectElement, "A select element needed as argument for the 'build' method, non provided");
-			if(SelectElement.nodeName != "SELECT"){
-				throw new Error("A select element needed, please specify a valid select element");
-			}
+		autoBuild: function(){
 			if (selectDim.length == 0){
-				throw new Error("Setup imcomplete: list dimension needed, specify using the 'selectDimension' property");
+				throw new Error("Setup imcomplete: select input dimension needed, specify using the 'config.selectSize' property");
 			}
-			var selectParent = SelectElement.parentNode;
-			DOMelement.cssStyle(selectParent, "position") == "static"?selectParent.style["position"] = "relative":null;
-			reCreateSelect(SelectElement);
-			assignEventHandler(SelectElement);
+			if(selectClassName == ""){
+				throw new Error("Setup imcomplete: slect input class name must be supllied, specify using the 'config.className' property");
+			}
+			var existingSheet = document.querySelector("#v"+selectClassName);
+			setTimeout(function (){
+				if(enableToolTip){
+					toolTipHandler = new toolTip();
+					toolTipHandler.initialize();
+				};
+				existingSheet == null?selectStyleSheet():null;
+				reCreateSelect();
+				assignSelectEventHandler();
+			}, 1000);	
+		},
+		refreshSelect:function(nativeSelect){ //Refreshes a particular select element to update custom content
+			validateElement(nativeSelect, "selectSelect.refresh() method expects a valid HTML as argument 1");
+			nativeSelect.classList.contains(selectClassName)?runSelectBuild(nativeSelect):null;
+		},
+		refresh:function(parent){
+			validateElement(parent, "select.refresh() method expects a valid HTML as argument 1");
+			var allNewSelect = parent.querySelectorAll("select:not(.xSnative)");
+			var totalNewSelects = allNewSelect.length;
+			if(totalNewSelects > 0){
+				for (var x=0; x<totalNewSelects; x++){
+					allNewSelect[x].classList.contains(selectClassName)?runRadioBuild(allNewSelect[x]):null;
+				}
+			}
 		},
 		config:{}
 	};
@@ -2886,13 +3085,6 @@ function customFormComponent(){
 		config:{writable:false}
 	})
 	Object.defineProperties(this.select.config, {
-		afterSelectionFn : {//Function to call after selection
-			set:function(value){
-				if(validateFunction(value, "Function needed as value for the 'afterSelectionFn' property")){
-					afterSelectionFn = value;
-				}
-			}
-		},
 		selectSize:{
 			set:function(value){
 				var temp = "'config.selectSize' property value must be an array";
@@ -2904,53 +3096,64 @@ function customFormComponent(){
 		},
 		wrapperStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property")){
-					wrapperCustomStyle = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property");
+				wrapperStyle = value;
 			}
 		},
 		selectFieldStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'selectFieldStyle' property")){
-					selectFieldCustomStyle = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'selectFieldStyle' property");
+				selectFieldStyle = value;
 			}
 		},
-		arrowConStyle:{
+		optionsWrapperStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'arrowConStyle' property")){
-					arrowConCustomStyle = value;
-				}
-			}
-		},
-		optionswrapperStyle:{
-			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'optionswrapperStyle' property")){
-					optionsContainerCustomStyle = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'optionsWrapperStyle' property");
+				optionsWrapperStyle = value;
 			}
 		},
 		optionStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'optionStyle' property")){
-					optionCustomStyle = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'optionStyle' property");
+				optionStyle = value;
 			}
 		},
-		arrowIconClose:{
+		optionGroupStyle:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'arrowIconClose' property")){
-					arrowIconClose = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'config.optionGroupStyle' property");
+				optionGroupStyle = value;
 			}
 		},
-		arrowIconOpen:{
+		selectIcon:{
 			set:function(value){
-				if(validateString(value, "A string of valid CSS styles needed for the 'arrowIconOpen' property")){
-					arrowIconOpen = value;
-				}
+				validateString(value, "A string of valid CSS styles needed for the 'config.selectIcon' property");
+				selectIcon = value;
 			}
 		},
+		className:{
+			set:function(value){
+				validateString(value, "config.className property expect a string as value");
+				selectClassName = value;
+			}
+		},
+		useToolTip:{
+			set:function(value){
+				validateBoolean(value, "config.useToolTip property expect a boolean as value");
+				enableToolTip = value;
+			}
+		},
+		searchIconStyle:{
+			set:function(value){
+				validateString(value, "A string of valid CSS styles needed for the 'config.searchIconStyle' property");
+				searchIconStyle = value;
+			}
+		},
+		includeSearchField:{
+			set:function(value){
+				validateBoolean(value, "config.includeSearchField property expect a boolean as value");
+				includeSearchField=value;
+			}
+		}
 	})
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
@@ -6161,7 +6364,6 @@ function datePicker(){
 /***************************Tool tip*****************************/
 function toolTip(){
 	var sy=0,sx=0, ini=false, tipBoxProperties=[],tipId="", initialized=0;
-	// var scrollHandler =
 	function createStyles(){
 		if (document.querySelector("style[data-id='toolTipStyles']") == null){
 			var css = "";
@@ -6183,29 +6385,45 @@ function toolTip(){
 		tipElement.setAttribute("data-toolTipId", tipId);
 		document.body.appendChild(tipElement);
 	}
-	function addEvent(element, mainTip){
+	function addEvent(element){
 		var vTipCon = document.querySelector("div[data-toolTipId='"+element.getAttribute("data-TID")+"']");
+		if(element.getAttribute("data-tTipEvent") == null){
+			element.addEventListener("mouseover", function(){
+				if(element.getAttribute("data-vToolTipSwitch") == "ON"){
+					sy=scrollY;sx=scrollX;
+					var mainTip = element.getAttribute("title");
+					element.setAttribute("data-tempTitle", mainTip);
+					element.removeAttribute("title");
+				}
+			},false)
+			element.addEventListener("mousemove", function(e){
+				if(element.getAttribute("data-vToolTipSwitch") == "ON"){
+					vTipCon.style["display"] == "none"?vTipCon.style["display"] = "block":null;
+					var y = (e.clientY+sy)-vTipCon.scrollHeight;
+					var x = (e.clientX+sx) - 10;
+					var mainTip = element.getAttribute("data-tempTitle");
+					mainTip.length < 1?vTipCon.style["display"] = "none":null;
+					vTipCon.innerHTML = mainTip;
+					vTipCon.style["top"] = y+"px";
+					vTipCon.style["left"] =x+"px";
+				}
+			}, false);
+			element.addEventListener("mouseout", function(e){
+				if(element.getAttribute("data-vToolTipSwitch") == "ON"){
+					if(e.target.getAttribute("data-TID") != null){
+						vTipCon.style["display"] = "none";
+						vTipCon.style["top"] = "0";
+						vTipCon.style["left"] ="0";
+					}
+					var mainTip = element.getAttribute("data-tempTitle");
+					element.setAttribute("title", mainTip);
+					element.removeAttribute("data-tempTitle");
+				}
+			},false);
 
-		element.addEventListener("mouseover", function(){
-			sy=scrollY;sx=scrollX;
-		},false)
-		element.addEventListener("mousemove", function(e){
-			if(	element.getAttribute("data-vToolTipSwitch") == "ON"){
-				vTipCon.style["display"] == "none"?vTipCon.style["display"] = "block":null;
-				var y = (e.clientY+sy)-vTipCon.scrollHeight;
-				var x = (e.clientX+sx) - 10;
-				vTipCon.innerHTML = mainTip;
-				vTipCon.style["top"] = y+"px";
-				vTipCon.style["left"] =x+"px";
-			}
-		}, false);
-		element.addEventListener("mouseout", function(e){
-			if(e.target.getAttribute("data-TID") != null){
-				vTipCon.style["display"] = "none";
-				vTipCon.style["top"] = "0";
-				vTipCon.style["left"] ="0";
-			}
-		},false);
+			//Register that event has been set
+			element.setAttribute("data-tTipEvent", "on");
+		}
 	}
 	this.initialize =  function(){
 		if(initialized == 0){
@@ -6214,42 +6432,15 @@ function toolTip(){
 			initialized=1;
 		}
 	};
-	this.config = {
-
-	};
-	this.set = function(element, tip=null){
-		validateElement(element, "Argument 1 of the set() static method must be a valid HTML element");
-		var mainTip ="";
-		if (tip == null && element.getAttribute("title") == null){
-			throw new Error("Argument 2 of the set() method and element title attribute cannot be null, Please specify the tip to use.");
-		}else if(tip == null && element.getAttribute("title") != null){//use title attribute
-			element.setAttribute("data-tempTitle", element.getAttribute("title"));
-			mainTip = element.getAttribute("title");
-			element.removeAttribute("title");
-		}else if (tip != null) {//Use tip
-			validateString(tip, "Argument 2 of the set() method, must be a string");
-			if (element.getAttribute("title") != null){
-				element.setAttribute("data-tempTitle", element.getAttribute("title"));
-				element.removeAttribute("title");
-				mainTip = tip;
-			}else{
-				mainTip = tip;
-			}
-		}
+	this.config = {};
+	this.on = function(element){
+		validateElement(element, "Argument 1 of the obj.on() method must be a valid HTML element");
+		if (element.getAttribute("title") == null){
+			throw new Error("The specified element title attribute cannot be null, Please specify the tip to use.");
+		}		
 		element.setAttribute("data-TID", tipId);
 		element.setAttribute("data-vToolTipSwitch", "ON");
-		addEvent(element, mainTip);
-	}
-	this.on = function(element){
-		validateElement(element, "Argument 1 of the on() static method must be a valid HTML element");
-		if (element.getAttribute("data-TID") != null){
-			if(element.getAttribute("data-vToolTipSwitch") == "OFF"){
-				element.setAttribute("data-vToolTipSwitch", "ON");
-				element.getAttribute("data-tempTitle") != null?element.removeAttribute("title"):null;
-			}
-		}else{
-			throw new Error("No tool tip applied on target element");
-		}
+		addEvent(element);
 	}
 	this.off = function(element){
 		validateElement(element, "Argument 1 of the off() static method must be a valid HTML element");
