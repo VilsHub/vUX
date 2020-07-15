@@ -1,4 +1,4 @@
-.shell {
+.vRadioButtonWrapper {
   height:auto;
   display:block;
   float:left;
@@ -6,7 +6,10 @@
   margin: 0 3px;
   position:relative;
 }
-.shell .vRadioButton {
+.vRadioButtonWrapper :focus{ /*To fix chrome default outline*/
+  outline: none;
+}
+.vRadioButtonWrapper .vRadioButton {
   cursor:pointer;
   box-sizing:border-box;
   border-radius:100%;
@@ -19,7 +22,7 @@
 .vRadioButtonLabel{
   cursor:pointer;
 }
-.shell .vRadioButton::before {
+.vRadioButtonWrapper .vRadioButton::before {
   position:absolute;
   content:'';
   border-radius:100%;
@@ -27,16 +30,16 @@
   text-align:center;
   box-sizing: border-box;
 }
-.shell .selected::before {
+.vRadioButtonWrapper .selected::before {
   background-color:black;
 }
-.shell .deselected::before{
+.vRadioButtonWrapper .deselected::before{
   background-color:white;
   border:solid 1px black;
 }
 .xRnative{
   visibility: hidden;
-  position: absolute;
+  position: static;
   left: 0;
   top:0;
 }

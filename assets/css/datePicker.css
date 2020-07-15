@@ -1,34 +1,59 @@
-.vDateIcon {
-  position:absolute;
-  width:36px;
-  top:0;
-  right:0;
-  height:100%;
-  box-sizing:border-box;
-  z-index:4;
+.vDatePicker{
+  height:auto;
+  width:100%;
+  position: relative;
+  z-index: 100;
 }
-.vDateIcon::before {
-  transition:color .2s linear;
+.vDateBoxTool :focus{ /*To fix chrome default outline*/
+  outline: none;
+}
+.vDatePicker.superActive{
+  z-index: 101;
+}
+.vDatePicker .dFieldCon{
+  position: relative;;
+  width:100%;
+  z-index:1;
+  cursor:pointer;
+  box-sizing: border-box;
+  display:flex;
+  height:100%;
+}
+.vDatePicker .dField{
+  flex:1;
+  padding-left: 10px;
+  background-color:white;
+  border: solid 1px #ccc;
+  border-right: none;
+  height:100%;
+  box-sizing: border-box;
+  font-size: 13px;
+}
+.vDatePicker .vDateIcon{
+  width:35px;
+  background-image: linear-gradient(to bottom, #eaeaea 0%,white 100%);
+  border: solid 1px #dddbdb;
+  position: relative;
+}
+.vDatePicker .vDateIcon::before {
   cursor:pointer;
   text-align:center;
-  line-height:200%;
   position:absolute;
   width:100%;
   right:0;
   height:100%;
-  box-sizing:border-box; content:'';
-  border:solid 1px #ccc;
-  border-radius:0 4px 4px 0;
-  background-image:linear-gradient(to bottom, #ccc 0%, #c6bfbf 100%);
+  box-sizing:border-box;
+  font-size: 20px;
+  color:green;
 }
-.vDateIcon:hover::before {
-  color:rgba(255, 255, 255, 0.25)
+.vDatePicker .vDateIcon:hover::before {
+  color:rgb(18, 66, 18);
 }
-.vDateIcon:active::before {
-  color:rgba(255, 255, 255, 0.75);
+.vDatePicker .vDateIcon:active::before {
+  color:rgb(25, 230, 25);
 }
-.vDateBoxTool {
-  transition:height 0.2s linear;
+.vDatePicker .vDateBoxTool {
+  transition:height 0.1s linear;
   overflow:hidden;
   display:none;
   width:300px;
@@ -43,16 +68,23 @@
   border-radius:5px;
   width:100%;
   height:auto;
-  position:absolute;
-  top:10px;
+  position: relative;;
+  /* top:10px; */
   left:0;
   border:solid 1px #ccc;
+  background-color: white;
 }
 .vDateBoxTool .vDateBoxArrow {
   width:300px;
   height:10px;
-  position:absolute;
+  position: relative;;
+ 
+}
+.vDateBoxTool .vDateBoxArrow.vtop{
   top:0;
+}
+.vDateBoxTool .vDateBoxArrow.vbottom{
+  bottom:0;
 }
 .vDateBoxTool .shift::before {
   left:50%;
@@ -69,7 +101,12 @@
   top:0px;
   border-left:solid 7px transparent;
   border-right:solid 7px transparent;
+}
+.vDateBoxTool .vDateBoxArrow.vtop::before {
   border-bottom:solid 10px #ccc;
+}
+.vDateBoxTool .vDateBoxArrow.vbottom::before {
+  border-top:solid 10px #ccc;
 }
 .vDateBoxTool .vDateBoxHeader {
   font-synthesis: unset;
@@ -86,11 +123,11 @@
 .vDateBoxTool .vDateBoxDisplayCon {
   position: relative;
   width:100%;
-  height:200px;
+  height:180px;
   background-color:white;
   color:purple;
 }
-.vDateBoxTool .vDateRangeCon, .vDateBoxTool .vFutureYearsCon{
+.vDateBoxTool .vDateRangeCon, .vDateBoxTool .vyearsPage{
   opacity:1;
   overflow: hidden;
   top: 50%;
@@ -100,17 +137,17 @@
   width:auto;
   height:100%;
 }
-.vDateBoxTool .vDateRangeConTrans,.vDateBoxTool .vFutureYearsCon{
+  .vDateBoxTool .vDateRangeConTrans{
   transition:all .15s linear!important;
 }
 .vDateBoxTool .rangeBox, .vDateBoxTool .yearsBox{
   flex-shrink:0;
   flex-basis:300px;
-  justify-content: start;
+  justify-content: center;
   align-content: center;
   height:100%;
   box-sizing: border-box;
-  padding:20px 0 20px 20px;
+  /* padding:20px 0 20px 20px; */
   display: flex;
   flex-wrap: wrap;
   width:300px;
@@ -127,8 +164,10 @@
   text-align:center;
   line-height:30px;
   margin-bottom:5px;
+  position: relative;
 }
-.vDateBoxTool .yearsBox>.year:hover, .vDateBoxTool .range:hover,.vDateBoxTool .vYearsCon>.year:hover,.vDateBoxTool .month:hover,.vDateBoxTool .day:hover{
+
+.vDateBoxTool .yearsBox>.year:not(.selected):hover, .vDateBoxTool .range:not(.selected):hover,.vDateBoxTool .vYearsCon>.year:not(.selected):hover,.vDateBoxTool .month:not(.selected):hover,.vDateBoxTool .day:not(.selected):hover{
   background-color: #cecece;
   color:black;
 }
@@ -227,7 +266,7 @@
 .vDateBoxTool .vDateBoxControlCon .rinactive{
   cursor:not-allowed;
 }
-.vDateBoxTool .vYearsCon,.vDateBoxTool .vMonthsCon, .vDateBoxTool .vDaysCon,.vDateBoxTool .vTimeCon{
+.vDateBoxTool .vYearsCon,.vDateBoxTool .vMonthsCon, .vDateBoxTool .vDaysCon{
   opacity:0;
   flex-wrap:wrap;
   padding:30px 0 20px 2px;
@@ -244,7 +283,7 @@
   top:50%;
   transform:translateX(-50%) translateY(-50%);
 }
-.vDateBoxTool .vYearsCon .year,.vDateBoxTool .month, .vDateBoxTool .day{
+.vDateBoxTool .year,.vDateBoxTool .month, .vDateBoxTool .day{
   flex-shrink: 0;
   cursor:pointer;
   margin:0 2px 10px 0 ;
@@ -276,28 +315,47 @@
 }
 .vDateBox .vTimeCon{
   padding:0;
-}
-.vDateBox .meridianCon{
   width:100%;
-  height:40px;
-  top: 0;
-  position: absolute
+  height:130px;
+  position: relative;
+  background-color: white;
+}
+.vDateBox .timeLabel{
+  width: 100%;
+  height: 30px;
+  text-align: center;
+  line-height: 30px;
+  position: relative;
+}
+.vDateBox .timeLabel::before, .vDateBox .timeLabel::after{
+  width: 70px;
+  height: 15px;
+  position: absolute;
+  content:"";
+  border-bottom:solid 1px #ccc;
+}
+.vDateBox .timeLabel::before{
+  left:30px;
+}
+.vDateBox .timeLabel::after{
+  right:30px;
 }
 .vDateBox .meridian{
-  width:60px;
-  height:30px;
-  top: 5px;
-  position: relative;
-  margin:0 auto;
-}
-.vDateBox .meridian::before, .vDateBox .vDateBoxDisplayCon .vTimeCon .meridianCon .meridian::after{
   width:30px;
-  height:30px;
+  height:20px;
+  top: 30px;
+  position: absolute;
+  right:50px;
+}
+.vDateBox .meridian::before, .vDateBox .meridian::after{
+  width:30px;
+  height:100%;
   position: absolute;
   text-align:center;
-  line-height:30px;
+  line-height:20px;
   top:0;
   font-weight: 400;
+  font-size: 13px;
 }
 .vDateBox .meridian::before{
   left:-30px;
@@ -317,47 +375,48 @@
   box-shadow: inset 0 0px 4px 0px #ccc6c6;
   cursor:pointer;
   width:100%;
-  height:20px;
+  height:14px;
   border: solid 1px #cfcece;
   border-radius: 20px;
-  top: 5px;
+  top: 2px;
   position: relative;
   box-sizing: border-box;
 }
 .vDateBox .meridianSwitchCon::before{
-  transition:left .2s linear;
-  width:24px;
-  height:24px;
+  transition:left .1s linear;
+  width:10px;
+  height:10px;
   border-radius:50%;
   background-color:purple;
   content:'';
   position:absolute;
-  top:-3px;
+  top:1px;
 }
 .vDateBox .am::before{
-  left:0;
+  left:1px;
 }
 .vDateBox .pm::before{
-  left:35px;
+  left:16px;
 }
 .vDateBox .timpePropertiesCon{
   width:100%;
-  height:100px;
-  top: 40px;
-  position: absolute;
+  height:auto;
+  top: 45px;
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
-.vDateBox .hourCon,.vDateBox .minCon,.vDateBox .secCon{
+.vDateBox .hourCon,.vDateBox .minCon{
   box-sizing:border-box;
   border:solid 1px #ccc;
-  top:36px;
-  height:50px;
-  width:50px;
-  position:absolute;
+  height:35px;
+  flex-basis:35px;
+  position: relative;
 }
-.vDateBox .vDateBoxDisplayCon .vTimeCon .timpePropertiesCon .hourCon{
-  left:50px;
+.vDateBox  .hourCon{
+  margin-right: 15px;
 }
-.vDateBox .hourCon::before,.vDateBox .minCon::before,.vDateBox .secCon::before{
+.vDateBox .hourCon::before,.vDateBox .minCon::before{
   text-align:center;
   line-height:20px;
   width:100%;
@@ -371,48 +430,43 @@
 .vDateBox .minCon::before{
   content:'m';
 }
-.vDateBox .secCon::before{
-  content:'s';
-}
-.vDateBox .hourCon::after, .vDateBox .minCon::after{
-  width:20px;
+.vDateBox .hourCon::after{
+  width:15px;
   height:100%;
-  right:-24px;
+  right:-17px;
   top:0;
   content:':';
   color:#398000;
   font-size:30px;
   text-align:center;
-  line-height:40px;
+  line-height:35px;
   position:absolute;
-}
-.vDateBox .minCon{
-  left:50%;
-  transform:translateX(-50%);
-}
-.vDateBox .secCon{
-  right:50px;
 }
 .vDateBox input[type='text']{
   border:none;
   width:100%;
   height:100%;
-  padding-left:0px;
+  padding:0px;
   text-align:center;
-  line-height:50px;
+  line-height:0;
   color:#398000;
-  font-size:30px;
+  font-size:23px;
+  display: block;
 }
 .vDateBox button{
   transition:all .1s linear;
   width:80px;
-  position:absolute;
-  top: 150px;
   left:50%;
-  transform:translateX(-50%);
-  height:40px;
+  margin:0 auto;
+  height:100%;
   border: none;
   border-radius: 5px;
+  display: block;
+}
+.vDateBox .buttonCon{
+  height:40px;
+  margin: 0 0 15px 0;;
+  background-color: white;
 }
 .vDateBox .tbuttonActive{
   cursor:pointer;
@@ -428,4 +482,14 @@
 }
 .vDateBox .tbuttonInactive{
   cursor:not-allowed;
+}
+.vDateBoxTool .selected{
+  background-color: purple;
+  color:white;
+}
+.xDnative{
+  visibility: hidden;
+  position: absolute;
+  left: 0;
+  top:0;
 }

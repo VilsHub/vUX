@@ -1,7 +1,13 @@
-.shell{
-  z-index: 60;
+.vSelect{
+  z-index: 100;
 }
-.shell .sFieldCon{
+.vSelect :focus{ /*To fix chrome default outline*/
+  outline: none;
+}
+.vSelect.superActive{
+  z-index: 101;
+}
+.vSelect .sFieldCon{
   position: relative;;
   width:100%;
   z-index:1;
@@ -10,7 +16,7 @@
   
   display:flex;
 }
-.shell .sOptionGroup{
+.vSelect .sOptionGroup{
   background-color:#ddd;
   padding-left: 10px;
   height: 23px;
@@ -18,7 +24,7 @@
   font-weight: bold;
   color:black;
 }
-.shell .sField{
+.vSelect .sField{
   flex:1;
   padding-left: 10px;
   background-color:white;
@@ -28,13 +34,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.shell .sIcon{
+.vSelect .sIcon{
   width:35px;
   background-image: linear-gradient(to bottom, #eaeaea 0%,white 100%);
   border: solid 1px #dddbdb;
   position: relative;
 }
-.shell .sIcon::before{
+.vSelect .sIcon::before{
   width:100%;
   height: 100%;
   position: absolute;
@@ -45,13 +51,13 @@
   transform: rotate(0deg);
   content:"v";
 }
-.shell .iconOpen::before{
+.vSelect .iconOpen::before{
   transform: rotate(180deg);
 }
-.shell .iconClose::before{
+.vSelect .iconClose::before{
   transform: rotate(0deg);
 }
-.shell .sSearchInput{
+.vSelect .sSearchInput{
   width:98%;
   margin:0 auto;
   box-sizing: border-box;
@@ -61,17 +67,17 @@
   border: solid 1px #ccc;
   border-radius: 3px;
 }
-.shell .sOptionCon{
+.vSelect .sOptionCon{
   max-height:70vh;
   overflow-y: auto;
   margin-top: 3px;
   scrollbar-width: thin;
 }
-.shell .optionsCon {
+.vSelect .optionsCon {
   position:absolute;
   width:100%;
   height:0px;
-  z-index:2;
+  z-index:inherit;
   transition:height 0.2s linear;
   display:none;
   background-color: white;
@@ -79,18 +85,18 @@
   box-sizing: border-box;
   overflow: hidden;
 }
-.shell .sSearchBox{
+.vSelect .sSearchBox{
   margin-top:5px;
   position: relative;
 }
-.shell .sSearchBox::before{
+.vSelect .sSearchBox::before{
   width:35px;
   position: absolute;
   right:0;
   top:0;
 
 }
-.shell  .optionsCon .sOption {
+.vSelect  .optionsCon .sOption {
   position:relative;
   width:100%;
   padding-left:10px;
@@ -99,55 +105,28 @@
   font-size: 13px;
   line-height: 23px;
 }
-.shell .optionsCon .sOption[data-disabled='false'] {
+.vSelect .optionsCon .sOption[data-disabled='false'] {
   cursor:pointer;
 }
-.shell .optionsCon .sOption[data-disabled='true'] {
+.vSelect .optionsCon .sOption[data-disabled='true'] {
   cursor:not-allowed;
   background-color:#2f2a2a;
   color:#595454!important;
 }
-.shell .innerOpt{
+.vSelect .innerOpt{
   padding-left: 23px!important;
 }
-.shell .optionsCon .sOption:last-of-type {
+.vSelect .optionsCon .sOption:last-of-type {
   border-bottom:none!important;
 }
-.shell .optionsCon .hovered {
+.vSelect .optionsCon .hovered {
   background-color:rgba(200, 199, 199, 0.3)
 }
-.shell .optionsCon .vSselected {
+.vSelect .optionsCon .vSselected {
   background-color:rgba(100, 95, 95, 0.5);
   color:white;
 }
-/* .shell .arrowCon {
-  height:100%;
-  background-color:rgb(255, 255, 255);
-  content:'';
-  border-left:solid 1px black;
-  position:absolute;
-  right:0;
-  top:0;
-  box-sizing:border-box;
-  z-index:5;
-  cursor:pointer;
-}
-.shell .arrowCon::before {
-  position:absolute;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  text-align:center;
-  transition: color 0.1s linear;
-}
-.shell .arrowCon:hover::before {
-  color:rgba(255, 255, 255, 0.3)!important;
-}
-.shell .arrowCon:active::before {
-  color:rgba(255, 255, 255, 0.6)!important;
-} */
-.shell .sHide{
+.vSelect .sHide{
   display: none;
 }
 .xSnative{
