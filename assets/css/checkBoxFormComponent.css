@@ -1,12 +1,11 @@
 .vCheckboxWrapper {
   height:auto;
   display:block;
-  float:left;
-  clear: both;
-  margin: 0 3px;
-  position:relative;
+  top:0px;
+  position: relative;
+  margin-right:5px;
 }
-.vCheckboxWrapper :focus{ /*To fix chrome default outline*/
+.vCheckboxWrapper :focus{ 
   outline: none;
 }
 .vCheckboxWrapper .vCheckbox {
@@ -21,6 +20,7 @@
 }
 .vCheckboxLabel{
   cursor:pointer;
+  margin-right:5px;
 }
 .vCheckboxWrapper .vCheckbox::before {
   content:'';
@@ -29,16 +29,12 @@
   box-sizing: border-box;
   transition:all .2s linear;
 }
-.vCheckboxWrapper .checked::before {
-  background-color:black;
-}
-.vCheckboxWrapper .unchecked::before{
-  background-color:white;
-  border:1px solid black;
-}
 .xCnative{
   visibility: hidden;
-  position: static;
+  position: absolute;
   left: 0;
   top:0;
-}
+  display: block;
+  z-index: -1;
+  left: -999px;
+} 

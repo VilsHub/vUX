@@ -1,10 +1,9 @@
 .vRadioButtonWrapper {
   height:auto;
   display:block;
+  position: relative;
   float:left;
-  clear: both;
-  margin: 0 3px;
-  position:relative;
+  margin-right: 5px;
 }
 .vRadioButtonWrapper :focus{ /*To fix chrome default outline*/
   outline: none;
@@ -21,6 +20,8 @@
 }
 .vRadioButtonLabel{
   cursor:pointer;
+  float:left;
+  margin-right:5px;
 }
 .vRadioButtonWrapper .vRadioButton::before {
   position:absolute;
@@ -39,7 +40,7 @@
 }
 .xRnative{
   visibility: hidden;
-  position: static;
-  left: 0;
+  position: absolute;
+  left: -999px;
   top:0;
 }

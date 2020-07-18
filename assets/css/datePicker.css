@@ -167,7 +167,7 @@
   position: relative;
 }
 
-.vDateBoxTool .yearsBox>.year:not(.selected):hover, .vDateBoxTool .range:not(.selected):hover,.vDateBoxTool .vYearsCon>.year:not(.selected):hover,.vDateBoxTool .month:not(.selected):hover,.vDateBoxTool .day:not(.selected):hover{
+.vDateBoxTool .yearsBox>.year:not(.vSelected):hover, .vDateBoxTool .range:not(.vSelected):hover,.vDateBoxTool .vYearsCon>.year:not(.vSelected):hover,.vDateBoxTool .month:not(.vSelected):hover,.vDateBoxTool .day:not(.vSelected):hover{
   background-color: #cecece;
   color:black;
 }
@@ -483,7 +483,7 @@
 .vDateBox .tbuttonInactive{
   cursor:not-allowed;
 }
-.vDateBoxTool .selected{
+.vDateBoxTool .vSelected{
   background-color: purple;
   color:white;
 }

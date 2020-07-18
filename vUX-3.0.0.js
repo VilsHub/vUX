@@ -11,7 +11,6 @@
 
 "use strict";
 var assetURL="";
-var styles = {};
 var temp = null;
 var mainScript = document.querySelector("script[src *='vUX']");
 temp = mainScript.getAttribute("src");
@@ -466,7 +465,7 @@ function validateFullName(value){
 			}
 
 			//Check for non alpha
-			if(self.validate.alpha(split[x]) == false){
+			if(!validateAlpha(split[x])){
 				returnType = 3; //All names must be alphabets
 				break;
 			}
@@ -545,9 +544,9 @@ var timing = {
 /****************************************************************/
 
 /*****************************Cross XHR creator******************/
-function ajax(){
+function Ajax(){
 }
-ajax.create = function () {
+Ajax.create = function () {
 	if (window.XMLHttpRequest) {
 		// code for modern browsers
 		var xmlhttp = new XMLHttpRequest();
@@ -561,14 +560,11 @@ ajax.create = function () {
 /****************************************************************/
 
 /*********************imageManipulator***************************/
-function imageManipulator(canvasElement, image){
+function ImageManipulator(canvasElement, image){
 	var self = this, initRGB = [], maxGray = [], maxGrayControl = [], maximumLoop = 0, highestDifference =0, currentLoop = 0, initGray = [], maxRGB = [], maxRGBControl = [], speed = 0, diff=0, imageData, width=300, height=300;
-	if (validateElement(canvasElement, "imageManipulator() constructor argument 1 must be a valid HTML element")){
-		if(canvasElement.nodeName != "CANVAS"){
-			throw new Error("imageManipulator() constructor argument 1 must be a valid HTML Canvas element");
-		}
-	}
-	validateString(image, "imageManipulator() constructor argument 2 must be string of image URL");
+	validateElement(canvasElement, "ImageManipulator() constructor argument 1 must be a valid HTML element");
+	if(canvasElement.nodeName != "CANVAS") throw new Error("ImageManipulator() constructor argument 1 must be a valid HTML Canvas element");
+	validateString(image, "ImageManipulator() constructor argument 2 must be string of image URL");
 	var canvasObj = canvasElement.getContext('2d'); //initialization
 	function extractImageData(type){
 		if (type == "rtg"){ //rgb to gray
@@ -874,16 +870,17 @@ function imageManipulator(canvasElement, image){
 }
 /****************************************************************/
 
-/***********************gridBorderRectangle**********************/
-function gridBorderRectangle(){
-	var self = this, seg = 0, tf = 0, FRlinecolor = "black", FRlinewidth = 5, FRsegment = [10,2], FROrigin = [0,0], ARlinecolor = "black", ARlinewidth = 5, ARsegment = [10,2], AROrigin = [0,0], ARclockWise	= true,
-		ARduration = 3000, AReasing = "linear", ARactive="", ARstop=0, animationCount=1, cycle=0,fn=null;
+/***********************GridBorderRectangle**********************/
+function GridBorderRectangle(){
+	var self = this, seg = 0, tf = 0;
 
 	/*******************fixed dashed rectangle starts********************/
-	this.fixedRectangle = {
-		config:{
-		},
-		draw : function(canvasElement){
+	this.fixedRectangle = function (){
+		var  FRlinecolor = "black", FRlinewidth = 5, FRsegment = [10,2], FROrigin = [0,0];
+		var body = {
+			config:{
+			},
+			draw : function(canvasElement){
 				validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
 				canvasElement.width = canvasElement.scrollWidth;
 				canvasElement.height = canvasElement.scrollHeight;
@@ -905,8 +902,9 @@ function gridBorderRectangle(){
 				canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
 				canObj.stroke();
 			}
-	};
-	Object.defineProperties(this.fixedRectangle.config, {
+		}
+
+		Object.defineProperties(body.config, {
 			lineColor :{
 				set: function(value){
 					if(validateString(value)){
@@ -947,87 +945,96 @@ function gridBorderRectangle(){
 					FROrigin = value;
 				}
 			},
-	});
-	Object.defineProperties(this.fixedRectangle, {
-		config:{writable:false},
-		draw:{writable:false}
-	})
+		});
+		Object.defineProperties(body, {
+			config:{writable:false},
+			draw:{writable:false}
+		})
+
+		return body;
+	};
+	
+	
 	/*******************************************************************/
 
 	/*******************animated dashed rectangle starts********************/
-	this.animatedRectangle = {
-		config:{},
-		draw : function(canvasElement){
-					validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
-					if(canvasElement.getAttribute("id") == null){
-						throw new Error("Canvas element must have an ID set");
-					}
-					//Set ID
-					ARactive = canvasElement.id;
-					ARstop = 0;
+	this.animatedRectangle = function (){
+		var ARlinecolor = "black", ARlinewidth = 5, ARsegment = [10,2], AROrigin = [0,0],ARclockWise	= true,
+		ARduration = 3000, AReasing = "linear", ARactive="", ARstop=0, animationCount=1, cycle=0,fn=null;
 
-					//Reset canvas size
-					canvasElement.width = canvasElement.scrollWidth;
-					canvasElement.height = canvasElement.scrollHeight;
-					var canObj = canvasElement.getContext("2d");
-
-					//Segment
-					canObj.setLineDash(ARsegment);
-
-					//lineColor
-					canObj.strokeStyle = ARlinecolor;
-
-					//lineWidth
-					canObj.lineWidth = ARlinewidth;
-
-					//origin
-					var xOrigin = AROrigin[0];
-					var yOrigin = AROrigin[1];
-
-					//easing
-					var easing = AReasing;
-
-					//duration
-					var duration = ARduration;
-
-					//direction
-					var direction = ARclockWise; //clockwise
-
-					var animationStart = Date.now();
-					requestAnimationFrame(function animate(){
-						var tf = timeFraction (animationStart, duration);
-						var progress = timing[easing](tf);
-
-						if(direction == true){ //clockwise
-							canObj.lineDashOffset = -1*(progress*100);
-						}else{//anti clockwise
-							canObj.lineDashOffset = progress*100;
+		var body = {
+			config:{},
+			draw : function(canvasElement){
+						validateElement (canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+						if(canvasElement.getAttribute("id") == null){
+							throw new Error("Canvas element must have an ID set");
 						}
-						canObj.clearRect(xOrigin,yOrigin, canvasElement.width, canvasElement.height);
-						canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-						canObj.stroke();
-						if(ARstop == 0 && ARactive == canvasElement.id && progress < 1 ){
-							requestAnimationFrame(animate);
-						}else if(progress == 1){
-							fn!=null?fn():null;
-							if(animationCount != "infinite"){
-								cycle++;
-								if(cycle < animationCount){
-									self.animatedRectangle.draw(canvasElement);
-								}else{
-									cycle=0
-								}
-							}else{
-								self.animatedRectangle.draw(canvasElement);
+						//Set ID
+						ARactive = canvasElement.id;
+						ARstop = 0;
+
+						//Reset canvas size
+						canvasElement.width = canvasElement.scrollWidth;
+						canvasElement.height = canvasElement.scrollHeight;
+						var canObj = canvasElement.getContext("2d");
+
+						//Segment
+						canObj.setLineDash(ARsegment);
+
+						//lineColor
+						canObj.strokeStyle = ARlinecolor;
+
+						//lineWidth
+						canObj.lineWidth = ARlinewidth;
+
+						//origin
+						var xOrigin = AROrigin[0];
+						var yOrigin = AROrigin[1];
+
+						//easing
+						var easing = AReasing;
+
+						//duration
+						var duration = ARduration;
+
+						//direction
+						var direction = ARclockWise; //clockwise
+
+						var animationStart = Date.now();
+						requestAnimationFrame(function animate(){
+							var tf = timeFraction (animationStart, duration);
+							var progress = timing[easing](tf);
+
+							if(direction == true){ //clockwise
+								canObj.lineDashOffset = -1*(progress*100);
+							}else{//anti clockwise
+								canObj.lineDashOffset = progress*100;
 							}
-						}
-					})
-				},
-		stop :function(){
-			ARstop = 1;
+							canObj.clearRect(xOrigin,yOrigin, canvasElement.width, canvasElement.height);
+							canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+							canObj.stroke();
+							if(ARstop == 0 && ARactive == canvasElement.id && progress < 1 ){
+								requestAnimationFrame(animate);
+							}else if(progress == 1){
+								fn!=null?fn():null;
+								if(animationCount != "infinite"){
+									cycle++;
+									if(cycle < animationCount){
+										self.animatedRectangle.draw(canvasElement);
+									}else{
+										cycle=0
+									}
+								}else{
+									self.animatedRectangle.draw(canvasElement);
+								}
+							}
+						})
+			},
+			stop :function(){
+				ARstop = 1;
+			}
 		}
-	};
-	Object.defineProperties(this.animatedRectangle.config, {
+		Object.defineProperties(body.config, {
 			lineColor :{
 				set: function(value){
 					validateString(value, "'config.lineColor' property value must be a string");
@@ -1048,16 +1055,11 @@ function gridBorderRectangle(){
 				set:function(value){
 					if(typeof value == "number" || typeof value == "string"){
 						if(typeof value == "number"){
-							var val = new formValidator();
-							if(val.validate.integer(value)){
-								if(value < 0){
-									animationCount = 1;
-								}else{
-									animationCount = value;
-									console.log(animationCount)
-								}
+							if(!validateinteger(value)) throw new Error("'iterationCount' property numeric value must be an integer")
+							if(value < 0){
+								animationCount = 1;
 							}else{
-								throw new Error("'iterationCount' property numeric value must be an integer")
+								animationCount = value;
 							}
 						}else if (typeof value == "string") {
 							if(value.toLowerCase() == "infinite"){
@@ -1127,12 +1129,16 @@ function gridBorderRectangle(){
 					}
 				}
 			}
-});
-	Object.defineProperties(this.animatedRectangle, {
-		config:{writable:false},
-		draw:{writable:false},
-		stop:{writable:false}
-	})
+		});
+		Object.defineProperties(body, {
+			config:{writable:false},
+			draw:{writable:false},
+			stop:{writable:false}
+		})
+
+		return body;
+	};
+
 	/*******************************************************************/
 
 	Object.defineProperty(this, "animatedRectangle", {writable:false});
@@ -1141,30 +1147,29 @@ function gridBorderRectangle(){
 /****************************************************************/
 
 /************************loadProgress****************************/
-function progressIndicator(canvasElement){
-	var self = this, start =12,	progressLabel = true, progressBackground	= "#ccc", strokeWidth	= 10, strokeColor	="yellow", radius	= 50, percentageFontColor	= "white",
-percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelFont	= "normal normal .9vw Verdana";
+function ProgressIndicator(canvasElement){
+	var self = this;
 
 //start => can either be 12 0r 3, anything else will default to zero
-	if (validateElement(canvasElement, "progressIndicator() constructor argument 1 must be a valid HTML element")){
-		if(canvasElement.nodeName != "CANVAS"){
-			throw new Error("imageManipulator() constructor argument 1 must be a valid HTML Canvas element");
-		}
+	validateElement(canvasElement, "ProgressIndicator() constructor argument 1 must be a valid HTML element");
+	if(canvasElement.nodeName != "CANVAS"){
+		throw new Error("ImageManipulator() constructor argument 1 must be a valid HTML Canvas element");
 	}
-	var canvasObj = canvasElement.getContext('2d'); //initialization
-	this.circularProgress = {
-		config:{
+	
+	
+	this.circularProgress = function (){
+		var canvasObj = canvasElement.getContext('2d'); //initialization
+		var start =12,	progressLabel = true, progressBackground	= "#ccc", strokeWidth	= 10, strokeColor	="yellow", radius	= 50, percentageFontColor	= "white",
+		percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelFont	= "normal normal .9vw Verdana";
+		
+		var body = {
+			config:{},
+			show: function(progress, label){
+				if (!valiodateInteger(progress)) throw new Error("circularProgress.show() method argument 1 must be an integer");
 
-		},
-		show: function(progress, label){
-				var test = new formValidator();
-				if (test.validate.integer(progress) == false){
-					throw new Error("circularProgress.show() method argument 1 must be an integer");
-				}else{
-					if(progress < 0 || progress >100){
-						throw new Error("circularProgress.show() method argument 1 must be between 0 - 100");
-					}
-				}
+				if(progress < 0 || progress >100) throw new Error("circularProgress.show() method argument 1 must be between 0 - 100");
+				
+
 				validateString(label, "circularProgress.show() method argument 2 must be a string");
 
 				var startPoint = 0;
@@ -1216,309 +1221,286 @@ percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelF
 				canvasObj.arc(x,y,radius,startPoint,percentageToAngle(progress, start), false);
 				canvasObj.stroke();
 			}
+		}
+
+		Object.defineProperties(body, {
+			config:{writable:false},
+			show:{writable:false}
+		});
+		Object.defineProperties(body.config, {
+			start:{
+				set: function(value){
+					if(validateNumber(value, "'start' property value must be numeric")){
+						start = value;
+					}
+				}
+			},
+			progressLabel:{
+				set: function(value){
+					if(validateBoolean(value, "'progressLabel' property value must be boolean")){
+						progressLabel = value;
+					}
+				}
+			},
+			progressBackground:{
+				set: function(value){
+					if(validateString(value, "'progressBackground' property value must be string of valid CSS color")){
+						progressBackground = value;
+					}
+				}
+			},
+			strokeWidth:{
+				set: function(value){
+					validateNumber(value, "'strokeWidth' property value must be numeric");
+					if(!validateInteger(value)) throw new Error ("'strokeWidth' property value must be integer");		strokeWidth = value;
+				}
+			},
+			strokeColor:{
+				set: function(value){
+					if(validateString(value, "'strokeColor' property value must be string of valid CSS color")){
+						strokeColor = value;
+					}
+				}
+			},
+			radius:{
+				set: function(value){
+					if(validateNumber(value, "'radius' property value must be numeric")){
+						if(!validateInteger(value)) throw new Error ("'radius' property value must be integer");
+						radius = value;
+					}
+				}
+			},
+			percentageFontColor:{
+				set: function(value){
+					if(validateString(value, "'percentageFontColor' property value must be string of valid CSS color")){
+						percentageFontColor = value;
+					}
+				}
+			},
+			percentageFont:{
+				set: function(value){
+					validateString(value, "'percentageFont' property value must be string of valid CSS font property value");
+					percentageFont = value;
+				}
+			},
+			labelFontColor:{
+				set: function(value){
+					validateString(value, "'labelFontColor' property value must be string of valid CSS color");
+					LabelFontColor = value;
+				}
+			},
+			labelFont:{
+					set: function(value){
+						if(validateString(value, "'labelFont' property value must be string of valid CSS font property value")){
+							LabelFont = value;
+						}
+					}
+				}
+		})
 	};
 	Object.defineProperties(this, {
 		circularProgress:{writable:false}
 	});
-	Object.defineProperties(this.circularProgress, {
-		config:{writable:false},
-		show:{writable:false}
-	});
-	Object.defineProperties(this.circularProgress.config, {
-		start:{
-			set: function(value){
-				if(validateNumber(value, "'start' property value must be numeric")){
-					start = value;
-				}
-			}
-		},
-		progressLabel:{
-			set: function(value){
-				if(validateBoolean(value, "'progressLabel' property value must be boolean")){
-					progressLabel = value;
-				}
-			}
-		},
-		progressBackground:{
-			set: function(value){
-				if(validateString(value, "'progressBackground' property value must be string of valid CSS color")){
-					progressBackground = value;
-				}
-			}
-		},
-		strokeWidth:{
-			set: function(value){
-				if(validateNumber(value, "'strokeWidth' property value must be numeric")){
-					var test = new formValidator();
-					if(test.validate.integer(value)){
-						strokeWidth = value;
-					}else {
-						throw new Error ("'strokeWidth' property value must be integer");
-					}
-				}
-			}
-		},
-		strokeColor:{
-			set: function(value){
-				if(validateString(value, "'strokeColor' property value must be string of valid CSS color")){
-					strokeColor = value;
-				}
-			}
-		},
-		radius:{
-			set: function(value){
-				if(validateNumber(value, "'radius' property value must be numeric")){
-					var test = new formValidator();
-					if(test.validate.integer(value)){
-						radius = value;
-					}else {
-						throw new Error ("'radius' property value must be integer");
-					}
-				}
-			}
-		},
-		percentageFontColor:{
-			set: function(value){
-				if(validateString(value, "'percentageFontColor' property value must be string of valid CSS color")){
-					percentageFontColor = value;
-				}
-			}
-		},
-		percentageFont:{
-			set: function(value){
-				if(validateString(value, "'percentageFont' property value must be string of valid CSS font property value")){
-					percentageFont = value;
-				}
-			}
-		},
-		labelFontColor:{
-			set: function(value){
-				if(validateString(value, "'labelFontColor' property value must be string of valid CSS color")){
-					LabelFontColor = value;
-				}
-			}
-		},
-		labelFont:{
-				set: function(value){
-					if(validateString(value, "'labelFont' property value must be string of valid CSS font property value")){
-						LabelFont = value;
-					}
-				}
-			}
-	})
 }
 /****************************************************************/
 
 /************************ResourceIO**************************/
-function resourceIO(){
-	//private members starts
-	var self 	= this, imageXhr = [],	imageUrls = [],	ImageLoadOk = 0, FontXhr = [], FontUrls = [],	FontLoadOk	= 0,	pageXhr	= [],	pageUrls 	= [],	pageLoadOk	= 0,resourceType = "text", total=0;
-	var options	= {
-			ICompleteCallBackfn		: null,
-			ICompleteCallBackDelay	: 0,
-			OCompleteCallBackfn		: null,
-			OCompleteCallBackDelay	: 0,
-			Oprogressfn : null,
-			writeResource:true,
-			imageElements:null,
-			textElements:null
+function ResourceIO(){
+	this.uploader = function(){
+		var body = {
+			upload :function(resource){},
+			config : {
+			}
+		}
+		
+		Object.defineProperties(body, {
+			config:{
+				writable:false
+			},
+			status:{
+				get:function(){
+					return parseInt(total);
+				}
+			}
+		});
 	}
-	function initializeResource(resource){
-		if(resourceType == "image"){
-			for(var x=0; x<resource.length; x++){
-				imageXhr[x] = new XMLHttpRequest();
-				imageXhr[x].responseType = 'blob';
-				imageUrls[x] = resource[x];
-				if (x == resource.length-1){
-					assignEventHandlers();
-				}
-			}
-		}else if(resourceType == "font"){
-			for(var x=0; x<resource.length; x++){
-				FontXhr[x] = new XMLHttpRequest();
-				FontXhr[x].responseType = 'text';
-				FontUrls[x] = resource[x];
-				if (x == resource.length-1){
-					assignEventHandlers();
-				}
-			}
-		}else if(resourceType == "text"){
-			for(var x=0; x<resource.length; x++){
-				pageXhr[x] = new XMLHttpRequest();
-				pageXhr[x].responseType = 'text';
-				pageUrls[x] = resource[x];
-				if (x == resource.length-1){
-					assignEventHandlers();
-				}
-			}
+	this.downloader = function(){
+		//private members starts
+		var self 	= this, imageXhr = [],	imageUrls = [],	ImageLoadOk = 0, FontXhr = [], FontUrls = [],	FontLoadOk	= 0,	pageXhr	= [],	pageUrls 	= [],	pageLoadOk	= 0,resourceType = "text", total=0;
+		var options	= {
+				ICompleteCallBackfn		: null,
+				ICompleteCallBackDelay	: 0,
+				OCompleteCallBackfn		: null,
+				OCompleteCallBackDelay	: 0,
+				Oprogressfn : null,
+				writeResource:true,
+				imageElements:null,
+				textElements:null
 		}
-	}
-	function assignEventHandlers(){
-		if(resourceType == "image"){
-			imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				imageXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
-				if (arrayIndex == imageXhr.length-1){
-					get();
+		function initializeResource(resource){
+			if(resourceType == "image"){
+				for(var x=0; x<resource.length; x++){
+					imageXhr[x] = new XMLHttpRequest();
+					imageXhr[x].responseType = 'blob';
+					imageUrls[x] = resource[x];
+					if (x == resource.length-1){
+						assignEventHandlers();
+					}
 				}
-			})
-		}else if (resourceType == "font"){
-			FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				FontXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
-				if (arrayIndex == FontXhr.length-1){
-					get();
+			}else if(resourceType == "font"){
+				for(var x=0; x<resource.length; x++){
+					FontXhr[x] = new XMLHttpRequest();
+					FontXhr[x].responseType = 'text';
+					FontUrls[x] = resource[x];
+					if (x == resource.length-1){
+						assignEventHandlers();
+					}
 				}
-			})
-		}else if (resourceType == "text"){
-			pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				pageXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
-				if (arrayIndex == pageXhr.length-1){
-					get();
-				}
-			})
-		}
-	};
-	function get(){
-		if(resourceType == "image"){
-			imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				imageXhr[arrayIndex].open("GET", imageUrls[arrayIndex], true);
-				if (arrayIndex == imageXhr.length-1){
-					 fireGet();
-				}
-			})
-		}else if(resourceType == "font"){
-			FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				FontXhr[arrayIndex].open("GET", FontUrls[arrayIndex], true);
-				if (arrayIndex == FontXhr.length-1){
-					 fireGet();
-				}
-			})
-		}else if(resourceType == "text"){
-			pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				pageXhr[arrayIndex].open("GET", pageUrls[arrayIndex], true);
-				if (arrayIndex == pageXhr.length-1){
-					 fireGet();
-				}
-			})
-		}
-	}
-	function callBack(){
-		if(options.OCompleteCallBackfn != null){
-			setTimeout(function(){
-				options.OCompleteCallBackfn();
-			}, options.OCompleteCallBackDelay);
-		}
-	}
-	function progCalc(index){
-		if(resourceType == "image"){
-			if(imageXhr[index].status == 200){
-				if(options.writeResource == true){
-					var reader  = new FileReader();
-					reader.onloadend = function () {
-						ImageLoadOk += 1;
-						options.imageElements[index].style["background-image"] = "url("+reader.result+")";
-						total = (ImageLoadOk/imageXhr.length)*100;
-						options.Oprogressfn != null?options.Oprogressfn():null;
-						if(total == 100){
-							callBack();
-						}
-					};
-					reader.readAsDataURL(imageXhr[index].response);
-				}
-			}
-		}else if(resourceType == "font"){
-			if(FontXhr[index].status == 200){
-				FontLoadOk += 1;
-				total = (FontLoadOk/FontXhr.length)*100;
-				options.Oprogressfn != null?options.Oprogressfn():null;
-				if(total == 100){
-					callBack();
-				}
-			}
-		}else if(resourceType == "text"){
-			if(pageXhr[index].status == 200){
-				pageLoadOk += 1;
-				total = (pageLoadOk/pageXhr.length)*100;
-				options.Oprogressfn != null?options.Oprogressfn():null;
-				options.textElements[index].innerHTML = pageXhr[index].responseText;
-				if(total == 100){
-					callBack();
+			}else if(resourceType == "text"){
+				for(var x=0; x<resource.length; x++){
+					pageXhr[x] = new XMLHttpRequest();
+					pageXhr[x].responseType = 'text';
+					pageUrls[x] = resource[x];
+					if (x == resource.length-1){
+						assignEventHandlers();
+					}
 				}
 			}
 		}
-	}
-	function fireGet(){
-		if(resourceType == "image"){
-			imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				imageXhr[arrayIndex].send();
-			})
-		}else if(resourceType == "font"){
-			FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				FontXhr[arrayIndex].send();
-			})
-		}else if(resourceType == "text"){
-			pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
-				pageXhr[arrayIndex].send();
-			})
+		function assignEventHandlers(){
+			if(resourceType == "image"){
+				imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					imageXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
+					if (arrayIndex == imageXhr.length-1){
+						get();
+					}
+				})
+			}else if (resourceType == "font"){
+				FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					FontXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
+					if (arrayIndex == FontXhr.length-1){
+						get();
+					}
+				})
+			}else if (resourceType == "text"){
+				pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					pageXhr[arrayIndex].onload = function(){progCalc(arrayIndex)};
+					if (arrayIndex == pageXhr.length-1){
+						get();
+					}
+				})
+			}
+		};
+		function get(){
+			if(resourceType == "image"){
+				imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					imageXhr[arrayIndex].open("GET", imageUrls[arrayIndex], true);
+					if (arrayIndex == imageXhr.length-1){
+						fireGet();
+					}
+				})
+			}else if(resourceType == "font"){
+				FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					FontXhr[arrayIndex].open("GET", FontUrls[arrayIndex], true);
+					if (arrayIndex == FontXhr.length-1){
+						fireGet();
+					}
+				})
+			}else if(resourceType == "text"){
+				pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					pageXhr[arrayIndex].open("GET", pageUrls[arrayIndex], true);
+					if (arrayIndex == pageXhr.length-1){
+						fireGet();
+					}
+				})
+			}
 		}
+		function callBack(){
+			if(options.OCompleteCallBackfn != null){
+				setTimeout(function(){
+					options.OCompleteCallBackfn();
+				}, options.OCompleteCallBackDelay);
+			}
+		}
+		function progCalc(index){
+			if(resourceType == "image"){
+				if(imageXhr[index].status == 200){
+					if(options.writeResource == true){
+						var reader  = new FileReader();
+						reader.onloadend = function () {
+							ImageLoadOk += 1;
+							options.imageElements[index].style["background-image"] = "url("+reader.result+")";
+							total = (ImageLoadOk/imageXhr.length)*100;
+							options.Oprogressfn != null?options.Oprogressfn():null;
+							if(total == 100){
+								callBack();
+							}
+						};
+						reader.readAsDataURL(imageXhr[index].response);
+					}
+				}
+			}else if(resourceType == "font"){
+				if(FontXhr[index].status == 200){
+					FontLoadOk += 1;
+					total = (FontLoadOk/FontXhr.length)*100;
+					options.Oprogressfn != null?options.Oprogressfn():null;
+					if(total == 100){
+						callBack();
+					}
+				}
+			}else if(resourceType == "text"){
+				if(pageXhr[index].status == 200){
+					pageLoadOk += 1;
+					total = (pageLoadOk/pageXhr.length)*100;
+					options.Oprogressfn != null?options.Oprogressfn():null;
+					options.textElements[index].innerHTML = pageXhr[index].responseText;
+					if(total == 100){
+						callBack();
+					}
+				}
+			}
+		}
+		function fireGet(){
+			if(resourceType == "image"){
+				imageXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					imageXhr[arrayIndex].send();
+				})
+			}else if(resourceType == "font"){
+				FontXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					FontXhr[arrayIndex].send();
+				})
+			}else if(resourceType == "text"){
+				pageXhr.forEach(function(itemContent, arrayIndex, targetArray){
+					pageXhr[arrayIndex].send();
+				})
+			}
 
-	}
-	//private members end
-
-	this.uploader = {
-		config : {
 		}
-	}
-	this.downloader = {
-		config : {
-		}
-	}
-	this.download = function(resource){
-		validateArray(resource, "download() method argument 1 must be an array");
-		validateArrayMembers(resource, "type", "download() method argument 1 must be an array of strings specifying the resource URL");
-		initializeResource(resource);
-	}
-	this.upload = function(resource){}
-
-	Object.defineProperties(this, {
-		uploader:{
-			writable:false
-		},
-		downloader:{
-			writable:false
-		},
-		upload:{
-			writable:false
-		},
-		download:{
-			writable:false
-		}
-	});
-	Object.defineProperties(this.downloader, {
-		config:{
-			writable:false
-		},
-		progress:{
-			get:function(){
-				return parseInt(total);
+		//private members end
+		var body = {
+			config : {
+			},
+			download :function(resource){
+				validateArray(resource, "download() method argument 1 must be an array");
+				validateArrayMembers(resource, "type", "download() method argument 1 must be an array of strings specifying the resource URL");
+				initializeResource(resource);
 			}
 		}
-	});
-	Object.defineProperties(this.uploader, {
-		config:{
-			writable:false
-		},
-		status:{
-			get:function(){
-				return parseInt(total);
+		Object.defineProperties(body, {
+			config:{writable:false},
+			download:{writable:false},
+			progress:{
+				get:function(){
+					return parseInt(total);
+				}
 			}
-		}
-	});
-	Object.defineProperties(this.downloader.config, {
+			
+		});
+		Object.defineProperties(body.config, {
 			callBackFn:{
 				set:function(value){
-					if (validateFunction(value)){
-						options.OCompleteCallBackfn = value
-					}
+					validateFunction(value);
+					options.OCompleteCallBackfn = value
 				}
 			},
 			callBackDelay:{
@@ -1536,21 +1518,21 @@ function resourceIO(){
 				set: function(value){
 					if (validateString(value)){
 						if(matchString(value.toLowerCase(), ["image", "text", "font"])){
-								if(value.toLowerCase() == "image"){
-									if(options.writeResource == true && options.imageElements == null){
-										throw new Error("No images element set, set using the 'downloader.imageElements' properties");
-									}else{
-										resourceType = value.toLowerCase();
-									}
-								}else if (value.toLowerCase() == "text") {
-									if(options.writeResource == true && options.textElements == null){
-										throw new Error("No text elements set, set using the 'downloader.textElements' properties");
-									}else{
-										resourceType = value.toLowerCase();
-									}
+							if(value.toLowerCase() == "image"){
+								if(options.writeResource == true && options.imageElements == null){
+									throw new Error("No images element set, set using the 'downloader.imageElements' properties");
 								}else{
 									resourceType = value.toLowerCase();
 								}
+							}else if (value.toLowerCase() == "text") {
+								if(options.writeResource == true && options.textElements == null){
+									throw new Error("No text elements set, set using the 'downloader.textElements' properties");
+								}else{
+									resourceType = value.toLowerCase();
+								}
+							}else{
+								resourceType = value.toLowerCase();
+							}
 						}
 					}
 				}
@@ -1579,6 +1561,17 @@ function resourceIO(){
 					options.Oprogressfn = value;
 				}
 			}
+		});
+
+		return body;
+	}
+	Object.defineProperties(this, {
+		uploader:{
+			writable:false
+		},
+		downloader:{
+			writable:false
+		}
 	});
 }
 /****************************************************************/
@@ -1618,7 +1611,7 @@ ToBaseGridMultiple.centerVertically = function (targetElement, height){
 /****************************************************************/
 
 /**************************TypeWriter****************************/
-function typeWriter(){
+function AutoWriter(){
 	var PlainTextCounter = 0,	ParagraphTextCounter = 0,	ActiveParagraph = 0, self = this, n, callBackDelay=0, speed= [10,20];
 	this.writePlainText = function(con, text, fn){
 		validateElement(con);
@@ -1761,7 +1754,6 @@ DOMelement.centerY = function (element){
 	var positionType = DOMelement.cssStyle(element, "position");
 	var elementParent = element.parentNode;
 	var support = DOMelement.cssStyle(element, "transform");
-
 	if(positionType != "static"){//Positioned element
 		if(support != undefined){//Transform supported
 			//Centralize
@@ -1902,14 +1894,12 @@ DOMelement.attachEventHandler = function (event, DomClass, fn){
 	validateFunction(fn, "'DOMelement.attachEventHandler()' argument 3 must be a function to be called on the trigger");
 
 	document.body.addEventListener(event, function(e){
-		e.stopImediatePropagation;
 		if(idType == "single"){
 			if(e.target.classList != null){
 				if(e.target.classList.contains(DomClass)){
 					fn(e);
 				}
 			}
-		
 		}else{
 			var total = DomClass.length;
 			for(var x=0; x<total; x++){
@@ -2000,7 +1990,7 @@ DOMelement.getParent = function(element, parentIDorLevel){
 /****************************************************************/
 
 /********************Verticalal scroll handler*******************/
-function verticalScroll(){
+function VerticalScroll(){
 	var iniSY = 0, state = {direction:"", change:0};
 	window.addEventListener("scroll", function(){
 		if(scrollY > iniSY){//scrolled down
@@ -2019,7 +2009,7 @@ function verticalScroll(){
 		}
 	});
 }
-verticalScroll.query = function(totalHeight=null){
+VerticalScroll.query = function(totalHeight=null){
 	var TotalHeightBelow = totalHeight - window.innerHeight;
 	var remainingHeightBelow = totalHeight - (scrollY+window.innerHeight);
 	var state = "";
@@ -2037,13 +2027,13 @@ verticalScroll.query = function(totalHeight=null){
 /****************************************************************/
 
 /************************ListScroller****************************/
-function listScroller(container, listParent){
+function ListScroller(container, listParent){
 	//listParent 	=> the ul element
 	//container		=> Element housing the ul element
 	validateElement(container, "An HTML element needed as list parent container");
 	validateElement(listParent, "List parent is not a valid HTML element");
-	var maxAdd = 0, ini = 0, paddingRight = 0,	ready = 0, listening=0, running=0;
-	var listPlane = "x", menuWidth = 170, Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonsClassName = [], paddingLeft=0, paddingY=[], menuHeight=23,paddingY=[0,0], wrapperStyle="width:100%";
+	var maxAdd = 0, paddingRight = 0,	ready = 0, listening=0, running=0;
+	var listPlane = "x", menuWidth = 170, Xbuttons = [], Ybuttons = [], scrollSize = 175, effects = [1, "linear"], inactiveButtonsClassName = [], paddingLeft=0, paddingY=[], menuHeight=23,paddingY=[0,0], wrapperStyle="width:100%", spaceError=0, restyleOnActive=false;
 	//Xbuttons[0] = left buttons, Xbuttons[1] = Right buttons
 	function toggleClass(type, id){
 		if(listPlane == "x"){
@@ -2071,31 +2061,34 @@ function listScroller(container, listParent){
 	//event function
 	function transitionEndHandler(e){
 		if(e.target.classList.contains("vlistCon")){
-			if (listPlane == "X" || listPlane == "x"){
-				if(listParent.classList.contains("to_left")){
-					toggleClass("r", 0);
-					var diff = behindRightValue();
-					if(diff == 0){
-						toggleClass("a", 1);
+			if(listening == 1){
+				if (listPlane == "X" || listPlane == "x"){
+					if(listParent.classList.contains("to_left")){
+						toggleClass("r", 0);
+						var diff = behindRightValue();
+						if(diff == 0){
+							toggleClass("a", 1);
+						}
+						running=0;
+					}else if (listParent.classList.contains("to_right")) {
+						toggleClass("r", 1);
+						var leftValue = null;
+						behindLeftValue()<0?leftValue = -1*behindLeftValue():leftValue = behindLeftValue();
+						if(leftValue == 0){
+							toggleClass("a", 0);
+						}
+						running=0;
 					}
-					running=0;
-				}else if (listParent.classList.contains("to_right")) {
-					toggleClass("r", 1);
-					var leftValue = null;
-					behindLeftValue()<0?leftValue = -1*behindLeftValue():leftValue = behindLeftValue();
-					if(leftValue == 0){
-						toggleClass("a", 0);
-					}
-					running=0;
+				}else if (listPlane == "Y" || listPlane == "y") {
+		
 				}
-			}else if (listPlane == "Y" || listPlane == "y") {
-	
 			}
+			
 		}	
 	}
 	function clickHandler(e){
 		//button left
-		if(e.target.classList.contains("vListBt-Left")){
+		if(e.target.classList.contains("vListBt-Left") && e.target == Xbuttons[0]){
 			if (listening == 1){
 				if (running == 0){
 					scrollToRight(e);
@@ -2104,7 +2097,7 @@ function listScroller(container, listParent){
 		}
 
 		//button Right
-		if(e.target.classList.contains("vListBt-Right")){
+		if(e.target.classList.contains("vListBt-Right") && e.target == Xbuttons[1]){
 			if (listening == 1){
 				if(running == 0){
 					scrollToleft(e);
@@ -2112,7 +2105,7 @@ function listScroller(container, listParent){
 			}
 		}
 		//button top
-		if(e.target.classList.contains("vListBt-Top")){
+		if(e.target.classList.contains("vListBt-Top") && e.target == Ybuttons[0]){
 			if (listening == 1){
 				if(running == 0){
 					scrollToTop(e);
@@ -2120,10 +2113,10 @@ function listScroller(container, listParent){
 			}
 		}
 		//button Right
-		if(e.target.classList.contains("vListBt-Bottom")){
+		if(e.target.classList.contains("vListBt-Bottom") && e.target == Ybuttons[1]){
 			if (listening == 1){
 				if(running == 0){
-					// scrollTolBottom(e);
+					scrollTolBottom(e);
 				}
 			}
 		}
@@ -2144,7 +2137,7 @@ function listScroller(container, listParent){
 	function behindRightValue(){
 		var leftValue = null;
 		behindLeftValue()<0?leftValue = -1*behindLeftValue():leftValue = behindLeftValue();
-		var containerSize = container.clientWidth;
+		var containerSize = container.getBoundingClientRect()["width"]+spaceError;
 		var behindRight = listParent.scrollWidth - (leftValue + (containerSize-(paddingLeft+paddingRight)));
 		return behindRight;
 	}
@@ -2207,6 +2200,8 @@ function listScroller(container, listParent){
 			}
 		}
 	}
+	function scrollToTop(e){}
+	function scrollTolBottom(e){}
 	function scrollStatus(){
 		if (listPlane == "x"){
 			if(listening == 1){ //started
@@ -2267,8 +2262,8 @@ function listScroller(container, listParent){
 					throw new Error("Setup error: Xbuttons not specified");
 				}
 				listParent.classList.remove("vlistParentY");
-				Xbuttons[0].classList.add(inactiveButtonsClassName[0]);
-				Xbuttons[1].classList.add(inactiveButtonsClassName[0]);
+				toggleClass("a", 0);
+				toggleClass("a", 1);
 			}else if(listPlane.toLowerCase() == "y"){
 				if(Ybuttons.length == 0 ){
 					throw new Error("Setup error: Ybuttons not specified");
@@ -2284,14 +2279,13 @@ function listScroller(container, listParent){
 			addVitalStyles();
 			assignHandlers();
 			ready = 1;//initialized
-		}else{
-			addVitalStyles();
 		}
 	};
 	this.onScroller = function (){
 		if(ready == 1){
 			listening = 1;
 			scrollStatus();
+			restyleOnActive?addVitalStyles():null
 		}
 	}
 	this.offScroller = function (){
@@ -2304,7 +2298,6 @@ function listScroller(container, listParent){
 	Object.defineProperties(this.config, {
 		listPlane:{
 			set: function(value){
-				
 				validateString(value, "String needed as listPlane property value");
 				var value = value.toLowerCase();
 				matchString(value, ["x", "y", "xy"], "listPlane value can either be 'x' 'y' or 'xy', case insensitive");
@@ -2323,10 +2316,7 @@ function listScroller(container, listParent){
 					try {
 						Ybuttons[0].classList.remove("vListBt-Top");
 						Ybuttons[1].classList.remove("vListBt-Bottom");
-					} catch (error) {
-						
-					}
-					
+					} catch (error) {}
 				}else{
 					if(Ybuttons.length == 0){
 						throw new Error(emsg("Y"));
@@ -2345,7 +2335,7 @@ function listScroller(container, listParent){
 		},
 		Xbuttons: {
 			set:function(value){
-				var temp = "listScroller.config.Xbuttons property value must be an array ";
+				var temp = "ListScroller.config.Xbuttons property value must be an array ";
 				validateArray(value, temp);
 				validateArrayLength(value, 2, temp+"of 2 Elements");
 				validateArrayMembers(value, "HTMLElement", temp+"of HTMLElements");
@@ -2361,7 +2351,7 @@ function listScroller(container, listParent){
 		},
 		Ybuttons: {
 			set:function(value){
-				var temp = "listScroller.config.Ybuttons property value must be an array ";
+				var temp = "ListScroller.config.Ybuttons property value must be an array ";
 				validateArray(value, temp);
 				validateArrayLength(value, 2, temp+"of 2 Elements");
 				validateArrayMembers(value, "HTMLElement", temp+"of HTMLElements");
@@ -2449,6 +2439,18 @@ function listScroller(container, listParent){
 				validateString(value, "wrapperStyle property expects a string as value");
 				wrapperStyle = value;
 			}
+		},
+		spaceError:{
+			set:function(value){
+				if(!validateInteger(value)) throw new Error ("config.spaceError property expects an integet");
+				spaceError = value<0?0:value;
+			}
+		},
+		restyleOnActive:{
+			set:function(value){
+				validateBoolean(value, "'config.restyleOnActive' property value must be a boolean");
+				restyleOnActive = value;
+			}
 		}
 	});
 	Object.defineProperties(this, {
@@ -2461,7 +2463,7 @@ function listScroller(container, listParent){
 /****************************************************************/
 
 /*****************browserResizePropertyHandler*******************/
-function browserResizeProperty(){
+function BrowserResizeProperty(){
 	var currentSize = window.innerWidth, alter = 0, mode="null";
 	window.addEventListener("resize", function(){
 		if (window.innerWidth > currentSize){
@@ -2492,10 +2494,11 @@ function browserResizeProperty(){
 /****************************************************************/
 
 /********************Custom form component***********************/
-function formComponents(){	
+function FormComponents(){	
 	/*********Helpers***********/
 	function withLabel(ele){
-		var labelEle = ele.nextElementSibling;
+		var labelEle = ele.nextElementSibling == null?ele.previousElementSibling:ele.nextElementSibling;
+		ele.parentNode.style["display"] = "flex";
 		if(labelEle != null){
 			if(labelEle.nodeName == "LABEL"){
 				return {
@@ -2792,7 +2795,7 @@ function formComponents(){
 		function selectStyleSheet(){
 			if (document.querySelector("style[data-id='v"+selectClassName+"']") == null){
 				//set wrapper class name
-				var css = styles["selectFormComponent"];
+				var css = "";
 				css += ".v"+selectClassName + " {width:"+selectDim[0]+"; height:"+selectDim[1]+"; z-index: 60;}";
 				css += ".v"+selectClassName + " .sField {line-height:"+selectDim[1]+";}";
 				css += ".v"+selectClassName + " .sIcon::before {line-height:"+selectDim[1]+";}";
@@ -2834,7 +2837,7 @@ function formComponents(){
 			//Set select mode
 			nativeSelect.getAttribute("multiple") != null?multiple=true:null;
 			if(enableToolTip && multiple){
-				toolTipHandler = new toolTip();
+				toolTipHandler = new ToolTip();
 				toolTipHandler.initialize();
 			};
 			//Wrapper Element
@@ -3168,7 +3171,7 @@ function formComponents(){
 	
 		function radioStyleSheet(){
 			if (document.querySelector("style[data-id='v"+radioClassName+"']") == null){
-				 var css = styles["radioFormComponent"];
+				 var css = "";
 				css +=  ".v"+radioClassName + " {width:"+radioDim[0]+"; height:"+radioDim[1]+"}";
 				css +=  ".v"+radioClassName + " .deselected:hover::before{"+mouseEffect[0]+";}";
 				css +=  ".v"+radioClassName + " .deselected:active::before{"+mouseEffect[1]+";}";
@@ -3201,7 +3204,6 @@ function formComponents(){
 			radioParentPosition == "static"?parent.style.position = "relative":null;
 	
 			if(hasLabel["status"]){
-				hasLabel["label"].style["display"] = "inline-block";
 				hasLabel["label"].style["min-height"] = radioDim[1];
 				hasLabel["label"].classList.add("vRadioButtonLabel");
 			}
@@ -3248,6 +3250,7 @@ function formComponents(){
 		}
 		function assignRadioEventHanler(){
 				DOMelement.attachEventHandler("click", "vRadioButton", function(e){
+					e.stopImmediatePropagation();
 					var mainRadio = e.target.parentNode.nextElementSibling;
 					if(e.target.classList.contains("ds")){ //Select non selected
 						//deselect any selected
@@ -3266,6 +3269,7 @@ function formComponents(){
 					mainRadio.click();
 				})
 				DOMelement.attachEventHandler("click", "vRadioButtonLabel", function(e){
+					e.stopImmediatePropagation();
 					var targetRadio = e.target.parentNode.querySelector("[tabindex='0']");
 					targetRadio != null ? targetRadio.click():null;
 				})
@@ -3395,10 +3399,10 @@ function formComponents(){
 
 		function checkboxStyleSheet(){
 			if (document.querySelector("style[data-id='v"+checkboxClassName+"']") == null){
-				var css = styles["checkboxFormComponent"];
+				var css = "";
 				css +=  ".v"+checkboxClassName + " {width:"+checkboxDim[0]+"; height:"+checkboxDim[1]+"}";
-				css +=  ".v"+checkboxClassName + " .unchecked:hover::before{"+mouseEffect[0]+";}";
-				css +=  ".v"+checkboxClassName + " .unchecked:active::before{"+mouseEffect[1]+";}";
+				mouseEffect[0] != undefined ?css +=  ".v"+checkboxClassName + " .unchecked:hover::before{"+mouseEffect[0]+";}":null;
+				mouseEffect[1] != undefined ?css +=  ".v"+checkboxClassName + " .unchecked:active::before{"+mouseEffect[1]+";}":null;
 				css +=  ".v"+checkboxClassName + " .checked::before{font-size:"+checkboxDim[0]+";}";
 				css +=  ".v"+checkboxClassName + " .unchecked::before{font-size:"+checkboxDim[0]+";}";
 
@@ -3428,7 +3432,6 @@ function formComponents(){
 			checkboxParentPosition == "static"?parent.style.position = "relative":null;
 			if(hasLabel != null){
 				if(hasLabel["status"]){
-					hasLabel["label"].style["display"] = "inline-block";
 					hasLabel["label"].style["min-height"] = checkboxDim[1];
 					hasLabel["label"].classList.add("vCheckboxLabel");
 				}
@@ -3476,6 +3479,7 @@ function formComponents(){
 		}
 		function assignCheckboxEventHanler(){
 				DOMelement.attachEventHandler("click", "vCheckbox", function(e){
+					e.stopImmediatePropagation();
 					var mainCheckbox = e.target.parentNode.nextElementSibling;
 					if(e.target.classList.contains("unchk")){ //check action, apply check
 						var nxt = e.target.parentNode.querySelector(".chk");
@@ -3484,9 +3488,11 @@ function formComponents(){
 						var nxt = e.target.parentNode.querySelector(".unchk");
 						toggleCheckbox(e.target, nxt, "unchecked"); //uncheck action, apply uncheck
 					}
+
 					mainCheckbox.click();
 				})
 				DOMelement.attachEventHandler("click", "vCheckboxLabel", function(e){
+					e.stopImmediatePropagation();
 					var targetCheckbox = e.target.parentNode.querySelector("[tabindex='0']");
 					targetCheckbox != null ? targetCheckbox.click():null;
 				})
@@ -3521,7 +3527,6 @@ function formComponents(){
 			ele.style["width"] = "0%";
 			ele.style["height"] = "0%";
 			ele.style["visibility"] = "";
-			
 		}
 
 		var body = {
@@ -3597,9 +3602,8 @@ function formComponents(){
 			},
 			className:{
 				set:function(value){
-					if(validateString(value, "config.className property expect a string as value")){
-						checkboxClassName = value;
-					}
+					validateString(value, "config.className property expect a string as value")
+					checkboxClassName = value;
 				}
 			}
 		})
@@ -3613,7 +3617,7 @@ function formComponents(){
 			return this.getTime() == this.getTime();
 		}
 		var falseState="cX.1zwAP", trueState="mp.3Cy._Xa";
-		var tooTipHandler= null, dateInputIconStyle=[], daysToolTip=false ,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], shiftPoint=320, labelProperties=[], daysToolTipProperties=[], datePickerClassName="", datePickerDim=["100%", "35px"], dateFieldStyle="", selectionStyle="", validationAttribute="", familyID="vDatePicker";
+		var tooTipHandler= null, dateInputIconStyle=[], daysToolTip=false ,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], shiftPoint=320, labelProperties=[], daysToolTipProperties=[], datePickerClassName="", datePickerDim=["100%", "35px"], dateFieldStyle="", selectionStyle="", validationAttribute="", familyID="vDatePicker", listControllerObj= null;
 
 		function autoPlace(dateBox){
 			var dField = dateBox.previousElementSibling.children[0];
@@ -3667,7 +3671,7 @@ function formComponents(){
 					css += ".vDateIcon:active::before {"+dateInputIconStyle[2]+"}";
 				}
 				if(selectionStyle != ""){
-					css += ".vDatePicker .selected{"+selectionStyle+"}";
+					css += ".vDatePicker .vSelected{"+selectionStyle+"}";
 				}
 				attachStyleSheet(datePickerClassName, css);
 			}
@@ -3686,7 +3690,6 @@ function formComponents(){
 					var dateComponents = dateComponentsVariables(wrapper)["dateComponents"];
 					generateYears(yearSeries, yearsCon);
 					rangeCon.style["height"] = "0%";
-					rangeCon.style["left"] = "0px";
 					rangeCon.style["opacity"] = "0";
 					rangeCon.style["z-index"] = "0";
 					rangeCon.classList.contains("displayActive")?rangeCon.classList.remove("displayActive"):null;
@@ -3705,6 +3708,7 @@ function formComponents(){
 					updateActive(wrapper, e.target, "range");
 					toggleBackButton(wrapper);
 					dateComponents["timeParts"] != null ?toggleDoneButton(wrapper):null;
+					listControllerObj.offScroller();
 				}else if(id == "year"){//hide yearsCon and show MonthsCon
 					var wrapper = DOMelement.getParent(e.target, 5);
 					var nativeDateInput = wrapper.nextElementSibling;
@@ -3736,7 +3740,7 @@ function formComponents(){
 						addVitalStyle(month);
 						var selectedMonth = getSelectedValue(nativeDateInput, "month");
 						if(selectedMonth-1 == x){
-							month.classList.add("selected");
+							month.classList.add("vSelected");
 						}
 						x<9?month.setAttribute("data-value", "0"+(x+1).toString()):month.setAttribute("data-value", x+1);
 						month.append(document.createTextNode(months[x]))
@@ -3775,7 +3779,7 @@ function formComponents(){
 					var startDay, stopDay;					
 					daysCon.innerHTML = "";
 					dateComponents["dateParts"][1] = fixDigitLength(month);
-					
+
 					if (month=="4" || month=="6" || month=="9" || month=="11"){
 						stopDay = 29;
 					}else if(month=="2"){
@@ -3847,25 +3851,29 @@ function formComponents(){
 					currentDisplay.style["opacity"] = "0";
 					currentDisplay.style["z-index"] = "0";
 					currentDisplay.scrollHeight;
-
-					prev.classList.add("rewind");
-					prev.style["display"] = "flex";
-					prev.scrollHeight;
-					prev.style["height"] = "100%";
-					prev.style["opacity"] = "1";
-					prev.style["z-index"] = "1";
-					if (!(prev.classList.contains("vDateRangeCon"))){
-						prev.style["width"] = "100%";
-					}else if(prev.classList.contains("vDateRangeCon")){
-						toggleListScroller(wrapper);
+					if(prev != null){
+						prev.classList.add("rewind");
+						prev.style["display"] = "flex";
+						prev.scrollHeight;
+						prev.style["height"] = "100%";
+						prev.style["opacity"] = "1";
+						prev.style["z-index"] = "1";
+						if (!(prev.classList.contains("vDateRangeCon"))){
+							prev.style["width"] = "100%";
+						}else if(prev.classList.contains("vDateRangeCon")){
+							listControllerObj.onScroller();
+						}
 					}
 				}else if(id == "vClose"){//close button clicked
-					var wrapper = DOMelement.getParent(e.target, 5); 
+					var wrapper = DOMelement.getParent(e.target, 4); 
 					closeDateBox(wrapper);
 				}else if(id == "meridianSwitchCon"){//meridian switch button clicked
 					var wrapper = DOMelement.getParent(e.target, 5);
-					toggleMeridianSwitch(e.target);
-					reCompute24hours(wrapper);
+					var hrValue = wrapper.querySelector(".hr").value;
+					if(hrValue>0){
+						toggleMeridianSwitch(e.target);
+						reCompute24hours(wrapper);
+					}
 				}else if(id == "tbuttonActive"){
 					var wrapper = DOMelement.getParent(e.target, 4);
 					closeDateBox(wrapper);
@@ -3881,7 +3889,6 @@ function formComponents(){
 					var wrapper = DOMelement.getParent(e.target, 4);
 					var rangeCon = wrapper.querySelector(".vDateRangeCon");
 					e.target.classList.remove("rangeToYear");
-					toggleListScroller(wrapper);
 				}
 				if (id == "yearToMonth") {//Hide yearsCon
 					e.target.classList.remove("yearToMonth");
@@ -3976,7 +3983,7 @@ function formComponents(){
 				if(anyOpenDate != null){
 					var wrapper = DOMelement.getParent(anyOpenDate, 2);
 					var dateBoxParent = wrapper.querySelector(".vDateBoxTool");
-					var dateBoxArrow = wrapper.querySelector(".vDateBoxArrow");
+					var dateBoxArrow = wrapper.querySelectorAll(".vDateBoxArrow");
 					shift(dateBoxParent, dateBoxArrow);
 				}
 			})
@@ -3995,6 +4002,12 @@ function formComponents(){
 					}
 				}
 			}, false)
+			DOMelement.attachEventHandler("mouseover", "meridianSwitchCon", function(e){
+				var wrapper = DOMelement.getParent(e.target, 5);
+				var hrValue = wrapper.querySelector(".hr").value;
+				hrValue>0?e.target.style["cursor"] = "pointer":e.target.style["cursor"] = "not-allowed";
+				
+			})
 		}
 		function toggleMeridianSwitch(ele){
 			var wrapper = DOMelement.getParent(ele, 5);
@@ -4051,7 +4064,7 @@ function formComponents(){
 					var year = document.createElement("DIV");
 					year.classList.add("year");
 					var selectedYear = getSelectedValue(nativeDateInput, "year");
-					selectedYear == nxtYear?year.classList.add("selected"):null
+					selectedYear == nxtYear?year.classList.add("vSelected"):null
 					addVitalStyle(year);
 					year.appendChild(document.createTextNode(nxtYear));
 					yearsCon.appendChild(year);
@@ -4078,9 +4091,12 @@ function formComponents(){
 		}
 		function runDatePickerBuild(nativeDateInput){
 			nativeDateInput.classList.add("xDnative");
+			
 			var dateInputParent = nativeDateInput.parentNode;
+			var existingWrapper = nativeDateInput.previousElementSibling;
 			var includeTime =  pickerType(nativeDateInput);
 			var mask, dateRange= true, maskLabel;
+			existingWrapper != null?dateInputParent.removeChild(existingWrapper):null;
 			if(nativeDateInput.value.length > 0){//Has default
 				mask = nativeDateInput.value;
 			}else{//No default set
@@ -4310,7 +4326,7 @@ function formComponents(){
 			}		
 		}
 		function formatTimeField(wrapper){
-			var fv = new formValidator();
+			var fv = new FormValidator();
 			var hrinput = wrapper.querySelector(".hourCon input");
 			var mininput = wrapper.querySelector(".minCon input");
 			fv.format.integerField(hrinput);
@@ -4332,7 +4348,7 @@ function formComponents(){
 			var rangeBox = displayCon.querySelectorAll(".rangeBox");
 			var range = document.createElement("DIV");
 			var startYear = parseInt(getDateRangeComponents(nativeDateInput)["seriesStartYear"]);
-			var numberOfRangeBoxes = nativeDateInput.previousElementSibling.querySelectorAll(".vDateRangeCon").length;
+			var numberOfRangeBoxes = nativeDateInput.previousElementSibling.querySelectorAll(".rangeBox").length;
 			range.classList.add( "range");
 			range.setAttribute("data-range", startYear);
 			addVitalStyle(range);
@@ -4347,7 +4363,7 @@ function formComponents(){
 					if(startYear > stopSeries) break;
 					diff = nativeYear - startYear;
 					var range = document.createElement("DIV");
-					(diff >=0 && diff <10)?range.classList.add("selected"):null;
+					(diff >=0 && diff <10)?range.classList.add("vSelected"):null;
 					range.classList.add("range");
 					range.setAttribute("data-range", startYear);
 					addVitalStyle(range);
@@ -4377,7 +4393,7 @@ function formComponents(){
 				year.classList.add( "year");
 				addVitalStyle(year);
 				var selectedYear = getSelectedValue(nativeDateInput, "year");
-				selectedYear == sYear?year.classList.add("selected"):null
+				selectedYear == sYear?year.classList.add("vSelected"):null
 				year.appendChild(document.createTextNode(sYear.toString()));
 				displayCon.appendChild(year);	
 				if (n == 11) break;				
@@ -4392,7 +4408,6 @@ function formComponents(){
 				var month = dateComponents["dateParts"][1];
 				for(var x=0; x<totalDays; x++){
 					var dayName = getDayName(year, month, allDays[x].getAttribute("data-value"));
-					console.log(year,month );
 					allDays[x].setAttribute("title", dayName);
 					tooTipHandler.on(allDays[x]);
 				}
@@ -4405,7 +4420,7 @@ function formComponents(){
 			addVitalStyle(day);
 			var selectedDay = getSelectedValue(nativeDateInput, "day");
 			if(selectedDay-1 == x){
-				day.classList.add("selected");
+				day.classList.add("vSelected");
 			}
 			x<9?day.setAttribute("data-value", "0"+(x+1).toString()):day.setAttribute("data-value", x+1);
 			day.append(document.createTextNode(x+1));
@@ -4414,24 +4429,24 @@ function formComponents(){
 		function toggleListScroller(wrapper){
 			var listCon = wrapper.querySelector(".vDateBox  .vDateRangeCon");
 			var list = wrapper.querySelectorAll(".vDateBox  .rangeBox");
-			
-
 			var listConParent = wrapper.querySelector(".vDateBox .vDateBoxDisplayCon");
 			var LeftBt = wrapper.querySelector("#vPrev");
 			var RightBt = wrapper.querySelector("#vNext");
-			var listControllerObj = new listScroller(listConParent, listCon);
-			
-			if (list.length > 1 && DOMelement.cssStyle(listCon, "display") != "none"){	
-				listControllerObj.config.listPlane = "x";
+			if(listControllerObj == null){
+				listControllerObj = new ListScroller(listConParent, listCon);
 				listControllerObj.config.Xbuttons = [LeftBt, RightBt];
+				listControllerObj.config.listPlane = "x";
 				listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
 				listControllerObj.config.effects = [0.4, "cubic-bezier(0,.99,0,1)"];
-				listControllerObj.config.scrollSize = 302;
+				listControllerObj.config.scrollSize = 300;
+				listControllerObj.config.spaceError = 2;
 				listControllerObj.config.paddingRight = 0;
 				listControllerObj.initialize();
+			}
+			if (list.length > 1 && DOMelement.cssStyle(listCon, "display") != "none"){	
 				listControllerObj.onScroller();
 			}else{
-				listControllerObj.offScroller();
+				// listControllerObj.offScroller();
 			}
 		}
 		function toggleBackButton(wrapper){
@@ -4523,15 +4538,19 @@ function formComponents(){
 				return false;
 			}
 		}
-		function shift(dateBoxParent, dateBoxArrow){
+		function shift(dateBoxParent, dateBoxArrows){
 				if(window.innerWidth > shiftPoint){
-					dateBoxArrow.classList.add("normalShift");
-					dateBoxArrow.classList.remove("shift");
+					for(var x=0; x<dateBoxArrows.length; x++){
+						dateBoxArrows[x].classList.add("normalShift");
+						dateBoxArrows[x].classList.remove("shift");
+					}
 					dateBoxParent.style["left"] = "0";
 					dateBoxParent.style["margin-left"] = "0";
 				}else {
-					dateBoxArrow.classList.add("shift");
-					dateBoxArrow.classList.remove("normalShift");
+					for(var x=0; x<dateBoxArrows.length; x++){
+						dateBoxArrows[x].classList.add("shift");
+						dateBoxArrows[x].classList.remove("normalShift");
+					}
 					dateBoxParent.style["left"] = "50%";
 					dateBoxParent.style["margin-left"] = "-150px";
 				}
@@ -4730,38 +4749,38 @@ function formComponents(){
 				dateComponents["dateParts"][0] = "YYYY";
 				dateComponents["dateParts"][1] = "MM";
 				dateComponents["dateParts"][2] = "DD";
-				var allChildSelected = wrapper.querySelectorAll(".selected:not(.range)");
+				var allChildSelected = wrapper.querySelectorAll(".vSelected:not(.range)");
 				var total = allChildSelected.length;
 				if(allChildSelected >0){
 					for(var x=0; x<total; x++){
-						allChildSelected.classList.remove("selected");
+						allChildSelected.classList.remove("vSelected");
 					}
 				}
 			}else if(series == "md"){
 				dateComponents["dateParts"][1] = "MM";
 				dateComponents["dateParts"][2] = "DD";
-				var sMonth = wrapper.querySelector(".month.selected");
-				var sDay = wrapper.querySelector(".day.selected");
-				sMonth != null?sMonth.classList.remove("selected"):null;
-				sDay != null?sDay.classList.remove("selected"):null;
+				var sMonth = wrapper.querySelector(".month.vSelected");
+				var sDay = wrapper.querySelector(".day.vSelected");
+				sMonth != null?sMonth.classList.remove("vSelected"):null;
+				sDay != null?sDay.classList.remove("vSelected"):null;
 			}else if(series == "d"){
 				dateComponents["dateParts"][2] = "DD";
-				var sDay = wrapper.querySelector(".day.selected");
-				sDay != null?sDay.classList.remove("selected"):null;
+				var sDay = wrapper.querySelector(".day.vSelected");
+				sDay != null?sDay.classList.remove("vSelected"):null;
 			}
 		}
 		function updateActive(wrapper, selected, type){
 			if(type == "range"){
-				var current = wrapper.querySelector(".range.selected");
+				var current = wrapper.querySelector(".range.vSelected");
 			}else if(type == "year"){
-				var current = wrapper.querySelector(".year.selected");
+				var current = wrapper.querySelector(".year.vSelected");
 			}else if(type == "month"){
-				var current = wrapper.querySelector(".month.selected");
+				var current = wrapper.querySelector(".month.vSelected");
 			}else if(type == "day"){
-				var current = wrapper.querySelector(".day.selected");
+				var current = wrapper.querySelector(".day.vSelected");
 			}
-			current != null?current.classList.remove("selected"):null;
-			selected.classList.add("selected");
+			current != null?current.classList.remove("vSelected"):null;
+			selected.classList.add("vSelected");
 		}
 		function hideAnyDatePicker(dField){
 			var any = document.querySelectorAll(".dField[data-state='opened']");
@@ -4785,11 +4804,12 @@ function formComponents(){
 					if(validationAttribute == ""){
 						throw new Error("Setup imcomplete: No validation attribute, specify using the 'config.validationAttribute' property");
 					}
+					
 					reCreateDatePicker();
 					createStyles();
 					AddEventHandlers();
 					if(daysToolTip==true){
-						tooTipHandler = new toolTip();
+						tooTipHandler = new ToolTip();
 						if(daysToolTipProperties[0] != undefined){
 							var color = daysToolTipProperties[1] == undefined?"white":daysToolTipProperties[1];
 							tooTipHandler.config.tipBoxProperties = [daysToolTipProperties[0], color];
@@ -4798,7 +4818,7 @@ function formComponents(){
 					};
 				},
 				config:{},
-				resfresh: function(parent){
+				refresh: function(parent){
 					validateElement(parent, "datePicker.refresh() method expects a valid HTML as argument 1");
 					var allNewdatePickers = parent.querySelectorAll("."+datePickerClassName+":not(.xDnative)");
 					var totalNewdatePickers = allNewdatePickers.length;
@@ -4823,7 +4843,7 @@ function formComponents(){
 				set:function(value){
 					//[a,b,c] => a= icon normal State; b = icon hover State, b = icon active State
 					var temp = "config.inputIconStyle property array members";
-					validateArray(value, "config.labelProperties property expects an array as value");
+					validateArray(value, "config.inputIconStyle property expects an array as value");
 					if(value.length > 3){
 						throw new Error(temp+" cannot be more than 3");
 					}
@@ -4833,15 +4853,13 @@ function formComponents(){
 			},
 			daysToolTip:{
 				set:function(value){
-					if(validateBoolean(value, "'config.daysToolTip' property value must be a boolean")){
-						daysToolTip = value;
-					}
+					validateBoolean(value, "'config.daysToolTip' property value must be a boolean");
+					daysToolTip = value;
 				}
 			},
 			shiftPoint:{
 				set:function(value){
-					var test = new formValidator();
-					if (test.validate.integer(value)){
+					if (validateInteger(value)){
 						if(value > 300){
 							shiftPoint = value;
 						}else{
@@ -4900,7 +4918,6 @@ function formComponents(){
 					dateFieldStyle = value;
 				}
 			}
-
 		});
 		return body;
 	}
@@ -4916,7 +4933,7 @@ function formComponents(){
 /****************************************************************/
 
 /************************Form validator**************************/
-function formValidator(form=null){
+function FormValidator(form=null){
 	if(form != null){
 		validateElement(form, "'config.form' property must be an element");
 		var positionType = DOMelement.cssStyle(form, "position");
@@ -5282,7 +5299,7 @@ function formValidator(form=null){
 		}
 
 		if(url!=null){
-			var xhr = ajax.create();
+			var xhr = Ajax.create();
 			xhr.open("POST", url, true);
 			xhr.addEventListener("readystatechange", function(){
 				if(xhr.readyState == 2){//sent
@@ -5373,7 +5390,7 @@ function formValidator(form=null){
 		if (initialized == false){
 			innerWidth < smallView?screenMode = "small":screenMode="large";
 			if(form == null){
-				throw new Error("Cannot initialize without settinig a form to perform validation on, pass target form to formValidator() contructor, to set target form")
+				throw new Error("Cannot initialize without settinig a form to perform validation on, pass target form to FormValidator() contructor, to set target form")
 			}
 			setStyleSheet();
 			createLoader();
@@ -5761,7 +5778,7 @@ function formValidator(form=null){
 		}else {
 			validateString(url, "'feedBack()' method argument 2 must be a string specifying the URL");
 			showProgress();
-			var xhr = ajax.create();
+			var xhr = Ajax.create();
 			xhr.open("POST", url, true);
 			xhr.addEventListener("readystatechange", function(){
 				if(xhr.readyState == 2){//sent
@@ -5873,7 +5890,7 @@ function formValidator(form=null){
 /****************************************************************/
 
 /****************************Modal*******************************/
-function modalDisplayer(){
+function ModalDisplayer(){
 	var self=this,cssWidth="",currentForm=null,id=null, effectName="none", bodyOldPosition = "", mainFormCon = "", closeButton=null, mainFormConInner="", overlayType="", colorOverlayStyle="", totalHeight=0, initialized =false, openProcessor=function(){}, closeProcessor=function(){}, modalOn=false, sY=0, sX=0, endSy=0, scrollable=false, computedModalHeight=0, computedModalWidth=0, modalHeigthBelow=0, modalHeigthAbove=0, paddingTop=50;
 	var modalWidths = ["500px", "500px", "86%"], brkpoints={largeStart:1000, mediumStart:520};
 
@@ -6209,7 +6226,7 @@ function modalDisplayer(){
 		modalHeigthBelow = ((paddingTop*2)+computedModalHeight)-window.innerHeight;
 		if (diff < 100){
 			scrollable =true;
-			var heightBelow = verticalScroll.query(parseInt(DOMelement.cssStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
+			var heightBelow = VerticalScroll.query(parseInt(DOMelement.cssStyle(document.querySelector("html"), "height"), "px"))["remainingHeightBelow"];
 			if (heightBelow >= modalHeigthBelow){
 				modal.style["top"] = "50px";
 				modal.style["padding-bottom"] = "50px";
@@ -6251,7 +6268,7 @@ function modalDisplayer(){
 			closeProcessor();
 	}
 	function addEventhandler(){
-		var scrollHandler = new  verticalScroll();
+		var scrollHandler = new  VerticalScroll();
 		var sbpoint = new ScreenBreakPoint(brkpoints);
 		var mainModal = document.querySelector(".modalSpace");
 		var modalWindow = document.querySelector(".vModal");
@@ -6338,9 +6355,6 @@ function modalDisplayer(){
 				}
 			}
 		});
-		mainModal.addEventListener("resize", function(){
-			console.log(777);
-		}, false);
 		if (closeButton != null){
 			document.body.addEventListener("click", function(e){
 				if (e.target.id == closeButton.id){
@@ -6511,11 +6525,10 @@ function modalDisplayer(){
 				function msg(n){
 					return "'screenBreakPoints' property array value member "+n+" must be an integer";
 				}
-				var test = new formValidator();
-				if(test.validate.integer(value[0], msg(1)) && test.validate.integer(value[1], msg(2))){
-					brkpoints["largeStart"] = value[0];
-					brkpoints["mediumStart"] = value[1];
-				}
+				if(!validateInteger(value[0])) throw new Error(msg(1));
+				if(!validateInteger(value[1])) throw new Error(msg(2));
+				brkpoints["largeStart"] = value[0];
+				brkpoints["mediumStart"] = value[1];
 			}
 		}
 	});
@@ -6523,7 +6536,7 @@ function modalDisplayer(){
 /****************************************************************/
 
 /***************************Tool tip*****************************/
-function toolTip(){
+function ToolTip(){
 	var sy=0,sx=0, ini=false, tipBoxProperties=[],tipId="", initialized=0;
 	function createStyles(){
 		if (document.querySelector("style[data-id='toolTipStyles']") == null){
@@ -6651,9 +6664,9 @@ function toolTip(){
 /****************************************************************/
 
 /***************************Carousel*****************************/
-function carousel(container, viewport){
-	validateElement(container, "'carousel(x,.)' constructor argument 1 must be an HTML Element");
-	validateElement(viewport, "'carousel(.,x)' constructor argument 2 must be an HTML Element");
+function Carousel(container, viewport){
+	validateElement(container, "'Carousel(x,.)' constructor argument 1 must be an HTML Element");
+	validateElement(viewport, "'Carousel(.,x)' constructor argument 2 must be an HTML Element");
 	var self = this;
 	var viewportId = viewport.getAttribute("id");
 	var sliders = container.querySelectorAll("#"+viewportId+"> div");
@@ -6818,7 +6831,7 @@ function carousel(container, viewport){
 			
 			//Enable touch if specified
 			if(touchResponse){
-				var touchHdr = new touchHandler(container);
+				var touchHdr = new TouchHandler(container);
 				touchHdr.config.slideCallBack = touchEndCallBack;
 				touchHdr.config.viewPortTransition = "all "+speed+"ms cubic-bezier(0,.98,0,.98)";
 				touchHdr.initialize();
@@ -6888,7 +6901,7 @@ function carousel(container, viewport){
 /****************************************************************/
 
 /***************************content loader*****************************/
-function contentLoader(){
+function ContentLoader(){
 	var customStyle="", initialize=false, targetElement=null, cache=false, tempStoarage={}, activeProperties=null, autoLoad=false;
 	var defaultURL="", callBackFn= null;
 	this.loadFrom = function(url=null, element=null){
@@ -6961,7 +6974,7 @@ function contentLoader(){
 	}
 	this.config = {}
 	function getContent(url, e=null, initCall = false){
-		var xhr = ajax.create();
+		var xhr = Ajax.create();
 		xhr.addEventListener("load", function(){
 			//Set active link, if enabled
 			if(initCall != true){
@@ -7132,7 +7145,7 @@ function contentLoader(){
 /**********************************************************************/
 
 /***************************Touch handler*****************************/
-function touchHandler(frame){
+function TouchHandler(frame){
 	var initialTouchPos={}, slideCallBack=null, mode="slider", hasMoved =false, lastTouchPos={}, lastPoint={x:0,y:0},usePoint=0, initialized=false, rafPending=false, pan="x",pressed=false, viewPort=null;
 	var pointerDownName = 'pointerdown', slopeValue=0, pointerUpName = 'pointerup', pointerMoveName = 'pointermove', pointerCancelName="pointercancel", viewPortTransition="";
 	var moved = 0, node=0, enableTouch=false, maxStop=0, targetDirection=null, SLIDE_LEFT = 1, SLIDE_RIGHT = 2, SLIDE_TOP = 3, SLIDE_BOTTOM = 4, DEFAULT=5;
