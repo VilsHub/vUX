@@ -22,6 +22,7 @@
 - Option to change font color and background color of datePicker label and day tool tip
 - TouchHandler module
 - getParent Module
+- Added spaceError property to listScroller
 
 ### Removed
 - set() method from toolTip module, only on() and off() methods used
@@ -32,6 +33,7 @@
 
 ### Changed
 - DatePicker module now in customFormComponent namespace
+- All constructor functions renamed to standard convention
 
 ## v2.0.0
 ### Optimised

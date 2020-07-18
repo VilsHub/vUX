@@ -9,9 +9,9 @@ vUX is strictly built on JavaScript and has no dependencies, other than a JavaSc
 
 To use vUX, include the script **vUX-x.y.z.js** where **x y z** represents the version. Example is shown below:
 
-    <script src="vUX/vUX-2.0.0.js"></script>
+    <script src="vUX/vUX-3.0.0.js"></script>
     or
-    <script src="vUX/vUX-2.0.0.min.js"></script>
+    <script src="vUX/vUX-3.0.0.min.js"></script>
 
 
 **Note**
@@ -19,7 +19,15 @@ To use vUX, include the script **vUX-x.y.z.js** where **x y z** represents the v
 The file name should not be changed, as its needed to auto load assets needed by the library
 
 ## Features
-Latest release ( **v2.0.0** ), has the following features added:
+The 3rd release ( **v3.0.0** ), has the following features added:
+- Animator module, for non CSS and CSS animation 
+- Event handler attacher module, with support for appended elements
+- content Loader module
+- hasParent module
+- TouchHandler module
+
+
+The second release ( **v2.0.0** ), has the following features added:
 - Modal displayer
 - Form validator
 - Date picker
@@ -37,10 +45,11 @@ The first release ( **v1.0.0** ), has the following features:
 
 See more details... [See change Log](ChangeLog.md)
 
-**Features to be included in v2.1.0**
+**Features to be included in v3.1.0**
 
 - Accordion
 - 5 Star rating creator
+- 
 
 ## Demo
 **RGB to Gray Animator**
@@ -67,7 +76,7 @@ See more details... [See change Log](ChangeLog.md)
       //gets canvas element
       var TargetCanvas = document.getElementById("canvas");
       var imgUrl = "http://www.example.com/img/gd.jpg";
-      var im = new imageManipulator(DrawingHandler, imgUrl);
+      var im = new ImageManipulator(DrawingHandler, imgUrl);
       im.initializeGrayToRgb(3);
 
       setTimeout(function(){
@@ -86,17 +95,21 @@ See more details... [See change Log](ChangeLog.md)
     	var TargetCanvas = document.getElementById("canvas");
 
 
-    	var gbr = new gridBorderRectangle();
-    	gbr.fixedRectangle.config.lineColor = "red";
-    	gbr.fixedRectangle.config.segment = [5, 4];
-    	gbr.fixedRectangle.draw(TargetCanvas);
+    	var gridBorderRectangleObj = new GridBorderRectangle();
+      var fgbr = gridBorderRectangleObj.fixedRectangle();
+      var agbr = gridBorderRectangleObj.animatedRectangle();
+
+    	fgbr.config.lineColor = "red";
+    	fgbr.config.segment = [5, 4];
+    	fgbr.draw(TargetCanvas);
+
+      agbr.config.easing = "swingEaseIn";
+      agbr.config.duration = 800;
+      agbr.config.segment = [5, 4];
+      agbr.config.lineColor = "red";
 
     	setTimeout(function(){
-    		gbr.animatedRectangle.config.easing = "swingEaseIn";
-    		gbr.animatedRectangle.config.duration = 800;
-    		gbr.animatedRectangle.config.segment = [5, 4];
-    		gbr.animatedRectangle.config.lineColor = "red";
-    		gbr.animatedRectangle.draw(TargetCanvas);
+    		agbr.draw(TargetCanvas);
     	}, 2000);
     ////////////////////////////
 

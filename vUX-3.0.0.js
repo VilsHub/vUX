@@ -6,7 +6,7 @@
  * Released under the MIT license
  * https://library.vilshub.com/lib/vUX/license
  *
- * Date: 2020-01-2T22:30Z
+ * Date: 2020-07-19T22:30Z
  */
 
 "use strict";
