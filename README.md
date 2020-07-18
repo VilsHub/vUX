@@ -49,7 +49,6 @@ See more details... [See change Log](ChangeLog.md)
 
 - Accordion
 - 5 Star rating creator
-- 
 
 ## Demo
 **RGB to Gray Animator**
