@@ -37,7 +37,7 @@
 .vSelect .sIcon{
   width:35px;
   background-image: linear-gradient(to bottom, #eaeaea 0%,white 100%);
-  border: solid 1px #dddbdb;
+  /* border: solid 1px #dddbdb; */
   position: relative;
 }
 .vSelect .sIcon::before{

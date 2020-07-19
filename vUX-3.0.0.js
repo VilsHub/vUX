@@ -2531,7 +2531,7 @@ function FormComponents(){
 
 	/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 	this.select = function(){
-		var selectDim=[], selectIcon="", wrapperStyle="", toolTipHandler=null, enableToolTip = false, selectFieldStyle="", optionStyle="",  selectClassName="", searchIconStyle="", includeSearchField=true, optionsWrapperStyle="", familyID="vSelect";
+		var selectDim=[], selectIcon="", wrapperStyle="", toolTipHandler=null, enableToolTip = false, selectFieldStyle="", optionStyle="",  selectClassName="", searchIconStyle="", includeSearchField=true, optionsWrapperStyle="", familyID="vSelect", inputButtonStyle="";
 		/************************************************************************************/
 		//selectDim[a,b] a=> width of select cElement , b=> height of select cElemt
 		/************************************************************************************/
@@ -2811,6 +2811,9 @@ function FormComponents(){
 				}
 				if(optionsWrapperStyle != ""){
 					css += ".v"+selectClassName + " .sOptionCon{"+optionsWrapperStyle+"}";
+				}
+				if(inputButtonStyle != ""){
+					css += ".v"+selectClassName + " .sIcon{"+inputButtonStyle+"}";
 				}
 				attachStyleSheet("v"+selectClassName, css);
 			}
@@ -3125,10 +3128,16 @@ function FormComponents(){
 					optionGroupStyle = value;
 				}
 			},
-			inputIcon:{
+			inputIconStyle:{
 				set:function(value){
-					validateString(value, "A string of valid CSS styles needed for the 'config.inputIcon' property");
+					validateString(value, "A string of valid CSS styles needed for the 'config.inputIconStyle' property");
 					selectIcon = value;
+				}
+			},
+			inputButtonStyle:{
+				set:function(value){
+					validateString(value, "A string of valid CSS styles needed for the 'config.inputButtonStyle' property");
+					inputButtonStyle = value;
 				}
 			},
 			className:{
@@ -3617,7 +3626,7 @@ function FormComponents(){
 			return this.getTime() == this.getTime();
 		}
 		var falseState="cX.1zwAP", trueState="mp.3Cy._Xa";
-		var tooTipHandler= null, dateInputIconStyle=[], daysToolTip=false ,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], shiftPoint=320, labelProperties=[], daysToolTipProperties=[], datePickerClassName="", datePickerDim=["100%", "35px"], dateFieldStyle="", selectionStyle="", validationAttribute="", familyID="vDatePicker", listControllerObj= null;
+		var tooTipHandler= null, dateInputIconStyle=[], daysToolTip=false ,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], shiftPoint=320, labelProperties=[], daysToolTipProperties=[], datePickerClassName="", datePickerDim=["100%", "35px"], dateFieldStyle="", selectionStyle="", validationAttribute="", familyID="vDatePicker", listControllerObj= null,inputButtonStyle="";
 
 		function autoPlace(dateBox){
 			var dField = dateBox.previousElementSibling.children[0];
@@ -3672,6 +3681,9 @@ function FormComponents(){
 				}
 				if(selectionStyle != ""){
 					css += ".vDatePicker .vSelected{"+selectionStyle+"}";
+				}
+				if(inputButtonStyle != ""){
+					css += ".vDateIcon{"+inputButtonStyle+"}";
 				}
 				attachStyleSheet(datePickerClassName, css);
 			}
@@ -4904,6 +4916,12 @@ function FormComponents(){
 				set:function(value){
 					validateString(value, "'config.selectionStyle' property must be string of valid CSS style(s)");
 					selectionStyle = value;
+				}
+			},
+			inputButtonStyle:{
+				set:function(value){
+					validateString(value, "'config.inputButtonStyle' property must be string of valid CSS style(s)");
+					inputButtonStyle = value;
 				}
 			},
 			validationAttribute:{
