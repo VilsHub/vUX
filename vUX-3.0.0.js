@@ -6,7 +6,7 @@
  * Released under the MIT license
  * https://library.vilshub.com/lib/vUX/license
  *
- * Date: 2020-07-19T22:30Z
+ * Date: 2020-07-19=T22:30Z
  */
 
 "use strict";
@@ -4729,6 +4729,7 @@ function FormComponents(){
 			backButton.classList.add("vbInactive");
 			backButton.classList.remove("vbActive");
 			checkSave(wrapper);
+			tooTipHandler.clearTip();
 		}
 		function getSelectedValue(nativeDateInput, type){
 			var value; 
@@ -4763,9 +4764,9 @@ function FormComponents(){
 				dateComponents["dateParts"][2] = "DD";
 				var allChildSelected = wrapper.querySelectorAll(".vSelected:not(.range)");
 				var total = allChildSelected.length;
-				if(allChildSelected >0){
+				if(total>0){
 					for(var x=0; x<total; x++){
-						allChildSelected.classList.remove("vSelected");
+						allChildSelected[x].classList.remove("vSelected");
 					}
 				}
 			}else if(series == "md"){
@@ -6579,6 +6580,20 @@ function ToolTip(){
 		document.body.appendChild(tipElement);
 		addEvent(tipId);
 	}
+	function mouseOutControl(ele){
+		var tipID = ele.getAttribute("data-tid");
+		var tipBox = document.querySelector("div[data-toolTipId='"+tipID+"']");
+		if(ele.getAttribute("data-TID") != null){
+			tipBox.style["display"] = "none";
+			tipBox.style["top"] = "0";
+			tipBox.style["left"] ="0";
+		}
+		var mainTip = ele.getAttribute("data-tempTitle");
+		if(mainTip != null){
+			ele.setAttribute("title", mainTip);
+			ele.removeAttribute("data-tempTitle");
+		}
+	}
 	function addEvent(id){
 		var vTipCon = document.querySelector("div[data-toolTipId='"+id+"']");
 		if(vTipCon.getAttribute("data-tTipEvent") == "off"){
@@ -6590,7 +6605,6 @@ function ToolTip(){
 						e.target.setAttribute("data-tempTitle", mainTip);
 						e.target.removeAttribute("title");
 					}				
-					
 				}
 			});
 			DOMelement.attachEventHandler("mousemove", "vtip",  function(e){
@@ -6612,19 +6626,7 @@ function ToolTip(){
 			})
 			DOMelement.attachEventHandler("mouseout", "vtip",  function(e){
 				if(e.target.getAttribute("data-vToolTipSwitch") == "ON"){
-					var tipID = e.target.getAttribute("data-tid");
-					var tipBox = document.querySelector("div[data-toolTipId='"+tipID+"']");
-					if(e.target.getAttribute("data-TID") != null){
-						tipBox.style["display"] = "none";
-						tipBox.style["top"] = "0";
-						tipBox.style["left"] ="0";
-					}
-					var mainTip = e.target.getAttribute("data-tempTitle");
-					if(mainTip != null){
-						e.target.setAttribute("title", mainTip);
-						e.target.removeAttribute("data-tempTitle");
-					}
-					
+					mouseOutControl(e.target);
 				}
 			})
 			vTipCon.setAttribute("data-tTipEvent", "on");
@@ -6658,6 +6660,10 @@ function ToolTip(){
 			throw new Error("No tool tip applied on target element");
 		}
 	}
+	this.clearTip = function(){
+		var anyTip = document.querySelector(".vtip:not([title])");
+		anyTip != null?mouseOutControl(anyTip):null;
+	}
 	Object.defineProperties(this.config, {
 		tipBoxProperties:{
 			set:function(value){
@@ -6676,7 +6682,8 @@ function ToolTip(){
 		config:{writable:false},
 		set:{writable:false},
 		on:{writable:false},
-		off:{writable:false}
+		off:{writable:false},
+		clearTip:{writable:false}
 	})
 }
 /****************************************************************/
