@@ -27,7 +27,9 @@
   position:absolute;
   text-align:center;
   box-sizing: border-box;
-  transition:all .2s linear;
+  transition:content .2s linear;
+  width:inherit;
+  height: inherit;
 }
 .xCnative{
   visibility: hidden;

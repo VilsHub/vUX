@@ -22,3 +22,8 @@
 .vModal .modalSpace #newModal{
   width:100%;
 }
+.vxKit{
+  filter: blur(0.25em);
+  -webkit-filter: blur(0.25em);
+  -ms-filter: blur(0.25em);
+}

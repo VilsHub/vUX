@@ -1,31 +1,26 @@
 /*list parent container */
-.vlistParentXContainer, .vlistParentYContainer{
-    overflow: hidden;
-    width: 100%;
-    position: relative;
-    height: 100%;
-    z-index:100;
+.vlistParentXContainer{
+    overflow: hidden!important;
+    width: 100%!important;
+    position: relative!important;
+    /* height: 100%!important; */
+    /* z-index:100!important; */
 }
 
 /*Style list parent */
-.vlistParentX, .vlistParentY{
-    display: flex;
-    white-space: nowrap;
+.vlistParentX{
+    display: flex!important;
+    white-space: nowrap!important;
     position: absolute;
-    padding: 0px;
-    list-style: none;
+    padding: 0px!important;
+    list-style: none!important;
 }
 .vlistParentX{
-    flex-direction: row;
-}
-
-.vlistParentY{
-    flex-direction: column;
+    flex-direction: row!important;
 }
 
 /*Style list */
 .vlist{
-    flex-shrink: 0;
+    flex-shrink: 0!important;
 }
-
 /*  */

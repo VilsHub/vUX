@@ -1,11 +1,12 @@
 .vSelect{
   z-index: 100;
+  position: relative;
 }
 .vSelect :focus{ /*To fix chrome default outline*/
   outline: none;
 }
 .vSelect.superActive{
-  z-index: 101;
+  z-index: 103!important;
 }
 .vSelect .sFieldCon{
   position: relative;;
@@ -26,7 +27,7 @@
 }
 .vSelect .sField{
   flex:1;
-  padding-left: 10px;
+  padding: 0 10px;
   background-color:white;
   border: solid 1px #ccc;
   border-right: none;
@@ -69,7 +70,7 @@
 .vSelect .sOptionCon{
   max-height:70vh;
   overflow-y: auto;
-  margin-top: 3px;
+  /* margin-top: 3px; */
   scrollbar-width: thin;
 }
 .vSelect .optionsCon {
@@ -77,7 +78,7 @@
   width:100%;
   height:0px;
   z-index:inherit;
-  transition:height 0.2s linear;
+  transition:height 0.1s linear;
   display:none;
   background-color: white;
   border: solid 1px #ccc;
@@ -118,13 +119,15 @@
 .vSelect .optionsCon .sOption:last-of-type {
   border-bottom:none!important;
 }
-.vSelect .optionsCon .hovered {
-  background-color:rgba(200, 199, 199, 0.3)
-}
+
 .vSelect .optionsCon .vSselected {
-  background-color:rgba(100, 95, 95, 0.5);
+  background-color:rgba(100, 95, 95, 0.5)!important;
   color:white;
 }
+.vSelect .optionsCon .hovered {
+  background-color:rgba(200, 199, 199, 0.3)!important;
+}
+
 .vSelect .sHide{
   display: none;
 }
@@ -133,4 +136,7 @@
   position: absolute;
   left: 0;
   top:0;
+}
+.xSnativeWrap{
+  width: 100% !important;;
 }

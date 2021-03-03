@@ -1,202 +1,294 @@
+:root {
+    --error-border-color: #d82323;
+    --error-background-color: #f4dddd;
+    --error-color: red;
+    --warning-border-color: #e3e1b4;
+    --warning-background-color: #97660b;
+    --warning-color: orange;
+    --success-border-color: #249f24;
+    --success-background-color:#93d293 ;
+    --success-color: #2b9030;
+}
+@keyframes vBtRotate{
+    from{
+        transform:rotate(0deg);
+    } 
+    to{
+        transform:rotate(360deg);
+    }
+}
+
 .vMsgBox {
-    box-sizing:border-box;
-    padding:0 10px 0 10px;
-    text-align:center;
+    box-sizing: border-box;
+    padding: 0 10px 0 10px;
+    text-align: center;
     white-space: nowrap;
-    font-size:13px;
-    line-height:250%;
-    color:transparent;
-    border-radius:5px;
+    font-size: 13px;
+    line-height: 250%;
+    color: transparent;
+    border-radius: 5px;
     min-height: 35px;
-  }
-  .vLeft, .vRight{
-    width:auto;
-    height:100%;
-    position:absolute;
-    top:0;
-    transition:width .2s cubic-bezier(0,.81,.22,1);
-  }
-  .vBottom{
-    width:auto;
-    height:0px;
-    position:absolute;
-    transition:height .2s cubic-bezier(0,.81,.22,1);
-    top:CALC(100% + 12px);
-    z-index:50;
-    left:0;
+    z-index: 102;
+}
+
+.vLeft,
+.vRight {
+    width: auto;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    transition: width .2s cubic-bezier(0, .81, .22, 1);
+}
+
+.vBottom {
+    width: auto;
+    height: 0px;
+    position: absolute;
+    transition: height .2s cubic-bezier(0, .81, .22, 1);
+    top: CALC(100% + 12px);
+    left: 0;
     min-height: 0px;
-  }
-  .vBottom::before{
-    width:0px;
-    height:0px;
-    top:-11px;
+}
+
+.vBottom::before {
+    width: 0px;
+    height: 0px;
+    top: -11px;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    left:10px;
-    z-index:10;
-    content:'';
-    position:absolute;
-  }
-  .vLeft::before, .vRight::before{
+    left: 10px;
+    content: '';
+    position: absolute;
+}
+
+.vLeft::before,
+.vRight::before {
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
-    position:absolute;
-    content:'';
-    top:6px;
-    z-index:10;
-  }
-  .vLeft::before{
-    right:-11px;
-  }
-  .vRight::before{
-    left:-11px;
-  }
-  .ierror{
-    border:solid 1px #d82323!important;
-    background-color: #bc949499!important;
-  }
-  .iwarning{
-    border:solid 1px #d82323!important;
-    background-color: #bc949499!important;
-  }
-  .isuccess{
-    border:solid 1px #d82323!important;
-    background-color: #2b9030!important;
-  }
-  .lerror{
-    border:solid 1px #d82323!important;
-    color: #d82323!important;
-  }
-  .error , .wError{
-    background-color:#e3b4b4;
-    border:solid 1px #d82323!important;
-  }
-  .warning {
-    background-color:#e3e1b4;
-    border:solid 1px #e97514;
-  }
-  .success {
-    background-color:#c2e3b4;
-    border:solid 1px #2b9030;
-  }
-  
-  .lw::before{
-    border-left:11px solid #e97514;
-  }
-  .le::before{
-    border-left:11px solid #d82323;
-  }
-  .ls::before{
-    border-left:11px solid #2b9030;
-  }
-  
-  .rw::before{
-    border-right:11px solid #e97514;
-  }
-  .re::before{
-    border-right:11px solid #d82323;
-  }
-  .rs::before{
-    border-right:11px solid #2b9030;
-  }
-  
-  .bw::before{
-    border-bottom:11px solid #e97514;
-  }
-  .be::before{
-    border-bottom:11px solid #d82323;
-  }
-  .bs::before{
-    border-bottom:11px solid #2b9030;
-  }
-  .vFormOverlay {
-    position:absolute;
-    z-index:888;
-    top:0;
-    width:100%;
-    height:100%;
-    background-color:HSLA(0, 0%, 100%, 0.68);
-    display:none;
-  }
-  .vFormOverlayShow {
-    display:block;
-  }
-  .vFormLoader {
-    position:absolute;
-    z-index:999;
-    width:50px;
-    height:50px;
-    background-color:transparent;
+    position: absolute;
+    content: '';
+    top: 6px;
+}
+
+.vLeft::before {
+    right: -11px;
+}
+
+.vRight::before {
+    left: -11px;
+}
+
+.ierror {
+    border: solid 1px var(--error-border-color)!important;
+    background-color: var(--error-background-color)!important;
+}
+
+.iwarning {
+    border: solid 1px var(--warning-border-color)!important;
+    background-color: var(--warning-background-color)!important;
+}
+
+.isuccess {
+    border: solid 1px var(--success-border-color)!important;
+    background-color: var(--success-background-color)!important;
+}
+
+.lerror {
+    border: solid 1px var(--error-border-color)!important;
+    color: var(--error-color)!important;
+}
+
+.error,
+.wError {
+    background-color: var(--error-background-color);
+    border: solid 1px var(--error-border-color)!important;
+}
+
+.warning {
+    background-color: var(--warning-background-color);
+    border: solid 1px var(--warning-border-color);
+}
+
+.success {
+    background-color: var(--success-background-color);
+    border: solid 1px var(--success-border-color);
+}
+
+.lw::before {
+    border-left: 11px solid var(--warning-border-color);
+}
+
+.le::before {
+    border-left: 11px solid var(--error-border-color);
+}
+
+.ls::before {
+    border-left: 11px solid var(--success-border-color);
+}
+
+.rw::before {
+    border-right: 11px solid var(--warning-border-color);
+}
+
+.re::before {
+    border-right: 11px solid var(--error-border-color);
+}
+
+.rs::before {
+    border-right: 11px solid var(--success-border-color);
+}
+
+.bw::before {
+    border-bottom: 11px solid var(--warning-border-color);
+}
+
+.be::before {
+    border-bottom: 11px solid var(--error-border-color);
+}
+
+.bs::before {
+    border-bottom: 11px solid var(--success-border-color);
+}
+
+.vFormOverlay {
+    position: absolute;
+    z-index: 888;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: HSLA(0, 0%, 100%, 0.68);
+    display: none;
+    left: 0;
+}
+
+.vFormOverlayShow {
+    display: block;
+    border: solid 1px #fff; 
+    box-shadow: 0 0 8px 0px white;
+    border-radius: 3px;
+
+}
+
+.vFormLoader {
+    position: absolute;
+    z-index: 999;
+    width: 50px;
+    height: 50px;
+    background-color: transparent;
     animation-duration: 1.3s;
-    animation-iteration-count:infinite;
-    animation-timing-function:linear;
-    transform-origin:0 0;
-  }
-  .vFormLoader::before {
-    width:100%;
-    height:100%;
-    position:absolute;
-    top:0;
-    color:black;
-    line-height:50px;
-    text-align:center;
-  }
-  .FbMsgBox{
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    transform-origin: 0 0;
+    
+}
+
+.vFormLoader::before {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    color: black;
+    line-height: 50px;
+    text-align: center;
+}
+
+.FbMsgBox {
     max-width: 320px;
-    width:95%;
-    height:auto;
-    border:solid 1px #e0dddd;
+    width: 95%;
+    height: auto;
+    border: solid 1px #e0dddd;
     border-radius: 7px;
-    position:absolute;
+    position: absolute;
     background-color: white;
     overflow: hidden;
-  }
-  .FbMsgBox .ttl{width:100%;
-    height:46px;
+}
+
+.FbMsgBox .ttl {
+    width: 100%;
+    height: 46px;
     box-shadow: 0 0 3px black;
-    color:white;
+    color: white;
     text-align: center;
     font-size: 24px;
     font-weight: bold;
     line-height: 46px;
-  }
-  .FbMsgBox .tsuc{
+}
+
+.FbMsgBox .tsuc {
     background-image: linear-gradient(to bottom, #6ac261 0%, #689f61 100%);
-  }
-  .FbMsgBox .terr{
+}
+
+.FbMsgBox .terr {
     background-image: linear-gradient(to bottom, #c28761 0%, #9f6161 100%);
-  }
-  .FbMsgBox .twrn{
+}
+
+.FbMsgBox .twrn {
     background-image: linear-gradient(to bottom, #c2b761 0%, #9f9661 100%);
-  }
-  .FbMsgBox .msuc{
-    color:green;
-  }
-  .FbMsgBox .merr{
-    color:red;
-  }
-  .FbMsgBox .mwrn{
-    color:#f90;
-  }
-  .FbMsgBox .buttonCon{
-    width:100%;
-    height:auto;
+}
+
+.FbMsgBox .msuc {
+    color: green;
+}
+
+.FbMsgBox .merr {
+    color: red;
+}
+
+.FbMsgBox .mwrn {
+    color: #f90;
+}
+
+.FbMsgBox .buttonCon {
+    width: 100%;
+    height: auto;
     padding-top: 23px;
-  }
-  .FbMsgBox .msgCon{
+}
+
+.FbMsgBox .msgCon {
     padding-top: 46px;
     text-align: center;
     font-style: italic;
     padding-left: 10px;
     padding-right: 10px;
-  }
-  .FbMsgBox button{
+}
+
+.FbMsgBox button {
     margin: 15px auto;
     display: block;
-    width: auto;
+    width: auto!important;
     min-width: 70px;
-    height: 35px;
-    background-image: linear-gradient(to bottom, #e9e9e9 0%, #7c807c 100%);
-    border-radius: 30px;cursor: pointer;
-  }
-  
+    height: 35px!important;
+    background-image: linear-gradient(to bottom, #e9e9e9 0%, #bbb 100%);
+    border-radius: 5px;
+    cursor: pointer;
+    border: solid 1px #9b9a9a!important;
+    font-size: 13px!important;
+}
+.initButtonLoader{
+    transition: width .3s linear;
+    margin: 0 auto!important;
+    display: block!important;
+    position: relative!important;
+}
+.vButtonLoader{
+     width: 46px!important;
+    height: 46px!important;
+    border-radius: 40px;
+    
+}
+.vButtonLoader::before{
+    position: absolute;
+    border-radius: inherit;
+    width:100%;
+    height: 100%;
+    content:''!important;
+    border: dashed 2px purple;
+    background-color: inherit;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-delay: .5s;
+    top: 0;
+    left: 0;
+    animation-name: vBtRotate;
+}

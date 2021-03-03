@@ -8,13 +8,22 @@
         transform-origin: 0 0;
     }
 }
-#loaderCon{
+.loaderCon{
     width: 100%;
     height: 100%;
     position: absolute;
     background-color:transparent;
 }
-#loaderCon #xSpin{
+.runTime{
+    transition: opacity 5.2s linear;
+    opacity: 0;
+    width:100%;
+    height: 100%;
+}
+.runTime.xShow{
+    opacity: 1!important;
+}
+.loaderCon #xSpin{
     width:50px;
     height:50px;
     position: absolute;
@@ -26,7 +35,7 @@
     transform-origin:0 0;
     background-color:transparent;
 }
-#loaderCon #xSpin::before{
+.loaderCon #xSpin::before{
     width:100%;
     height:100%;
     content:'';
@@ -35,10 +44,4 @@
     line-height: 50px;
     color:purple;
     background-color: transparent;
-}
-.xcon{
-    transition: opacity 4.4s linear;
-}
-.xforce{
-    transition:none!important;
 }

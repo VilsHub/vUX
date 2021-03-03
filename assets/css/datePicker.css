@@ -1,6 +1,4 @@
 .vDatePicker{
-  height:auto;
-  width:100%;
   position: relative;
   z-index: 100;
 }
@@ -8,7 +6,7 @@
   outline: none;
 }
 .vDatePicker.superActive{
-  z-index: 101;
+  z-index: 103;
 }
 .vDatePicker .dFieldCon{
   position: relative;;
@@ -28,6 +26,9 @@
   height:100%;
   box-sizing: border-box;
   font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .vDatePicker .vDateIcon{
   width:35px;
@@ -74,26 +75,26 @@
   border:solid 1px #ccc;
   background-color: white;
 }
-.vDateBoxTool .vDateBoxArrow {
-  width:300px;
+.vDateBoxTool .vDateBoxArrow > div{
+  width:16px;
   height:10px;
-  position: relative;;
+  position: relative;
  
 }
-.vDateBoxTool .vDateBoxArrow.vtop{
+.vDateBoxTool .vDateBoxArrow > div.vtop{
   top:0;
 }
-.vDateBoxTool .vDateBoxArrow.vbottom{
+.vDateBoxTool .vDateBoxArrow > div.vbottom{
   bottom:0;
 }
 .vDateBoxTool .shift::before {
   left:50%;
   margin-left:-5px;
 }
-.vDateBoxTool .normalShift::before {
+/* .vDateBoxTool .normalShift::before {
   left:10px;
-}
-.vDateBoxTool .vDateBoxArrow::before {
+} */
+.vDateBoxTool .vDateBoxArrow > div::before {
   width:0;
   height:0;
   position:absolute;
@@ -102,10 +103,10 @@
   border-left:solid 7px transparent;
   border-right:solid 7px transparent;
 }
-.vDateBoxTool .vDateBoxArrow.vtop::before {
+.vDateBoxTool .vDateBoxArrow > div.vtop::before {
   border-bottom:solid 10px #ccc;
 }
-.vDateBoxTool .vDateBoxArrow.vbottom::before {
+.vDateBoxTool .vDateBoxArrow > div.vbottom::before {
   border-top:solid 10px #ccc;
 }
 .vDateBoxTool .vDateBoxHeader {
@@ -492,4 +493,7 @@
   position: absolute;
   left: 0;
   top:0;
+}
+.xDnativeWrap{
+  width:100%!important;
 }
