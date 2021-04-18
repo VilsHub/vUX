@@ -38,6 +38,8 @@ window.addEventListener("load", function() {
     loadStyleSheet("css", "touchHandler.css");
     loadStyleSheet("css", "sliderSwitch.css");
     loadStyleSheet("css", "core.css");
+    loadStyleSheet("css", "timeLineList.css");
+    loadStyleSheet("css", "autoWriter.css");
 }, false);
 
 /*************************Helper functions***********************/
@@ -73,10 +75,6 @@ function runGroupStyler(element, StyleObject){
 function camelToCSSstandard(cameledName) {
     return cameledName.replace(/[A-Z]/g, m => "-" + m.toLowerCase());
 }
-
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-};
 
 function validateNumber(number, msg = null) {
     if (typeof number != "number") {
@@ -290,7 +288,7 @@ function validateObjectMembers(object, ObjectBase) {
             var ObjBArr = Object.keys(ObjectBase);
             var AllProperties = ObjBArr.toString();
             var rplc = AllProperties.replace(/,/g, ", ");
-            throw new TypeError("Invlaid property specified, it should be any of the follwing : " + rplc);
+            throw new TypeError("Invlaid property specified, it should be any of the following : " + rplc);
         }
     }
     return true;
@@ -544,6 +542,24 @@ function validatePhoneNumber() {
     var input_filter = /^(\+|[0-9])[0-9]+$/.test(input); //matches phone number pattern
     return input_filter;
 }
+
+function getCssStyle(ele, property, pEle=null){
+    if (window.getComputedStyle){
+        var styleHandler = getComputedStyle(ele, pEle);
+    } else {
+        var styleHandler = ele.currentStyle;
+    }
+    var propertyValue = styleHandler.getPropertyValue(property);
+    if (propertyValue.length == 0) { //No computed value, try from style attribute
+        propertyValue = ele.style[property];
+    }
+    return propertyValue;
+}
+
+function isPositioned(ele){
+    var propertyValue = getCssStyle(ele, "position");
+    return ["fixed", "relative", "absolute", "sticky"].indexOf(propertyValue) == -1?false:true;
+}
 /****************************************************************/
 
 /*****************************Timing*****************************/
@@ -637,24 +653,15 @@ var  $$ = {
             }
             this.cssStyle = function(property, pEle=null) {
                 validateString(property, "$$.sm(.).cssStyle(x.) method argument 1 must be a string");
-                if(pEle != null) validateString(pEle, "$$.sm(.)cssStyle(.x) method argument 2 must be a string or null");
+                if(pEle != null) validateString(pEle, "$$.sm(.).cssStyle(.x) method argument 2 must be a string or null");
                 var cEle = (selector instanceof Element)?selector:ele.single;
-                if (window.getComputedStyle) {
-                    var styleHandler = getComputedStyle(cEle, pEle);
-                } else {
-                    var styleHandler = cEle.currentStyle;
-                }
-                var propertyValue = styleHandler.getPropertyValue(property);
-                if (propertyValue.length == 0) { //No computed value, try from style attribute
-                    propertyValue = cEle.style[property];
-                }
-                return propertyValue;
+                return getCssStyle(cEle, property, pEle);
             }
             this.centerY = function() {
                 var cEle = (selector instanceof Element)?selector:ele.single;
-                var positionType = self.cssStyle("position");
+                var positionType = getCssStyle(cEle, "position");
                 var elementParent = cEle.parentNode;
-                var support = self.cssStyle("transform");
+                var support = getCssStyle(cEle, "transform");
                 if (positionType != "static") { //Positioned element
                     if (support != undefined) { //Transform supported
                         //Centralize
@@ -688,9 +695,9 @@ var  $$ = {
             }
             this.centerX = function() {
                 var cEle = (selector instanceof Element)?selector:ele.single;
-                var positionType = self.cssStyle("position");
+                var positionType = getCssStyle(cEle, "position");
                 var elementParent = cEle.parentNode;
-                var support = self.cssStyle("transform");
+                var support = getCssStyle(cEle, "transform");
 
                 if (positionType != "static") { //Positioned element
                     if (support != undefined) { //Transform supported
@@ -710,9 +717,10 @@ var  $$ = {
             }
             this.center = function() {
                 var cEle = (selector instanceof Element)?selector:ele.single;
-                var positionType = self.cssStyle("position");
+               
+                var positionType =  getCssStyle(cEle, "position");
                 var elementParent = cEle.parentNode;
-                var support = self.cssStyle("transform");
+                var support = getCssStyle(cEle, "transform");
                 
                 if (positionType != "static") { //Positioned element
                     if (support != undefined) { //Transform supported
@@ -849,23 +857,34 @@ var  $$ = {
                 validateString(className, "$$.sm.makeActive(.x) method argument 1 must a string");
                 if(parent != null) validateElement(parent, "$$.sm.makeActive(x.) method argument 2 must a valid HTML Element");
 
-                var currentElement = (parent != null)?parent.querySelector("."+className):document.querySelector("."+className);
-                if (currentElement != null) currentElement.classList.remove(className, "cOff");
+                var currentElements = (parent != null)?parent.querySelectorAll("."+className):document.querySelector("."+className);
+                if (currentElements != null) {
+                    var total = currentElements.length;
+                    for (var x=0; x < total; x++ ){
+                        currentElements[x].classList.remove(className, "cOff");
+                    }
+                };
                 cEle.classList.add(className, "cOff");
             },
             this.isPositioned = function(){
                 var cEle = (selector instanceof Element)?selector:ele.single;
-                if (window.getComputedStyle) {
-                    var styleHandler = getComputedStyle(cEle);
-                } else {
-                    var styleHandler = cEle.currentStyle;
-                }
+                return isPositioned(cEle);
+            },
+            this.addOverlay = function(overlayStyle=null){
+                var cEle = (selector instanceof Element)?selector:ele.single;
 
-                var propertyValue = styleHandler.getPropertyValue("position");
-                if (propertyValue.length == 0) { //No computed value, try from style attribute
-                    propertyValue = cEle.style[property];
+
+                if(!isPositioned(cEle)) cEle.style["position"] = "relative";
+
+                var overlayEle = $$.ce("div", {class:"mOverlay"});
+                cEle.classList.add("xOverlay");
+                cEle.appendChild(overlayEle)
+
+
+                if(overlayStyle != null){
+                    validateString(overlayStyle, "$$.sm().addOverlay(x) argument 1 must be a string");
                 }
-                return ["fixed", "relative", "absolute", "sticky"].indexOf(propertyValue) == -1?false:true;
+                       
             },
             this.filter = {
                 grayScale: function(){
@@ -887,7 +906,6 @@ var  $$ = {
                 element.setAttribute(attribute[0], attribute[1]);
             });
         }
-       
         return element;
     },
     animate:function(draw, value, duration, timingFn = "linear"){
@@ -900,9 +918,7 @@ var  $$ = {
             throw new Error("'$$.animate()' method argument 2 must be greater than 0");
         }
         validateNumber(duration, "'$$.animate()' method argument 3 must be numeric");
-        if (duration < 0) {
-            throw new Error("'$$.animate()' method argument 3 must be greater than 0");
-        }
+        if (duration < 0) throw new Error("'$$.animate()' method argument 3 must be greater than 0");
         validateObjectMember(timing, timingFn, "'$$.animate()' method argument 4 value invalid ");
     
     
@@ -917,6 +933,21 @@ var  $$ = {
             draw(progress * value); // draw it
             if (timeFrac < 1) {
                 requestAnimationFrame(animate);
+            }
+        })
+    },
+    delay:function(duration, callBack = null){
+        validateNumber(duration, "'$$.delay()' method argument 1 must be numeric");
+        if (duration < 0) throw new Error("'$$.delay()' method argument 1 must be greater than 0");
+        var start = performance.now();
+        requestAnimationFrame(function animate(time) {
+            // timeFraction goes from 0 to 1
+            var timeFrac = (time - start) / duration;
+            if (timeFrac > 1) timeFrac = 1;
+            if (timeFrac < 1) {
+                requestAnimationFrame(animate);
+            }else{
+               if (callBack != null) callBack();
             }
         })
     },
@@ -1083,10 +1114,15 @@ var  $$ = {
         if (length != 8) validateInteger(length, "$$.randomString(x) argument 1 must be an integer");
         var randomstring = '';
         for (var i=0; i<length; i++) {
-            var rnum = Math.floor(Math.random() * chars.length);
+            var rnum = this.randomInteger(0, chars.length);
             randomstring += chars.substring(rnum,rnum+1);
         }
         return randomstring;
+    },
+    randomInteger:function(min, max){
+        validateInteger(min, "$$.randomInteger(x.) argument 1 must be an integer");
+        validateInteger(max, "$$.randomInteger(.x) argument 2 must be an integer");
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 }
 /****************************************************************/
@@ -1538,81 +1574,217 @@ vRhythm.placeAtCenter = function(targetElement, height) {
 
 /**************************TypeWriter****************************/
 function AutoWriter() {
-    var PlainTextCounter = 0, ParagraphTextCounter = 0, ActiveParagraph = 0, self = this, n, callBackDelay = 0, speed = [10, 20];
-    this.writePlainText = function(con, text, fn) {
-        validateElement(con);
-        validateString(text);
-        validateFunction(fn);
-        n = getRandomInt(speed[0], speed[1]);
-        if (PlainTextCounter < text.length - 1) {
-            var g = setInterval(function() {
-                con.innerHTML += text[PlainTextCounter];
-                clearInterval(g);
-                self.writePlainText(con, text, fn);
-                PlainTextCounter++;
-            }, n);
-        } else {
-            PlainTextCounter = 0;
-            setTimeout(function() { fn() }, callBackDelay);
+    var PlainTextCounter = 0, mainTextBox ,mainTexts, self = this, n, callBackDelay = 0, typingSpeed = [10, 20],
+    ints = [], blinkCursor, dEraser=0, conE="", type = "single", cursorBlinkDelay = 300, init=false, familyN = 0, cursorStyle={style:"solid", width:"1px", color:"green"}, showCursor=false, family=0, currentText="";
+
+    // |    => line break
+    // *n*  => backspace n times
+    // ~n~  => delay typing for n miliseconds
+
+    function getDuration(startPoint, text){
+        startPoint++;
+        var int = "";
+        while(text[startPoint] != "~"){
+            int += text[startPoint];
+            startPoint++;
+        }
+        return parseInt(int);
+    }
+    function pauseWriting(con){
+        if(showCursor){
+            blinkCursor = setInterval(function(){
+                if(con.nextElementSibling.classList.contains("hide")){
+                    con.nextElementSibling.classList.remove("hide");
+                }else{
+                    con.nextElementSibling.classList.add("hide");
+                }
+            }, cursorBlinkDelay);
         }
     }
-    this.writeParagraphText = function(paragraphs, texts, fn) {
-        validateHTMLObject(paragraphs);
-        validateArray(texts, "writeParagraphText.write() argument 2 must be an array");
-        validateArrayMembers(texts, "writeParagraphText.write() argument 2 array elements must all be string");
-        validateFunction(fn);
-        n = getRandomInt(speed[0], speed[1]);
-        if (ActiveParagraph < paragraphs.length) {
-            var b = (texts[ActiveParagraph].length) + 1;
-            if (ParagraphTextCounter <= texts[ActiveParagraph].length) {
-                var g = setInterval(function() {
-                    if (ParagraphTextCounter + 1 == b) {
-                        ParagraphTextCounter = 0;
-                        ActiveParagraph++;
-                    }
-                    clearInterval(g);
-                    if (ActiveParagraph >= paragraphs.length) {
-                        ParagraphTextCounter = 0;
-                        ActiveParagraph = 0;
-                        setTimeout(function() { fn() }, callBackDelay);
-                    } else {
-                        var k = texts[ActiveParagraph][ParagraphTextCounter];
-                        paragraphs[ActiveParagraph].innerHTML += texts[ActiveParagraph][ParagraphTextCounter];
-                        ParagraphTextCounter++;
-                        self.writeParagraphText(paragraphs, texts, fn);
-                    }
-                }, n);
+    function doneWriting(con){
+        if(showCursor) con.nextElementSibling.classList.add("hide");
+    }
+    function resumeWriting(con){
+        if(showCursor) clearInterval(blinkCursor);
+        con.nextElementSibling.classList.remove("hide");
+    }
+    function getDeletedDetails(startPoint, text){
+        startPoint++;
+        var int = "";
+        while(text[startPoint] != "*"){
+            int += text[startPoint];
+            startPoint++;
+        }
+        return {
+                value:parseInt(int),
+                length:parseInt(int.length)
+        };
+    }
+    function write(con, text, char, fn){
+        if (dEraser != 0) clearTimeout(dEraser);
+        con.innerHTML += char;
+        if (text.length > 0){
+            self.writeText(con, text, fn);
+            PlainTextCounter++;
+        }
+    }
+    function erase(n, con){
+        var p_Delted = "", delay ;
+        for (var x = 0; x < n; x++) {
+            delay = $$.randomInteger(speed[0], speed[1]);
+            $$.delay(delay, function(){
+                var deleted = Array.from(con.innerHTML);
+                deleted.pop();
+                p_Delted = deleted.join("");
+                con.innerHTML = p_Delted;
+            })
+        }
+        return delay * n;
+    }
+    function addSpan(con){
+        var spanE = $$.ce("span", {class:"vAutoWriter"});
+        var blinker = $$.ce("span", {class:"vAutoWriterBlinker", style:"border-left:"+cursorStyle.style+" "+cursorStyle.width+" "+ cursorStyle.color});
+        con.appendChild(spanE);
+        if(showCursor) con.appendChild(blinker);
+    }
+    function writeType(con, text){
+        if(Object.getPrototypeOf(con).constructor.name == "NodeList"){
+            validateArray(text, "writeTextObj.writeText(.x.) method argument 2 must be an array of Strings, if argument 1 is HTML Object");
+            return "multiple";
+        }else{
+            validateElement(con, "writeTextObj.writeText(x..) method argument 1 must be either HTMLObject or HTML Element");
+            validateString(text, "writeTextObj.writeText(.x.) method argument 2 must be a String, if argument 1 is HTML Element");
+            return "single";
+        }
+    }
+    function clearMemory(){
+        var total = ints.length;
+        for (var x=0; x<= total; x++){
+            clearTimeout(x)
+        }
+    }
+    this.writeText = function(textBox, text, fn) {
+        if(!init){
+            mainTextBox = textBox;
+            mainTexts = text;
+            type = writeType(textBox, text);
+            family = textBox.length;
+            init = true;
+        }
 
+        validateFunction(fn, "writeTextObj.writeText(..x) method argument 3 must be a function");
+
+        if(type == "single"){
+            if(conE == ""){
+                addSpan(textBox);
+                conE = textBox.querySelector(".vAutoWriter");
+                currentText = text;
             }
-
+        }else{// group
+            if(conE == ""){
+                addSpan(textBox[familyN]);
+                currentText = text[familyN];
+                conE = textBox[familyN].querySelector(".vAutoWriter")
+                familyN++;
+            }
+        }
+        
+        n = $$.randomInteger(typingSpeed[0], typingSpeed[1]);
+        
+        if (PlainTextCounter < currentText.length - 1) {
+            ints[ints.length] = setTimeout(function() {
+                var char = currentText[PlainTextCounter];
+                if(char == "|"){//line break
+                    write(conE, currentText, "<br/>", fn);
+                }else if(char == "*"){ //erase
+                    var deleteDetails = getDeletedDetails(PlainTextCounter, currentText)
+                    var dSpeed = erase(deleteDetails.value, conE);
+                    PlainTextCounter = (PlainTextCounter) + deleteDetails.value;
+                    char = currentText[PlainTextCounter];
+                    dEraser = setTimeout(function(){
+                        write(conE, currentText, char, fn)
+                    }, dSpeed);
+                }else if(char == "~"){//Delay
+                    pauseWriting(conE);
+                    var delayDuration = getDuration(PlainTextCounter, currentText);
+                    if(true){
+                        $$.delay(delayDuration, function(){
+                            resumeWriting(conE);
+                            PlainTextCounter = (PlainTextCounter) + (delayDuration.toString().length + 2);
+                            char = currentText[PlainTextCounter];
+                            write(conE, currentText, char, fn);
+                        })
+                    }
+                }else{//write
+                    write(conE, currentText, char, fn);
+                }
+            }, n);
+        }else {
+            PlainTextCounter = -1;
+            doneWriting(conE);
+            if(type == "single"){
+                clearMemory();
+                setTimeout(fn, callBackDelay);
+            }else{
+                if(familyN < family){
+                    conE = "";
+                    self.writeText(mainTextBox, mainTexts, fn);
+                }else{
+                    conE = "";
+                    init = false;
+                    familyN = 0;
+                    clearMemory();
+                    setTimeout(fn, callBackDelay);
+                }
+            }
         }
     }
     this.config = {}
     Object.defineProperties(this.config, {
         callBackDelay: {
             set: function(value) {
-                if (validateNumber(value)) {
-                    callBackDelay = value
-                }
+                validateNumber(value, "writeTextObj.config.callBackDelay property value must be a number");
+                value = value < 0? 0: value;
+                callBackDelay = value
             }
         },
-        speed: {
+        typingSpeed: {
             set: function(value) {
-                var temp = "writeParagraphText.config.speed property value must be an array ";
+                var temp = "writeText.config.speed property value must be an array ";
                 validateArray(value, temp);
                 validateArrayLength(value, 2, temp + "of 2 Elements");
                 validateArrayMembers(value, "number", temp + "of numeric elements");
                 if (value[0] > 0 && value[1] > 0) {
-                    speed = value;
+                    typingSpeed = value;
                 } else {
                     throw new Error("Array members for 'speed' property value must all be positive integers");
                 }
             }
+        },
+        cursorStyle:{
+            set: function(value) {
+                var temp = "writeText.config.cursorStyle property value must be an object ";
+                validateObjectLiteral(value, temp);
+                validateObjectMembers(value, {style:1,width:1,color:1});
+                cursorStyle = value;
+            }
+        },
+        showCursor:{
+            set: function(value) {
+                validateBoolean(value, "writeText.config.showCursor property value must be a boolean ");
+                showCursor = value;
+            }
+        },
+        cursorBlinkDelay:{
+            set: function(value) {
+                validateNumber(value, "writeTextObj.config.cursorBlinkSpeed property value must be a number");
+                value = value < 0? 0: value;
+                cursorBlinkDelay = value
+            }
         }
     })
     Object.defineProperties(this, {
-        writePlainText: { writable: false },
-        writeParagraphText: { writable: false },
+        writeText: { writable: false },
         config: { writable: false }
     })
 }
@@ -2670,11 +2842,11 @@ function FormComponents() {
                 if (wrapAttribute != "") wrap("select", wrapAttribute);
             },
             refreshSelect: function(nativeSelect) { //Refreshes a particular select element to update custom content
-                validateElement(nativeSelect, "selectSelect.refresh() method expects a valid HTML as argument 1");
+                validateElement(nativeSelect, "selectSelect.refresh() method expects a valid DOM element as argument 1");
                 nativeSelect.classList.contains(selectClassName) ? runSelectBuild(nativeSelect) : null;
             },
             refresh: function(parent) {
-                validateElement(parent, "select.refresh() method expects a valid HTML as argument 1");
+                validateElement(parent, "select.refresh() method expects a valid DOM element as argument 1");
                 var allNewSelect = parent.querySelectorAll("select:not(.xSnative)");
                 var totalNewSelects = allNewSelect.length;
                 if (totalNewSelects > 0) {
@@ -2957,7 +3129,7 @@ function FormComponents() {
                 assignRadioEventHanler();
             },
             refresh: function(parent) {
-                validateElement(parent, "radio.refresh() method expects a valid HTML as argument 1");
+                validateElement(parent, "radio.refresh() method expects a valid DOM element as argument 1");
                 var allNewRadios = parent.querySelectorAll("input[type='radio']:not(.xRnative)");
                 var totalNewRadios = allNewRadios.length;
                 if (totalNewRadios > 0) {
@@ -3195,7 +3367,7 @@ function FormComponents() {
                 assignCheckboxEventHanler();
             },
             refresh: function(parent) {
-                validateElement(parent, "checkbox.refresh() method expects a valid HTML as argument 1");
+                validateElement(parent, "checkbox.refresh() method expects a valid DOM element as argument 1");
                 var allNewCheckboxes = parent.querySelectorAll("input[type='checkbox']:not(.xCnative)");
                 var totalNewCheckboxes = allNewCheckboxes.length;
                 if (totalNewCheckboxes > 0) {
@@ -4549,7 +4721,7 @@ function FormComponents() {
             },
             config: {},
             refresh: function(parent) {
-                validateElement(parent, "datePicker.refresh() method expects a valid HTML as argument 1");
+                validateElement(parent, "datePicker.refresh() method expects a valid DOM element as argument 1");
                 var allNewdatePickers = parent.querySelectorAll("." + datePickerClassName + ":not(.xDnative)");
                 var totalNewdatePickers = allNewdatePickers.length;
                 if (totalNewdatePickers > 0) {
@@ -4827,7 +4999,7 @@ function FormComponents() {
                 assignSlideSwitchEventHanler();
             },
             refresh: function(parent) {
-                validateElement(parent, "slideSwitch.refresh() method expects a valid HTML as argument 1");
+                validateElement(parent, "slideSwitch.refresh() method expects a valid DOM element as argument 1");
                 var allCheckboxes = parent.querySelectorAll("input[type='checkbox']:not(.xChkNative)");
                 var totalNewCheckBoxes = allCheckboxes.length;
                 if (totalNewCheckBoxes > 0) {
@@ -5144,6 +5316,7 @@ function FormValidator(form = null) {
         document.addEventListener("transitionend", function(e) {
             if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("error") && e.target.classList.contains("clear") == false) {
                 e.target.style["color"] = $$.sm(form).cssStyle("--error-color");
+                console.log(form, $$.sm(form).cssStyle("--error-color"));
             } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("warning") && e.target.classList.contains("clear") == false) {
                 e.target.style["color"] = $$.sm(form).cssStyle("--warning-color");
             } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false) {
@@ -6100,6 +6273,7 @@ FormValidator.format = {
         }, false);
     }
 }
+
 Object.defineProperties(FormValidator.format, {
     currencyField: { writable: false },
     roundToDec: { writable: false },
@@ -7181,15 +7355,17 @@ function ContentLoader() {
     var customStyle = "",initialize = false,tempStoarage = {};
     var callBackFn = null, dataAttributes=[], loaderItemClass="";
     function loadFrom(element) {
-        var container = $$.ss("#"+element.getAttribute(dataAttributes[0]));
+        var containerID = element.getAttribute(dataAttributes[0]);
+        var container = $$.ss("#"+containerID);
         var url = element.getAttribute(dataAttributes[1]).toLowerCase();
         var cache = element.getAttribute(dataAttributes[3]);
         var linkID = element.getAttribute("data-link");
         cache = cache == null?cache=false:cache.toLowerCase();
+        if(container == null)console.error(element);
+        validateElement(container, "No container found with the ID '"+containerID+"' for the element above");
 
         container.setAttribute("data-state", "receiving");
-
-        if(cache) { //Attempt load from storage
+        if(cache == "true") { //Attempt load from storage
             if (typeof(Storage) !== "undefined") { //Supports web storage
                 if (sessionStorage.pageLink != undefined) { //atleast a page has been cached
                     var existingLinks = JSON.parse(sessionStorage.getItem("pageLink"));
@@ -7199,6 +7375,10 @@ function ContentLoader() {
                         var content = JSON.parse(sessionStorage.getItem("linkContent"))
                         var arrContent = Object.values(content);
                         insertContent(container, arrContent[index], linkID);
+                        
+                        //show content
+                        showRuntime(container);
+
                         callBackFn != null ? callBackFn(element) : null;
                     } else { //link does not exist, get from server
                         getContent(url, container, element, cache);
@@ -7215,6 +7395,10 @@ function ContentLoader() {
                         var content = JSON.parse(tempStoarage["linkContent"]);
                         var arrContent = Object.values(content);
                         insertContent(container, arrContent[index], linkID);
+                        
+                        //show content
+                        showRuntime(container);
+
                         callBackFn != null ? callBackFn(element) : null;
                     } else { //link does not exist, get from server
                         getContent(url, container, element, cache);
@@ -7246,6 +7430,7 @@ function ContentLoader() {
         var allItems = $$.sa("."+loaderItemClass);
         allItems.forEach(function(element){
             element.classList.add("vLoaderItem");
+            
             //Execute autoload
             autoLoadContent(element);
         });
@@ -7328,9 +7513,7 @@ function ContentLoader() {
                 hideLoader(container);
     
                 //show content
-                runtime = container.querySelector(".runTime");
-                runtime.scrollHeight;
-                runtime.classList.add("xShow");
+                showRuntime(container);
     
     
                 //call callback function if enable
@@ -7347,10 +7530,17 @@ function ContentLoader() {
         xhr.send();
     }
 
+    function showRuntime(container){
+        var runtime = container.querySelector(".runTime");
+        runtime.scrollHeight;
+        runtime.classList.add("xShow");
+    }
+
     function insertLoader(container) {
         var existing = container.querySelector(".loaderCon");
         if(existing == null){
             if(!$$.sm(container).isPositioned()) container.style["position"] = "relative";
+            container.style["height"] = "100%";
             var con = document.createElement("DIV");
             con.classList.add("loaderCon");
             var spinner = document.createElement("DIV");
@@ -7380,6 +7570,7 @@ function ContentLoader() {
         var spinner = parent.querySelector(".loaderCon");
         $$.sm(spinner).hide();
     }
+
 
     function addCustomStyle() {
         var css = "";
@@ -7750,4 +7941,117 @@ function TouchHandler(frame) {
         }
     })
 }
+/**********************************************************************/
+
+/***************************TimeLine List*****************************/
+function TimeLineList(){
+    var className ="";
+    var dataAttributes = {
+        timeLineBorderStyleAttrib:"",
+        listStyleAttrib:"",
+        listIconStyleAttrib:"",
+        timeLineLabelAttrib:"",
+        smallViewAttrib:""
+    }
+    this.autoBuild = function(){
+        if(className == "")throw new Error("Setup imcomplete: TimeLineList class name must be supllied, specify using the 'config.className' property");
+        var existingSheet = $$.ss("#v" + className);
+        if(existingSheet == null){
+            timeLineStyleSheet();
+            assignTimeLineEventHanler();
+        }
+    }
+
+    this.config = {}
+
+    this.refresh = function(parent = null){
+        var allUls = $$.sa("."+className+":not(.activated)");
+        if(parent != null){
+            validateElement(parent, "TimeLineListObj.refresh() method expects a valid DOM element as argument 1");
+            allUls = parent.querySelectorAll("."+className+":not(.activated)");
+        }
+        
+        var totalUls = allUls.length;
+        if (totalUls > 0) {
+            for (var x = 0; x < totalUls; x++) {
+                activateList(allUls[x], x);
+            }
+        }
+    }
+
+    function assignTimeLineEventHanler(){
+        addEventListener("resize", function(){
+            wrapList();
+        }, false)
+    }
+
+    function wrapList(){
+        var allWrappable = $$.sa(".vtimeLine["+dataAttributes.smallViewAttrib+"]");
+        var totalWrappable = allWrappable.length;
+        for (var x=0; x<totalWrappable; x++){
+            var wrapViewPort  = allWrappable[x].getAttribute(dataAttributes.smallViewAttrib);
+            if(innerWidth <= wrapViewPort){
+                allWrappable[x].classList.add("wrap");
+            }else if(innerWidth > wrapViewPort){
+                allWrappable[x].classList.remove("wrap");
+            }
+        }
+    }
+
+    function timeLineStyleSheet(){
+        var listMember = $$.sa("."+className);
+        if ($$.ss("style[data-id='v" + className + "']") == null) {
+            var css = "";
+            listMember.forEach(function(ul, index){
+                var uniqueClass = activateList(ul, index);
+                if(dataAttributes.timeLineBorderStyleAtrrib != "") css += "."+uniqueClass+"{"+ul.getAttribute(dataAttributes.timeLineBorderStyleAttrib)+"}";
+                if(dataAttributes.listStyleAtrrib != "") css += "."+uniqueClass+" li{"+ul.getAttribute(dataAttributes.listStyleAttrib)+"}";
+                if(dataAttributes.listIconStyleAtrrib != "") css += "."+uniqueClass+" li::before{"+ul.getAttribute(dataAttributes.listIconStyleAttrib)+"}";
+                if(dataAttributes.timeLineLabelAtrrib != "") css += "."+uniqueClass+" li::after{"+ul.getAttribute(dataAttributes.timeLineLabelAttrib)+"}";
+            });
+            attachStyleSheet("v" + className, css);
+        }else{
+            listMember.forEach(function(ul, index){
+                activateList(ul, index);
+            })
+        } 
+        wrapList();
+    }
+
+    function activateList(ul, index){
+        var uniqueClass = "vtl"+index;
+        ul.classList.add("vtimeLine", uniqueClass, "activated"); 
+        return uniqueClass;
+    }
+
+    Object.defineProperties(this.config, {
+        className: {
+            set: function(value) {
+                validateString(value, "'config.className' property value must be a string");
+                className = value;
+            }
+        },
+        dataAttributes: {
+            set: function(value) {
+                var validOptions = ["timeLineBorderStyle", "listStyle", "listIconStyle", "smallView", "timeLineLabel"];
+                validateObjectLiteral(value, "'config.dataAttributes' property value must be an object");
+                var entries = Object.entries(value);
+                if(entries.length < 6){
+                    entries.forEach(function(entry){
+                        if(validOptions.indexOf(entry[0]) == -1) throw new Error("The data attribute specifier is not supported, the suported specifiers are: "+ validOptions.join(", "));
+                        dataAttributes[entry[0]+"Attrib"] = entry[1];
+                    });
+                }else{
+                    throw new Error("'config.dataAttributes' object value contains more than 4 entries");
+                }
+            }
+        }
+    })
+    Object.defineProperties(this, {
+        autoBuild: { writable: false },
+        config: { writable: false },
+        refresh: { writable: false }
+    })
+}
+
 /**********************************************************************/
