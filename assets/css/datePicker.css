@@ -69,8 +69,7 @@
   border-radius:5px;
   width:100%;
   height:auto;
-  position: relative;;
-  /* top:10px; */
+  position: relative;
   left:0;
   border:solid 1px #ccc;
   background-color: white;
@@ -87,13 +86,10 @@
 .vDateBoxTool .vDateBoxArrow > div.vbottom{
   bottom:0;
 }
-.vDateBoxTool .shift::before {
-  left:50%;
-  margin-left:-5px;
+.vDateBoxTool .vDateBoxArrow > div.shift {
+  left: 50%!important;
+  margin-left: -8px;
 }
-/* .vDateBoxTool .normalShift::before {
-  left:10px;
-} */
 .vDateBoxTool .vDateBoxArrow > div::before {
   width:0;
   height:0;

@@ -73,7 +73,7 @@ function runGroupStyler(element, StyleObject){
 }
 
 function camelToCSSstandard(cameledName) {
-    return cameledName.replace(/[A-Z]/g, m => "-" + m.toLowerCase());
+    return cameledName.replace(/[A-Z]/g, function (m){"-" + m.toLowerCase()});
 }
 
 function validateNumber(number, msg = null) {
@@ -421,10 +421,14 @@ function getDayName(year, month, day) {
 
 function loadStyleSheet(type, name) {
     var set = assetURL + type;
-    var linkEle = document.createElement("link");
+    linkStyleSheet(set + "/" + name)
+}
+
+function linkStyleSheet(url) {
+    var linkEle = $$.ce("link");
     linkEle.setAttribute("rel", "stylesheet");
     linkEle.setAttribute("type", "text/css");
-    linkEle.setAttribute("href", set + "/" + name);
+    linkEle.setAttribute("href", url);
     document.head.appendChild(linkEle);
 }
 
@@ -438,7 +442,7 @@ function timeFraction(startTime, duration) {
 }
 
 function attachStyleSheet(dataID, css) {
-    var styleElement = document.createElement("style");
+    var styleElement = $$.ce("style");
     styleElement.setAttribute("type", "text/css");
     styleElement.setAttribute("data-id", dataID);
     if (styleElement.styleSheet) {
@@ -559,6 +563,49 @@ function getCssStyle(ele, property, pEle=null){
 function isPositioned(ele){
     var propertyValue = getCssStyle(ele, "position");
     return ["fixed", "relative", "absolute", "sticky"].indexOf(propertyValue) == -1?false:true;
+}
+
+function checkBrowser(id = null){
+    var browserIds={
+        "Safari-Edg": {id:"Safari-Edg", label:"Microsoft Edge", name:"edge"},
+        "Chrome-Safari":{id:"Chrome-Safari", label:"Chrome or Chromium Based", name:"chrome"},
+        "Mozilla-Trident": {id:"Mozilla-Trident", label:"Internet Explorer", name:"iexplorer"},
+        "Gecko-Firefox":{id:"Gecko-Firefox", label:"Mozilla Firefox", name:"firefox"},
+        "Safari-Opr":{id:"Safari-Opr", label:"Opera", name:"opera"},
+        "UBrowser-Safari":{id:"UBrowser-Safari", label:"ucbrowser", name:"ucbrowser"},
+        "Safari-main":{id:"Safari-main", label:"Safari", name:"safari"}
+    }
+
+    var idSegments = navigator.userAgent.split("/");
+    var totalSegment = idSegments.length;
+    var parentId = idSegments[totalSegment-3].split(" ");
+    var parsedParentId = parentId[parentId.length-1].trim();
+    var childId = idSegments[totalSegment-2].split(" ");
+    var parsedChildId = childId[childId.length-1].trim();
+    var browserId = parsedParentId+"-"+parsedChildId;
+    
+    if(id != null){
+        switch (id) {
+            case "edge":
+                return browserIds["Safari-Edg"].id == browserId;
+            case "chrome":
+                return browserIds["Chrome-Safari"].id == browserId;
+            case "iexplorer":
+                return browserIds["Mozilla-Trident"].id == browserId;
+            case "firefox":
+                return browserIds["Gecko-Firefox"].id == browserId;
+            case "safari":
+                return browserIds["Safari-main"].id == browserId;
+            case "ucbrowser":
+                return browserIds["UBrowser-Safari"].id == browserId;
+            case "opera":
+                return browserIds["Safari-Opr"].id == browserId;
+            default:
+                return false
+        }
+    }else{
+        return {id:browserIds[browserId].id, label:browserIds[browserId].label, name:browserIds[browserId].name};
+    }
 }
 /****************************************************************/
 
@@ -689,7 +736,7 @@ var  $$ = {
                     }
                     centerY();
                     window.addEventListener("resize", function() {
-                        secenterY();
+                        centerY();
                     }, false);
                 }
             }
@@ -745,15 +792,15 @@ var  $$ = {
                         }, false);
                     }
                 } else { // static element
-                    ele.style["margin-left"] = "auto";
-                    ele.style["margin-right"] = "auto";
+                    cEle.style["margin-left"] = "auto";
+                    cEle.style["margin-right"] = "auto";
 
                     function centerY() {
                         var parentHeight = elementParent.scrollHeight;
-                        var elementHeight = ele.scrollHeight;
+                        var elementHeight = cEle.scrollHeight;
                         var marginTop = (parentHeight - elementHeight) / 2;
                         elementParent.style["padding-top"] = "1px";
-                        ele.style["margin-top"] = marginTop + "px";
+                        cEle.style["margin-top"] = marginTop + "px";
                     }
                     centerY();
                     window.addEventListener("resize", function() {
@@ -856,7 +903,6 @@ var  $$ = {
                 var cEle = (selector instanceof Element)?selector:ele.single;
                 validateString(className, "$$.sm.makeActive(.x) method argument 1 must a string");
                 if(parent != null) validateElement(parent, "$$.sm.makeActive(x.) method argument 2 must a valid HTML Element");
-
                 var currentElements = (parent != null)?parent.querySelectorAll("."+className):document.querySelector("."+className);
                 if (currentElements != null) {
                     var total = currentElements.length;
@@ -865,6 +911,7 @@ var  $$ = {
                     }
                 };
                 cEle.classList.add(className, "cOff");
+              
             },
             this.isPositioned = function(){
                 var cEle = (selector instanceof Element)?selector:ele.single;
@@ -886,22 +933,89 @@ var  $$ = {
                 }
                        
             },
-            this.filter = {
-                grayScale: function(){
-
-                }
+            this.filter =  function(type, value, options=null){
+                    var supportedFilters = ["grayscale", "blur"];
+                    var cEle = (selector instanceof Element)?selector:ele.single;
+                    var prop = "", initProp="";
+                    if(Array.isArray(type)){ // array
+                        //value must be an array
+                        prop = buildProperty(type, value);
+                        if(options != null){
+                            if(options.init != null){
+                                initProp = buildProperty(type, options.init);
+                            }
+                        }
+                    }else{// is string
+                        prop = setValue(type, value);
+                    }
+                    function setValue(filterType, val){
+                        switch (filterType) {
+                            case 'grayscale':
+                                return "grayscale("+val+")";
+                            case 'blur':
+                                return "blur("+val+")";
+                            default:
+                                break;
+                        }
+                    }
+                    function checkSupport(t){
+                        if(supportedFilters.indexOf(t.toLowerCase()) == -1){
+                            throw new Error(t+" filter not supported, suported filters are: "+supportedFilters.join(", "));
+                        }
+                    }
+                    function buildProperty(properties, values){
+                        var total = properties.length;
+                        var property = "";
+                        for(var x=0; x<total; x++){
+                            checkSupport(properties[x]);
+                            property += " "+ setValue(properties[x], values[x]);
+                        }
+                        return property;
+                    }
+                    var defaultOptions = {
+                        init : null,
+                        duration:"200ms",
+                        effect:"linear", 
+                        callBack:null
+                    }
+                    if (options != null) {
+                        //validate here
+                        if (options.callBack != null) {
+                            validateFunction(options.callBack, "obj.filter(..x) method argument 2 property 'callBack' must be a function");
+                            defaultOptions.callBack = options.callBack;
+                        }
+                        defaultOptions.init = options.init;
+                        defaultOptions.duration = options.duration;
+                        
+                        cEle.style["transition"] = "filter "+defaultOptions.duration+" "+defaultOptions.effect;
+                        cEle.addEventListener("transitionend", function(e){
+                            if(e.target.classList.contains("vFilter")){
+                                e.target.style["filter"] = "none";
+                                e.target.classList.remove("vFilter")
+                            }
+                        }, false) 
+                        cEle.style["filter"] = initProp;
+                        cEle.scrollHeight;
+                    }
+                    cEle.classList.add("vFilter");
+                    
+                    cEle.style["filter"] = prop;
+                    if(defaultOptions.callBack != null){
+                        $$.delay(parseInt(defaultOptions.duration), function(){
+                            defaultOptions.callBack()
+                        });
+                    };
             }
         }
         return new dom();
     },
-    ce:function(node, attributes = null){
+    ce:function(node, attributes = null){//create element
         validateString(node, "$$.ce(x.) method argument 1 must be a string");
         if (attributes != null) validateObjectLiteral(attributes, "$$.ce(.x) method argument 2 must be an object literal");
         
         var element = document.createElement(node);
         if(attributes != null){
             var allAttributes = Object.entries(attributes);
-            var totalAttributes = allAttributes.length;
             allAttributes.forEach(attribute => {
                 element.setAttribute(attribute[0], attribute[1]);
             });
@@ -936,7 +1050,7 @@ var  $$ = {
             }
         })
     },
-    delay:function(duration, callBack = null){
+    delay:function(duration, callBack = null, ){
         validateNumber(duration, "'$$.delay()' method argument 1 must be numeric");
         if (duration < 0) throw new Error("'$$.delay()' method argument 1 must be greater than 0");
         var start = performance.now();
@@ -944,7 +1058,7 @@ var  $$ = {
             // timeFraction goes from 0 to 1
             var timeFrac = (time - start) / duration;
             if (timeFrac > 1) timeFrac = 1;
-            if (timeFrac < 1) {
+            if (timeFrac < 1){
                 requestAnimationFrame(animate);
             }else{
                if (callBack != null) callBack();
@@ -1015,7 +1129,7 @@ var  $$ = {
     },
     clipboard:{
         copy:function(content){
-            var tempInput = document.createElement("textarea");
+            var tempInput = $$.ce("textarea");
             tempInput.appendChild(document.createTextNode(content));
             document.body.appendChild(tempInput);
             tempInput.select();
@@ -1094,7 +1208,7 @@ var  $$ = {
             }
             var data = new Blob([urlOrData], {type:type})
             var url = window.URL.createObjectURL(data);
-            var link = document.createElement("a");
+            var link = $$.ce("a");
             link.setAttribute("hidden", "");
             link.setAttribute("href", url);
             link.setAttribute("download", options.name);
@@ -1123,11 +1237,46 @@ var  $$ = {
         validateInteger(min, "$$.randomInteger(x.) argument 1 must be an integer");
         validateInteger(max, "$$.randomInteger(.x) argument 2 must be an integer");
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+    scroll:{
+        lock:function(){
+            var lastPointY = scrollY;
+            var lastPointX = scrollX;
+            addEventListener("scroll", function(){
+                // scrollTo(scrollX, lastPointY)
+            },false)
+        }
+    },
+    linkStyleSheet:function(url){
+        linkStyleSheet(url);
+    },
+    browserType: function(name=null, callBack=null){
+        var browserNames = ["opera", "firefox", "chrome", "safari", "iexplorer", "ucbrowser", "edge"];
+        
+        if(name !=null){
+            name = name.toLowerCase();
+            if(browserNames.indexOf(name) == -1){
+                throw new Error("$$.browserType(x.) argument 1 (browser name) must either be null or any of the followings: "+ browserNames.join(", "));
+            }
+            if(callBack != null){
+                validateFunction(callBack, "$$.browserType(.x) argument 2 must be either null or a callback");
+            }
+        }    
+
+        if(name != null && callBack == null){ //check and return boolean
+            return checkBrowser(name);
+        }else if(name != null && callBack != null){ //check and call
+            if(checkBrowser(name)){
+                callBack();
+            }
+        }else{//return browser name
+            return checkBrowser();
+        }
     }
 }
 /****************************************************************/
 
-/*********************** **********************/
+/***********************Canvas Shapes**********************/
 function CShapes() {
     /*******************fixed dashed rectangle starts********************/
     this.fixedRectangle = function() {
@@ -1593,11 +1742,7 @@ function AutoWriter() {
     function pauseWriting(con){
         if(showCursor){
             blinkCursor = setInterval(function(){
-                if(con.nextElementSibling.classList.contains("hide")){
-                    con.nextElementSibling.classList.remove("hide");
-                }else{
-                    con.nextElementSibling.classList.add("hide");
-                }
+                con.nextElementSibling.classList.toggle("hide");
             }, cursorBlinkDelay);
         }
     }
@@ -1631,7 +1776,7 @@ function AutoWriter() {
     function erase(n, con){
         var p_Delted = "", delay ;
         for (var x = 0; x < n; x++) {
-            delay = $$.randomInteger(speed[0], speed[1]);
+            delay = $$.randomInteger(typingSpeed[0], typingSpeed[1]);
             $$.delay(delay, function(){
                 var deleted = Array.from(con.innerHTML);
                 deleted.pop();
@@ -1663,7 +1808,7 @@ function AutoWriter() {
             clearTimeout(x)
         }
     }
-    this.writeText = function(textBox, text, fn) {
+    this.writeText = function(textBox, text, fn=null) {
         if(!init){
             mainTextBox = textBox;
             mainTexts = text;
@@ -1672,7 +1817,7 @@ function AutoWriter() {
             init = true;
         }
 
-        validateFunction(fn, "writeTextObj.writeText(..x) method argument 3 must be a function");
+        if (fn != null) validateFunction(fn, "writeTextObj.writeText(..x) method argument 3 must be a function");
 
         if(type == "single"){
             if(conE == ""){
@@ -1869,8 +2014,10 @@ function ListScroller(container, listParent) {
     validateElement(container, "An HTML element needed as list parent container");
     validateElement(listParent, "List parent is not a valid HTML element");
     var maxAdd = 0, paddingRight = 0, ready = 0, listening = 0,running = 0;
-    var menuWidth = 170,buttons = [], scrollSize = 175,effects = [1, "linear"],inactiveButtonsClassName = [], paddingLeft = 0,wrapperStyle = "width:100%",spaceError = 0,restyleOnActive = false;
-    //buttons[0] = left buttons, buttons[1] = Right buttons
+    var buttons = [], scrollSize = 175,effects = [1, "linear"],inactiveButtonsClassName = [], paddingLeft = 0,wrapperStyle = "width:100%",spaceError = 0,restyleOnActive = false;
+    //buttons[0] = left button, buttons[1] = Right button
+    //inactiveButtonsClassName[0] = left button inactive ClassName, inactiveButtonsClassName[1] = right button inactive ClassName, 
+    //if inactiveButtonsClassName.length = 1 , then button 1 and 2 have the same inactive ClassName
     function toggleClass(type, id) {
         if (type == "r") { //remove
             if (inactiveButtonsClassName.length == 2) {
@@ -1907,7 +2054,6 @@ function ListScroller(container, listParent) {
                     running = 0;
                 }
             }
-
         }
     }
 
@@ -2032,7 +2178,6 @@ function ListScroller(container, listParent) {
         //Style list
         for (var list of listItems) {
             list.classList.add("vlist");
-            list.style["width"] = menuWidth + "px";
         }
     }
 
@@ -2055,6 +2200,7 @@ function ListScroller(container, listParent) {
             if (children < 0) {
                 throw new Error("Setup error: No list item found, check the listType specified in the contructor");
             }
+            
             listParent.classList.add("vlistCon");
             addVitalStyles();
             assignHandlers();
@@ -2142,12 +2288,6 @@ function ListScroller(container, listParent) {
                 validateNumber(value[0], temp + ", having its 1st element to be an numeric type, which represents the speed");
                 validateString(value[1], temp + ", having its 2nd element to be a string type, which represents the effect (A CSS valid effect value e.g 'linear')");
                 effects = value;
-            }
-        },
-        menuWidth: {
-            set: function(value) {
-                validateNumber(value, "Numeric value needed for menuWidth property");
-                menuWidth = value;
             }
         },
         wrapperStyle: {
@@ -2300,7 +2440,7 @@ function FormComponents() {
             for (var x = 0; x < totalOptions; x++) {
                 if (sOptions[x].nodeName == "OPTION") { //An option
                     var optionValue = sOptions[x].innerHTML;
-                    var optionEle = document.createElement("DIV");
+                    var optionEle = $$.ce("DIV");
                     var index = sOptions[x].index;
                     sOptions[x].getAttribute("disabled") != null ? optionEle.setAttribute("data-disabled", "true") : optionEle.setAttribute("data-disabled", "false");
                     optionEle.setAttribute("order", ++n.v);
@@ -2328,7 +2468,7 @@ function FormComponents() {
                     container.appendChild(optionEle);
                 } else {
                     var optionGroupLabel = sOptions[x].getAttribute("Label");
-                    var optionGroupEle = document.createElement("DIV");
+                    var optionGroupEle = $$.ce("DIV");
                     optionGroupEle.classList.add("sOptionGroup");
                     optionGroupEle.setAttribute("data-gid", "g" + x);
                     optionGroupEle.setAttribute("order", ++n.v);
@@ -2612,7 +2752,7 @@ function FormComponents() {
                 toolTipHandler.initialize();
             };
             //Wrapper Element
-            var wrapper = document.createElement("DIV");
+            var wrapper = $$.ce("DIV");
             wrapper.classList.add("vSelect", "v" + selectClassName);
             wrapper.setAttribute("tabindex", "0");
             if (wrapperStyle != "") {
@@ -2620,9 +2760,9 @@ function FormComponents() {
             }
 
             //Select field
-            var selectFieldCon = document.createElement("DIV");
-            var selectField = document.createElement("DIV");
-            var selectIcon = document.createElement("DIV");
+            var selectFieldCon = $$.ce("DIV");
+            var selectField = $$.ce("DIV");
+            var selectIcon = $$.ce("DIV");
             if (selectFieldStyle != "") {
                 selectField.style = selectFieldStyle;
             }
@@ -2638,15 +2778,15 @@ function FormComponents() {
             wrapper.appendChild(selectFieldCon);
 
             //Options Field
-            var optionsFieldCon = document.createElement("DIV");
-            var optionsField = document.createElement("DIV");
+            var optionsFieldCon = $$.ce("DIV");
+            var optionsField = $$.ce("DIV");
             optionsFieldCon.classList.add("optionsCon");
             optionsField.classList.add("sOptionCon");
 
             // Search field
             if (includeSearchField == true) {
-                var selectSearchBox = document.createElement("DIV");
-                var selectSearchInput = document.createElement("INPUT");
+                var selectSearchBox = $$.ce("DIV");
+                var selectSearchInput = $$.ce("INPUT");
                 selectSearchBox.classList.add("sSearchBox");
                 selectSearchInput.classList.add("sSearchInput");
                 selectSearchInput.setAttribute("tabindex", "0");
@@ -3008,11 +3148,11 @@ function FormComponents() {
                 hasLabel["label"].classList.add("vRadioButtonLabel");
             }
 
-            var radioWrapper = document.createElement("DIV");
+            var radioWrapper = $$.ce("DIV");
             radioWrapper.classList.add("vRadioButtonWrapper", "v" + radioClassName);
 
-            var customRadioButtonSelected = document.createElement("DIV");
-            var customRadioButtonDeselected = document.createElement("DIV");
+            var customRadioButtonSelected = $$.ce("DIV");
+            var customRadioButtonDeselected = $$.ce("DIV");
 
             if ($$.sm(nativeRadioButton).hasParent(axisClass[0], 3)) { //is x axis
                 // parent.style["display"] = "";
@@ -3259,11 +3399,11 @@ function FormComponents() {
                 }
             }
 
-            var checkboxWrapper = document.createElement("DIV");
+            var checkboxWrapper = $$.ce("DIV");
             checkboxWrapper.classList.add("vCheckboxWrapper", "v" + checkboxClassName);
 
-            var customCheckboxChecked = document.createElement("DIV");
-            var customCheckboxUnchecked = document.createElement("DIV");
+            var customCheckboxChecked = $$.ce("DIV");
+            var customCheckboxUnchecked = $$.ce("DIV");
 
 
             var checkedIndex = 0;
@@ -3441,7 +3581,7 @@ function FormComponents() {
             return this.getTime() == this.getTime();
         }
         var falseState = "cX.1zwAP",trueState = "mp.3Cy._Xa";
-        var tooTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  shiftPoint = 320, labelProperties = [], daysToolTipProperties = [], datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
+        var tooTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = [], datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
         var vBoxWidth = 300, initX = 10, wrapAttribute = "", paddingRight = 10, maxX = null, arrowXpos = 0, boxXpos = null, sizeAttribute = "";
 
         function autoPlace(dateBox) {
@@ -3460,6 +3600,11 @@ function FormComponents() {
             maxX = posDim["width"] - (initX * 2);
             boxXpos = offsetDiff < 0 ? -1 * (offsetDiff - paddingRight) > maxX ? maxX : offsetDiff - paddingRight : 0;
             arrowXpos = initX - (boxXpos);
+
+
+            // if(innerWidth <= ){
+
+            // }
             //Display in approriate space
             if (dFieldBottomOffset >= diff) {
                 if (dateBoxHeight <= diff) { //to bottom
@@ -3476,7 +3621,6 @@ function FormComponents() {
                 dateBox.style["bottom"] = "auto";
                 hideArrow(wrapper, "bottom");
             }
-
             dateBox.style["left"] = boxXpos + "px";
         }
 
@@ -3520,7 +3664,7 @@ function FormComponents() {
                 if (id == "vDateIcon" || id == "dField") {
                     var wrapper = $$.sm(e.target).getParent(2);
                     var pickerState = wrapper.querySelector(".dField").getAttribute("data-state");
-                    pickerState == "closed" ? showDateBox(wrapper) : closeDateBox(wrapper);
+                    pickerState == "closed"? showDateBox(wrapper) : closeDateBox(wrapper);
                 } else if (id == "range") { //hide rangeBox and show yearsCon
                     var wrapper = $$.sm(e.target).getParent(6);
                     var yearSeries = parseInt(e.target.getAttribute("data-range"));
@@ -3574,7 +3718,7 @@ function FormComponents() {
                     year == minYear ? startMonth = minMonth : startMonth = 0;
                     for (var x = 0; x <= stopMonth; x++) {
                         if (x < startMonth - 1) continue;
-                        var month = document.createElement("DIV");
+                        var month = $$.ce("DIV");
                         month.classList.add("month");
                         addVitalStyle(month);
                         var selectedMonth = getSelectedValue(nativeDateInput, "month");
@@ -3707,7 +3851,7 @@ function FormComponents() {
                     var wrapper = $$.sm(e.target).getParent(4);
                     closeDateBox(wrapper);
                 } else if (id == "meridianSwitchCon") { //meridian switch button clicked
-                    var wrapper = $$.sme.target().getParent(5);
+                    var wrapper = $$.sm(e.target).getParent(5);
                     var hrValue = wrapper.querySelector(".hr").value;
                     if (hrValue > 0) {
                         toggleMeridianSwitch(e.target);
@@ -3834,14 +3978,6 @@ function FormComponents() {
                     autoPlace(dateBox);
                 }
             }, false)
-            document.addEventListener("click", function(e) {
-                if (!$$.sm(e.target).hasParent(familyID, 8)) {
-                    var anyOpen = $$.ss(".dField[data-state='opened']");
-                    if (anyOpen != null) {
-                        closeDateBox($$.sm(anyOpen).getParent(2));
-                    }
-                }
-            }, false)
             $$.attachEventHandler("mouseover", "meridianSwitchCon", function(e) {
                 var wrapper = $$.sm(e.target).getParent(5);
                 var hrValue = wrapper.querySelector(".hr").value;
@@ -3908,7 +4044,7 @@ function FormComponents() {
                 if (nxtYear > maxYear) break;
                 if (nxtYear >= sYear) {
                     n++;
-                    var year = document.createElement("DIV");
+                    var year = $$.ce("DIV");
                     year.classList.add("year");
                     var selectedYear = getSelectedValue(nativeDateInput, "year");
                     selectedYear == nxtYear ? year.classList.add("vSelected") : null
@@ -3956,9 +4092,8 @@ function FormComponents() {
             maskLabel = includeTime ? mask.replace("T", " ") : mask;
             //_____________Create elements___________
             //Wrapper
-            var wrapper = document.createElement("DIV");
-            wrapper.classList.add("vDatePicker");
-
+            var mView = innerWidth <= mobileView?"vDatePickerSmallView":"";
+            var wrapper = $$.ce("DIV", {class:"vDatePicker "+mView});
             var dimension = nativeDateInput.getAttribute(sizeAttribute);
             if (dimension == null) {
                 throw new Error("One of the native date input to be made custom has no dimension specified with the " + sizeAttribute + " attribute");
@@ -3974,56 +4109,47 @@ function FormComponents() {
             wrapper.style["width"] = datePickerDim[0];
 
             //Date field
-            var dateFieldCon = document.createElement("DIV"); //the datefield and icon container
-            var dateField = document.createElement("DIV"); //custom date field
-            var dateIcon = document.createElement("DIV"); // Input icon
-
+            var dateFieldCon = $$.ce("DIV", {class:"dFieldCon"}); //the datefield and icon container
+            var dateField = $$.ce("DIV", {"data-value":mask, class:"dField vItem", "data-state":"closed"}); //custom date field
+            var dateIcon = $$.ce("DIV", {class:"vDateIcon iconClose vItem"}); // Input icon
+            
+            //vItem added for validation module support
+            
             dateFieldStyle != "" ? dateField.style = dateFieldStyle : null;
 
-            dateFieldCon.classList.add("dFieldCon");
-            dateField.classList.add("dField", "vItem"); //vItem added for validation module support
-            dateField.setAttribute("data-value", mask);
             dateField.appendChild(document.createTextNode(maskLabel));
             dateField.style["line-height"] = datePickerDim[1];
-            dateField.setAttribute("data-state", "closed");
-            dateIcon.classList.add("vDateIcon", "iconClose", "vItem"); //vItem added for validation module support
             dateFieldCon.appendChild(dateField);
             dateFieldCon.appendChild(dateIcon);
 
-            //append into wrapper
+            //append into wrapper          
             wrapper.appendChild(dateFieldCon);
 
 
             //DateBox tool parent
-            var dateBoxToolElement = document.createElement("DIV");
-            dateBoxToolElement.classList.add("vDateBoxTool");
+            var dateBoxToolElement = $$.ce("DIV", {class:"vDateBoxTool"});
 
-            //Arrow
+            //Arrows
             //top
-            var dateBoxArrowTopElementCon = document.createElement("DIV");
-            var dateBoxArrowTopElement = document.createElement("DIV");
-            dateBoxArrowTopElementCon.classList.add("vDateBoxArrow");
-            dateBoxArrowTopElement.classList.add("vtop", "normalShift");
+            var dateBoxArrowTopElementCon = $$.ce("DIV", {class:"vDateBoxArrow"});
+            var dateBoxArrowTopElement = $$.ce("DIV", {class:"vtop normalShift"});
             dateBoxArrowTopElementCon.appendChild(dateBoxArrowTopElement);
+            
             //bottom
-            var dateBoxArrowBottomElementCon = document.createElement("DIV");
-            var dateBoxArrowBottomElement = document.createElement("DIV");
-            dateBoxArrowBottomElementCon.classList.add("vDateBoxArrow");
-            dateBoxArrowBottomElement.classList.add("vbottom", "normalShift");
+            var dateBoxArrowBottomElementCon = $$.ce("DIV", {class:"vDateBoxArrow"});
+            var dateBoxArrowBottomElement = $$.ce("DIV", {class:"vbottom normalShift"});
             dateBoxArrowBottomElementCon.appendChild(dateBoxArrowBottomElement);
 
 
             //DateBox
-            var dateBoxElement = document.createElement("DIV");
-            dateBoxElement.classList.add("vDateBox");
+            var dateBoxElement = $$.ce("DIV", {class:"vDateBox"});
 
             //DateBox Header
-            var dateBoxHeaderElement = document.createElement("DIV");
-            dateBoxHeaderElement.classList.add("vDateBoxHeader");
+            var dateBoxHeaderElement = $$.ce("DIV", {class:"vDateBoxHeader"});
+
 
             //DateBox displayCon
-            var dateBoxDisplayConElement = document.createElement("DIV");
-            dateBoxDisplayConElement.classList.add("vDateBoxDisplayCon");
+            var dateBoxDisplayConElement = $$.ce("DIV", {class:"vDateBoxDisplayCon"});
 
             if (labelProperties[1] != undefined) { //FontColor
                 dateBoxDisplayConElement["style"]["color"] = labelProperties[1];
@@ -4036,13 +4162,11 @@ function FormComponents() {
             if (yearDiff > 11) {
                 var n = (getDateRangeComponents(nativeDateInput)["seriesEndYear"] - getDateRangeComponents(nativeDateInput)["seriesStartYear"]) / 10;
                 var numberOfRangeBoxes = Math.ceil(n / 11) <= 0 ? 1 : Math.ceil(n / 11);
-                var dateRangeConElement = document.createElement("DIV");
-                dateRangeConElement.classList.add("vDateRangeCon", "vDateRangeConTrans");
-                dateRangeConElement.setAttribute("data-title", "Select year series");
+                var dateRangeConElement = $$.ce("DIV", {class:"vDateRangeCon vDateRangeConTrans", "data-title":"Select year series"});
+              
 
                 for (var x = 0; x < numberOfRangeBoxes; x++) {
-                    var rangeBox = document.createElement("DIV");
-                    rangeBox.classList.add("rangeBox");
+                    var rangeBox = $$.ce("DIV", {class:"rangeBox"});
                     dateRangeConElement.appendChild(rangeBox);
                 }
             } else {
@@ -4050,55 +4174,35 @@ function FormComponents() {
             }
 
             //Years Container
-            var yearsConElement = document.createElement("DIV");
-            yearsConElement.classList.add("vYearsCon", "vDateRangeConTrans");
-            yearsConElement.setAttribute("data-title", "Select year");
-
+            var yearsConElement = $$.ce("DIV", {class:"vYearsCon vDateRangeConTrans", "data-title":"Select year"});
 
             //Months Container
-            var monthsConElement = document.createElement("DIV");
-            monthsConElement.classList.add("vMonthsCon", "vDateRangeConTrans");
-            monthsConElement.setAttribute("data-title", "Select month");
+            var monthsConElement = $$.ce("DIV", {class:"vMonthsCon vDateRangeConTrans", "data-title":"Select month"});
 
             //Days Container
-            var daysConElement = document.createElement("DIV");
-            daysConElement.classList.add("vDaysCon", "vDateRangeConTrans");
-            daysConElement.setAttribute("data-title", "Select day");
+            var daysConElement = $$.ce("DIV", {class:"vDaysCon vDateRangeConTrans", "data-title":"Select day"});
 
             //Time Container
             if (includeTime) {
-                var timeConElement = document.createElement("DIV");
-                var label = document.createElement("DIV");
-                var meridian = document.createElement("DIV");
-                var meridianSwitchCon = document.createElement("DIV");
-                var timpePropertiesCon = document.createElement("DIV");
-                var hourCon = document.createElement("DIV");
-                var hourInput = document.createElement("INPUT");
-                var minCon = document.createElement("DIV");
-                var minInput = document.createElement("INPUT");
-                var OkButtonCon = document.createElement("DIV");
-                var OkButton = document.createElement("BUTTON");
-                timeConElement.classList.add("vTimeCon");
-                label.classList.add("timeLabel");
-                label.appendChild(document.createTextNode("Set Time"));
-                meridian.setAttribute("class", "meridian AMon");
-                meridianSwitchCon.setAttribute("class", "meridianSwitchCon am");
-                timpePropertiesCon.classList.add("timpePropertiesCon");
-                hourCon.classList.add("hourCon");
-                hourInput.setAttribute("type", "text");
-                hourInput.classList.add("hr");
-                hourInput.setAttribute("maxlength", "2");
-                hourCon.appendChild(hourInput);
-                minCon.classList.add("minCon");
-                minInput.setAttribute("type", "text");
-                minInput.setAttribute("maxlength", "2");
-                minInput.classList.add("min");
-                minCon.appendChild(minInput);
+                var timeConElement = $$.ce("DIV", {class:"vTimeCon"});
+                var label = $$.ce("DIV", {class:"timeLabel"});
+                var meridian = $$.ce("DIV", {class:"meridian AMon"});
+                var meridianSwitchCon = $$.ce("DIV", {class:"meridianSwitchCon am"});
+                var timpePropertiesCon = $$.ce("DIV", {class:"timpePropertiesCon"});
+                var hourCon = $$.ce("DIV", {class:"hourCon"});
+                var hourInput = $$.ce("INPUT", {type:"text", class:"hr", maxlength:2});
+                var minCon = $$.ce("DIV", {class:"minCon"});
+                var minInput = $$.ce("INPUT", {type:"text", maxlength:2, class:"min"});
+                var OkButtonCon = $$.ce("DIV", {class:"buttonCon"});
+                var OkButton = $$.ce("BUTTON", {type:"button", class:"tbuttonInactive"});
+      
 
-                OkButtonCon.classList.add("buttonCon");
+                label.appendChild(document.createTextNode("Set Time"));
+
+                hourCon.appendChild(hourInput);
+                minCon.appendChild(minInput);
+  
                 OkButton.appendChild(document.createTextNode("Done"));
-                OkButton.classList.add("tbuttonInactive");
-                OkButton.setAttribute("type", "button");
                 OkButtonCon.appendChild(OkButton);
                 //Append
 
@@ -4117,25 +4221,22 @@ function FormComponents() {
             }
 
             //DateBox controlCon
-            var dateBoxControlConElement = document.createElement("DIV");
-            dateBoxControlConElement.classList.add("vDateBoxControlCon");
+            var dateBoxControlConElement = $$.ce("DIV", {class:"vDateBoxControlCon"});
 
             // previous button
-            var previousButtonElement = document.createElement("BUTTON");
-            previousButtonElement.setAttribute("class", "linactive vPrev");
-            previousButtonElement.setAttribute("id", "vPrev");
+            var previousButtonElement = $$.ce("BUTTON", {class:"linactive vPrev", id:"vPrev", type:"button"});
+
             // back button
-            var backButtonElement = document.createElement("BUTTON");
-            backButtonElement.setAttribute("class", "vBack vbInactive");
+            var backButtonElement = $$.ce("BUTTON", {class:"vBack vbInactive", type:"button"});
+           
             backButtonElement.appendChild(document.createTextNode("Back"));
+           
             // Close button
-            var closeButtonElement = document.createElement("BUTTON");
-            closeButtonElement.classList.add("vClose");
+            var closeButtonElement = $$.ce("BUTTON", {class:"vClose", type:"button"});
             closeButtonElement.appendChild(document.createTextNode("Close"));
+            
             // next button
-            var nextButtonElement = document.createElement("BUTTON");
-            nextButtonElement.setAttribute("class", "rinactive vNext");
-            nextButtonElement.setAttribute("id", "vNext");
+            var nextButtonElement = $$.ce("BUTTON", {class:"rinactive vNext", id:"vNext", type:"button"});
 
             //____________Append______________
             //Append dateBox header to dateBox Element
@@ -4220,7 +4321,7 @@ function FormComponents() {
         function generateYearRange(nativeDateInput) {
             var displayCon = nativeDateInput.parentNode.querySelector(".vDateRangeCon");
             var rangeBox = displayCon.querySelectorAll(".rangeBox");
-            var range = document.createElement("DIV");
+            var range = $$.ce("DIV");
             var startYear = parseInt(getDateRangeComponents(nativeDateInput)["seriesStartYear"]);
             var numberOfRangeBoxes = nativeDateInput.previousElementSibling.querySelectorAll(".rangeBox").length;
             range.classList.add("range");
@@ -4236,7 +4337,7 @@ function FormComponents() {
                     startYear += 10;
                     if (startYear > stopSeries) break;
                     diff = nativeYear - startYear;
-                    var range = document.createElement("DIV");
+                    var range = $$.ce("DIV");
                     (diff >= 0 && diff < 10) ? range.classList.add("vSelected"): null;
                     range.classList.add("range");
                     range.setAttribute("data-range", startYear);
@@ -4249,7 +4350,7 @@ function FormComponents() {
 
         function generateYearsPage(nativeDateInput) {
             var displayCon = nativeDateInput.parentNode.querySelector(".vDateBox .vYearsCon");
-            var year = document.createElement("DIV");
+            var year = $$.ce("DIV");
             var minYear = getDateRangeComponents(nativeDateInput)["min"].split("-")[0];
             var maxYear = getDateRangeComponents(nativeDateInput)["max"].split("-")[0];
             var selectedYear = getDateRangeComponents(nativeDateInput)["max"].split("-")[0];
@@ -4264,7 +4365,7 @@ function FormComponents() {
                 if (sYear == maxYear) break;
                 sYear++;
                 n++
-                var year = document.createElement("DIV");
+                var year = $$.ce("DIV");
                 year.classList.add("year");
                 addVitalStyle(year);
                 var selectedYear = getSelectedValue(nativeDateInput, "year");
@@ -4290,7 +4391,7 @@ function FormComponents() {
         }
 
         function generateDays(x, daysCon) {
-            var day = document.createElement("DIV");
+            var day = $$.ce("DIV");
             var wrapper = $$.sm(daysCon).getParent(5);
             var nativeDateInput = $$.sm(daysCon).getParent(4).nextElementSibling;
             day.classList.add("day");
@@ -4312,14 +4413,16 @@ function FormComponents() {
             var RightBt = wrapper.querySelector("#vNext");
             if (listControllerObj == null) {
                 listControllerObj = new ListScroller(listConParent, listCon);
-                listControllerObj.config.Xbuttons = [LeftBt, RightBt];
-                listControllerObj.config.listPlane = "x";
-                listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
+       
+                listControllerObj.config.buttons = [LeftBt, RightBt];
+                listControllerObj.config.inactiveButtonsClassName = ["off"];
                 listControllerObj.config.effects = [0.4, "cubic-bezier(0,.99,0,1)"];
-                listControllerObj.config.scrollSize = 300;
+                listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
+                listControllerObj.config.scrollSize = 300
+                listControllerObj.config.paddingRight = 0; 
                 listControllerObj.config.spaceError = 2;
-                listControllerObj.config.paddingRight = 0;
                 listControllerObj.initialize();
+                
             }
             if (list.length > 1 && $$.sm(listCon).cssStyle("display") != "none") {
                 listControllerObj.onScroller();
@@ -4424,18 +4527,20 @@ function FormComponents() {
             }
         }
 
-        function shift(dateBoxParent, dateBoxArrows) {
-            if (window.innerWidth > shiftPoint) {
-                for (var x = 0; x < dateBoxArrows.length; x++) {
-                    dateBoxArrows[x].querySelector("div").style["left"] = arrowXpos + "px";
-                    dateBoxArrows[x].classList.remove("shift");
+        function shift(dateBoxParent, dateBoxArrowsCon) {
+            if (window.innerWidth > mobileView) {//large
+                for (var x = 0; x < dateBoxArrowsCon.length; x++) {
+                    var arrow = dateBoxArrowsCon[x].querySelector("div");
+                    arrow.style["left"] = arrowXpos + "px";
+                    arrow.classList.remove("shift");
                 }
                 dateBoxParent.style["left"] = boxXpos + "px";
                 dateBoxParent.style["margin-left"] = "0";
-            } else {
-                for (var x = 0; x < dateBoxArrows.length; x++) {
-                    dateBoxArrows[x].classList.add("shift");
-                }
+            } else { //small
+                for (var x = 0; x < dateBoxArrowsCon.length; x++) {
+                    var arrow = dateBoxArrowsCon[x].querySelector("div");
+                    arrow.classList.add("shift");
+                }                
                 dateBoxParent.style["left"] = "50%";
                 dateBoxParent.style["margin-left"] = "-150px";
             }
@@ -4759,16 +4864,16 @@ function FormComponents() {
                     daysToolTip = value;
                 }
             },
-            shiftPoint: {
+            mobileView: {
                 set: function(value) {
                     if (validateInteger(value)) {
                         if (value > 300) {
-                            shiftPoint = value;
+                            mobileView = value;
                         } else {
-                            throw new Error("'shiftPoint' property integer value must be greater than 300");
+                            throw new Error("'mobileView' property integer value must be greater than 300");
                         }
                     } else {
-                        throw new Error("'shiftPoint' property value must be an integer");
+                        throw new Error("'mobileView' property value must be an integer");
                     }
                 }
             },
@@ -4933,7 +5038,7 @@ function FormComponents() {
             checkboxParentPosition == "static" ? parent.style.position = "relative" : null;
 
             //Wrapper
-            var slideSwitchWrapper = document.createElement("DIV");
+            var slideSwitchWrapper = $$.ce("DIV");
             slideSwitchWrapper.classList.add("vSlideSwitchWrapper", "v" + slideSwitchClassName);
 
             //Wrapper custom style
@@ -4949,16 +5054,16 @@ function FormComponents() {
             }
             
             //viewport
-            var slideSwitchWrapperViewPort = document.createElement("DIV");
+            var slideSwitchWrapperViewPort = $$.ce("DIV");
             slideSwitchWrapperViewPort.classList.add("vSlideSwitchWrapperVp");
 
             //Slider Bg
-            var sliderBg = document.createElement("DIV");
+            var sliderBg = $$.ce("DIV");
             sliderBg.classList.add("vSliderBg");
 
             //Slider Bg states
-            var sliderBgON = document.createElement("DIV");
-            var sliderBgOFF = document.createElement("DIV");
+            var sliderBgON = $$.ce("DIV");
+            var sliderBgOFF = $$.ce("DIV");
             sliderBgON.classList.add("vSliderBg-ON");
             sliderBgOFF.classList.add("vSliderBg-OFF");
 
@@ -5153,7 +5258,7 @@ function FormValidator(form = null) {
         function createMsgBox() {
             (innerWidth > smallView) ? inputWrapper.setAttribute("data-vp", "large") : inputWrapper.setAttribute("data-vp", "small");
             //Fix left and right
-            var messageBoxWrapper = document.createElement("DIV");
+            var messageBoxWrapper = $$.ce("DIV");
 
             function styleLeft() {
                 if (leftConStyle != "") {
@@ -5316,7 +5421,6 @@ function FormValidator(form = null) {
         document.addEventListener("transitionend", function(e) {
             if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("error") && e.target.classList.contains("clear") == false) {
                 e.target.style["color"] = $$.sm(form).cssStyle("--error-color");
-                console.log(form, $$.sm(form).cssStyle("--error-color"));
             } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("warning") && e.target.classList.contains("clear") == false) {
                 e.target.style["color"] = $$.sm(form).cssStyle("--warning-color");
             } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false) {
@@ -5438,10 +5542,10 @@ function FormValidator(form = null) {
         element.style["height"] = height + "px";
     }
     function createLoader() {
-        var overLay = document.createElement("DIV");
+        var overLay = $$.ce("DIV");
         overLay.classList.add("vFormOverlay");
         if(loaderLocation == "form"){
-            var loader = document.createElement("DIV");
+            var loader = $$.ce("DIV");
             loader.classList.add("vFormLoader");
             $$.sm(loader).center();
             overLay.appendChild(loader);
@@ -5461,11 +5565,11 @@ function FormValidator(form = null) {
             ui = ["tsuc", "msuc"];
         }
 
-        var con = document.createElement("DIV");
-        var ttl = document.createElement("DIV");
-        var msg = document.createElement("DIV");
-        var btCon = document.createElement("DIV");
-        var btn = document.createElement("BUTTON");
+        var con = $$.ce("DIV");
+        var ttl = $$.ce("DIV");
+        var msg = $$.ce("DIV");
+        var btCon = $$.ce("DIV");
+        var btn = $$.ce("BUTTON");
 
         $$.sm(con).center();
         con.classList.add("FbMsgBox");
@@ -6175,14 +6279,14 @@ function FormValidator(form = null) {
         write: { writable: false }
     });
     Object.defineProperties(this, {
-        config: { write: { writable: false } },
-        format: { write: { writable: false } },
-        validate: { write: { writable: false } },
-        message: { write: { writable: false } },
-        initialize: { write: { writable: false } },
-        submit: { write: { writable: false } },
-        formOk: { write: { writable: false } },
-        showFeedback: { write: { writable: false } },
+        config: { writable: false},
+        format: { writable: false},
+        validate: { writable: false},
+        message: { writable: false},
+        initialize: { writable: false},
+        submit: { writable: false},
+        formOk: { writable: false},
+        showFeedback: { writable: false},
         hideProgress: {
             value: function() {
                 hideProgress();
@@ -6286,15 +6390,14 @@ Object.defineProperties(FormValidator.format, {
 /****************************Modal*******************************/
 function ModalDisplayer() {
     var self = this,cssWidth = "",currentForm = null,id = null,totalHeight, effectName = "none",bodyOldPosition = "",mainFormCon = "",closeButton = null,mainFormConInner = "",overlayBackgroundType = "color",overlayBackground = ["hsla(0, 0%, 100%, 0.48)", ""],initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,sX = 0,endSy = 0,scrollable = false,computedModalHeight = 0,computedModalWidth = 0,modalHeigthBelow = 0,modalHeigthAbove = 0,paddingTop = 50;
-    var modalWidths = ["500px", "500px", "86%"], brkpoints = { largeStart: 1000, mediumStart: 520 },
-        hasModalWidth=false, pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+    var modalWidths = ["500px", "500px", "86%"], brkpoints = { largeStart: 1000, mediumStart: 520 },pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
 
     //modalWidths => [a, b, c] => a = large; b = medium; c = small
     //screenBreakPoints => [a,b] => a = largeStart ; b = mediumStart
 
     var effects = {
         none: function(modal) {
-            var newModal = document.createElement("DIV");
+            var newModal = $$.ce("DIV");
             newModal.setAttribute("id", "newModal");
             modalOn = true;
             var modayBody = $$.ss(".vModal");
@@ -6326,10 +6429,10 @@ function ModalDisplayer() {
             modayBody.classList.add("show");
         },
         split: function(modal) {
-            var newModal = document.createElement("DIV");
-            var effectsCon = document.createElement("DIV");
-            var leftEle = document.createElement("DIV");
-            var rightEle = document.createElement("DIV");
+            var newModal = $$.ce("DIV");
+            var effectsCon = $$.ce("DIV");
+            var leftEle = $$.ce("DIV");
+            var rightEle = $$.ce("DIV");
             //left style
             var lcss = "position:absolute;left:-200%; top:0; transition:left .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:" + computedModalHeight + "px; overflow:hidden;";
             var rcss = "position:absolute;right:-200%; top:0; transition:right .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:" + computedModalHeight + "px; overflow:hidden;";
@@ -6391,11 +6494,11 @@ function ModalDisplayer() {
             rightE.style["right"] = "0%";
         },
         flip: function(modal) {
-            var newModal = document.createElement("DIV");
-            var effectsCon = document.createElement("DIV");
-            var flipper = document.createElement("DIV");
-            var flipperBGElement = document.createElement("DIV");
-            var flipperFormElement = document.createElement("DIV");
+            var newModal = $$.ce("DIV");
+            var effectsCon = $$.ce("DIV");
+            var flipper = $$.ce("DIV");
+            var flipperBGElement = $$.ce("DIV");
+            var flipperFormElement = $$.ce("DIV");
 
             var mainFormBg = $$.sm(modal).cssStyle("background-color");
 
@@ -6461,9 +6564,9 @@ function ModalDisplayer() {
             flipperEffectBox.style["transform"] = "rotateX(180deg)";
         },
         box: function(modal) {
-            var newModal = document.createElement("DIV");
-            var effectsCon = document.createElement("DIV");
-            var box = document.createElement("DIV");
+            var newModal = $$.ce("DIV");
+            var effectsCon = $$.ce("DIV");
+            var box = $$.ce("DIV");
 
             //Set attribute for effectsCon
             effectsCon.setAttribute("style", "position:relative; width:" + computedModalWidth + "px; height:" + computedModalHeight + "px;");
@@ -6788,8 +6891,8 @@ function ModalDisplayer() {
     function createElements() {
         if ($$.ss("style[data-id='vModalStyles']") == null) {
             //Create
-            var overlay = document.createElement("DIV");
-            var effectsCon = document.createElement("DIV");
+            var overlay = $$.ce("DIV");
+            var effectsCon = $$.ce("DIV");
 
             //Set attributes
             overlay.classList.add("vModal");
@@ -6919,7 +7022,6 @@ function ModalDisplayer() {
             set: function(value) {
                 validateString(value, "'modalWidthsAttribute' property expects a string as value");
                 modalWidthsAttribute = value;
-                hasModalWidth = true;
             }
         },
         screenBreakPoints: { // Needed only for active browser resiszing
@@ -6985,7 +7087,7 @@ function ToolTip() {
     }
 
     function createTipElement() {
-        var tipElement = document.createElement("DIV");
+        var tipElement = $$.ce("DIV");
         var existing = $$.sa(".vToolTip");
         existing.length > 0 ? tipId = existing.length + 1 : tipId = 1;
         tipElement.setAttribute("class", "vToolTip vToolTipTop");
@@ -7113,24 +7215,26 @@ function Carousel(container, viewport) {
     var viewportId = viewport.getAttribute("id");
     var sliders = container.querySelectorAll("#" + viewportId + "> div");
     var current = 0, buttonId = 0, forceSld = 0, pauseMode = 0, completed = 1, started = 0, delay = 4000, speed = 1000, initialized = 0, buttonStyle = null;
-    var Interval = null, touchResponse = true;
+    var touchResponse = true, slideEffect = "linear",s;
 
     //Assign buttons event
     function assingnHandlers() {
         container.onclick = function(e) {
             if (e.target.classList.contains("vButton") && e.target.nodeName == "DIV") {
-                var id = e.target.getAttribute("data-ratio");
-                forceSld = 1;
-                viewport.style["transition-delay"] = "0ms";
-                buttonId = id;
-                forceSlide(id);
+                if(!e.target.classList.contains("active")){
+                    var id = e.target.getAttribute("data-ratio");
+                    forceSld = 1;
+                    buttonId = id;
+                    forceSlide(id);
+                }
             }
         };
     }
 
     function forceSlide(ratio) {
         var leftValue = parseInt(ratio) * 100;
-        viewport.style["left"] = -leftValue + "%";
+        var newPos = -leftValue + "%";
+        viewport.style["left"] = newPos;
         completed = 0;
     }
 
@@ -7158,15 +7262,15 @@ function Carousel(container, viewport) {
     }
 
     function createControls() {
-        var controlArea = document.createElement("DIV");
-        var buttonsCons = document.createElement("DIV");
+        var controlArea = $$.ce("DIV");
+        var buttonsCons = $$.ce("DIV");
 
         controlArea.classList.add("vControlArea");
         buttonsCons.classList.add("vControlButtonsCon");
 
         for (var x = 0; x < sliders.length; x++) {
-            var buttonsShell = document.createElement("DIV");
-            var button = document.createElement("DIV");
+            var buttonsShell = $$.ce("DIV");
+            var button = $$.ce("DIV");
             var id = x + 1;
             buttonsShell.classList.add("vControlButtonsShell");
             x == 0 ? button.setAttribute("class", "vButton active") : button.classList.add("vButton");
@@ -7195,12 +7299,12 @@ function Carousel(container, viewport) {
 
     function startSlide() {
         var m_delay = delay + speed;
-        clearTimeout(Interval)
-        Interval = setTimeout(function() {
-            if (pauseMode == 0) {
+        clearInterval(s);
+        s = setInterval(function(){
+            if (pauseMode == 0 && completed == 1) {
                 nextSlide(viewport);
             }
-        }, m_delay);
+        }, m_delay)
     }
 
     function forceSetCurrent(activeButton, previousActive, node) {
@@ -7223,7 +7327,10 @@ function Carousel(container, viewport) {
     }
     this.initialize = function() {
         if (initialized == 0) {
+            viewport.classList.add("vSliderViewPort");
             viewport.style["transition-duration"] = speed + "ms";
+            viewport.style["transition-timing-function"] = slideEffect;
+           
             //Place sliders in order
             Object.values(sliders).forEach(function(itemContent, arrayIndex, targetArray) {
                 var leftValue = arrayIndex * 100;
@@ -7239,7 +7346,6 @@ function Carousel(container, viewport) {
             }
             container.onmouseleave = function() {
                 pauseMode = 0;
-                startSlide();
             }
 
             viewport.addEventListener("transitionend", function(e) {
@@ -7250,26 +7356,27 @@ function Carousel(container, viewport) {
                     return;
                 }
                 if (forceSld == 0) {
-                    //Assign new active
-                    if (checkNext(previousActive)) {
-                        //set next
-                        previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
-                        id = previousActive.nextElementSibling.getAttribute("data-ratio");
-                    } else { // reached the last
-                        //set the 1st child
-                        sliders[0].setAttribute("data-activeDisplay", "1");
-                        id = 0;
+                    if(e.target.classList.contains("vSliderViewPort")){
+                        //Assign new active
+                        if (checkNext(previousActive)) {
+                            //set next
+                            previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
+                            id = previousActive.nextElementSibling.getAttribute("data-ratio");
+                        } else { // reached the last
+                            //set the 1st child
+                            sliders[0].setAttribute("data-activeDisplay", "1");
+                            id = 0;
+                        }
+
+                        // unset previous
+                        previousActive.setAttribute("data-activeDisplay", "0");
+
+                        //Set buttons
+                        activeButton.classList.remove("active"); //remove previous
+                        var nextActiveButton = $$.ss(".vControlButtonsShell div[data-ratio='" + id + "']");
+                        nextActiveButton.classList.add("active"); //make Next active
+                        completed = 1;
                     }
-
-                    // unset previous
-                    previousActive.setAttribute("data-activeDisplay", "0");
-
-                    //Set buttons
-                    activeButton.classList.remove("active"); //remove previous
-                    var nextActiveButton = $$.ss(".vControlButtonsShell div[data-ratio='" + id + "']");
-                    nextActiveButton.classList.add("active"); //remove previous
-                    completed = 1;
-                    startSlide();
                 } else if (forceSld == 1) {
                     //unset any current view
                     previousActive.setAttribute("data-activeDisplay", "0");
@@ -7283,7 +7390,7 @@ function Carousel(container, viewport) {
             if (touchResponse) {
                 var touchHdr = new TouchHandler(container);
                 touchHdr.config.slideCallBack = touchEndCallBack;
-                touchHdr.config.viewPortTransition = "all " + speed + "ms cubic-bezier(0,.98,0,.98)";
+                touchHdr.config.viewPortTransition = "left " + speed + "ms "+slideEffect;
                 touchHdr.initialize();
                 touchHdr.enableTouch();
             }
@@ -7327,6 +7434,12 @@ function Carousel(container, viewport) {
                 speed = value;
             }
         },
+        slideEffect:{
+            set: function(value) {
+                validateString(value, "'config.slideEffect' property value must be a string");
+                slideEffect = value;
+            }
+        },
         buttonStyle: {
             set: function(value) {
                 //value = [a, b] => a = string styles for normal button state; b =>  string styles for active button state
@@ -7353,12 +7466,18 @@ function Carousel(container, viewport) {
 /***************************content loader*****************************/
 function ContentLoader() {
     var customStyle = "",initialize = false,tempStoarage = {};
-    var callBackFn = null, dataAttributes=[], loaderItemClass="";
+    var callBackFn = null, loaderItemClass="", switchPoint=null;
+    var dataAttributes = {
+        containerId:"",
+        url:"",
+        trigger:"",
+        loaderMode:""
+    }
     function loadFrom(element) {
-        var containerID = element.getAttribute(dataAttributes[0]);
+        var containerID = element.getAttribute(dataAttributes.containerId);
         var container = $$.ss("#"+containerID);
-        var url = element.getAttribute(dataAttributes[1]).toLowerCase();
-        var cache = element.getAttribute(dataAttributes[3]);
+        var url = element.getAttribute(dataAttributes.url).toLowerCase();
+        var cache = element.getAttribute(dataAttributes.cache);
         var linkID = element.getAttribute("data-link");
         cache = cache == null?cache=false:cache.toLowerCase();
         if(container == null)console.error(element);
@@ -7417,7 +7536,7 @@ function ContentLoader() {
                 addCustomStyle();
             }
 
-            if (dataAttributes.length != 4) throw new Error("Setup Incomplete: All attributes to be used must be supplied. Supply using the config.dataAttributes property");
+            if (Object.keys(dataAttributes).length <= 3) throw new Error("Setup Incomplete: All required attributes to be used must be supplied. Supply using the config.dataAttributes property");
             if (loaderItemClass == "") throw new Error("Setup Incomplete: Item class not specified. Supply using the config.loaderItemClass property");
 
             runSetup();
@@ -7439,24 +7558,39 @@ function ContentLoader() {
     }
 
     function autoLoadContent(element){
-        var autoBuildStatus = element.getAttribute(dataAttributes[2]);// [2] => load trigger method attribute, whether to load on click, load or both
-        
+        var autoBuildStatus = element.getAttribute(dataAttributes.trigger);//trigger method attribute, whether to load on click, load or both
         if(autoBuildStatus == null){
-            console.warn("This ContentLoader item element ", element, "has no load trigger set, specify using the attribute '"+dataAttributes[2]+"'");
+            console.warn("This ContentLoader item element ", element, "has no load trigger set, specify using the attribute '"+dataAttributes.trigger+"'");
         }
 
         if(autoBuildStatus == "load" || autoBuildStatus == "both"){
-            loadFrom(element);
+            if(switchPoint != null && dataAttributes.loaderMode != ""){
+                var loaderMode = element.getAttribute(dataAttributes.loaderMode).toLowerCase();
+                if(loaderMode != "mobile" && loaderMode != "desktop"){
+                    console.error(element);
+                    throw new Error("The above element attribute '"+dataAttributes.loaderMode+"' must be set to either 'mobile' or 'desktop'");
+                }
+                if(innerWidth <= switchPoint){//mobile
+                    if(loaderMode == "mobile"){
+                        loadFrom(element);
+                    }
+                }else{//desktop
+                    if(loaderMode == "desktop"){
+                        loadFrom(element);
+                    }
+                }
+            }else{ //assumed only one content loader
+                loadFrom(element);
+            }
         }
-
         element.setAttribute("data-link", $$.randomString());
     }
 
     function addEventhandlers(){
         $$.attachEventHandler("click", "vLoaderItem", function(e){
-            var triggerType = e.target.getAttribute(dataAttributes[2]).toLowerCase();
+            var triggerType = e.target.getAttribute(dataAttributes.trigger).toLowerCase();
             var elementLink = e.target.getAttribute("data-link");
-            var container = $$.ss("#"+e.target.getAttribute(dataAttributes[0]));
+            var container = $$.ss("#"+e.target.getAttribute(dataAttributes.containerId));
             var containerID = container.getAttribute("data-link");
 
             if(triggerType == "click" || triggerType == "both"){
@@ -7541,9 +7675,9 @@ function ContentLoader() {
         if(existing == null){
             if(!$$.sm(container).isPositioned()) container.style["position"] = "relative";
             container.style["height"] = "100%";
-            var con = document.createElement("DIV");
+            var con = $$.ce("DIV");
             con.classList.add("loaderCon");
-            var spinner = document.createElement("DIV");
+            var spinner = $$.ce("DIV");
             spinner.setAttribute("id", "xSpin");
             $$.sm(spinner).center();
             con.appendChild(spinner);
@@ -7588,7 +7722,8 @@ function ContentLoader() {
     Object.defineProperties(this, {
         loadFrom: { writable: false },
         config: { writable: false },
-        initialize: { writable: false }
+        initialize: { writable: false },
+        switch: { writable: false },
     })
     Object.defineProperties(this.config, {
         customStyle: {
@@ -7626,25 +7761,27 @@ function ContentLoader() {
         },
         dataAttributes:{
             set: function(value) {
-                // value [a, b, c, d]
-                // a => containerID attribute. The container to hold the received content
-                // b => url attribute
-                // c => load trigger method attribute, whether to load on click, load or both
-                // d => cache option attribute.
                 // The trigger element will hold the defined attributes
 
-                var t = "config.dataAttributes property value";
-                var temp = t+" must be an array";
-                var temp2 = t+" element"
-                var lm = "must be a string which defines ";
-                validateArray(value, temp);
-                if(value.length != 4) throw new Error(temp+" of 4 values");
-                validateString(value[0], temp2+" 1 "+lm+"container ID attribute");
-                validateString(value[1], temp2+" 2 "+lm+"URL attribute");
-                validateString(value[2], temp2+" 3 "+lm+"the method attribute of load trigger");
-                validateString(value[3], temp2+" 4 must be a boolean which defines the cache option attribute");
-                dataAttributes = value;
+
+                var validOptions = ["containerId", "url", "trigger", "loaderMode", "cache"];
+                validateObjectLiteral(value, "'config.dataAttributes' property value must be an object");
+                var entries = Object.entries(value);
+                if(entries.length < 6){
+                    entries.forEach(function(entry){
+                        if(validOptions.indexOf(entry[0]) == -1) throw new Error("The data attribute specifier is not supported, the suported specifiers are: "+ validOptions.join(", "));
+                        dataAttributes[entry[0]] = entry[1];
+                    });
+                }else{
+                    throw new Error("'config.dataAttributes' object value contains more than 5 entries");
+                }
             }
+        },
+        switchPoint:{
+            set:function(value){ //for switching between two contentloader (for mobile and desktop view)
+                switchPoint = value;
+            }
+
         }
     })
 }
