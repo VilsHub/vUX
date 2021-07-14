@@ -25,7 +25,7 @@ Added optionStateStyle to selectCustom input
 Added wrapAttribute property to both custom select and datepicker
 Added return datatype option to Ajax.Create() static method
 Added slideSwitch sub module to custom form module
-ResourceIO module changed to IO
+
 
 
 
@@ -39,6 +39,7 @@ formValidator format.toCurrency() changed to format.currencyField()
 ToBaseGridMultiple changed to vRhythm (vertical Rhythm)
 GridBorderRectangle() constructor changed to CShapes() => Canvas Shapes
 CircularProgress() changed to arc()
+ResourceIO module changed to IO
 
 
 

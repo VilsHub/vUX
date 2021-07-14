@@ -7,18 +7,45 @@ vUX is strictly built on JavaScript and has no dependencies, other than a JavaSc
 
 ## Installation
 
-To use vUX, include the script **vUX-x.y.z.js** where **x y z** represents the version. Example is shown below:
+To use vUX, 
+1. include the script **vUX-x.y.z.js** where **x y z** represents the version. Example is shown below:
+  
+    `<script src="vUX/vUX-4.0.0.js"></script>`
 
-    <script src="vUX/vUX-3.0.0.js"></script>
     or
-    <script src="vUX/vUX-3.0.0.min.js"></script>
+
+    `<script src="vUX/vUX-4.0.0.min.js"></script>`
+
+    vUX handles any other files that needs to be loaded in, so you dont need to worry about any other vUX modules files to be loaded in, all you need to do is to specify the needed module as given on step 2
+
+2. Specify the optional modules (seperated with comma) to be used on the page using the the **data-modules** attribute on the script element. Example is shown below: 
+
+    `<script src="vUX/vUX-4.0.0.js" data-module="formValidator, timeLineList, carousel"></script>`
+
+    or
+
+    `<script src="vUX/vUX-4.0.0.min.js" data-module="formValidator, timeLineList, carousel"></script>`
+
+3. Prefix any script element (with script that uses the speficied vUX modules) src attribute with **data-**. This is to load the script element when all specified modules have been loaded in.  Example:
+   
+   `<script src="vUX/vUX-4.0.0.js" data-module="formValidator, timeLineList, carousel"></script>`
+
+   `<script data-src="js/services.js"></script>`
 
 
 **Note**
 
-The file name should not be changed, as its needed to auto load assets needed by the library
+ - The file name should not be changed, as its needed to auto load assets needed by the library
+ - If the minified version (with **.min.js** as suffix) of vUX is loaded 
+ - The available optional modules to inlude are (case sensitive): cShapes, formValidator, formComponents, modalDisplayer, toolTip, carousel, contentLoader, listScroller, touchHandler, timeLineList, autoWriter. 
 
 ## Features
+
+
+The beta version (**v4.0.0.beta** ) has the following features added:
+
+
+
 The 3rd release ( **v3.0.0** ), has the following features added:
 - Animator module, for non CSS and CSS animation 
 - Event handler attacher module, with support for appended elements

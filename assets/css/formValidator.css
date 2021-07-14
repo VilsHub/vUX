@@ -271,9 +271,10 @@
     position: relative!important;
 }
 .vButtonLoader{
-     width: 46px!important;
+    width: 46px!important;
     height: 46px!important;
-    border-radius: 40px;
+    border-radius: 40px!important;
+    flex: 1!important;
     
 }
 .vButtonLoader::before{

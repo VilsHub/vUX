@@ -1,4 +1,39 @@
 # Changelog
+## v4.0.0.beta
+## Fixed
+- Fixed modal multiple display bug
+- Fixed draw() call on backward compatibility (> ver 2.0)
+- Fixed datepicker auto place issue
+
+## Added
+- Added slideSwitch sub module to custom form module
+- Added blur overlayType to modalDisplayer module
+- Added optionStateStyle to selectCustom input
+- Added wrapAttribute property to both custom select and datepicker
+- Added utility namespace ($$), with some some modules moved to it
+- Added return datatype option to Ajax.Create() static method
+
+## Removed
+- Removed colorOverlayStyle in modalDisplayerObj
+- Removed config.smallView property, to be set using attributes for individual elements, leading to the addition of config/smallViewAttribute property for setting the attribute to be used
+- loadProgressIndicator Removed, as IO.dowload() send download status, to be used by user for their needs
+- imageManipulator removed, now handled by $$.sm.filter()
+
+## Changed
+- modalDisplayerObj overlayType property changed to overlayBackgroundType
+- Size of custom element changed to using specified attribute value
+- modalDisplayer workflow changed
+- formValidator wrapperDataAtrribute property changed to wrapperClassAtrribute
+- formValidator format.fullName() changed to format.wordSeperator(), and accepts arguments 2 and 3, 2 for specifying the seperator and 3 for specifying the number of times to repeat the seperator
+- formValidator format.toCurrency() changed to format.currencyField()
+- ToBaseGridMultiple changed to vRhythm (vertical Rhythm)
+- GridBorderRectangle() constructor changed to CShapes() => Canvas Shapes
+- CircularProgress() changed to arc()
+- ResourceIO module changed to IO
+
+## Optimised
+- Optimized $$.cssStyle() static method functionality
+
 
 ## v3.0.0
 ### Fixed
