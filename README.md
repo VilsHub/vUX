@@ -36,7 +36,8 @@ To use vUX,
 **Note**
 
  - The file name should not be changed, as its needed to auto load assets needed by the library
- - If the minified version (with **.min.js** as suffix) of vUX is loaded 
+ - If the minified version (with **.min.js** as suffix) of vUX is loaded, all minified assets will be loaded as well
+ - All external script that is dependent on vUX should not be wrapped with the load event, as vUX handles this already
  - The available optional modules to inlude are (case sensitive): cShapes, formValidator, formComponents, modalDisplayer, toolTip, carousel, contentLoader, listScroller, touchHandler, timeLineList, autoWriter. 
 
 ## Features

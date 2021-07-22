@@ -19,11 +19,14 @@ var mainScript = document.querySelector("script[src *='vUX']");
 var host = location.protocol+"//"+location.host;
 temp = mainScript.getAttribute("src");
 var minified = temp.search("min") == -1?"":".min";
-console.log(temp);
 path = temp.replace(host, "").split("/");
 path.pop();
+var moduleList = mainScript.getAttribute("data-modules");
 path = path.join("/");
-var selectedModules = mainScript.getAttribute("data-modules").split(",");
+if(moduleList != null){
+    var selectedModules = mainScript.getAttribute("data-modules").split(",");
+}
+
 var loaded = [];
 
 
@@ -31,27 +34,33 @@ var loaded = [];
 assetURL = path+"/assets/";
 
 window.addEventListener("load", function() {
-    //Load needed styles
-    var total = selectedModules.length;
-    for (var x = 0; x < total; x++) {
-        var trimmedName = selectedModules[x].trim();
-        //validate
-        if (trimmedName == "") continue;
-        if (modules.indexOf(trimmedName) == -1) throw new Error("The specified module is not supported. The available modules are: "+modules.join(", "));
+    linkStyleSheet(assetURL + "css/core"+minified+".css");
+    if(moduleList != null){
+        //Load selected modules
+        var total = selectedModules.length;
+        for (var x = 0; x < total; x++) {
+            var trimmedName = selectedModules[x].trim();
+            //validate
+            if (trimmedName == "") continue;
+            if (modules.indexOf(trimmedName) == -1) throw new Error("The specified module is not supported. The available modules are: "+modules.join(", "));
 
-        if(loaded.indexOf(trimmedName) == -1){
-            if(trimmedName == "formComponents"){
-                loadModule("toolTip", false, null);
-                loadModule("listScroller", false, null);
-            }else if(trimmedName == "carousel"){
-                loadModule("touchHandler", false, null);
-            }
-            if(x==total-1){
-                loadModule(trimmedName.trim(), false, loadDependencies);
-            }else{
-                loadModule(trimmedName.trim(), false, null);
+            if(loaded.indexOf(trimmedName) == -1){
+                if(trimmedName == "formComponents"){
+                    loadModule("toolTip", false, null);
+                    loadModule("listScroller", false, null);
+                }else if(trimmedName == "carousel"){
+                    loadModule("touchHandler", false, null);
+                }
+                if(x==total-1){
+                    loadModule(trimmedName, false, loadDependencies);
+                }else{
+                    loadModule(trimmedName, false, null);
+                }
             }
         }
+    }else{
+        console.warn("No module specified with the 'data-modules'");
+        loadDependencies();
     }
 }, false);
 
@@ -68,7 +77,7 @@ function loadDependencies(){
      var depencies = $$.sa("[data-src]");
      depencies.forEach(function(e) {
          var src = e.getAttribute("data-src");
-         loadScript("", src, true);
+         loadScript("", src, true);       
      });
 }
 
@@ -1044,6 +1053,15 @@ var $$ = {
                             defaultOptions.callBack()
                         });
                     };
+            }
+            this.fill = function (backgroundImageValue){
+                var element = ele.single;
+                var textTags = ["SPAN", "P", "H1", "H2", "H3", "H4", "H5", "H6"];
+                var elementNode = element.nodeName;
+                if(textTags.indexOf(elementNode) != -1){// a text element
+                    element.classList.add("xFill");
+                }
+                element.style["background-image"] = backgroundImageValue;
             }
         }
         return new dom();
