@@ -79,41 +79,6 @@ See more details... [See change Log](ChangeLog.md)
 - 5 Star rating creator
 
 ## Demo
-**RGB to Gray Animator**
-
-    //////// RGB To GRAY  ///////////
-      //gets canvas element
-    	var TargetCanvas = document.getElementById("canvas");
-      var imgUrl = "http://www.example.com/img/gd.jpg";
-    	var im = new imageManipulator(DrawingHandler, imgUrl);
-    	im.initializeRgbToGray(3);
-
-    	setTimeout(function(){
-    		im.rgbToGray();
-    	}, 2000);
-    ////////////////////////////////////////////
-
-**OUTPUT**
-
-![RGB to Gray Output](https://i.imgur.com/yFhhLAJ.gif)
-
-**Gray to RGB Animator**
-
-    //////// RGB To GRAY  ///////////
-      //gets canvas element
-      var TargetCanvas = document.getElementById("canvas");
-      var imgUrl = "http://www.example.com/img/gd.jpg";
-      var im = new ImageManipulator(DrawingHandler, imgUrl);
-      im.initializeGrayToRgb(3);
-
-      setTimeout(function(){
-      	im.grayToRgb();
-      }, 2000);
-    ////////////////////////////////////////////
-
-**OUTPUT**
-
-![Gray to RGB Output](https://imgur.com/gxxGDN1.gif)
 
 **Animated rectangular border drawer**
 
