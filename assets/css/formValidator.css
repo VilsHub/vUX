@@ -9,6 +9,10 @@
     --success-background-color:#93d293 ;
     --success-color: #2b9030;
 }
+@keyframes vRotate{
+    from{transform:rotate(0deg) translateY(-50%) translateX(-50%);} 
+    to{transform:rotate(360deg) translateY(-50%) translateX(-50%);}
+}
 @keyframes vBtRotate{
     from{
         transform:rotate(0deg);
@@ -17,6 +21,11 @@
         transform:rotate(360deg);
     }
 }
+
+.vFormLoader {
+    animation-name:vRotate;
+}
+
 
 .vMsgBox {
     box-sizing: border-box;
@@ -208,10 +217,11 @@
     height: 46px;
     box-shadow: 0 0 3px black;
     color: white;
-    text-align: center;
+    text-align: left;
     font-size: 18px;
     font-weight: bold;
     line-height: 46px;
+    padding-left: 23px;
 }
 
 .FbMsgBox .tsuc {

@@ -6,8 +6,6 @@
   z-index:999;
   display:none;
   min-width:320px;
-  overflow-y: scroll;
-  scrollbar-width:none;
 }
 .show {
   display:block;

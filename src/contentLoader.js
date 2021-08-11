@@ -12,21 +12,28 @@
  */
 
 /***************************content loader*****************************/
-function ContentLoader() {
-    var customStyle = "",initialize = false,tempStoarage = {};
-    var callBackFn = null, loaderItemClass="", switchPoint=null;
+function ContentLoader(defaultURL=null, defaultContainer=null) {
+    if(defaultURL != null){
+        validateString(defaultURL, "ContentLoader(x.) contructor argument 1 must be a string or null");
+        validateElement(defaultContainer, "ContentLoader(.x) contructor argument 2, an element (the container element) must be specified if default URL is specified");
+    } 
+    var customStyle = "",initialize = false,tempStoarage = {}, thread="single";
+    var callBackFn = null, loaderItemClass="", switchPoint=null, forceAutoLoad=true;
     var dataAttributes = {
         containerId:"",
         url:"",
         trigger:"",
-        loaderMode:""
+        loaderMode:"",
+        urlPath:"", //The URL that will be appended to the base page, need for pushstate
+        cache:"",
+        addToHistory:"" // attribute tp set if to use history or not
     }
     function loadFrom(element) {
         var containerID = element.getAttribute(dataAttributes.containerId);
         var container = $$.ss("#"+containerID);
         var url = element.getAttribute(dataAttributes.url).toLowerCase();
-        var cache = element.getAttribute(dataAttributes.cache);
         var linkID = element.getAttribute("data-link");
+        var cache = element.getAttribute(dataAttributes.cache);
         cache = cache == null?cache=false:cache.toLowerCase();
         if(container == null)console.error(element);
         validateElement(container, "No container found with the ID '"+containerID+"' for the element above");
@@ -95,16 +102,26 @@ function ContentLoader() {
 
     function runSetup(){
         var allItems = $$.sa("."+loaderItemClass);
+        
         allItems.forEach(function(element){
             element.classList.add("vLoaderItem");
+            element.setAttribute("data-link", $$.randomString());
             
             //Execute autoload
-            autoLoadContent(element);
+            if(defaultPage()){
+                if(forceAutoLoad){
+                    autoLoadContent(element);
+                } 
+            }
         });
 
         addEventhandlers();
+        boot(); //handle other pages other than the default onload
     }
 
+    function defaultPage(){
+        return (defaultURL != null && location.pathname.xTrim() == defaultURL.xTrim())
+    }
     function autoLoadContent(element){
         var autoBuildStatus = element.getAttribute(dataAttributes.trigger);//trigger method attribute, whether to load on click, load or both
         if(autoBuildStatus == null){
@@ -131,7 +148,6 @@ function ContentLoader() {
                 loadFrom(element);
             }
         }
-        element.setAttribute("data-link", $$.randomString());
     }
 
     function addEventhandlers(){
@@ -149,45 +165,51 @@ function ContentLoader() {
         })
     }
 
-    function  getContent(url, container, element, cache) {
+    function getContent(url, container, element=null, cache=null) {
         var xhr = $$.ajax({method:"GET", url:url}, "html");
         var runtime = container.querySelector(".runTime");
+        if(element != null){
+            var useHistory = element.getAttribute(dataAttributes["addToHistory"]);
+        }
+       
         xhr.addEventListener("load", function() {
             if(container.getAttribute("data-state") == "receiving"){
-                if (cache) { //insert and cache data
-                    //cache
-                    if (typeof(Storage) !== "undefined") { //Supports web storage
-                        if (sessionStorage.pageLink == undefined) {
-                            sessionStorage.pageLink = JSON.stringify({});
-                            sessionStorage.linkContent = JSON.stringify({});
+                if (element != null && cache != null){
+                    if (cache) { //insert and cache data
+                        //cache
+                        if (typeof(Storage) !== "undefined") { //Supports web storage
+                            if (sessionStorage.pageLink == undefined) {
+                                sessionStorage.pageLink = JSON.stringify({});
+                                sessionStorage.linkContent = JSON.stringify({});
+                            }
+                            var pageLink = JSON.parse(sessionStorage.pageLink);
+                            var linkContent = JSON.parse(sessionStorage.linkContent);
+        
+                            var length = Object.keys(pageLink).length;
+        
+                            pageLink[length] = url;
+                            linkContent[length] = xhr.responseText;
+        
+                            //rebuild
+                            sessionStorage.pageLink = JSON.stringify(pageLink);
+                            sessionStorage.linkContent = JSON.stringify(linkContent);
+                        } else { //Does not support web storage, use object
+                            if (tempStoarage.pageLink == undefined) {
+                                tempStoarage.pageLink = JSON.stringify({});
+                                tempStoarage.linkContent = JSON.stringify({});
+                            }
+                            var pageLink = JSON.parse(tempStoarage.pageLink);
+                            var linkContent = JSON.parse(tempStoarage.linkContent);
+        
+                            var length = Object.keys(pageLink).length;
+        
+                            pageLink[length] = url;
+                            linkContent[length] = xhr.responseText;
+        
+                            //rebuild
+                            tempStoarage.pageLink = JSON.stringify(pageLink);
+                            tempStoarage.linkContent = JSON.stringify(linkContent);
                         }
-                        var pageLink = JSON.parse(sessionStorage.pageLink);
-                        var linkContent = JSON.parse(sessionStorage.linkContent);
-    
-                        var length = Object.keys(pageLink).length;
-    
-                        pageLink[length] = url;
-                        linkContent[length] = xhr.responseText;
-    
-                        //rebuild
-                        sessionStorage.pageLink = JSON.stringify(pageLink);
-                        sessionStorage.linkContent = JSON.stringify(linkContent);
-                    } else { //Does not support web storage, use object
-                        if (tempStoarage.pageLink == undefined) {
-                            tempStoarage.pageLink = JSON.stringify({});
-                            tempStoarage.linkContent = JSON.stringify({});
-                        }
-                        var pageLink = JSON.parse(tempStoarage.pageLink);
-                        var linkContent = JSON.parse(tempStoarage.linkContent);
-    
-                        var length = Object.keys(pageLink).length;
-    
-                        pageLink[length] = url;
-                        linkContent[length] = xhr.responseText;
-    
-                        //rebuild
-                        tempStoarage.pageLink = JSON.stringify(pageLink);
-                        tempStoarage.linkContent = JSON.stringify(linkContent);
                     }
                 }
     
@@ -202,10 +224,15 @@ function ContentLoader() {
                 callBackFn != null ? callBackFn(element) : null; 
                 
                 container.setAttribute("data-state", "received");  
-                container.setAttribute("data-link", element.getAttribute("data-link"));  
+
+                if(element != null){
+                    container.setAttribute("data-link", element.getAttribute("data-link"));  
+                    //store page details in history state                
+                    if (useHistory != null) createState(element, xhr.responseText);
+                }
+
             }        
         });
-       
         //show loader here
         if(runtime != null) runtime.classList.remove("xShow");
         insertLoader(container);
@@ -253,6 +280,32 @@ function ContentLoader() {
         $$.sm(spinner).hide();
     }
 
+    function boot(){
+        if(!defaultPage()){ //default url not visited, so load the visited
+            
+            //get element with path
+            var urlPath = location.pathname;
+            var element = $$.ss("["+dataAttributes["urlPath"]+"='"+urlPath+"']");
+            if(element != null){ //load from element
+                loadFrom(element);
+            }else{//get content into container
+                getContent(location.pathname, defaultContainer, null, null);
+            }
+        }
+    }
+
+ 
+
+    function createState(element, data){
+        var pathUrl = element.getAttribute(dataAttributes["urlPath"]);
+        var title = element.getAttribute(dataAttributes["title"]) != null?element.getAttribute(dataAttributes["title"]):null;
+        var historyObj = {
+            url:pathUrl,
+            data:data,
+            title:title
+        }
+        history.pushState(historyObj, title, pathUrl);
+    }
 
     function addCustomStyle() {
         var css = "";
@@ -311,25 +364,31 @@ function ContentLoader() {
             set: function(value) {
                 // The trigger element will hold the defined attributes
 
-
-                var validOptions = ["containerId", "url", "trigger", "loaderMode", "cache"];
+                var validOptions = Object.keys(dataAttributes);
                 validateObjectLiteral(value, "'config.dataAttributes' property value must be an object");
                 var entries = Object.entries(value);
-                if(entries.length < 6){
+                if(entries.length <= 7){
                     entries.forEach(function(entry){
-                        if(validOptions.indexOf(entry[0]) == -1) throw new Error("The data attribute specifier is not supported, the suported specifiers are: "+ validOptions.join(", "));
+                        if(validOptions.indexOf(entry[0]) == -1) throw new Error("The data attribute '"+ entry[0] +"' specified is not supported, the suported specifiers are: "+ validOptions.join(", "));
                         dataAttributes[entry[0]] = entry[1];
                     });
                 }else{
-                    throw new Error("'config.dataAttributes' object value contains more than 5 entries");
+                    throw new Error("'config.dataAttributes' object value contains more than 7 entries");
                 }
             }
         },
         switchPoint:{
             set:function(value){ //for switching between two contentloader (for mobile and desktop view)
+                validateNumber(value, "contentLoaderObj.config.switchPoint property must be a number");
+                value = value < 0?0:value;
                 switchPoint = value;
             }
-
+        },
+        forceAutoLoad:{
+            set:function(value){
+                validateBoolean(value, "contentLoaderObj.config.forceAutoLoad property must be a boolean");
+                forceAutoLoad = value;
+            }
         }
     })
 }

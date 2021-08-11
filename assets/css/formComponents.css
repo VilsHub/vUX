@@ -66,7 +66,7 @@ top:0;
     z-index:1;
     cursor:pointer;
     box-sizing: border-box;
-    
+    height: 100%;
     display:flex;
   }
   .vSelect .sOptionGroup{
@@ -86,6 +86,8 @@ top:0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    border-color: inherit;
+    height: 100%;
   }
   .vSelect .sIcon{
     width:35px;
@@ -115,9 +117,10 @@ top:0;
     box-sizing: border-box;
     display: block;
     height: 35px;
-    padding:0 35px 0 10px;
-    border: solid 1px #ccc;
-    border-radius: 3px;
+    padding:0 35px 0 10px!important;
+    border: solid 1px #ccc!important;
+    border-radius: 3px!important;
+    
   }
   .vSelect .sOptionCon{
     max-height:70vh;
@@ -138,15 +141,17 @@ top:0;
     overflow: hidden;
   }
   .vSelect .sSearchBox{
-    margin-top:5px;
+    margin-top:2px;
     position: relative;
+    margin-bottom: 2px;
   }
   .vSelect .sSearchBox::before{
     width:35px;
     position: absolute;
     right:0;
     top:0;
-  
+    text-align: center;
+    font-size: 16px;
   }
   .vSelect  .optionsCon .sOption {
     position:relative;

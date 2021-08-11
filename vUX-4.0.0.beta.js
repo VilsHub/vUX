@@ -10,7 +10,7 @@
  */
 
 "use strict";
-var modules = ["cShapes","formValidator", "formComponents", "modalDisplayer", "toolTip", "carousel", "contentLoader", "listScroller", "touchHandler", "timeLineList", "autoWriter"];
+var modules = ["cShapes","formValidator", "formComponents", "resizer", "modalDisplayer", "toolTip", "carousel", "contentLoader", "listScroller", "touchHandler", "timeLineList", "autoWriter"];
 var assetURL = "";
 var temp = null;
 var path = null;
@@ -28,7 +28,18 @@ if(moduleList != null){
 }
 
 var loaded = [];
+var eventsReg = {};
+var model = {
+    core:{
+        loaded:[],
 
+    },
+    slide:{
+        eventsReg:{
+
+        }
+    }
+}
 
 //set asset path
 assetURL = path+"/assets/";
@@ -59,17 +70,16 @@ window.addEventListener("load", function() {
             }
         }
     }else{
-        console.warn("No module specified with the 'data-modules'");
+        console.warn("No module specified with the 'data-modules' attribute");
         loadDependencies();
     }
 }, false);
 
 function loadModule(name, last=null, callBack=null){
-    loadScript(name, assetURL+"js/"+name+minified+".js", last, callBack);
+    loadScript(name, path+"/src/"+name+minified+".js", last, callBack);
     if(name != "cShapes"){
-        linkStyleSheet(assetURL + "css/" + name+minified+".css");
+        linkStyleSheet(assetURL + "css/" + name+minified+".css", name);
     }
-    
 }
 
 function loadDependencies(){
@@ -81,10 +91,11 @@ function loadDependencies(){
      });
 }
 
-function linkStyleSheet(url) {
+function linkStyleSheet(url, name=null) {
     var linkEle = $$.ce("link");
     linkEle.setAttribute("rel", "stylesheet");
     linkEle.setAttribute("type", "text/css");
+    if(name != null) linkEle.setAttribute("data-id", name);
     linkEle.setAttribute("href", url);
     document.head.appendChild(linkEle);
 }
@@ -299,7 +310,7 @@ function validateElement(element, msg = null) { //A single element
 }
 
 function validateFunction(fn, msg = null) {
-    if (typeof fn == "function") {
+    if(typeof fn == "function") {
         return true;
     } else {
         if (msg == null) {
@@ -732,6 +743,7 @@ var $$ = {
         if(!(selector instanceof Element) && typeof selector != "string"){
             throw new Error("$$.sm(x) method argument 1 must be either a string or HMTL Element")
         }
+
         function dom(){
             var self =this;
             var ele = (selector instanceof Element)?selector:{all:document.querySelectorAll(selector), single:document.querySelectorAll(selector)[0]};
@@ -752,11 +764,18 @@ var $$ = {
                 var cEle = (selector instanceof Element)?selector:ele.single;
                 return getCssStyle(cEle, property, pEle);
             }
-            this.centerY = function() {
+            this.centerY = function(otherStyles = null) {
                 var cEle = (selector instanceof Element)?selector:ele.single;
                 var positionType = getCssStyle(cEle, "position");
                 var elementParent = cEle.parentNode;
                 var support = getCssStyle(cEle, "transform");
+
+                if(otherStyles != null){
+                    //validate
+                    validateString(otherStyles, "$$.sm().centerY(x) argument 1 must be a string");
+                    cEle.style = otherStyles;
+                }
+
                 if (positionType != "static") { //Positioned element
                     if (support != undefined) { //Transform supported
                         //Centralize
@@ -788,11 +807,17 @@ var $$ = {
                     }, false);
                 }
             }
-            this.centerX = function() {
+            this.centerX = function(otherStyles = null) {
                 var cEle = (selector instanceof Element)?selector:ele.single;
                 var positionType = getCssStyle(cEle, "position");
                 var elementParent = cEle.parentNode;
                 var support = getCssStyle(cEle, "transform");
+
+                if(otherStyles != null){
+                    //validate
+                    validateString(otherStyles, "$$.sm().centerX(x) argument 1 must be a string");
+                    cEle.style = otherStyles;
+                }
 
                 if (positionType != "static") { //Positioned element
                     if (support != undefined) { //Transform supported
@@ -810,12 +835,18 @@ var $$ = {
                     cEle.style["margin-right"] = "auto";
                 }
             }
-            this.center = function() {
+            this.center = function(otherStyles = null) {
                 var cEle = (selector instanceof Element)?selector:ele.single;
             
                 var positionType =  getCssStyle(cEle, "position");
                 var elementParent = cEle.parentNode;
                 var support = getCssStyle(cEle, "transform");
+
+                if(otherStyles != null){
+                    //validate
+                    validateString(otherStyles, "$$.sm().center(x) argument 1 must be a string");
+                    cEle.style = otherStyles;
+                }
                 
                 if (positionType != "static") { //Positioned element
                     if (support != undefined) { //Transform supported
@@ -861,7 +892,7 @@ var $$ = {
                 //parentId => class name , if not exist, then id name
                 validateString(parentId, "$$.sm(.).hasParent(x.) method argument 1 must be a string");
                 if (ntimes != null) validateInteger(ntimes, "$$.sm(.).hasParent(.x) method argument 2 must be an integer");
-                var cEle = ele.single;
+                var cEle = (selector instanceof Element)?selector:ele.single;
                 if (document.querySelector("." + parentId) != null) { //Has class
                     while (cEle) {
                         if (cEle.nodeName == "BODY") break;
@@ -901,7 +932,7 @@ var $$ = {
                 var cEle = (selector instanceof Element)?selector:ele.single;
 
                 if (typeof parentIDorLevel != "number" && typeof parentIDorLevel != "string") {
-                    throw new Error("$$.m.getParent(x)  method argument 2 must either be a string or number");
+                    throw new Error("$$.m.getParent(x)  method argument 1 must either be a string or number");
                 } else {
                     if (typeof parentIDorLevel == "number") {
                         type = "number";
@@ -942,23 +973,25 @@ var $$ = {
                 cssGroupStyler(cEle, {display:"none"});
             },
             this.unHide = function (displayType=null){
-                if(displayType != null) validateString(parentIDorLevel, "$$.sm(.).unHide(x) method argument 1 must be a string");
+                if(displayType != null) validateString(displayType, "$$.sm(.).unHide(x) method argument 1 must be a string");
                 displayType = displayType==null?"block":displayType;
                 var cEle = (selector instanceof Element)?selector:ele.all;
                 cssGroupStyler(cEle, {display:displayType});
             },
             this.makeActive = function(className, parent=null){
                 var cEle = (selector instanceof Element)?selector:ele.single;
-                validateString(className, "$$.sm.makeActive(.x) method argument 1 must a string");
-                if(parent != null) validateElement(parent, "$$.sm.makeActive(x.) method argument 2 must a valid HTML Element");
+                validateString(className, "$$.sm.makeActive(x.) method argument 1 must a string");
+                if(parent != null) validateElement(parent, "$$.sm.makeActive(.x) method argument 2 must a valid HTML Element");
                 var currentElements = (parent != null)?parent.querySelectorAll("."+className):document.querySelector("."+className);
                 if (currentElements != null) {
                     var total = currentElements.length;
                     for (var x=0; x < total; x++ ){
                         currentElements[x].classList.remove(className, "cOff");
+                        if(currentElements[x].nodeName == "BUTTON")  currentElements[x].removeAttribute("disabled");
                     }
                 };
                 cEle.classList.add(className, "cOff");
+                if(cEle.nodeName == "BUTTON") cEle.setAttribute("disabled", true);
             
             },
             this.isPositioned = function(){
@@ -1055,13 +1088,81 @@ var $$ = {
                     };
             }
             this.fill = function (backgroundImageValue){
-                var element = ele.single;
+                var element = (selector instanceof Element)?selector:ele.single;
                 var textTags = ["SPAN", "P", "H1", "H2", "H3", "H4", "H5", "H6"];
                 var elementNode = element.nodeName;
                 if(textTags.indexOf(elementNode) != -1){// a text element
                     element.classList.add("xFill");
                 }
                 element.style["background-image"] = backgroundImageValue;
+            }
+            this.xScroll = function (){
+                var element = (selector instanceof Element)?selector:ele.single;
+                element.classList.add("xScroll");
+            }
+            this.slide =  function (direction, config){
+                var element = (selector instanceof Element)?selector:ele.single;
+                var directions = ["left", "right", "up", "down"];
+                element.setAttribute("vDirection", direction);
+                element.classList.add("vSlide");
+                (function (){
+                    if(!eventsReg["slide"]){
+                        addEventListener("transitionend", function(e){
+                            if(e.target.classList.contains("vSlide")){
+                                var slideDirection = e.target.getAttribute("vDirection");
+                                if(slideDirection == "down"){
+                                    if(e.target.classList.contains("progOn")){
+                                        slideOff(e.target, {height:"auto"});
+                                    }
+                                }else if(slideDirection == "up"){
+                                    if(e.target.classList.contains("progOn")){
+                                        e.target.style["display"] = "none";
+                                    }
+                                }
+                            }
+                        },false)
+                        eventsReg["slide"] = true;
+                    }
+                })()
+                function slideOn(e, objProp = null){
+                    e.classList.add("progOn");
+                    e.classList.remove("progOff");
+                    e.classList.remove("done");
+                    if(objProp != null){
+                        var properties = Object.entries(objProp);
+                        properties.forEach(function(element) {
+                            e.style[element[0]] = element[1];
+                        });
+                    }
+                    e.scrollHeight;
+                }
+                function slideOff(e, objProp = null){
+                    e.classList.add("done");
+                    e.classList.add("progOff");
+                    e.classList.remove("progOn");
+                    if(objProp != null){
+                        var properties = Object.entries(objProp);
+                        properties.forEach(function(element) {
+                            e.style[element[0]] = element[1];
+                        });
+                    }
+                }
+                switch (direction) {
+                    case 'down':
+                        element.style["display"] = "block";
+                        element.style["height"] = "0px";
+                        var height = element.scrollHeight;
+                        slideOn(element);
+                        element.style["height"] = height+"px";
+                        break;
+                    case 'up':
+                        var height= element.scrollHeight;
+                        slideOn(element, {height:height+"px"});
+                        element.style["height"] = "0px";
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         return new dom();
@@ -1125,9 +1226,10 @@ var $$ = {
     attachEventHandler: function(event, DomClass, fn) {
         var idType = null;
         validateString(event, "'$$.attachEventHandler()' argument 1 must be a string specifying the event type");
-        if (typeof DomClass == "string") {
+        if (typeof DomClass == "string") {//class name and class to exclude
+            // string value = "include, exclude" | "include"
             idType = "single";
-        } else if (Array.isArray(DomClass)) {
+        } else if (Array.isArray(DomClass)) {// DOM list of elements
             validateArrayMembers(DomClass, "string", "'$$.attachEventHandler()' argument 2 must be an array of string(s)");
             idType = "multiple";
         } else {
@@ -1137,9 +1239,17 @@ var $$ = {
 
         document.addEventListener(event, function(e) {
             if (idType == "single") {
+                var constraints = DomClass.split(",");
                 if (e.target.classList != null) {
-                    if (e.target.classList.contains(DomClass)) {
-                        fn(e);
+                    if (e.target.classList.contains(constraints[0])){
+                        if(constraints[1] != undefined){
+                            if (!e.target.classList.contains(constraints[1].trim())){
+                                fn(e);
+                            }
+                        }else{
+                            fn(e);
+                        }
+                        
                     }
                 }
             } else {
@@ -1364,6 +1474,22 @@ var $$ = {
 }
 /****************************************************************/
 
+RegExp.parseChars = function (char){
+    var characters = ["+", "[", "]","/",".", "^", "$"];
+    var parserChars = "";
+    Array.from(chars).forEach(function (element){
+        if(characters.indexOf(element) != -1){
+            parserChars += "\\"+element;
+        }else{
+            parserChars += element;
+        }
+    });
+
+    return parserChars;
+}
+String.prototype.xTrim = function () {
+    return this.replace(/^[\s\uFEFF\xA0\/]+|[\s\uFEFF\xA0\/]+$/g, '');
+};
 
 /************************ScreenBreakPoint************************/
 function ScreenBreakPoint(breakPoints) {
@@ -1397,7 +1523,6 @@ function ScreenBreakPoint(breakPoints) {
     })
 }
 /****************************************************************/
-
 
 /********************Vertical scroll handler*******************/
 function VerticalScroll() {

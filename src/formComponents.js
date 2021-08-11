@@ -79,7 +79,7 @@ function FormComponents() {
 
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.select = function() {
-        var selectDim = [], selectIcon = "",wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", selectClassName = "",searchIconStyle = "",wrapAttribute = "",includeSearchField = true, optionsWrapperStyle = "",familyID = "vSelect",inputButtonStyle = "",sizeAttribute = "",optionStateStyle = [];
+        var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", selectClassName = "",searchIconStyle = "",wrapAttribute = "",includeSearchField = true, optionsWrapperStyle = "",optionsConWrapperStyle="",familyID = "vSelect",inputButtonStyle = "",sizeAttribute = "",optionStateStyle = [];
 
         function autoPlace(optionsCon) {
             var sField = optionsCon.previousElementSibling.querySelector(".sField");
@@ -120,7 +120,14 @@ function FormComponents() {
                         }
                     } else { //single select
                         if (sOptions[x].index === parent.selectedIndex) { //Check for selected
-                            selectField.innerHTML = sOptions[x].innerHTML;
+                            if(labelAttribute != ""){
+                                var value = "";
+                                var labelTemplate = sOptions[x].getAttribute(labelAttribute);
+                                value = labelTemplate != null?labelTemplate:sOptions[x].innerHTML
+                                selectField.innerHTML = value;
+                            }else{
+                                selectField.innerHTML = sOptions[x].innerHTML;
+                            }
                             optionEle.classList.add("vSselected");
                         }
                     }
@@ -184,8 +191,15 @@ function FormComponents() {
                 nativeSelect.selectedIndex = optionIndex;
 
                 //Update select label
-                labelCon.innerHTML = ele.innerHTML;
-
+                if(labelAttribute != ""){
+                    var option = nativeSelect.options[optionIndex];
+                    var labelTemplate = option.getAttribute(labelAttribute);
+                    value = labelTemplate != null?labelTemplate:sOptions.innerHTML
+                    labelCon.innerHTML = value;
+                }else{
+                    labelCon.innerHTML = ele.innerHTML;
+                }
+                
                 //unset existing selected
                 var existingSelection = ele.parentNode.querySelector(".vSselected");
                 if (existingSelection != null) {
@@ -351,32 +365,33 @@ function FormComponents() {
 
         function selectStyleSheet() {
             if ($$.ss("style[data-id='v" + selectClassName + "']") == null) {
-                //set wrapper class name
+
                 var css = "";
+                css += ".v" + selectClassName + "{width:" + selectDim[0] + "; height:" + selectDim[1] + "; z-index: 60;"+"}";
                 css += ".v" + selectClassName + " .sField {line-height:" + selectDim[1] + ";}";
                 css += ".v" + selectClassName + " .sIcon::before {line-height:" + selectDim[1] + ";}";
                 css += ".v" + selectClassName + " .sSearchBox::before {line-height:" + selectDim[1] + ";height:" + selectDim[1] + "}";
-                if (selectIcon != "") {
-                    css += ".v" + selectClassName + " .sIcon::before {" + selectIcon + "}";
-                }
-                if (searchIconStyle != "") {
-                    css += ".v" + selectClassName + " .sSearchBox::before{" + searchIconStyle + "}";
-                }
-                if (optionStyle != "") {
-                    css += ".v" + selectClassName + " .sOptionCon .sOption{" + optionStyle + "}";
-                }
-                if (optionsWrapperStyle != "") {
-                    css += ".v" + selectClassName + " .sOptionCon{" + optionsWrapperStyle + "}";
-                }
-                if (inputButtonStyle != "") {
-                    css += ".v" + selectClassName + " .sIcon{" + inputButtonStyle + "}";
-                }
-                if (optionStateStyle[0] != undefined) { //hover state
-                    css += ".v" + selectClassName + " .optionsCon .hovered {" + optionStateStyle[0] + "}";
-                }
-                if (optionStateStyle[1] != undefined) { //selected state
-                    css += ".v" + selectClassName + " .optionsCon .vSselected {" + optionStateStyle[1] + "}";
-                }
+                
+                if (wrapperStyle != "") css += ".v" + selectClassName + "{"+wrapperStyle+"}";
+                
+                if (selectFieldStyle != "") css += ".v" + selectClassName + " .sField {"+selectFieldStyle+"}";
+                
+                if (selectIcon != "") css += ".v" + selectClassName + " .sIcon::before {" + selectIcon + "}";
+
+                if (searchIconStyle != "") css += ".v" + selectClassName + " .sSearchBox::before{" + searchIconStyle + "}";
+                
+                if (optionsConWrapperStyle != "") css += ".v" + selectClassName + " .optionsCon{" + optionsConWrapperStyle + "}";//the wrapper of select options parent
+                    
+                if (optionsWrapperStyle != "") css += ".v" + selectClassName + " .optionsCon .sOptionCon{" + optionsWrapperStyle + "}";//the wrapper of select options
+                    
+                if (optionStyle != "") css += ".v" + selectClassName + " .sOptionCon .sOption{" + optionStyle + "}"; //The option it self, in which optionsWrapper is the parent
+                    
+                if (inputButtonStyle != "") css += ".v" + selectClassName + " .sIcon{" + inputButtonStyle + "}";
+
+                if (optionStateStyle[0] != undefined) css += ".v" + selectClassName + " .optionsCon .hovered {" + optionStateStyle[0] + "}";//hover state
+                    
+                if (optionStateStyle[1] != undefined) css += ".v" + selectClassName + " .optionsCon .vSselected {" + optionStateStyle[1] + "}";//selected state
+                    
                 attachStyleSheet("v" + selectClassName, css);
             }
         }
@@ -404,8 +419,6 @@ function FormComponents() {
             selectDim[0] = parseDimension[0];
             selectDim[1] = parseDimension[1];
 
-            wrapperStyle += "width:" + selectDim[0] + "; height:" + selectDim[1] + "; z-index: 60;";
-
             //hideNative
             nativeSelect.classList.add("xSnative", "vItem"); //vItem added for validation module support
             nativeSelect.setAttribute("tabindex", "-1");
@@ -422,20 +435,15 @@ function FormComponents() {
             //Wrapper Element
             var wrapper = $$.ce("DIV");
             wrapper.classList.add("vSelect", "v" + selectClassName);
-            wrapper.setAttribute("tabindex", "0");
-            if (wrapperStyle != "") {
-                wrapper.style = wrapperStyle;
-            }
+            wrapper.setAttribute("tabindex", "0");            
 
             //Select field
             var selectFieldCon = $$.ce("DIV");
             var selectField = $$.ce("DIV");
             var selectIcon = $$.ce("DIV");
-            if (selectFieldStyle != "") {
-                selectField.style = selectFieldStyle;
-            }
+            
             selectFieldCon.classList.add("sFieldCon");
-            selectFieldCon.style["height"] = selectDim[1];
+            // selectFieldCon.style["height"] = selectDim[1];
             selectField.classList.add("sField");
             selectField.setAttribute("data-state", "closed");
             selectIcon.classList.add("sIcon", "iconClose");
@@ -449,6 +457,7 @@ function FormComponents() {
             var optionsFieldCon = $$.ce("DIV");
             var optionsField = $$.ce("DIV");
             optionsFieldCon.classList.add("optionsCon");
+
             optionsField.classList.add("sOptionCon");
 
             // Search field
@@ -458,6 +467,7 @@ function FormComponents() {
                 selectSearchBox.classList.add("sSearchBox");
                 selectSearchInput.classList.add("sSearchInput");
                 selectSearchInput.setAttribute("tabindex", "0");
+                selectSearchInput.setAttribute("placeholder", "Search...");
                 selectSearchBox.appendChild(selectSearchInput);
                 optionsFieldCon.appendChild(selectSearchBox);
             }
@@ -548,12 +558,12 @@ function FormComponents() {
                 var allOptions = optionsCon.querySelectorAll("div");
                 var optionsConParent = optionsCon.parentNode;
 
+                searchQuery = RegExp.parseChars(searchQuery);
                 var total = allOptions.length;
 
                 function checkQuery(option) {
                     var OptionLabel = option.innerHTML.trim().toLowerCase();
-                    var regex = new RegExp(searchQuery);
-                    if (regex.test(OptionLabel)) {
+                    if (OptionLabel.search(searchQuery) != -1) {
                         option.classList.remove("sHide");
                     } else {
                         option.classList.add("sHide");
@@ -665,6 +675,7 @@ function FormComponents() {
             },
             config: {}
         }
+
         Object.defineProperties(body, {
             autoBuild: { writable: false },
             refresh: { writable: false },
@@ -700,6 +711,12 @@ function FormComponents() {
                 set: function(value) {
                     validateString(value, "A string of valid CSS styles needed for the 'optionsWrapperStyle' property");
                     optionsWrapperStyle = value;
+                }
+            },
+            optionsConWrapperStyle: {
+                set: function(value) {
+                    validateString(value, "A string of valid CSS styles needed for the 'optionsConWrapperStyle' property");
+                    optionsConWrapperStyle = value;
                 }
             },
             optionStyle: {
@@ -759,6 +776,14 @@ function FormComponents() {
                     }
                     validateArrayMembers(value, "string", temp + " of string(s) holding valid CSS styles");
                     optionStateStyle = value;
+                }
+            },
+            labelAttribute:{
+                //The attribute that will hold the value of what will be displayed as label on the select filed
+                //The attribute must be supplied on the native option element and not the select element
+                set: function(value) {
+                    validateString(value, "config.labelAttribute property expect a string as value");
+                    labelAttribute = value;
                 }
             }
         })

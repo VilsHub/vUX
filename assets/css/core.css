@@ -1,5 +1,8 @@
-.cOff{
+.cOff:not([disabled]){
     cursor: default!important;
+}
+.cOff[disabled]{
+    cursor: not-allowed!important;
 }
 .xOverlay > div{
     width: 100%;
@@ -22,4 +25,21 @@
     -moz-background-clip: text;
     -webkit-text-fill-color: transparent; 
     -moz-text-fill-color: transparent;
+}
+.xScroll::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+.xScroll{
+    overflow-y:scroll;
+    overflow-x: hidden;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+.vSlide{
+    transition: height 0.2s linear;
+    height: 0px;
+    overflow-y: hidden;
+}
+.vSlide.done{
+    overflow-y: visible!important;
 }

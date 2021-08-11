@@ -519,13 +519,12 @@ function ModalDisplayer() {
             var effectsCon = $$.ce("DIV");
 
             //Set attributes
-            overlay.classList.add("vModal");
+            overlay.classList.add("vModal", "xScroll");
             overlay.setAttribute("data-id", "vModalStyles");
 
             if (overlayBackgroundType == "color") {
                 if (overlayBackground[0] != "") overlay["style"]["background-color"] = overlayBackground[0];
             }
-
 
             effectsCon.classList.add("modalSpace");
 

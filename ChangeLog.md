@@ -10,14 +10,16 @@
 - Added blur overlayType to modalDisplayer module
 - Added optionStateStyle to selectCustom input
 - Added wrapAttribute property to both custom select and datepicker
-- Added utility namespace ($$), with some some modules moved to it
+- Added utility namespace ($$), with some modules moved to it
 - Added return datatype option to Ajax.Create() static method
+- Resizer module
 
 ## Removed
 - Removed colorOverlayStyle in modalDisplayerObj
 - Removed config.smallView property, to be set using attributes for individual elements, leading to the addition of config/smallViewAttribute property for setting the attribute to be used
 - loadProgressIndicator Removed, as IO.dowload() send download status, to be used by user for their needs
-- imageManipulator removed, now handled by $$.sm.filter()
+- imageManipulator module removed, now handled by $$.sm.filter()
+- Removed validator.config.progressIndicatorStyle
 
 ## Changed
 - modalDisplayerObj overlayType property changed to overlayBackgroundType

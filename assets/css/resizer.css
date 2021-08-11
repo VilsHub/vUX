@@ -1,0 +1,36 @@
+.resizeHandle{
+    position: absolute;
+    z-index: 1;
+}
+.resizeHandle.x{
+    height: 100%;
+    width: 2px;
+    top: 0;
+}
+.resizeHandle.y{
+    width: 100%;
+    height: 2px;
+    left: 0;
+}
+.resizeHandle.x.left{
+    left: 0;
+}
+.resizeHandle.x.right{
+    right: 0;
+}
+.resizeHandle.y.bottom{
+    bottom: 0;
+}
+.resizeHandle.y.top{
+    top: 0;
+}
+.resizeHandle:hover, .resizeHandle.on{
+    background-color: green;
+    
+}
+.resizeHandle.x:hover{
+    cursor: col-resize;
+}
+.resizeHandle.y:hover{
+    cursor: row-resize;
+}

@@ -22,11 +22,8 @@ function FormValidator(form = null) {
         if(parseForm == null) throw new Error("The specified form in FormValidator(x) constructor has no FORM interface. Please wrap the form container with FORM element");
     }
     var bottomConStyle = "",initialized = false,leftConStyle = "",rightConStyle = "",self = this,submissionMethod="POST";
-    var errorLog = {},n = 0,selectedProgressType = "rotate",customAnimate = null,progressIndicatorStyle = null,formSubmitted = false,smallViewAttribute = "",wrapperClassAttribute = null, CSRFTokenElement=null;
-    var progressType = {
-        rotate: ["@keyframes vRotate{from{transform:rotate(0deg) translateY(-50%) translateX(-50%);} to{transform:rotate(360deg) translateY(-50%) translateX(-50%);}}", "vRotate"]
-    };
-    var modal = null, controller = null, submitButtonClass ="", loaderLocation="form";
+    var errorLog = {},n = 0,progressAnimationType = "default",progressAnimationCallbacks =null, progressIndicatorStyle = null,formSubmitted = false,smallViewAttribute = "",wrapperClassAttribute = null, CSRFTokenElement=null;
+    var modal = null, controller = null, submitButtonClass ="", loaderLocation="form", overlayStyle="", successButtonAction="close", redirectTo="/", feedbackModalStyles={};
     var supportedRules = {
         required: 1, //done
         minLength: 1, //done
@@ -44,7 +41,8 @@ function FormValidator(form = null) {
         notIn: 1, //done
         trim:1,//done
         noSpace:1,//done
-        fullName:1//done
+        fullName:1,//done
+        match:1
     }
     var supportedMethod = {"POST":1, "GET":1, "PUT":1, "DELETE":1};
 
@@ -129,7 +127,8 @@ function FormValidator(form = null) {
                     inputWrapper.classList.add("wError");
                 }
             }
-            messageBoxWrapper.appendChild(document.createTextNode(message));
+
+            messageBoxWrapper.innerHTML = message;
             inputWrapper.appendChild(messageBoxWrapper);
 
             //Log error
@@ -169,6 +168,7 @@ function FormValidator(form = null) {
             //Log error
             errorLog[inputWrapper.getAttribute("data-fieldId")] = 1;
         }
+        
         if (checkExistence == null) {
             createMsgBox();
         } else {
@@ -246,10 +246,18 @@ function FormValidator(form = null) {
         });
         document.addEventListener("focusin", function(e) {
             if (e.target.getAttribute("id") == "fbBtn") {
-                hideProgress();
-                e.target.getAttribute("data-rs") == "suc"? modal != null ? modal.close() : null:null;
+                if( e.target.getAttribute("data-rs") == "suc"){
+                    if(successButtonAction == "close"){
+                        if(modal != null) modal.close();
+                        hideProgress();
+                    }else{
+                        location.assign(redirectTo);
+                    }
+                    
+                }else{
+                    hideProgress();
+                }
             } 
-            
             if (e.target.classList.contains("vItem")) self.message.clear(e.target);
         }, false);
         document.addEventListener("click", function(e) {
@@ -257,25 +265,27 @@ function FormValidator(form = null) {
         }, false);
     }
 
-    function showProgress() {
-        var loader = form.querySelector(".vFormOverlay");
-        loader.classList.remove("vFormOverlayHide");
-        loader.classList.add("vFormOverlayShow");
+    function showProgress(){
+         var overlay = form.querySelector(".vFormOverlay");
+        overlay.classList.remove("vFormOverlayHide");
+        overlay.classList.add("vFormOverlayShow");
         var oldVbox = $$.ss(".FbMsgBox");
-      
-        if(loaderLocation == "button"){
-            var button = form.querySelector("."+submitButtonClass);
-            if(button == null){
-                console.warn("No element matched with the specified class "+submitButtonClass + "for creating form loader");
-            }else{
-                button.classList.add("initButtonLoader");
-                button.scrollHeight;
-                button.classList.add("vButtonLoader");
+       
+        if(progressAnimationType == "default"){ 
+            if (oldVbox != null) oldVbox.classList.add("vFormLoader");
+            if(loaderLocation == "button"){
+                var button = form.querySelector("."+submitButtonClass);
+                if(button == null){
+                    console.warn("No element matched with the specified class "+submitButtonClass + "for creating form loader");
+                }else{
+                    button.classList.add("initButtonLoader");
+                    button.scrollHeight;
+                    button.classList.add("vButtonLoader");
+                }
             }
         }else{
-            if (oldVbox != null) oldVbox.classList.add("vFormLoader");
+            progressAnimationCallbacks.onSend(self);
         }
-
         
         if (oldVbox != null) {
             oldVbox.innerHTML = "";
@@ -287,10 +297,15 @@ function FormValidator(form = null) {
         var loader = form.querySelector(".vFormOverlay");
         loader.classList.remove("vFormOverlayShow");
         loader.classList.add("vFormOverlayHide");
-        if(loaderLocation == "button"){
-            offButtonloader();
+        if(progressAnimationType == "default"){
+            if(loaderLocation == "button"){
+                offButtonloader();
+            }
+        }else{
+            progressAnimationCallbacks.onReceive(self);
         }
     }
+
     function offButtonloader(){
          var button = form.querySelector("."+submitButtonClass);
         if(button == null){
@@ -307,18 +322,13 @@ function FormValidator(form = null) {
     function InIError(methodName) {
         throw new Error("To use the '" + methodName + "()' method, initialization must be done. Initialize using the 'initialize()' method");
     }
+
     //create style styleSheet
     function setStyleSheet() {
         if ($$.ss("style[data-id='formValidatorStyles']") == null) {
             var css = "";
-            if (selectedProgressType != "custom") {
-                css += progressType[selectedProgressType][0];
-                css += " .vFormLoader {animation-name:" + progressType[selectedProgressType][1] + ";}";
+            if (progressAnimationType == "default") {
                 progressIndicatorStyle != null ? css += " .vFormLoader::before {" + progressIndicatorStyle + "}" : null;
-            } else {
-                css += customAnimate[0]; //@keframe
-                css += ".vFormLoader {" + customAnimate[1] + "}"; //loader style
-                css += " .vFormLoader ::before{" + customAnimate[2] + "}"; // icon style
             }
             attachStyleSheet("formValidatorStyles", css)
         }
@@ -355,19 +365,28 @@ function FormValidator(form = null) {
         element.scrollHeight;
         element.style["height"] = height + "px";
     }
+
     function createLoader() {
         var overLay = $$.ce("DIV");
         overLay.classList.add("vFormOverlay");
-        if(loaderLocation == "form"){
-            var loader = $$.ce("DIV");
-            loader.classList.add("vFormLoader");
-            $$.sm(loader).center();
-            overLay.appendChild(loader);
+        if(overlayStyle != "") overLay.style = overlayStyle;
+
+        if(progressAnimationType == "default"){
+            if(loaderLocation == "form"){
+                var loader = $$.ce("DIV");
+                loader.classList.add("vFormLoader");
+                $$.sm(loader).center();
+                overLay.appendChild(loader);
+            }
         }
+        
+        
         form.appendChild(overLay);
     }
 
-    function createFeedBack(messageType, msgTxt) {
+    function createFeedBack(messageType, msgTxt, labels) {
+        var hasStyle = Object.keys(feedbackModalStyles).length > 0? true:false;
+        var hasLabel = Object.keys(labels).length > 0? true:false;
         var ui = null;
         if (messageType == "error") {
             ui = ["terr", "merr"];
@@ -385,60 +404,121 @@ function FormValidator(form = null) {
         var btCon = $$.ce("DIV");
         var btn = $$.ce("BUTTON");
 
-        $$.sm(con).center();
+        
         con.classList.add("FbMsgBox");
         ttl.setAttribute("class", "ttl " + ui[0]);
         msg.setAttribute("class", "msgCon " + ui[1]);
         btCon.classList.add("buttonCon");
         btn.setAttribute("id", "fbBtn");
 
-        ttl.appendChild(document.createTextNode("Submission Feedback"));
-        msg.appendChild(document.createTextNode(msgTxt));
+        //Add styles
+        if(hasStyle){
+            if(messageType == "success"){
+                if(feedbackModalStyles["success"] != undefined){//success styles
+                    if(feedbackModalStyles["success"]["title"] != undefined){//style title
+                        ttl.style = feedbackModalStyles["success"]["title"];
+                    }
+                    if(feedbackModalStyles["success"]["container"] != undefined){//style container
+                        $$.sm(con).center(feedbackModalStyles["success"]["container"]);
+                    }else{
+                        $$.sm(con).center();
+                    }
+                    if(feedbackModalStyles["success"]["button"] != undefined){//style button
+                        btn.style = feedbackModalStyles["success"]["button"];
+                    }
+                    if(feedbackModalStyles["success"]["body"] != undefined){//style body
+                        msg.style = feedbackModalStyles["success"]["body"];
+                    }
+                }
+            }else if(messageType == "error"){
+                if(feedbackModalStyles["error"] != undefined){//error styles
+                    if(feedbackModalStyles["error"]["title"] != undefined){//style title
+                        ttl.style = feedbackModalStyles["error"]["title"];
+                    }
+                    if(feedbackModalStyles["error"]["container"] != undefined){//style container
+                        $$.sm(con).center(feedbackModalStyles["warning"]["container"]);
+                    }else{
+                        $$.sm(con).center();
+                    }
+                    if(feedbackModalStyles["error"]["button"] != undefined){//style button
+                        btn.style = feedbackModalStyles["error"]["button"];
+                    }
+                    if(feedbackModalStyles["error"]["body"] != undefined){//style body
+                        msg.style = feedbackModalStyles["error"]["body"];
+                    }
+                }
+            }else if(messageType == "warning"){
+                if(feedbackModalStyles["warning"] != undefined){//warning styles
+                    if(feedbackModalStyles["warning"]["title"] != undefined){//style title
+                        ttl.style = feedbackModalStyles["warning"]["title"];
+                    }
+                    if(feedbackModalStyles["warning"]["container"] != undefined){//style container
+                        $$.sm(con).center(feedbackModalStyles["warning"]["container"]);
+                    }else{
+                        $$.sm(con).center();
+                    }
+                    if(feedbackModalStyles["warning"]["button"] != undefined){//style button
+                        btn.style = feedbackModalStyles["warning"]["button"];
+                    }
+                    if(feedbackModalStyles["warning"]["body"] != undefined){//style body
+                        msg.style = feedbackModalStyles["warning"]["body"];
+                    }
+                }
+            } 
+        }else{
+            $$.sm(con).center();
+        }
+       
+        //set labels
+        if(hasLabel){
+            if(labels["title"] != undefined){
+                ttl.innerHTML = labels["title"];
+            }
+            if(labels["buttonLabel"] != undefined){
+                btn.innerHTML = labels["buttonLabel"];
+            }
+        }else{
+            if (ui[0] == "terr") {
+                btn.innerHTML = "Try again";
+            } else {
+                btn.innerHTML = "Ok";
+            }
+            ttl.innerHTML = "Submission Feedback";
+        }
+
+        
+        msg.innerHTML = msgTxt;
+
         if (ui[0] == "terr") {
             btn.setAttribute("data-rs", "err");
-            btn.appendChild(document.createTextNode("Try again"));
         } else {
             btn.setAttribute("data-rs", "suc");
-            btn.appendChild(document.createTextNode("OK"));
         }
         btCon.appendChild(btn);
         con.appendChild(ttl);
         con.appendChild(msg);
         con.appendChild(btCon);
-
         return con;
     }
 
-    function showFeedback(url, msg, type) {
+    function showFeedback(url, msg, type, labels) {
         var oldVbox = $$.ss(".FbMsgBox");
         if(oldVbox != null)oldVbox.parentNode.removeChild(oldVbox);
-        if (url != null) {
-            var xhr = $$.ajax({method:"GET", url:url}, "html");
-            xhr.addEventListener("readystatechange", function() {
-                if (xhr.readyState == 2) { //sent
-                } else if (xhr.readyState == 4) { //sent and received
-                    if (xhr.status == 200) {
-                        form.innerHTML = xhr.responseText;
-                    } else {
-                        //Show default could not receive response but sumitted successfully
-                        var overlay = form.querySelector(".vFormOverlay");
-                        var loader = form.querySelector(".vFormLoader");
-                        overlay.removeChild(loader);
-                        overlay.appendChild(createFeedBack("warning", "Form submitted but may not be successfully"));
-                    }
-                }
-            }, false);
-            xhr.send(data);
-        } else {
-            //show default
-            var overlay = form.querySelector(".vFormOverlay");
-            var loader = form.querySelector(".vFormLoader");
-            loader != null ? overlay.removeChild(loader) : null;
-            msg == null ? overlay.appendChild(createFeedBack("success", "Form submitted successfully")) : overlay.appendChild(createFeedBack(type, msg));
+
+        //show default 
+        var overlay = form.querySelector(".vFormOverlay");
+
+        // var loader = form.querySelector(".vFormLoader");
+        // loader != null ? overlay.removeChild(loader) : null;
+        
+        msg == null ? overlay.appendChild(createFeedBack("success", "Form submitted successfully", labels)) : overlay.appendChild(createFeedBack(type, msg, labels));
+
+        if(progressAnimationType == "default"){
+            if(loaderLocation == "button"){
+                offButtonloader();
+            }
         }
-        if(loaderLocation == "button"){
-            offButtonloader();
-        }
+        
 
     }
 
@@ -709,6 +789,18 @@ function FormValidator(form = null) {
                     }
                 }
             }
+            if (rulesInUse["match"] != undefined) {
+                var keyVal = getVal(rulesInUse, "match");
+                if (!match(inputField, keyVal.replace(":",""))) {
+                    var matchMessage = getMessageDetails(rules["match" + keyVal]);
+                    var messageType = matchMessage[0];
+                    var messageBody = matchMessage[1];
+                    self.message.write(inputField, messageType, location, messageBody);
+                    return;
+                } else {
+                    clearLastError(rules, keyVal, inputField, inputWrapper, customStyles)
+                }
+            }
         } else {
             InIError("validate");
         }
@@ -727,7 +819,6 @@ function FormValidator(form = null) {
         //log => [log1, log2...] => Zlight validator error response
         //log1 => {name:'nameOfinputField', message:'errorLogMessage', location:"messageLocation"}
         
-        
         //loop and display all errors here, turn off loader first
         
         //hide loader
@@ -739,6 +830,7 @@ function FormValidator(form = null) {
             if(inputField != null) self.message.write(inputField, "error", ele.location, ele.message);
         });
     }
+
     function checkRule(rule, saveRule, sub, definedRules) {
         if (sub == null) { //String and no sub
             if (supportedRules[rule[0]] != undefined) {
@@ -839,12 +931,11 @@ function FormValidator(form = null) {
             } else {
                 return true;
             }
-
         }
     }
 
     function notIn(inputField, list) {
-        if (inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA") { //text field
+        if (inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA" || inputField.getAttribute("type") == "password") { //text field
             var allList = list.split(" ");
             var total = allList.length;
             var value = inputField.value;
@@ -860,7 +951,7 @@ function FormValidator(form = null) {
     }
 
     function isTextField(inputField) {
-        if (inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA") { //text field
+        if (inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA" || inputField.getAttribute("type") == "password") { //text field
             return true;
         } else {
             return false;
@@ -921,6 +1012,7 @@ function FormValidator(form = null) {
     function isFloat(inputField) {
         return /^[0-9]+\.[0-9]+$/.test(inputField.value);
     }
+
     function noSpace(inputField){
         return inputField.value.search(" ");
     }
@@ -970,9 +1062,19 @@ function FormValidator(form = null) {
         return inputWrapper;
     }
 
+    function match(inputField, pattern){
+        var inputValue = inputField.value;
+        pattern = pattern.replace(/\//g, "");
+        var regEx = new RegExp(pattern);
+        return regEx.test(inputValue);
+    }
+
     /*Form validation status*/
     this.formOk = function() {
         if (Object.keys(errorLog).length > 0) {
+            //Reset error log
+            errorLog = {};
+
             return false;
         } else {
             return true;
@@ -982,12 +1084,12 @@ function FormValidator(form = null) {
     /*Submit back*/
     this.submit = function(data = null, url, headers = null) {
         if (!initialized)throw new Error("'submit()' method must be called after initialization");
-        validateString(url, "'feedBack()' method argument 2 must be a string specifying the URL");
+        validateString(url, "'submit()' method argument 2 must be a string specifying the URL");
         showProgress();
         var formData = new FormData(parseForm);
         var xhr = $$.ajax({method:submissionMethod, url:url}, "json");
         if(data != null){ //Append additional data
-            validateObjectLiteral(data, "ssdsd");
+            validateObjectLiteral(data, "'submit()' method argument 1 must be a literal object specifying additonal data to be appended");
             var keys = Object.keys(data);
             var totalRecords = keys.length;
             for(var x=0; x<totalRecords; x++ ){
@@ -1000,45 +1102,84 @@ function FormValidator(form = null) {
             } else if (xhr.readyState == 4) { //sent and received
                 if (xhr.status == 200) {
                     if (controller != null) {
-                        var delayCall = setTimeout(function() {
-                            controller(self, xhr.responseText);
-                            clearTimeout(delayCall);
-                        }, 1000);
+                            var status = controller(self, xhr.responseText);
+                            if(status){//assumed the OK button is click on success when the controller returns true
+                                if(successButtonAction == "close"){
+                                    hideProgress();
+                                }else if (successButtonAction == "redirect"){
+                                    location.assign(redirectTo);
+                                }
+                            }
+                            // else{
+                            //     // hideProgress();
+                            // }
                     } else {
                         self.showFeedback();
                     }
+                }else if(xhr.status == 404){
+                    self.showFeedback(null, "Not found", "error");
+                }else if(xhr.status == 419){
+                    self.showFeedback(null, "Expired, reload and try again", "error");
+                }else if(xhr.status == 405){
+                    self.showFeedback(null, "Method not allowed", "error");
+                }else if(xhr.status == 500){
+                    self.showFeedback(null, "Opps...., error from server", "error");
                 }
+
+                formSubmitted = false;
             }
         }, false);
         xhr.send(formData);
     }
 
-    this.showFeedback = function(feedBackUrl = null, msg = null, type = null) {
+    this.showFeedback = function(feedBackUrl = null, msg = null, type = null, labels=null) {
         if (type != null) {
-            if (type.toLowerCase() != "warning" && type.toLowerCase() != "success" && type.toLowerCase() != "error") {
+            type = type.toLowerCase();
+            if (type != "warning" && type != "success" && type != "error") {
                 throw new Error("'showFeedback()' method argument 3 must either be: null, 'error', 'warning' or 'success'");
             }
         }
-        showFeedback(feedBackUrl, msg, type);
+        if(labels != null){
+            validateObjectLiteral(labels, "validatorObj.showFeedback(...x) expects argument 4 to be an object");
+            var keys = ["title", "buttonLabel"];
+            var sourceKeys = Object.keys(labels);
+            var totalSourceKeys = sourceKeys.length;
+            if (totalSourceKeys > 2 || totalSourceKeys < 1) throw new Error ("validatorObj.showFeedback(...x) expects argument 4 to be an object of max, 2 entries");
+        
+            for (let x = 0; x < totalSourceKeys; x++) {
+                if(keys.indexOf(sourceKeys[x]) == -1){
+                    throw new Error ("validatorObj.showFeedback(...x) expects argument 4 object keys  to be any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
+                }else{
+                    validateString(labels[sourceKeys[x]], "validatorObj.showFeedback(...x) expects argument 4 object key: "+sourceKeys[x]+" expects a string as value");
+                }
+            }
+        }
+        showFeedback(feedBackUrl, msg, type, labels);
     }
 
     Object.defineProperties(this.config, {
         bottomConStyle: {
             set: function(value) {
-                validateString(value, "A string of valid CSS style(s) needed for the 'bottomConStyle' property")
+                validateString(value, "A string of valid CSS style(s) needed for the 'config.bottomConStyle' property")
                 bottomConStyle = value;
             }
         },
         leftConStyle: {
             set: function(value) {
-                validateString(value, "A string of valid CSS style(s) needed for the 'leftConStyle' property")
+                validateString(value, "A string of valid CSS style(s) needed for the 'config.leftConStyle' property")
                 leftConStyle = value;
             }
         },
         rightConStyle: {
             set: function(value) {
-                validateString(value, "A string of valid CSS style(s) needed for the 'rightConStyle' property")
+                validateString(value, "A string of valid CSS style(s) needed for the 'config.rightConStyle' property")
                 rightConStyle = value;
+            }
+        },
+        overlayStyle: {
+            set: function(value) {
+                validateString(value, "A string of valid CSS style(s) needed for the 'config.overlayStyle' property")
+                overlayStyle = value;
             }
         },
         modal: {
@@ -1055,8 +1196,27 @@ function FormValidator(form = null) {
         },
         progressIndicatorStyle: {
             set: function(value) {
-                validateString(value, "config.progressIndicatorStyle property  must be a string of valid CSS style");
+                validateString(value, "config.progressIndicatorStyle property must be a string of valid CSS style");
                 progressIndicatorStyle = value;
+            }
+        },
+        progressAnimationType:{
+            set: function(value) {
+                validateString(value, "config.progressAnimationType property must be a string");
+                if(value != "default" &&  value != "custom"){
+                    throw new Error("config.progressAnimationType property must be a string of value: 'custom' or 'default'");
+                }
+                progressAnimationType = value;
+            }
+        },
+        progressAnimationCallbacks:{
+            set: function(value) {
+                validateObjectLiteral(value, "config.progressAnimationCallbacks property must be a literal object");
+                var courceKeys = Object.keys(value);
+                if(courceKeys.length > 2) throw new Error("config.progressAnimationCallbacks property object must have only two entries");
+                if(courceKeys[0] != "onSend" && courceKeys[0] != "onReceive") throw new Error("config.progressAnimationCallbacks property object must have only these keys 'onSend' and 'onReceive'");
+                if (typeof value.onSend != "function" && typeof value.onReceive != "function") throw new Error("config.progressAnimationCallbacks property object 'onSend' and 'onReceive' keys requires a function as value");
+                progressAnimationCallbacks = value;
             }
         },
         wrapperClassAttribute: {
@@ -1067,7 +1227,7 @@ function FormValidator(form = null) {
         },
         smallViewAttribute:{
             set: function(value) {
-                validateString(value, "config.wrapperClassAttribute property value expects a string");
+                validateString(value, "config.smallViewAttribute property value expects a string");
                 smallViewAttribute = value;
             }
         },
@@ -1101,6 +1261,58 @@ function FormValidator(form = null) {
                 validateElement(value, "config.CSRFTokenName property value expects a DOM Element");
                 CSRFTokenElement = value;
             }  
+        },
+        successButtonAction:{
+            set: function(value) {
+                validateString(value, "config.successButtonAction property value expects a string");
+                value = value.toString();
+                if(value != "redirect" && value != "close") throw new Error("config.successButtonAction property value must either be: 'redirect' or close");
+                successButtonAction = value;
+            } 
+        },
+        redirectTo:{
+            set: function(value) {
+                validateString(value, "config.redirectTo property value expects a string");
+                redirectTo = value; 
+            } 
+        },
+        feedbackModalStyles:{
+            set: function(value) {
+                validateObjectLiteral(value, "config.feedbackModalStyles property value expects an object literal");
+                var types = ["warning", "error", "success"];
+                var styleKeys= ["body", "title", "button", "container"];
+                var keys = Object.keys(value);
+                var totalKeys = keys.length;
+                if (totalKeys > 3 || totalKeys < 1) throw new Error ("config.feedbackModalStyles property value expects an object of max, 3 entries");
+                
+                //validate object entries
+                for (var x = 0; x < totalKeys; x++) {
+                    if(types.indexOf(keys[x]) == -1){
+                        throw new Error ("config.feedbackModalStyles property value expects an object of any of the keys: "+types.join(", ") +" The key: '"+keys[x]+"' is not one of them");
+                    }else{
+                        
+                        validateObjectLiteral(value[keys[x]], "config.feedbackModalStyles property value object key: '"+ keys[x]+"' expect an object literal as value");
+
+                        //validate sub keys
+
+                        var subKeys = Object.keys(value[keys[x]]);
+                        var subTotalKeys = subKeys.length;
+
+                        if (subTotalKeys > 4 || subTotalKeys < 1) throw new Error ("config.feedbackModalStyles property value object key: '"+ keys[x] +"' expect an object literal of max, 4 entries");
+
+                        for (var y = 0; y < subTotalKeys; y++) {
+                            if(styleKeys.indexOf(subKeys[y]) == -1){
+                                throw new Error ("config.feedbackModalStyles property value object key: '"+ keys[x] +"' expect an object literal of any of the keys: "+styleKeys.join(", "));
+                            }else{
+                                //validate value
+                                validateString(value[keys[x]][subKeys[y]], "config.feedbackModalStyles property value object key: '"+ keys[x] +"' expect its object key: '"+ subKeys[y]+"' value to be a string");
+                            }
+                        }
+                    }
+                }
+
+                feedbackModalStyles = value;
+            }
         }
     });
     Object.defineProperties(this.message, {
