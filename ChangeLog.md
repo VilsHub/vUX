@@ -13,6 +13,7 @@
 - Added utility namespace ($$), with some modules moved to it
 - Added return datatype option to Ajax.Create() static method
 - Resizer module
+- Slide utility
 
 ## Removed
 - Removed colorOverlayStyle in modalDisplayerObj

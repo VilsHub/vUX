@@ -28,15 +28,116 @@ if(moduleList != null){
 }
 
 var loaded = [];
-var eventsReg = {};
-var model = {
+var vModel = {
     core:{
         loaded:[],
-
     },
     slide:{
-        eventsReg:{
+        functions:{
+            slideOn:function(e, objProp = null){
+                if(objProp != null){
+                    var properties = Object.entries(objProp);
+                    properties.forEach(function(element) {
+                        e.style[element[0]] = element[1];
+                    });
+                }
+                e.scrollHeight;
+            },
+            slideOff:function(e, objProp = null){
+                if(objProp != null){
+                    var properties = Object.entries(objProp);
+                    properties.forEach(function(element) {
+                        e.style[element[0]] = element[1];
+                    });
+                }
+            },
+            validateConfigs:function(configs, direction){
+                validateObjectLiteral(configs, "$$.sm(.).slide."+direction+"(.x) argument 1 must either be an object literal");
+                var sourceEntries = Object.entries(configs);
+                var totalEntries  = sourceEntries.length;
+                if(totalEntries > 5) throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object keys must be max 5");
+                var validKeys   = Object.keys(vModel.slide.data.effectConfigs);
+                sourceEntries.forEach(function(config){
+                        if (validKeys.indexOf(config[0]) == -1) throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object keys must be one of the follwings: "+validKeys.join(", ")+". '"+ config[0]+"' is not one of them");
+                        
+                        if (config[0] != "timingFunction") config[0] = config[0].toLowerCase();
+                        if (config[0] != "positions" && config[0] != "dimensions" && config[0] != "speed") config[1] = config[1].toLowerCase();
+    
+                        if(config[0] == "use"){
+                            if(config[1] != "dimension" && config[1] != "position") throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.use property must be a either 'position' or 'dimension'");
+                        }else if(config[0] == "timingfunction"){
+                            validateString(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object['timing-function'] property must be a string");
+                        }else if(config[0] == "speed"){
+                            validateNumber(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.speed property must be a number");
+                            if(config[1] < 0) config[1] = 0;
+                        }else if(config[0] == "positions"){
+                            validateObjectLiteral(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.positions property must be an object literal");
+                            var subEntries = Object.entries(config[1]);
+                            var totalEntries = subEntries.length;
+                            if(totalEntries > 2) throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.positions object keys cannot be more than 2");
+                            subEntries.forEach(function (position){
+                                position[0] = position[0].toLowerCase();
+                                if(position[0] != "x" && position[0] != "y") throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.positions object keys can either be 'x' or 'y', "+position[0]+" is not one of them");
+                                validateArray(position[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.positions."+position[0]+" property value must be an array");
+                                if (position[1][0] != undefined) validateNumber(position[1][0], "$$.sm(.).slide(.x) argument 1 object.positions."+position[0]+" property array element 1 must be a number");
+                                if (position[1][1] != undefined) validateNumber(position[1][1], "$$.sm(.).slide(.x) argument 1 object.positions."+position[0]+" property array element 2 must be a number");
+                            });
+                        }else if(config[0] == "dimensions"){
+                            validateObjectLiteral(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions property must be an object literal");
+                            var subEntries = Object.entries(config[1]);
+                            var totalEntries = subEntries.length;
+                            if(totalEntries > 2) throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions object keys cannot be more than 2");
+                            subEntries.forEach(function (dimension){
+                                dimension[0] = dimension[0].toLowerCase();
+                                if(dimension[0] != "x" && dimension[0] != "y") throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions object keys can either be 'x' or 'y', "+dimension[0]+" is not one of them");
+                                validateArray(dimension[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions."+dimension[0]+" property value must be an array");
+                                if (dimension[1][0] != undefined)validateNumber(dimension[1][0], "$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions."+dimension[0]+" property array element 1 must be a number");
+                                if (dimension[1][1] != undefined) validateNumber(dimension[1][1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions."+dimension[0]+" property array element 2 must be a number");
+                            });
+                        }
+                });
 
+                if(configs.use.toLowerCase() == "position"){
+                    if(configs.positions != undefined){
+                        if(direction == "toLeft" && direction == "toRight"){
+                            if(configs.positions.x == undefined){
+                                throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.x property must be set");
+                            }
+                        }
+                        if(direction == "toTop" && direction == "toBottom"){
+                            if(configs.positions.y == undefined){
+                                throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.y property must be set");
+                            }
+                        }
+                    }else{
+                        throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions property must be set");
+                    }
+                }
+            },
+            miliToSeconds:function(mili){
+                var value;
+                if(mili != undefined){
+                    value = mili/1000;
+                }else{
+                    value = 300/1000;
+                }
+                return value;
+            }
+        },
+        data:{
+            effectConfigs: {
+                timingFunction:"linear", 
+                speed:300,
+                use:"dimension",
+                positions:{
+                    x:[0,300],//[a,b] a=> initial position, b=> final position
+                    y:[0,300] //[a,b] a=> initial position, b=> final position
+                }, 
+                dimensions:{
+                    x:[0,200],//[a,b] a=> initial width, b=> final width
+                    y:[0,200] //[a,b] a=> initial height, b=> final height
+                }
+            }
         }
     }
 }
@@ -668,6 +769,21 @@ function checkBrowser(id = null){
     }
 }
 
+function checkAndExecute(e, eventComponents, fn){
+    var status = true;
+    var total = eventComponents.length;
+    for (var x = 0; x < total; x++) {
+        if (x == 0) continue;
+        var entries = eventComponents[x].split("=");
+        if (entries.length > 2 || entries.length == 1) throw new Error("$$.attachEventHandler(x..) argument 1 event contraint(s) supplied incorrectly");
+        if(e[entries[0]].toString() != entries[1].toString()){
+            status = false;
+            break;
+        }
+        
+    }
+    if(status) fn(e);
+}
 /*****************************Timing*****************************/
 var timing = {
     //Linear easing
@@ -716,16 +832,16 @@ var timing = {
 
 /**********************Utility modules*********************/
 var $$ = {
-    ss: function(selector){ //Select single
+    ss:function(selector){ //Select single
         validateString(selector, "$$.ss(x) method argument 1 must be a string");
         return document.querySelector(selector);
     },
-    sa: function(selector){ //Select All
+    sa:function(selector){ //Select All
         validateString(selector, "$$.sa(x) method argument 1 must be a string");
         return document.querySelectorAll(selector);
     },
     sav:function (selector, visibiltyType){ //Select All Visible
-        validateString(selector, "$$.sav(x) method argument 1 must be a string");
+        validateString(selector, "$$.sav(x.) method argument 1 must be a string");
         var allElements = document.querySelectorAll(selector);
         visibiltyType = visibiltyType.toLowerCase();
         var matchElements = [];
@@ -951,6 +1067,10 @@ var $$ = {
                                 foundElement = cEle;
                                 break;
                             }
+                            if(cEle.nodeName == "HTML"){
+                                console.warn("Travesing finished!, and no parent found with class or id = '"+id+"'")
+                                break;
+                            }
                         }
                     }
                 } else {
@@ -963,6 +1083,10 @@ var $$ = {
                         }
                         if (x == parentIDorLevel - 1) {
                             foundElement = cEle;
+                        }
+                        if(cEle.nodeName == "HTML"){
+                            console.warn("Travesing finished!, and the specified dept level '"+id+"' is higher above the DOM root (HTML)")
+                            break;
                         }
                     }
                 }
@@ -1000,19 +1124,14 @@ var $$ = {
             },
             this.addOverlay = function(overlayStyle=null){
                 var cEle = (selector instanceof Element)?selector:ele.single;
-
-
                 if(!isPositioned(cEle)) cEle.style["position"] = "relative";
-
                 var overlayEle = $$.ce("div", {class:"mOverlay"});
                 cEle.classList.add("xOverlay");
                 cEle.appendChild(overlayEle)
 
-
                 if(overlayStyle != null){
                     validateString(overlayStyle, "$$.sm().addOverlay(x) argument 1 must be a string");
                 }
-                    
             },
             this.filter =  function(type, value, options=null){
                     var supportedFilters = ["grayscale", "blur"];
@@ -1100,68 +1219,246 @@ var $$ = {
                 var element = (selector instanceof Element)?selector:ele.single;
                 element.classList.add("xScroll");
             }
-            this.slide =  function (direction, config){
-                var element = (selector instanceof Element)?selector:ele.single;
-                var directions = ["left", "right", "up", "down"];
-                element.setAttribute("vDirection", direction);
-                element.classList.add("vSlide");
-                (function (){
-                    if(!eventsReg["slide"]){
-                        addEventListener("transitionend", function(e){
-                            if(e.target.classList.contains("vSlide")){
-                                var slideDirection = e.target.getAttribute("vDirection");
-                                if(slideDirection == "down"){
-                                    if(e.target.classList.contains("progOn")){
-                                        slideOff(e.target, {height:"auto"});
-                                    }
-                                }else if(slideDirection == "up"){
-                                    if(e.target.classList.contains("progOn")){
-                                        e.target.style["display"] = "none";
-                                    }
-                                }
-                            }
-                        },false)
-                        eventsReg["slide"] = true;
+            this.slide = {
+                toLeft:function(configs, callback=null){
+                    var newSize=0;
+                    try {
+                    vModel.slide.functions.validateConfigs(configs, "toLeft"); 
+                    } catch (error) {
+                        console.error(error)
                     }
-                })()
-                function slideOn(e, objProp = null){
-                    e.classList.add("progOn");
-                    e.classList.remove("progOff");
-                    e.classList.remove("done");
-                    if(objProp != null){
-                        var properties = Object.entries(objProp);
-                        properties.forEach(function(element) {
-                            e.style[element[0]] = element[1];
-                        });
-                    }
-                    e.scrollHeight;
-                }
-                function slideOff(e, objProp = null){
-                    e.classList.add("done");
-                    e.classList.add("progOff");
-                    e.classList.remove("progOn");
-                    if(objProp != null){
-                        var properties = Object.entries(objProp);
-                        properties.forEach(function(element) {
-                            e.style[element[0]] = element[1];
-                        });
-                    }
-                }
-                switch (direction) {
-                    case 'down':
+                    
+                    var element = (selector instanceof Element)?selector:ele.single; 
+
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+                  
+                    element.classList.add("vSlide", classes);
+                    element.style["transition-timing-function"] = configs.timingFunction;
+                    element.style["transition-duration"] = speed+"s";
+
+                    if(configs.use == "dimension"){
                         element.style["display"] = "block";
-                        element.style["height"] = "0px";
-                        var height = element.scrollHeight;
-                        slideOn(element);
-                        element.style["height"] = height+"px";
-                        break;
-                    case 'up':
+                        if(configs.dimensions.x[1] == null){
+                            element.style["width"] = "0px"
+                        }else{
+                            element.style["width"] = configs.dimensions.x[1]+"px";
+                        }
+
+                        vModel.slide.functions.slideOn(element);
+                        newSize = configs.dimensions.x[1];
+                    }else{
+                        element.style["display"] = "block";
+                        
+                        if(configs.positions.x[0] == null){
+                            element.style["left"] = "0px"
+                        }else{
+                            element.style["left"] = configs.positions.x[0]+"px";
+                        }
+
+                        vModel.slide.functions.slideOn(element);
+                        element.style["left"] = configs.positions.x[1]+"px";
+                        newSize = configs.positions.x[1];
+                    }   
+            
+                    var postCall =  setTimeout(function(){
+                        if(callback != null){
+                            callback(element, newSize);
+                        }
+                        clearTimeout(postCall);
+                    }, configs.speed) 
+                },
+                toRight:function(configs, callback=null){
+                    var newSize=0;
+                    try {
+                        vModel.slide.functions.validateConfigs(configs, "toRight"); 
+                    } catch (error) {
+                        console.error(error)
+                    }
+                    
+                    var element = (selector instanceof Element)?selector:ele.single; 
+
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+                  
+                    element.classList.add("vSlide", classes);
+                    element.style["transition-timing-function"] = configs.timingFunction;
+                    element.style["transition-duration"] = speed+"s";
+
+                    if(configs.use == "dimension"){
+                        element.style["display"] = "block";
+
+                        if(configs.dimensions.x[0] == null){
+                            element.style["width"] = "0px"
+                        }else{
+                            element.style["width"] = configs.dimensions.x[0]+"px";
+                        }
+
+                        vModel.slide.functions.slideOn(element);
+                        
+                        if(configs.dimensions.x[1] == null){
+                            element.style["width"] = width+"px";
+                        }else{
+                            element.style["width"] = configs.dimensions.x[1]+"px";
+                        }
+
+                        newSize = configs.dimensions.x[1];
+                    }else{
+                        element.style["display"] = "block";
+                        element.style["left"] = configs.positions.x[0]+"px";
+
+                        vModel.slide.functions.slideOn(element);
+
+                        element.style["left"] = configs.positions.x[1]+"px";
+                        newSize = configs.positions.x[1];
+                    }  
+
+                    var postCall =   setTimeout(function(){
+                        if(callback != null){
+                            callback(element, newSize);
+                        }
+                        clearTimeout(postCall);
+                    }, configs.speed) 
+                },
+                toTop:function(configs, callback=null){
+                    var newSize=0;
+                    try {
+                        vModel.slide.functions.validateConfigs(configs, "toTop"); 
+                    } catch (error) {
+                        console.error(error)
+                    }
+                    
+                    var element = (selector instanceof Element)?selector:ele.single; 
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+                  
+                    element.classList.add("vSlide", classes);
+                    element.style["transition-timing-function"] = configs.timingFunction;
+                    element.style["transition-duration"] = speed+"s";
+                    
+                    if(configs.use == "dimension"){
                         var height= element.scrollHeight;
-                        slideOn(element, {height:height+"px"});
+                        vModel.slide.functions.slideOn(element, {height:height+"px"});
                         element.style["height"] = "0px";
-                        break;
-                    default:
-                        break;
+                    }else{
+                        vModel.slide.functions.slideOn(element);
+                        if(configs.positions.y[0] != null){
+                            element.style["top"] = configs.positions.y[0]+"px";
+                        }else{
+                            element.style["top"] = "0px";
+                        }
+                    }
+
+                    var postCall = setTimeout(function(){
+                        if(callback != null){
+                            callback(element, newSize);
+                        }
+                        clearTimeout(postCall);
+                    }, configs.speed) 
+                    
+                },
+                toBottom:function(configs, callback=null){
+                    var newSize=0;
+                    try {
+                        vModel.slide.functions.validateConfigs(configs, "toBottom"); 
+                    } catch (error) {
+                        console.error(error)
+                    }
+                    
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+                  
+                    element.classList.add("vSlide", classes);
+                    element.style["transition-timing-function"] = configs.timingFunction;
+                    element.style["transition-duration"] = speed+"s";
+                    
+                    if(configs.use == "dimension"){
+                        //Set initial point
+                        if(configs.dimensions != undefined){
+                            if(configs.dimensions.y != undefined){
+                                if(configs.dimensions.y[0] != null){
+                                    element.style["height"] = configs.dimensions.y[0]+"px";
+                                }else{
+                                    element.style["height"] = "0px";
+                                }
+                            }else{
+                                element.style["height"] = "0px";
+                            }
+                        }else{
+                            element.style["height"] = "0px";
+                        }
+
+                        element.style["display"] = "block";
+
+                        vModel.slide.functions.slideOn(element);
+                        var height = element.scrollHeight;
+                        
+                        
+                        if(configs.dimensions == undefined){
+                            element.style["height"] = height+"px"
+                            newSize = height;
+                        }else{
+                            if(configs.dimensions.y != undefined){
+                                if(configs.dimensions.y[1] != undefined){
+                                    element.style["height"] = configs.dimensions.y[1]+"px";
+                                    newSize = configs.dimensions.y[1];
+                                }else{
+                                    element.style["height"] = height;
+                                    newSize = height;
+                                }
+                            }else{
+                                element.style["height"] = height;
+                                newSize = height;
+                            }
+                        }
+                    }else{
+                        element.style["display"] = "block";
+                        element.style["top"] = configs.positions.y[0]+"px"; 
+                        vModel.slide.functions.slideOn(element);
+                        element.style["top"] = configs.positions.y[1]+"px";
+                        newSize = configs.positions.y[1];
+                    }
+  
+                    var postCall = setTimeout(function(){
+                        vModel.slide.functions.slideOff(element, {height:"auto"});
+
+                        if(callback != null){
+                            callback(element, newSize);
+                        }
+                        
+                        clearTimeout(postCall);
+                    }, configs.speed) 
+                }
+            },      
+            this.class = {
+                add:function(className){
+                    var cEles = (selector instanceof Element)?selector:ele.all;
+                    cEles.forEach(function(cEle){
+                        cEle.classList.add(className);
+                    });
+                },
+                remove:function(className){
+                    var cEles = (selector instanceof Element)?selector:ele.all;
+                    cEles.forEach(function(cEle){
+                        cEle.classList.remove(className);
+                    });
+                },
+                swap:function(swap){
+                    var cEles = (selector instanceof Element)?selector:ele.all;
+                    cEles.forEach(function(cEle){
+                        if(cEle.classList.contains(swap[0])){
+                            cEle.classList.remove(swap[0]);
+                            cEle.classList.add(swap[1]);
+                        }else{
+                            cEle.classList.add(swap[0]);
+                            cEle.classList.remove(swap[1]);
+                        }
+                    });
                 }
             }
         }
@@ -1172,6 +1469,7 @@ var $$ = {
         if (attributes != null) validateObjectLiteral(attributes, "$$.ce(.x) method argument 2 must be an object literal");
         
         var element = document.createElement(node);
+
         if(attributes != null){
             var allAttributes = Object.entries(attributes);
             allAttributes.forEach(attribute => {
@@ -1223,31 +1521,48 @@ var $$ = {
             }
         })
     },
-    attachEventHandler: function(event, DomClass, fn) {
+    attachEventHandler:function(event, DomClass, fn) {
         var idType = null;
         validateString(event, "'$$.attachEventHandler()' argument 1 must be a string specifying the event type");
         if (typeof DomClass == "string") {//class name and class to exclude
             // string value = "include, exclude" | "include"
             idType = "single";
-        } else if (Array.isArray(DomClass)) {// DOM list of elements
+        } else if (Array.isArray(DomClass)) {// DOM list of elements classes
             validateArrayMembers(DomClass, "string", "'$$.attachEventHandler()' argument 2 must be an array of string(s)");
             idType = "multiple";
         } else {
             throw new Error("'$$.attachEventHandler()' argument 2 must be a string or array of string, specifying the class name of the element(s) o");
         }
         validateFunction(fn, "'$$.attachEventHandler()' argument 3 must be a function to be called on the trigger");
+        var eventComponents = event.split(":");
 
-        document.addEventListener(event, function(e) {
+        addEventListener(eventComponents[0], function(e) {
             if (idType == "single") {
                 var constraints = DomClass.split(",");
                 if (e.target.classList != null) {
                     if (e.target.classList.contains(constraints[0])){
                         if(constraints[1] != undefined){
                             if (!e.target.classList.contains(constraints[1].trim())){
-                                fn(e);
+                                if(eventComponents.length == 1){
+                                    fn(e);
+                                }else{
+                                    try {
+                                        checkAndExecute(e, eventComponents, fn);
+                                    } catch (error) {
+                                        console.error(error);
+                                    }
+                                }
                             }
                         }else{
-                            fn(e);
+                            if(eventComponents.length == 1){
+                                fn(e);
+                            }else{
+                                try {
+                                    checkAndExecute(e, eventComponents, fn);
+                                } catch (error) {
+                                    console.error(error);
+                                }
+                            }
                         }
                         
                     }
@@ -1263,7 +1578,7 @@ var $$ = {
             }
         }, false);
     },
-    ajax: function(options=null, returnDataType=null){
+    ajax:function(options=null, returnDataType=null){
         var xmlhttp = null;  
 
         if (window.XMLHttpRequest) {
@@ -1417,7 +1732,7 @@ var $$ = {
     linkStyleSheet:function(url){
         linkStyleSheet(url);
     },
-    browserType: function(name=null, callBack=null){
+    browserType:function(name=null, callBack=null){
         var browserNames = ["opera", "firefox", "chrome", "safari", "iexplorer", "ucbrowser", "edge"];
         
         if(name !=null){
@@ -1488,6 +1803,7 @@ RegExp.parseChars = function (char){
     return parserChars;
 }
 String.prototype.xTrim = function () {
+    //to strip out the character '/'
     return this.replace(/^[\s\uFEFF\xA0\/]+|[\s\uFEFF\xA0\/]+$/g, '');
 };
 

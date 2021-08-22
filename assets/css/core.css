@@ -35,10 +35,15 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
-.vSlide{
-    transition: height 0.2s linear;
+.vSlide.dim{
+    transition: height 0.2s linear, width 0.2s linear;
     height: 0px;
     overflow-y: hidden;
+    overflow-x: hidden;
+}
+.vSlide.pos{
+    transition: left 0.2s linear, top 0.2s linear;
+    top: 0px;
 }
 .vSlide.done{
     overflow-y: visible!important;
