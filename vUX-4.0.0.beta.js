@@ -10,7 +10,7 @@
  */
 
 "use strict";
-var modules = ["cShapes","formValidator", "formComponents", "resizer", "modalDisplayer", "toolTip", "carousel", "contentLoader", "listScroller", "touchHandler", "timeLineList", "autoWriter"];
+var modules = ["cShapes","formValidator", "formComponents", "resizer", "modalDisplayer", "toolTip", "carousel", "spaEngine", "listScroller", "touchHandler", "timeLineList", "autoWriter"];
 var assetURL = "";
 var temp = null;
 var path = null;
@@ -52,20 +52,22 @@ var vModel = {
                 }
             },
             validateConfigs:function(configs, direction){
-                validateObjectLiteral(configs, "$$.sm(.).slide."+direction+"(.x) argument 1 must either be an object literal");
+                validateObjectLiteral(configs, "$$.sm(.).slide."+direction+"(.x) argument 1 must be an object literal");
                 var sourceEntries = Object.entries(configs);
                 var totalEntries  = sourceEntries.length;
                 if(totalEntries > 5) throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object keys must be max 5");
                 var validKeys   = Object.keys(vModel.slide.data.effectConfigs);
+
                 sourceEntries.forEach(function(config){
+                    if(config[0] != undefined){
                         if (validKeys.indexOf(config[0]) == -1) throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object keys must be one of the follwings: "+validKeys.join(", ")+". '"+ config[0]+"' is not one of them");
                         
-                        if (config[0] != "timingFunction") config[0] = config[0].toLowerCase();
-                        if (config[0] != "positions" && config[0] != "dimensions" && config[0] != "speed") config[1] = config[1].toLowerCase();
+                        if (config[0] != "timingFunction" && config[0] != "positionProperty") config[0] = config[0].toLowerCase();
+                        if (config[0] != "positions" && config[0] != "dimensions"  && config[0] != "positionProperty") config[1] = config[1].toLowerCase();
     
                         if(config[0] == "use"){
                             if(config[1] != "dimension" && config[1] != "position") throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.use property must be a either 'position' or 'dimension'");
-                        }else if(config[0] == "timingfunction"){
+                        }else if(config[0] == "timingFunction"){
                             validateString(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object['timing-function'] property must be a string");
                         }else if(config[0] == "speed"){
                             validateNumber(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.speed property must be a number");
@@ -94,25 +96,33 @@ var vModel = {
                                 if (dimension[1][0] != undefined)validateNumber(dimension[1][0], "$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions."+dimension[0]+" property array element 1 must be a number");
                                 if (dimension[1][1] != undefined) validateNumber(dimension[1][1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.dimensions."+dimension[0]+" property array element 2 must be a number");
                             });
+                        }else if(config[0] == "positionProperty"){
+                            validateString(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object['positionProperty'] property must be a string");
+                            if (config[1] != "right" && config[1] != "left") throw new Error(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.positionProperty property value must either be 'right' or 'left'");
+                            //Continue here
                         }
+                    }
                 });
 
-                if(configs.use.toLowerCase() == "position"){
-                    if(configs.positions != undefined){
-                        if(direction == "toLeft" && direction == "toRight"){
-                            if(configs.positions.x == undefined){
-                                throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.x property must be set");
+                if(configs.use != undefined){
+                    if(configs.use.toLowerCase() == "position"){
+                        if(configs.positions != undefined){
+                            if(direction == "toLeft" && direction == "toRight"){
+                                if(configs.positions.x == undefined){
+                                    throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.x property must be set");
+                                }
                             }
-                        }
-                        if(direction == "toTop" && direction == "toBottom"){
-                            if(configs.positions.y == undefined){
-                                throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.y property must be set");
+                            if(direction == "toTop" && direction == "toBottom"){
+                                if(configs.positions.y == undefined){
+                                    throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.y property must be set");
+                                }
                             }
+                        }else{
+                            throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions property must be set");
                         }
-                    }else{
-                        throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions property must be set");
                     }
                 }
+        
             },
             miliToSeconds:function(mili){
                 var value;
@@ -136,9 +146,47 @@ var vModel = {
                 dimensions:{
                     x:[0,200],//[a,b] a=> initial width, b=> final width
                     y:[0,200] //[a,b] a=> initial height, b=> final height
-                }
+                },
+                positionProperty:"left"
             }
         }
+    },
+    flip:{
+        functions:{
+            flipValue:function(axis, angle){
+                var axisValue = "";
+                if(axis == "x"){
+                    axisValue = "1, 0, 0";
+                }else if(axis == "y"){
+                    axisValue = "0, 1, 0";
+                }else if (axis == "z"){
+                    axisValue = "0, 0, z";
+                }
+
+                return "rotate3d("+axisValue+", "+angle+")";
+            },
+            effectValue:function(speed, timingFunction){
+                if (speed == null) speed = ".2s";
+                if (timingFunction == null) timingFunction = "linear";
+                return "transform "+speed+" "+timingFunction;
+            }
+        }
+    },
+    animate:{
+       data:{
+        startValue:{},
+        items:0
+       },
+       functions:{
+           elementTag: function(element){
+                var id = element.getAttribute("data-animateItem");
+                if(id == null){
+                    id = "ele"+(vModel.animate.data.items++);
+                    element.setAttribute("data-animateItem", id)
+                }
+                return id;
+           }
+       }
     }
 }
 
@@ -213,7 +261,6 @@ function loadScript(name, url, last=false, callBack=null) {
     }else{
         document.head.appendChild(scriptEle);
     }
-    
 }
 
 /*************************Helper functions***********************/
@@ -248,6 +295,19 @@ function runGroupStyler(element, StyleObject){
 
 function camelToCSSstandard(cameledName) {
     return cameledName.replace(/[A-Z]/g, function (m){"-" + m.toLowerCase()});
+}
+
+function hyphenatedToCamel(hyphenatedName) {
+    var segments    = hyphenatedName.split("-");
+    var total       = segments.length;
+    var cameled     = segments[0];
+    
+    if(total > 1){
+        for (var index = 1; index < total; index++) {
+            cameled += segments[index].toUpperCaseFirst();
+        }
+    }
+    return cameled;
 }
 
 function validateNumber(number, msg = null) {
@@ -423,23 +483,26 @@ function validateFunction(fn, msg = null) {
     }
 }
 
-function validateHTMLObject(HTMLCollection) { //Group of elements
-    if (Object.getPrototypeOf(HTMLCollection).constructor.name == "NodeList") {
+function validateHTMLObject(HTMLCollection, msg=null) { //Group of elements
+    msg = msg != null?msg:"Invalid HTML Collection : HTML collection must be provide";
+    if (isHTMLObject(HTMLCollection)) {
         return true;
     } else {
-        throw new TypeError("Invalid HTML Collection : HTML collection must be provide");
+        throw new TypeError(msg);
     }
 }
 
 function validateObjectLiteral(object, msg = null) {
-    if (object.__proto__.isPrototypeOf(new Object()) == true) {
-        return true;
-    } else {
-        if (msg != null) {
-            throw new TypeError(msg);
+    msg = msg != null?msg:"Type error : literal object needed";
+    
+    if(object !== undefined){
+        if (object.__proto__.isPrototypeOf(new Object()) == true) {
+            return true;
         } else {
-            throw new TypeError("Type error : literal object needed");
+            throw new TypeError(msg);
         }
+    }else{
+        throw new TypeError(msg);
     }
 }
 
@@ -726,6 +789,10 @@ function isPositioned(ele){
     return ["fixed", "relative", "absolute", "sticky"].indexOf(propertyValue) == -1?false:true;
 }
 
+function isHTMLObject(NodeList){
+    return Object.getPrototypeOf(NodeList).constructor.name == "NodeList";
+}
+
 function checkBrowser(id = null){
     var browserIds={
         "Safari-Edg": {id:"Safari-Edg", label:"Microsoft Edge", name:"edge"},
@@ -859,10 +926,12 @@ var $$ = {
         if(!(selector instanceof Element) && typeof selector != "string"){
             throw new Error("$$.sm(x) method argument 1 must be either a string or HMTL Element")
         }
-
+        
         function dom(){
             var self =this;
             var ele = (selector instanceof Element)?selector:{all:document.querySelectorAll(selector), single:document.querySelectorAll(selector)[0]};
+            if(!isHTMLObject(ele)) validateElement(ele, "$$.sm(x) argument 1 must be an element or a string of CSS selector");
+            
             this.index = function() {
                 var child = (selector instanceof Element)?selector:ele.single;
                 var index = 0,
@@ -878,6 +947,7 @@ var $$ = {
                 validateString(property, "$$.sm(.).cssStyle(x.) method argument 1 must be a string");
                 if(pEle != null) validateString(pEle, "$$.sm(.).cssStyle(.x) method argument 2 must be a string or null");
                 var cEle = (selector instanceof Element)?selector:ele.single;
+                
                 return getCssStyle(cEle, property, pEle);
             }
             this.centerY = function(otherStyles = null) {
@@ -1009,7 +1079,7 @@ var $$ = {
                 validateString(parentId, "$$.sm(.).hasParent(x.) method argument 1 must be a string");
                 if (ntimes != null) validateInteger(ntimes, "$$.sm(.).hasParent(.x) method argument 2 must be an integer");
                 var cEle = (selector instanceof Element)?selector:ele.single;
-                if (document.querySelector("." + parentId) != null) { //Has class
+                if(document.querySelector("." + parentId) != null) { //Has class
                     while (cEle) {
                         if (cEle.nodeName == "BODY") break;
                         cEle = cEle.parentNode;
@@ -1024,7 +1094,7 @@ var $$ = {
                             n++;
                         }
                     }
-                } else if (document.querySelector("#" + parentId) != null) { //Has id
+                }else if (document.querySelector("#" + parentId) != null) { //Has id
                     while (cEle) {
                         if (cEle.nodeName == "BODY") break;
                         cEle = cEle.parentNode;
@@ -1215,23 +1285,59 @@ var $$ = {
                 }
                 element.style["background-image"] = backgroundImageValue;
             }
-            this.xScroll = function (){
-                var element = (selector instanceof Element)?selector:ele.single;
-                element.classList.add("xScroll");
-            }
+            this.scroll = {
+                x:function (hideBar=false){
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    var hide = hideBar?"bar-hide":"";
+                    element.classList.add("scroll", hide, "x");
+                },
+                y:function (hideBar=false){
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    var hide = hideBar?"bar-hide":"";
+                    element.classList.add("scroll", hide, "y");
+                },
+                lock: function (axis=null) {
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    if (axis != null) {
+                        var temp = "$$.sroll.lock(x) argument 1 must be a string";
+                        validateString(axis, temp);
+                        axis = axis.toLowerCase();
+                        if (axis != "x" && axis != "y") throw new Error(temp + " of either x or y");
+                    }else{
+                        axis = "y";
+                    }
+                    element.style["overflow-"+axis] = "hidden";
+                },
+                unlock: function (axis=null) {
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    if (axis != null) {
+                        var temp = "$$.sroll.unlock(x) argument 1 must be a string";
+                        validateString(axis, temp);
+                        axis = axis.toLowerCase();
+                        if (axis != "x" && axis != "y") throw new Error(temp + " of either x or y");
+                    }else{
+                        axis = "y";
+                    }
+                    element.style["overflow-"+axis] = "auto";
+                },
+            } 
             this.slide = {
                 toLeft:function(configs, callback=null){
                     var newSize=0;
                     try {
-                    vModel.slide.functions.validateConfigs(configs, "toLeft"); 
+                        vModel.slide.functions.validateConfigs(configs, "toLeft"); 
                     } catch (error) {
-                        console.error(error)
+                        throw new Error(error);
                     }
                     
                     var element = (selector instanceof Element)?selector:ele.single; 
 
                     var classes = configs.use == "dimension"? "dim" : "pos";
                     configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = configs.positions == undefined? vModel.slide.data.effectConfigs.positions : configs.positions;
+                    configs.dimensions = configs.dimensions == undefined? vModel.slide.data.effectConfigs.dimensions : configs.dimensions;
+                    configs.positionProperty = configs.positionProperty == undefined? vModel.slide.data.effectConfigs.positionProperty : configs.positionProperty;
                     var speed = vModel.slide.functions.miliToSeconds(configs.speed);
                   
                     element.classList.add("vSlide", classes);
@@ -1252,13 +1358,13 @@ var $$ = {
                         element.style["display"] = "block";
                         
                         if(configs.positions.x[0] == null){
-                            element.style["left"] = "0px"
+                            element.style[configs.positionProperty] = "0px"
                         }else{
-                            element.style["left"] = configs.positions.x[0]+"px";
+                            element.style[configs.positionProperty] = configs.positions.x[0]+"px";
                         }
 
                         vModel.slide.functions.slideOn(element);
-                        element.style["left"] = configs.positions.x[1]+"px";
+                        element.style[configs.positionProperty] = configs.positions.x[1]+"px";
                         newSize = configs.positions.x[1];
                     }   
             
@@ -1397,8 +1503,7 @@ var $$ = {
 
                         vModel.slide.functions.slideOn(element);
                         var height = element.scrollHeight;
-                        
-                        
+                                    
                         if(configs.dimensions == undefined){
                             element.style["height"] = height+"px"
                             newSize = height;
@@ -1438,28 +1543,215 @@ var $$ = {
             this.class = {
                 add:function(className){
                     var cEles = (selector instanceof Element)?selector:ele.all;
-                    cEles.forEach(function(cEle){
-                        cEle.classList.add(className);
-                    });
+                    if(cEles instanceof Element){
+                        cEles.classList.add(className);
+                    }else{
+                        cEles.forEach(function(cEle){
+                            cEle.classList.add(className);
+                        });
+                    }
                 },
                 remove:function(className){
                     var cEles = (selector instanceof Element)?selector:ele.all;
-                    cEles.forEach(function(cEle){
-                        cEle.classList.remove(className);
-                    });
+                    if(cEles instanceof Element){
+                        cEles.classList.remove(className);
+                    }else{
+                        cEles.forEach(function(cEle){
+                            cEle.classList.remove(className);
+                        });
+                    }
                 },
                 swap:function(swap){
                     var cEles = (selector instanceof Element)?selector:ele.all;
-                    cEles.forEach(function(cEle){
-                        if(cEle.classList.contains(swap[0])){
-                            cEle.classList.remove(swap[0]);
-                            cEle.classList.add(swap[1]);
+                    if(cEles instanceof Element){
+                        if(cEles.classList.contains(swap[0])){
+                            cEles.classList.remove(swap[0]);
+                            cEles.classList.add(swap[1]);
                         }else{
-                            cEle.classList.add(swap[0]);
-                            cEle.classList.remove(swap[1]);
+                            cEles.classList.add(swap[0]);
+                            cEles.classList.remove(swap[1]);
                         }
-                    });
+                    }else{
+                        cEles.forEach(function(cEle){
+                            if(cEle.classList.contains(swap[0])){
+                                cEle.classList.remove(swap[0]);
+                                cEle.classList.add(swap[1]);
+                            }else{
+                                cEle.classList.add(swap[0]);
+                                cEle.classList.remove(swap[1]);
+                            }
+                        });
+                    }
+                },
+                has:function(className){
+                    var cEles = (selector instanceof Element)?selector:ele.single;
+                    return cEles.classList.contains(className);
+                },
+                xSwap:function(option){
+                    var cEles = (selector instanceof Element)?selector:ele.all;
+                    var toRemove = option.remove;
+                    var toAdd = option.add;
+                    if(cEles instanceof Element){
+                        cEles.classList.remove(toRemove);
+                        cEles.classList.add(toAdd);
+                    }else{
+                        cEles.forEach(function(cEle){
+                            cEle.classList.remove(toRemove);
+                            cEle.classList.add(toAdd);
+                        })
+                    }
                 }
+            },
+            this.flip = {
+                card:function(option, currentSide=null){
+                    var cEles = (selector instanceof Element)?selector:ele.single;
+                    var parent = cEles.parentNode;
+                    var state = Boolean(parent.getAttribute("initialized"));
+
+                    if(!state){
+                        parent.classList.add("flip-card-parent");
+                        
+                        //validate options
+                        var temp = "$$.sm(.).flip.card(x) method object argument";
+                        if (option.perspective != null){
+                           validateString(option.perspective, " perspective property must be a string"); 
+                        }else{
+                            option.perspective = "900px";
+                        } 
+                        if (option.frontClass == null){
+                            throw new Error(temp+" frontClass property must be specified");
+                        }else{
+                            if (option.frontClass != null) validateString(option.perspective, " frontClass property must be a string");
+                        }
+                        if (option.backClass == null){
+                            throw new Error(temp+" backClass property must be specified");
+                        }else{
+                            if (option.backClass != null) validateString(option.perspective, " backClass property must be a string");
+                        }
+                        if (option.axis == null){
+                            throw new Error(temp+" axis property must be specified");
+                        }else{
+                            if (option.axis != null) validateString(option.perspective, " axis property must be a string");
+                            option.axis = option.axis.toLowerCase();
+                            if (option.axis != "x" && option.axis != "y" && option.axis != "z"){
+                                throw new Error(temp+" axis property value must be one of these: 'x' or 'y'");
+                            }
+                        }
+                        if (option.speed != null){
+                            validateString(option.speed, " speed property must be a string"); 
+                        }
+                        if (option.angle != null){
+                            validateString(option.angle, " angle property must be a string"); 
+                        }if (option.timingFunction != null){
+                            validateString(option.timingFunction, " timingFunction property must be a string"); 
+                        }
+
+                        //Add perspective
+                        parent.style["perspective"] = option.perspective;
+
+                        //set direction
+                        if (option.axis != null){
+                            cEles.querySelector("."+option.frontClass).classList.add(option.axis);
+                            cEles.querySelector("."+option.backClass).classList.add(option.axis);
+                        }
+
+                        //set default values
+
+
+                        //flip effect
+                        cEles.style["transition"] = vModel.flip.functions.effectValue(option.speed, option.timingFunction); 
+
+                        // if parent is not position, position it
+                        if (!isPositioned(parent)) parent.style["position"] = "relative";
+                        
+                        // Card
+                        cEles.classList.add("vCard");
+
+                        if (option.backClass != null) cEles.querySelector("."+option.backClass).classList.add("back", "flip-item");
+                        if (option.frontClass != null) cEles.querySelector("."+option.frontClass).classList.add("front", "flip-item");
+
+                        parent.setAttribute("initialized", "true");
+                    }
+
+                    if(cEles.classList.contains("flip")){
+                        //flip = rotate to the 0deg
+                        cEles.classList.remove("flip");
+                        cEles.style["transform"] = vModel.flip.functions.flipValue(option.axis, "0deg");
+                    }else{
+                        //flip = rotate to the given angle
+                        cEles.classList.add("flip");
+                        cEles.style["transform"] = vModel.flip.functions.flipValue(option.axis, option.angle);
+                    }
+
+                    // Set proper z-index
+                    if(currentSide != null){
+                        validateString(currentSide, "$$.flip.card(.x) argument 2 must be a string or null");
+                        var prev =  parent.querySelector(".flip-item.current-side")
+                        if(prev != null) prev.classList.remove("current-side") //previous at the bottom
+                        parent.querySelector("."+currentSide).classList.add("current-side") // current at the top
+
+                    }
+                }
+            },
+            this.animate = function(draw, value, animationOptions=null){
+                //draw =>  the function that handles the actual drawing, it must accept an argument, which would be used for the animation
+                //draw(ele, x) means, draw the property of the element (ele) with the value 'x' for duration using the the timing function
+                
+                
+                var cEle = (selector instanceof Element)?selector:ele.single;
+
+                var animationId = vModel.animate.functions.elementTag(cEle);
+
+                var options = {
+                    duration:1000,//duration is in miliseconds
+                    timingFunction:"linear",
+                    startValue:null
+                }
+                
+                if(animationOptions != null){
+                    validateObjectLiteral(animationOptions, "'$$.animate()' method argument 3 must be an object or null");
+
+                    if(animationOptions.duration != undefined){
+                        validateNumber(animationOptions.duration, "'$$.animate()' method argument 3 object 'duration' property must be a number");
+                        options.duration = animationOptions.duration < 0? 1000 : animationOptions.duration
+                    }
+
+                    if(animationOptions.timingFunction != undefined){
+                        validateString(animationOptions.timingFunction, "'$$.animate()' method argument 3 object 'timingFunction' property  must be a string");
+                        var validFns = Object.keys(timing);
+                        if(validFns.indexOf(animationOptions.timingFunction) == -1) throw new Error ("'$$.animate()' method argument 3 object 'timingFunction' property must be one of the followings: "+ validFns.join(","))
+                        options.timingFunction = animationOptions.timingFunction
+                    }
+
+                    if(animationOptions.startValue != undefined){
+                        validateNumber(animationOptions.startValue, "'$$.animate()' method argument 3 object 'startValue' property must be a number");
+                        options.startValue = animationOptions.startValue;
+                    }
+                }
+
+                validateFunction(draw, "'$$.animate()' method argument 1 must be a function");
+                validateNumber(value, "'$$.animate()' method argument 2 must be numeric");
+
+                options.startValue = vModel.animate.data.startValue[animationId] != null? vModel.animate.data.startValue[animationId]:options.startValue;
+                var start = performance.now();
+
+                requestAnimationFrame(function animate(time) {
+                    
+                    // timeFraction goes from 0 to 1
+                    var timeFrac = (time - start) / options.duration;
+                    if (timeFrac > 1) timeFrac = 1;
+        
+                    // calculate the current animation state
+                    var progress = timing[options.timingFunction](timeFrac);
+                    var nextValue = options.startValue + (progress * value);
+
+                    vModel.animate.data.startValue[animationId] = nextValue;
+
+                    draw(cEle, nextValue); // draw it
+                    
+                    if (timeFrac < 1) requestAnimationFrame(animate);
+
+                })
             }
         }
         return new dom();
@@ -1477,34 +1769,6 @@ var $$ = {
             });
         }
         return element;
-    },
-    animate:function(draw, value, duration, timingFn = "linear"){
-        //draw =>  the function that handles the actual drawing, it must accept an argument, which would be used for the animation
-        //draw(x) means, draw the value 'x' for duration using the the timing function
-        //duration is in miliseconds
-        validateFunction(draw, "'$$.animate()' method argument 1 must be a function");
-        validateNumber(value, "'$$.animate()' method argument 2 must be numeric");
-        if (value < 0) {
-            throw new Error("'$$.animate()' method argument 2 must be greater than 0");
-        }
-        validateNumber(duration, "'$$.animate()' method argument 3 must be numeric");
-        if (duration < 0) throw new Error("'$$.animate()' method argument 3 must be greater than 0");
-        validateObjectMember(timing, timingFn, "'$$.animate()' method argument 4 value invalid ");
-
-
-        var start = performance.now();
-        requestAnimationFrame(function animate(time) {
-            // timeFraction goes from 0 to 1
-            var timeFrac = (time - start) / duration;
-            if (timeFrac > 1) timeFrac = 1;
-
-            // calculate the current animation state
-            var progress = timing[timingFn](timeFrac);
-            draw(progress * value); // draw it
-            if (timeFrac < 1) {
-                requestAnimationFrame(animate);
-            }
-        })
     },
     delay:function(duration, callBack = null, ){
         validateNumber(duration, "'$$.delay()' method argument 1 must be numeric");
@@ -1727,6 +1991,9 @@ var $$ = {
             addEventListener("scroll", function(){
                 // scrollTo(scrollX, lastPointY)
             },false)
+        },
+        x:function(hide){
+
         }
     },
     linkStyleSheet:function(url){
@@ -1785,11 +2052,31 @@ var $$ = {
                     targetElement.style["transform"] = "matrix(1, 0, 0, 1, 0, -" + filteredValue + ")";
                 }
         }
+    },
+    getTimeSegments: function(seconds){
+        var minutes     = parseInt(seconds/60);
+        var timeMinutes = minutes % 60;
+        var timeHours   = parseInt(minutes/60);
+        var seconds     = seconds-((timeMinutes*60)+(timeHours*(60*60)));
+        
+
+        var hoursUnit   = timeHours > 1?"hrs":"hr";
+        var minutesUnit = timeMinutes > 1?"mins":"min";
+        return{
+            hours:timeHours,
+            minutes:timeMinutes,
+            seconds:seconds,
+            units:{
+                hours:hoursUnit,
+                minutes:minutesUnit
+            }
+        }
+
     }
 }
 /****************************************************************/
 
-RegExp.parseChars = function (char){
+RegExp.parseChars = function (chars){
     var characters = ["+", "[", "]","/",".", "^", "$"];
     var parserChars = "";
     Array.from(chars).forEach(function (element){
@@ -1803,9 +2090,39 @@ RegExp.parseChars = function (char){
     return parserChars;
 }
 String.prototype.xTrim = function () {
-    //to strip out the character '/'
+    //to strip out the character '/' from both ends
     return this.replace(/^[\s\uFEFF\xA0\/]+|[\s\uFEFF\xA0\/]+$/g, '');
 };
+String.prototype.trimChar = function (chars) {
+    //to strip out the specified character(s) from both ends
+    var allChars = chars.split(",");
+    var parsed ="";
+    allChars.forEach(function(item){
+        parsed += "\\"+item;
+    })
+    
+    var pattern = "^["+parsed+"]|["+parsed+"]+";
+    var regEx = new RegExp(pattern, "g");
+    return this.replace(regEx, '');
+};
+String.prototype.toUpperCaseFirst = function(){
+    return this.charAt(0).toUpperCase() + this.slice(1)
+}
+Storage.prototype.setIterable = function (key, iterable){
+    this[key] = JSON.stringify(iterable);
+}
+Storage.prototype.getIterable = function (key){
+    return JSON.parse(this[key]);
+}
+Date.prototype.isValid = function() {
+    return this.getTime() == this.getTime();
+}
+Array.prototype.unique = function(){
+
+}
+Array.prototype.has = function(value){
+    return this.indexOf(value) != -1;
+}
 
 /************************ScreenBreakPoint************************/
 function ScreenBreakPoint(breakPoints) {

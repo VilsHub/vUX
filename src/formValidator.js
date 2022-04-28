@@ -32,12 +32,11 @@ function FormValidator(form = null) {
         integer: 1, //done
         alphaNum: 1, //done
         float: 1, //done
-        ext: 1,
+        ext: 1,//done
         minSize: 1,
         maxSize: 1,
         callBack: 1, //done
         email: 1, //done
-        file: 1,
         notIn: 1, //done
         trim:1,//done
         noSpace:1,//done
@@ -260,6 +259,8 @@ function FormValidator(form = null) {
             } 
             if (e.target.classList.contains("vItem")) self.message.clear(e.target);
         }, false);
+
+
         document.addEventListener("click", function(e) {
             if (e.target.classList.contains("vItem")) self.message.clear(e.target);
         }, false);
@@ -336,7 +337,6 @@ function FormValidator(form = null) {
 
     //For right and left display
     function sendBehind(element, direction, offset, customStyles) {
-
         if (direction == "left") {
             element.style["right"] = "calc(100% + " + offset + "px)";
         } else if (direction == "right") {
@@ -385,6 +385,7 @@ function FormValidator(form = null) {
     }
 
     function createFeedBack(messageType, msgTxt, labels) {
+        labels = labels == null ?{}:labels;
         var hasStyle = Object.keys(feedbackModalStyles).length > 0? true:false;
         var hasLabel = Object.keys(labels).length > 0? true:false;
         var ui = null;
@@ -429,6 +430,8 @@ function FormValidator(form = null) {
                     if(feedbackModalStyles["success"]["body"] != undefined){//style body
                         msg.style = feedbackModalStyles["success"]["body"];
                     }
+                }else{
+                    $$.sm(con).center();
                 }
             }else if(messageType == "error"){
                 if(feedbackModalStyles["error"] != undefined){//error styles
@@ -436,7 +439,7 @@ function FormValidator(form = null) {
                         ttl.style = feedbackModalStyles["error"]["title"];
                     }
                     if(feedbackModalStyles["error"]["container"] != undefined){//style container
-                        $$.sm(con).center(feedbackModalStyles["warning"]["container"]);
+                        $$.sm(con).center(feedbackModalStyles["error"]["container"]);
                     }else{
                         $$.sm(con).center();
                     }
@@ -446,6 +449,8 @@ function FormValidator(form = null) {
                     if(feedbackModalStyles["error"]["body"] != undefined){//style body
                         msg.style = feedbackModalStyles["error"]["body"];
                     }
+                }else{
+                    $$.sm(con).center();
                 }
             }else if(messageType == "warning"){
                 if(feedbackModalStyles["warning"] != undefined){//warning styles
@@ -464,6 +469,8 @@ function FormValidator(form = null) {
                         msg.style = feedbackModalStyles["warning"]["body"];
                     }
                 }
+            }else{
+                $$.sm(con).center();
             } 
         }else{
             $$.sm(con).center();
@@ -518,8 +525,6 @@ function FormValidator(form = null) {
                 offButtonloader();
             }
         }
-        
-
     }
 
     function getVal(rulesInUse, key) {
@@ -590,6 +595,10 @@ function FormValidator(form = null) {
     this.initialize = function() {
         if (initialized == false) {
             if (form == null) throw new Error("Cannot initialize without settinig a form to perform validation on, pass target form to FormValidator() contructor, to set target form");
+            if(progressAnimationType == "custom" && progressAnimationCallbacks == null){
+                throw new Error("Progress animation type is set to 'custom' and no handler is defined for it. Define a handler using the 'config.progressAnimationCallbacks' property");
+
+            }
             setStyleSheet();
             createLoader();
             addEventhandler();
@@ -608,6 +617,7 @@ function FormValidator(form = null) {
     /*validator*/
     this.validate = function(inputField, rules, location, customStyles = null) {
         if (initialized == true) {
+            var validNodes = ["INPUT", "TEXTAREA", "SELECT"];
             var inputType = {
                 val: null
             };
@@ -615,7 +625,9 @@ function FormValidator(form = null) {
             validateObjectLiteral(rules, "'Obj.validate()' method argument 2 is expected to be Object literal");
             validateString(location, "'Obj.validate()' method argument 4 expects a string");
             if(customStyles != null) validateArray(customStyles, "validate() method argument 5 must be an array of string '[a, b]', which holds a valid CSS styles for bottom or right or left messageBox");
-
+            if(validNodes.indexOf(inputField.nodeName) == -1){
+                console.warn(inputField, "The above element is not an input element");
+            }
             var rulesInUse = {};
             var parseRules = Object.keys(rules);
             var totalRules = parseRules.length;
@@ -801,6 +813,18 @@ function FormValidator(form = null) {
                     clearLastError(rules, keyVal, inputField, inputWrapper, customStyles)
                 }
             }
+            if (rulesInUse["ext"] != undefined) {
+                var keyVal = getVal(rulesInUse, "ext");
+                if (!onlyExtensions(inputField, keyVal.replace(":",""))) {
+                    var matchMessage = getMessageDetails(rules["ext" + keyVal]);
+                    var messageType = matchMessage[0];
+                    var messageBody = matchMessage[1];
+                    self.message.write(inputField, messageType, location, messageBody);
+                    return;
+                } else {
+                    clearLastError(rules, keyVal, inputField, inputWrapper, customStyles)
+                }
+            }
         } else {
             InIError("validate");
         }
@@ -816,6 +840,14 @@ function FormValidator(form = null) {
     /**********/
 
     this.logServerError = function(log){
+        validateArray(log, "Obj.logServerError(x) argument 1 must be an array of server logs");
+        /**
+         * ZLightServerReturnData{
+         *  status:true|false,
+         *  msg:"string message from server",
+         *  log: [log1, log2...] //exist when there is a validation error but not when return non validation error
+         * } 
+         */
         //log => [log1, log2...] => Zlight validator error response
         //log1 => {name:'nameOfinputField', message:'errorLogMessage', location:"messageLocation"}
         
@@ -854,8 +886,9 @@ function FormValidator(form = null) {
             w: "warning",
             s: "success"
         }
-
-        var msplit = msg.split(":");
+        var msplit = msg.split(":-");   // Use the character combination ':-' to set message type, by default its error. Example:
+                                        // E.g "e:- This is an error message", "s:- This is a success message"
+                                        // E.g "w:- This is a warning message"
         if (msplit.length == 2) {
             var key = msplit[0].toLowerCase();
             if (ids[key] == undefined) { //Not Found
@@ -876,8 +909,21 @@ function FormValidator(form = null) {
                 } else {
                     return true;
                 }
-            } else if (isCheckField(inputField)) { //check field
+            }else if (isCheckField(inputField)) { //check field
                 if (!checkField(inputField)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }else if (isFileField(inputField)) { //file field
+                if (!fileField(inputField)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }else if (isSelectField(inputField)) { //select field
+                
+                if (!selectField(inputField)) {
                     return false;
                 } else {
                     return true;
@@ -905,11 +951,23 @@ function FormValidator(form = null) {
             }
         }
 
-        function checkField(x) {
-            if (x.checked) {
+        function fileField(x) { 
+            if (x.value != "") {
                 return true;
             } else {
                 return false;
+            }
+        }
+
+        function selectField(x){
+            var selectedOption = x.selectedOptions[0];
+            var hasValueAttribute = selectedOption.getAttribute("value") != null?true:false;
+            if((hasValueAttribute && selectedOption.getAttribute("value").length == 0)){
+                return false;
+            }else if(!hasValueAttribute && x.selectedIndex == 0){
+                return false;
+            }else{
+                return true;
             }
         }
     }
@@ -966,6 +1024,21 @@ function FormValidator(form = null) {
         }
     }
 
+    function isFileField(inputField) {
+        if (inputField.getAttribute("type") == "file" ) { //file field
+            return true;
+        } else {
+            return false;
+        }
+    }
+    function isSelectField(inputField) {
+        if (inputField.nodeName == "SELECT" ) { //Select field
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     function isEmailAddress(inputField, inputType) {
         if (inputType == "single") {
             if (inputField.getAttribute("type") == "text" || inputField.nodeName == "TEXTAREA") {
@@ -1015,6 +1088,16 @@ function FormValidator(form = null) {
 
     function noSpace(inputField){
         return inputField.value.search(" ");
+    }
+    function onlyExtensions(inputField, extensions){
+        if (inputField.getAttribute("type") == "file") { //file field
+            var allExtensions = extensions.split(" ");
+            var fileNameParts = inputField.files[0].name.split(".");
+            var extension = fileNameParts[fileNameParts.length-1];            
+            var status = true;            
+            if(allExtensions.indexOf(extension) == -1) status = false;
+            return status;
+        }
     }
 
     function clearLastError(rules, key, inputField, preferedWrapper) {
@@ -1145,7 +1228,7 @@ function FormValidator(form = null) {
             var sourceKeys = Object.keys(labels);
             var totalSourceKeys = sourceKeys.length;
             if (totalSourceKeys > 2 || totalSourceKeys < 1) throw new Error ("validatorObj.showFeedback(...x) expects argument 4 to be an object of max, 2 entries");
-        
+          
             for (let x = 0; x < totalSourceKeys; x++) {
                 if(keys.indexOf(sourceKeys[x]) == -1){
                     throw new Error ("validatorObj.showFeedback(...x) expects argument 4 object keys  to be any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
@@ -1378,10 +1461,15 @@ FormValidator.format = {
     integerField: function(inputElement) {
         validateElement(inputElement, "'integerField()' argument must be a valid HTML Element");
         if (inputElement.getAttribute("type" != "text")) throw new Error("'integerField()' argument must be an INPUT element of type 'text'");
-        inputElement.addEventListener("input", function() {
-            var inputValue = sanitizeInteger(inputElement.value);
-            inputElement.value = inputValue;
-        }, false);
+        var eStatus = inputElement.getAttribute("eStatus");
+        if(eStatus == null){
+            inputElement.setAttribute("eStatus", "set")
+            inputElement.addEventListener("input", function() {
+                var inputValue = sanitizeInteger(inputElement.value);
+                inputElement.value = inputValue;
+            }, false);
+        }
+       
     },
     wordSeperator: function(inputElement, seperator, n=1) {
         validateElement(inputElement, "'wordSeperator(x..)' argument 1 must be a valid HTML Element");

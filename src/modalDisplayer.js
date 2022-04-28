@@ -13,7 +13,7 @@
 
 /************************ModalDisplayer***************************/
 function ModalDisplayer() {
-    var self = this,cssWidth = "",currentForm = null,id = null,totalHeight, effectName = "none",bodyOldPosition = "",mainFormCon = "",closeButton = null,mainFormConInner = "",overlayBackgroundType = "color",overlayBackground = ["hsla(0, 0%, 100%, 0.48)", ""],initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,sX = 0,endSy = 0,scrollable = false,computedModalHeight = 0,computedModalWidth = 0,modalHeigthBelow = 0,modalHeigthAbove = 0,paddingTop = 50;
+    var self = this,cssWidth = "",exitOnAway=true,currentForm = null,id = null,totalHeight, effectName = "none",bodyOldPosition = "",mainFormCon = "",closeButton = null,mainFormConInner = "",overlayBackgroundType = "color",overlayStyle= "hsla(0, 0%, 100%, 0.48)",initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,sX = 0,endSy = 0,scrollable = false,computedModalHeight = 0,computedModalWidth = 0,modalHeigthBelow = 0,modalHeigthAbove = 0,paddingTop = 50;
     var modalWidths = ["500px", "500px", "86%"], brkpoints = { largeStart: 1000, mediumStart: 520 },pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
 
     //modalWidths => [a, b, c] => a = large; b = medium; c = small
@@ -396,7 +396,6 @@ function ModalDisplayer() {
     }
 
     function addEventhandler() {
-        
         var mainModal = $$.ss(".modalSpace");
         document.body.addEventListener("keydown", function(e) {
             if (modalOn == true) {
@@ -476,9 +475,12 @@ function ModalDisplayer() {
             }
         });
         document.addEventListener("click", function(e) {
-            if (e.target.classList.contains("vModal")) {
+            if(exitOnAway){
+                if (e.target.classList.contains("vModal")) {
                 self.close();
+                }
             }
+                
             if (closeButtonClass != "") {
                 if (e.target.classList.contains(closeButtonClass)) {
                     self.close();
@@ -488,7 +490,9 @@ function ModalDisplayer() {
                 var formId = e.target.getAttribute(formIdAttribute);
                 var form = document.getElementById(formId);
                 if (form != null) {
-                    modalWidths = e.target.getAttribute(modalWidthsAttribute).split(",");
+                    if(e.target.getAttribute(modalWidthsAttribute) != null){
+                        modalWidths = e.target.getAttribute(modalWidthsAttribute).split(",");
+                    }
                     show(form);
                 }
             }
@@ -523,7 +527,7 @@ function ModalDisplayer() {
             overlay.setAttribute("data-id", "vModalStyles");
 
             if (overlayBackgroundType == "color") {
-                if (overlayBackground[0] != "") overlay["style"]["background-color"] = overlayBackground[0];
+                if (overlayStyle != "") overlay["style"] = overlayStyle;
             }
 
             effectsCon.classList.add("modalSpace");
@@ -586,12 +590,24 @@ function ModalDisplayer() {
         show: { writable: false },
         close: { writable: false },
         initialize: { writable: false },
-        thisForm: {
+        mainForm: {
             get: function() {
                 if (modalOn == true) {
                     return {
                         element: currentForm,
                         id: id
+                    };
+                } else {
+                    return null;
+                }
+            }
+        }, 
+        displayForm: {
+            get: function() {
+                if (modalOn == true) {
+                    return {
+                        element: $$.ss("#newModal").childNodes[0],
+                        id: $$.ss("#newModal").childNodes[0].id
                     };
                 } else {
                     return null;
@@ -613,20 +629,10 @@ function ModalDisplayer() {
                 }
             }
         },
-        overlayBackground: {
+        overlayStyle: {
             set: function(value) {
-                var temp = "'config.overlayBackground' property value must be an array";
-                validateArray(value, temp);
-                validateArrayLength(value, 2, temp + " of 2 Elements");
-                validateArrayMembers(value, "string", temp + " of strings");
-
-                function msg(n) {
-                    return "'overlayBackground' property array value member " + n + " must be a string";
-                }
-                if (!validateString(value[0])) throw new Error(msg(1));
-                if (!validateString(value[1])) throw new Error(msg(2));
-                overlayBackground[0] = value[0];
-                overlayBackground[1] = value[1];
+                validateString(value, "'config.overlayStyle' property value must be a string");
+                overlayStyle = value;
             }
         },
         openProcessor: {
@@ -685,6 +691,12 @@ function ModalDisplayer() {
             set: function(value) {
                 validateString(value, "'closeButtonClass' property expects a string as value");
                 closeButtonClass = value;
+            }
+        },
+        exitOnAway:{
+            set:function(value){
+                validateBoolean(value, "'config.exitOnAway' property must be a boolean");
+                exitOnAway = value;
             }
         }
     });

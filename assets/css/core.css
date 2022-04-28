@@ -4,6 +4,8 @@
 .cOff[disabled]{
     cursor: not-allowed!important;
 }
+
+/* Overlay */
 .xOverlay > div{
     width: 100%;
     height: 100%;
@@ -18,6 +20,8 @@
     width:100%;
     height:100%;
 }
+
+/* Fill */
 .xFill{
     background-clip: text;
     background-clip: text;
@@ -26,15 +30,29 @@
     -webkit-text-fill-color: transparent; 
     -moz-text-fill-color: transparent;
 }
-.xScroll::-webkit-scrollbar {
+
+/* scroll */
+.scroll.bar-hide::-webkit-scrollbar {
     display: none; /* Chrome */
 }
-.xScroll{
-    overflow-y:scroll;
-    overflow-x: hidden;
+.scroll.bar-hide{
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
+.scroll.y{
+    overflow-y:scroll;
+    overflow-x: hidden;
+}
+.scroll.x{
+    overflow-x:scroll;
+    overflow-y: hidden;
+}
+.scroll.x-y{
+    overflow-y:scroll;
+    overflow-x: scroll;
+}
+
+/* Slide */
 .vSlide.dim{
     transition: height 0.2s linear, width 0.2s linear;
     height: 0px;
@@ -47,4 +65,31 @@
 }
 .vSlide.done{
     overflow-y: visible!important;
+}
+
+/* Flip Card */
+.flip-card-parent{
+    perspective: 900px;
+}
+.flip-card-parent  *{
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+}
+.flip-card-parent .vCard > div{
+    position: absolute;
+}
+.flip-card-parent .vCard .front{
+    backface-visibility: visible;
+}
+.flip-card-parent .vCard .front.x{
+    transform: rotateX(180deg);
+}
+.flip-card-parent .vCard .front.y{
+    transform: rotateY(180deg);
+}
+.flip-item {
+    z-index: 1;
+}
+.flip-item.current-side{
+    z-index: 2;
 }

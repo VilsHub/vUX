@@ -118,7 +118,7 @@ function FormComponents() {
                             selectField.innerHTML += comma + sOptions[x].innerHTML;
                             optionEle.classList.add("vSselected");
                         }
-                    } else { //single select
+                    }else { //single select
                         if (sOptions[x].index === parent.selectedIndex) { //Check for selected
                             if(labelAttribute != ""){
                                 var value = "";
@@ -151,11 +151,6 @@ function FormComponents() {
                     container.appendChild(optionGroupEle);
                     var allOptions = sOptions[x].children;
                     dumpOptions(container, allOptions, selectField, isMultiple, "g" + x, n);
-                }
-            }
-            if (isMultiple) {
-                if (enableToolTip) {
-                    configureToolTip(parent, selectField);
                 }
             }
         }
@@ -194,7 +189,7 @@ function FormComponents() {
                 if(labelAttribute != ""){
                     var option = nativeSelect.options[optionIndex];
                     var labelTemplate = option.getAttribute(labelAttribute);
-                    value = labelTemplate != null?labelTemplate:sOptions.innerHTML
+                    value = labelTemplate != null?labelTemplate:option.innerHTML
                     labelCon.innerHTML = value;
                 }else{
                     labelCon.innerHTML = ele.innerHTML;
@@ -218,13 +213,10 @@ function FormComponents() {
             var multiple = false;
             nativeSelect.getAttribute("multiple") != null ? multiple = true : null;
             var tip = labelCon.innerHTML;
-
             var r = tip.replace(/, /g, "</br>");
             if (enableToolTip && multiple) {
                 labelCon.setAttribute("title", r);
-                toolTipHandler.on(labelCon);
-            } else if (multiple && !enableToolTip) {
-                toolTipHandler.off(labelCon);
+                toolTipHandler.refresh();
             }
         }
 
@@ -428,10 +420,13 @@ function FormComponents() {
 
             //Set select mode
             nativeSelect.getAttribute("multiple") != null ? multiple = true : null;
-            if (enableToolTip && multiple) {
-                toolTipHandler = new ToolTip();
-                toolTipHandler.initialize();
-            };
+            
+            //check existing custom element
+            var current = selectParent.querySelector(".v"+selectClassName);
+            if(current != null){
+                selectParent.removeChild(current);
+            }
+
             //Wrapper Element
             var wrapper = $$.ce("DIV");
             wrapper.classList.add("vSelect", "v" + selectClassName);
@@ -445,6 +440,11 @@ function FormComponents() {
             selectFieldCon.classList.add("sFieldCon");
             // selectFieldCon.style["height"] = selectDim[1];
             selectField.classList.add("sField");
+            
+            if(multiple){
+                selectField.classList.add("selectInput-"+selectClassName);
+            }
+            
             selectField.setAttribute("data-state", "closed");
             selectIcon.classList.add("sIcon", "iconClose");
             selectFieldCon.appendChild(selectField);
@@ -486,6 +486,16 @@ function FormComponents() {
 
             //insert wrapper before native select
             selectParent.insertBefore(wrapper, nativeSelect);
+
+
+            //configure Tooltip
+            if (multiple) {
+                toolTipHandler.config.className = "selectInput-"+selectClassName;
+                toolTipHandler.initialize();
+                if (enableToolTip) {
+                    configureToolTip(nativeSelect, selectField);
+                }
+            };
         }
 
         function selectInputState(ele, id) {
@@ -513,9 +523,12 @@ function FormComponents() {
                 if (id == "sIcon") {
                     var openState = selectInputState(e.target, "icon");
                     var optionsCon = $$.sm(e.target).getParent(2).querySelector(".optionsCon");
+                    var nativeSelect = $$.sm(e.target).getParent(2).nextElementSibling; 
+
                     if (openState == "opened") { //close
                         toggleOptionList(optionsCon, "close");
                     } else { //open
+                        nativeSelect.click(); //to fix validation focus error for select input
                         toggleOptionList(optionsCon, "open");
                     }
                 } else if (id == "sOption") {
@@ -528,9 +541,11 @@ function FormComponents() {
                 } else if (id == "sField") {
                     var openState = selectInputState(e.target, "sfield");
                     var optionsCon = e.target.parentNode.nextElementSibling;
+                    var nativeSelect = $$.sm(e.target).getParent(2).nextElementSibling; 
                     if (openState == "opened") { //close
                         toggleOptionList(optionsCon, "close");
                     } else { //open
+                        nativeSelect.click(); //to fix validation focus error for select input
                         toggleOptionList(optionsCon, "open");
                     }
                 }
@@ -660,16 +675,16 @@ function FormComponents() {
                 if (wrapAttribute != "") wrap("select", wrapAttribute);
             },
             refreshSelect: function(nativeSelect) { //Refreshes a particular select element to update custom content
-                validateElement(nativeSelect, "selectSelect.refresh() method expects a valid DOM element as argument 1");
+                validateElement(nativeSelect, "select.refreshSelect() method expects a valid DOM element as argument 1");
                 nativeSelect.classList.contains(selectClassName) ? runSelectBuild(nativeSelect) : null;
             },
-            refresh: function(parent) {
-                validateElement(parent, "select.refresh() method expects a valid DOM element as argument 1");
-                var allNewSelect = parent.querySelectorAll("select:not(.xSnative)");
+            refresh: function(parent=null) {
+                if (parent != null ) validateElement(parent, "select.refresh() method expects a valid DOM element as argument 1");
+                var allNewSelect = parent != null ? parent.querySelectorAll("select:not(.xSnative)"):$$.sa("."+selectClassName);
                 var totalNewSelects = allNewSelect.length;
                 if (totalNewSelects > 0) {
                     for (var x = 0; x < totalNewSelects; x++) {
-                        allNewSelect[x].classList.contains(selectClassName) ? runRadioBuild(allNewSelect[x]) : null;
+                        allNewSelect[x].classList.contains(selectClassName) ? runSelectBuild(allNewSelect[x]) : null;
                     }
                 }
             },
@@ -753,6 +768,7 @@ function FormComponents() {
                 set: function(value) {
                     validateBoolean(value, "config.selectFieldToolTip property expect a boolean as value");
                     enableToolTip = value;
+                    if(value) toolTipHandler = new ToolTip();
                 }
             },
             searchIconStyle: {
@@ -795,9 +811,10 @@ function FormComponents() {
     this.radio = function() {
         var radioDim = [],radioWrapperStyle = "",selectedStyle = "",deselectedStyle = "",radioClassName = "", mouseEffect = [],axisClass = [];
         /************************************************************************************/
-        //radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
-        //mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
-        //axisClass[a, b] = a=> x axis class name, b=> y axis class name
+        /* radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
+        /* mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
+        /* axisClass[a, b] = a=> x axis class name, b=> y axis class name
+        /* The axisClasses should be applied on group input warapper
         /************************************************************************************/
 
         function radioStyleSheet() {
@@ -841,17 +858,42 @@ function FormComponents() {
                 hasLabel["label"].classList.add("vRadioButtonLabel");
             }
 
+            //check existing custom element
+            var current = parent.querySelector(".v"+radioClassName);
+            if(current != null){
+                parent.removeChild(current);
+            }
+
             var radioWrapper = $$.ce("DIV");
             radioWrapper.classList.add("vRadioButtonWrapper", "v" + radioClassName);
 
             var customRadioButtonSelected = $$.ce("DIV");
             var customRadioButtonDeselected = $$.ce("DIV");
 
-            if ($$.sm(nativeRadioButton).hasParent(axisClass[0], 3)) { //is x axis
-                // parent.style["display"] = "";
-            } else if ($$.sm(nativeRadioButton).hasParent(axisClass[1], 3)) { //is y axis
-                parent.style["display"] = "flex";
+            if(axisClass.length == 1){
+                if(axisClass[0] != ""){
+                    if ($$.sm(nativeRadioButton).hasParent(axisClass[0], 3)) { //is x axis
+                        // parent.style["display"] = "";
+                    }
+                }
+            }else if(axisClass.length == 2){
+                if(axisClass[0] != "" && axisClass[1] != ""){
+                    if ($$.sm(nativeRadioButton).hasParent(axisClass[0], 3)) { //is x axis
+                        // parent.style["display"] = "";
+                    } else if ($$.sm(nativeRadioButton).hasParent(axisClass[1], 3)) { //is y axis
+                        parent.style["display"] = "flex";
+                    }
+                }else if((axisClass[0] != "" && axisClass[1] == "")){
+                    if ($$.sm(nativeRadioButton).hasParent(axisClass[0], 3)) { //is x axis
+                        // parent.style["display"] = "";
+                    }
+                }else if((axisClass[0] == "" && axisClass[1] != "")){
+                    if ($$.sm(nativeRadioButton).hasParent(axisClass[1], 3)) { //is y axis
+                        parent.style["display"] = "flex";
+                    }
+                }
             }
+
 
             var selectIndex = 0;
             var deselectIndex = 0;
@@ -964,6 +1006,7 @@ function FormComponents() {
             refresh: function(parent) {
                 validateElement(parent, "radio.refresh() method expects a valid DOM element as argument 1");
                 var allNewRadios = parent.querySelectorAll("input[type='radio']:not(.xRnative)");
+                
                 var totalNewRadios = allNewRadios.length;
                 if (totalNewRadios > 0) {
                     for (var x = 0; x < totalNewRadios; x++) {
@@ -1090,6 +1133,12 @@ function FormComponents() {
                     hasLabel["label"].style["min-height"] = checkboxDim[1];
                     hasLabel["label"].classList.add("vCheckboxLabel");
                 }
+            }
+
+            //check existing custom element
+            var current = parent.querySelector(".v"+checkboxClassName);
+            if(current != null){
+                parent.removeChild(current);
             }
 
             var checkboxWrapper = $$.ce("DIV");
@@ -1270,11 +1319,8 @@ function FormComponents() {
 
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Date Picker^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.datePicker = function() {
-        Date.prototype.isValid = function() {
-            return this.getTime() == this.getTime();
-        }
         var falseState = "cX.1zwAP",trueState = "mp.3Cy._Xa";
-        var tooTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = [], datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
+        var tooTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
         var vBoxWidth = 300, initX = 10, wrapAttribute = "", paddingRight = 10, maxX = null, arrowXpos = 0, boxXpos = null, sizeAttribute = "";
 
         function autoPlace(dateBox) {
@@ -1675,12 +1721,10 @@ function FormComponents() {
                 var wrapper = $$.sm(e.target).getParent(5);
                 var hrValue = wrapper.querySelector(".hr").value;
                 hrValue > 0 ? e.target.style["cursor"] = "pointer" : e.target.style["cursor"] = "not-allowed";
-
             })
         }
 
         function toggleMeridianSwitch(ele) {
-            var wrapper = $$.sm(ele).getParent(5);
             if (ele.classList.contains("am")) {
                 ele.classList.remove("am");
                 ele.classList.add("pm");
@@ -2079,8 +2123,9 @@ function FormComponents() {
             for (var x = 0; x < totalDays; x++) {
                 var dayName = getDayName(year, month, allDays[x].getAttribute("data-value"));
                 allDays[x].setAttribute("title", dayName);
-                tooTipHandler.on(allDays[x]);
+                allDays[x].classList.add("datePickerToolTip-"+datePickerClassName);
             }
+            tooTipHandler.refresh();
         }
 
         function generateDays(x, daysCon) {
@@ -2407,7 +2452,6 @@ function FormComponents() {
             backButton.classList.add("vbInactive");
             backButton.classList.remove("vbActive");
             checkSave(wrapper);
-            tooTipHandler.clearTip();
         }
 
         function getSelectedValue(nativeDateInput, type) {
@@ -2508,11 +2552,8 @@ function FormComponents() {
                 createStyles();
                 AddEventHandlers();
                 if (daysToolTip == true) {
-                    tooTipHandler = new ToolTip();
-                    if (daysToolTipProperties[0] != undefined) {
-                        var color = daysToolTipProperties[1] == undefined ? "white" : daysToolTipProperties[1];
-                        tooTipHandler.config.tipBoxProperties = [daysToolTipProperties[0], color];
-                    }
+                    tooTipHandler.config.tipBoxStyles = daysToolTipProperties;
+                    tooTipHandler.config.className = "datePickerToolTip-"+datePickerClassName;
                     tooTipHandler.initialize();
                 };
                 if (wrapAttribute != "") wrap("datePicker", wrapAttribute);
@@ -2555,6 +2596,7 @@ function FormComponents() {
                 set: function(value) {
                     validateBoolean(value, "'config.daysToolTip' property value must be a boolean");
                     daysToolTip = value;
+                    if(value) tooTipHandler = new ToolTip();
                 }
             },
             mobileView: {
@@ -2584,13 +2626,20 @@ function FormComponents() {
             },
             daysToolTipProperties: {
                 set: function(value) {
-                    //[a,b] => a = backgrondColor; b = fontColor
-                    var temp = "config.daysToolTipProperties property array members";
-                    validateArray(value, "config.daysToolTipProperties property expects an array as value");
-                    if (value.length > 2) {
-                        throw new Error(temp + " cannot be more than 2");
+                    var validKeys = Object.keys(daysToolTipProperties);
+                    var sourceKeys = Object.keys(value);
+                    validateObject(value, "datePicker.config.daysToolTipProperties property expects an object");
+                    if (sourceKeys.length > 2) {
+                        throw new Error(temp + " cannot be more than 2 properties");
                     }
-                    validateArrayMembers(value, "string", temp + "must all be string");
+
+                    for (let x = 0; x < sourceKeys; x++) {
+                        if(validKeys.indexOf(sourceKeys[x]) == -1){
+                            throw new Error ("datePicker.config.daysToolTipProperties property can only accept these any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
+                        }else{
+                            validateString(value[sourceKeys[x]], "datePicker.config.daysToolTipProperties object key: "+sourceKeys[x]+" expects a string as value");
+                        }
+                    }
                     daysToolTipProperties = value;
                 }
             },
@@ -2714,21 +2763,30 @@ function FormComponents() {
             if (nativeCheckbox.getAttribute("type") != "checkbox") throw new Error("Only checkboxes can be made a slide switch");
             var parent = nativeCheckbox.parentNode;
             var checkboxParentPosition = $$.sm(parent).cssStyle("position");
-            var dimension = nativeCheckbox.getAttribute(sizeAttribute);
             var temp = "SliderSwitch input " + sizeAttribute + " value contains invalid CSS size";
+            
+            if(sizeAttribute == "") throw new Error("One of the native checkBox input to be made sliderSitch has no dimension specified with the " + sizeAttribute + " attribute");
+            
+            var dimension = nativeCheckbox.getAttribute(sizeAttribute);
+            
+            if(dimension == null) throw new Error("One of the native checkBox input to be made sliderSitch has no dimension specified with the " + sizeAttribute + " attribute");
+
             var parseDimension = dimension.split(",");
             validateDimension(parseDimension[0], temp);
             validateDimension(parseDimension[1], temp);
             var defaultStyle = "width: "+parseDimension[0]+"; height: "+parseDimension[1]+";";
             
-            if (dimension == null) {
-                throw new Error("One of the native checkBox input to be made sliderSitch has no dimension specified with the " + sizeAttribute + " attribute");
-            }
-            
             //hideNative
             nativeCheckbox.classList.add("xChkNative", "vItem"); //vItem added for validation module support
             nativeCheckbox.setAttribute("tabindex", "-1");
             checkboxParentPosition == "static" ? parent.style.position = "relative" : null;
+
+
+            //check existing custom element
+            var current = parent.querySelector(".v"+slideSwitchClassName);
+            if(current != null){
+                parent.removeChild(current);
+            }
 
             //Wrapper
             var slideSwitchWrapper = $$.ce("DIV");
@@ -2882,6 +2940,236 @@ function FormComponents() {
         return body;
     }
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+    /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom file builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+    this.file = function() {
+        var fileDim = [],label="", toolTipHandler=null, toolTipStyles={arrowColor:"",backgrondColor:""}, buttonLabel="",wrapperStyle = "",toolTipHandler = null,fileToolTip = false,fileLabelStyle = "", fileClassName = "",inputButtonStyle = "",sizeAttribute = "";
+
+        function fileStyleSheet() {
+            if ($$.ss("style[data-id='v" + fileClassName + "']") == null) {
+      
+                var css = "";
+                css += ".v" + fileClassName + "{width:" + fileDim[0] + "; height:" + fileDim[1] + "; z-index: 60;"+"}";
+                css += ".v" + fileClassName + " .fLabel {line-height:" + fileDim[1] + ";}";
+                css += ".v" + fileClassName + " .fButton::before {line-height:" + fileDim[1] + ";}";
+                css += ".v" + fileClassName + " .fButton {height:" + fileDim[1] + ";}";
+                
+                if (wrapperStyle != "") css += ".v" + fileClassName + "{"+wrapperStyle+"}";
+                
+                if (fileLabelStyle != "") css += ".v" + fileClassName + " .fLabel {"+fileLabelStyle+"}";
+                
+                // if (fileIcon != "") css += ".v" + fileClassName + " .sIcon::before {" + fileIcon + "}";
+
+                    
+                if (inputButtonStyle != "") css += ".v" + fileClassName + " .fButton{" + inputButtonStyle + "}";
+                    
+                attachStyleSheet("v" + fileClassName, css);
+            }
+        }
+
+        function reCreateFile() {
+            var allFiles = $$.sa("." + fileClassName);
+            for (var x = 0; x < allFiles.length; x++) {
+                runFileBuild(allFiles[x]);
+            }
+        }
+
+        function runFileBuild(nativeFile) {
+            var fileParent = nativeFile.parentNode;
+            var multiple = false;
+            var fileParentPosition = $$.sm(fileParent).cssStyle("position");
+
+            var dimension = nativeFile.getAttribute(sizeAttribute);
+            if (dimension == null) {
+                throw new Error("One of the native select input to be made custom has no dimension specified with the '" + sizeAttribute + "' attribute");
+            }
+
+            var temp = "File input " + sizeAttribute + " value contains invalid CSS size";
+            var parseDimension = dimension.split(",");
+            validateDimension(parseDimension[0], temp);
+            validateDimension(parseDimension[1], temp);
+            fileDim[0] = parseDimension[0];
+            fileDim[1] = parseDimension[1];
+
+            //hideNative
+            nativeFile.classList.add("xFnative", "vItem"); //vItem added for validation module support
+            nativeFile.setAttribute("tabindex", "-1");
+
+            //Style parent
+            fileParentPosition == "static" ? fileParent.style.position = "relative" : null;
+
+            //Set select mode
+            nativeFile.getAttribute("multiple") != null ? multiple = true : null;
+
+            //check existing custom element
+            var current = fileParent.querySelector(".v"+fileClassName);
+            if(current != null){
+                fileParent.removeChild(current);
+            }
+
+            //Wrapper Element
+            var wrapper = $$.ce("DIV");
+            wrapper.classList.add("vFile", "v" + fileClassName);
+            wrapper.setAttribute("tabindex", "0");            
+
+            //file field
+            var fileFieldCon = $$.ce("DIV");
+            var fileLabel = $$.ce("DIV");
+            var fButton = $$.ce("BUTTON");
+            
+            fileFieldCon.classList.add("fFieldCon");
+            fileLabel.classList.add("fLabel");
+            fButton.classList.add("fButton");
+
+            labelText = label != ""? label:multiple?"Select files":"Select file";
+            fileLabel.innerText = labelText;
+            fButton.innerText   = buttonLabel != ""?buttonLabel:"Browse...";
+
+            if(fileToolTip){
+                fileLabel.classList.add("fileInputToolTip-"+fileClassName);
+                fileLabel.setAttribute("title", labelText); 
+            } 
+
+            fButton.setAttribute("type", "button");
+            fileFieldCon.appendChild(fileLabel);
+            fileFieldCon.appendChild(fButton);
+
+            //append into wrapper
+            wrapper.appendChild(fileFieldCon);
+
+
+            //insert wrapper before native select
+            fileParent.insertBefore(wrapper, nativeFile);
+
+            //configure tool tip
+            if(fileToolTip){
+                 toolTipHandler.config.tipBoxStyles = toolTipStyles;
+                 toolTipHandler.config.className = "fileInputToolTip-"+fileClassName;
+                 toolTipHandler.initialize();
+            }
+        }
+
+        function inputLabeler(native){
+            var label = native.previousElementSibling.querySelector(".fLabel");
+            label.innerText = native.files[0]["name"];
+            label.title = native.files[0]["name"];
+            toolTipHandler.refresh();
+        }
+
+        function assignFileEventHandler() {
+            $$.attachEventHandler("click", ["fButton", "fLabel"], function(e, id) {
+                var nativeFileInput = $$.sm(e.target).getParent(2).nextElementSibling;
+                nativeFileInput.click();
+            });
+            $$.attachEventHandler("change", "xFnative", function(e) {
+                // var nativeFileInput = $$.sm(e.target).getParent(2).nextElementSibling;
+                inputLabeler(e.target);
+            });
+        }
+
+        var body = {
+            autoBuild: function() {
+                if (fileClassName == "") {
+                    throw new Error("Setup imcomplete: file input class name must be supllied, specify using the 'config.className' property");
+                }
+                if (sizeAttribute == "") {
+                    throw new Error("Setup imcomplete: file input size attribute to be used has not been specified, the attribute to be used must be specified using the 'config.sizeAttribute' property");
+                }
+                var existingSheet = $$.ss("#v" + fileClassName);
+
+                reCreateFile();
+                existingSheet == null ? fileStyleSheet() : null;
+                assignFileEventHandler();
+            },
+            refreshFile: function(nativeFile) { //Refreshes a particular select element to update custom content
+                validateElement(nativeFile, "fileObj.refreshFile() method expects a valid DOM element as argument 1");
+                nativeFile.classList.contains(fileClassName) ? runSelectBuild(nativeFile) : null;
+            },
+            refresh: function(parent) {
+                validateElement(parent, "fileObj.refresh() method expects a valid DOM element as argument 1");
+                var allNewFiles = parent.querySelectorAll("input[type='file']:not(.xFnative)");
+                var totalNewFiles = allNewFiles.length;
+                if (totalNewFiles > 0) {
+                    for (var x = 0; x < totalNewFiles; x++) {
+                        allNewFiles[x].classList.contains(fileClassName) ? runFileBuild(allNewFiles[x]) : null;
+                    }
+                }
+            },
+            config: {}
+        }
+
+        Object.defineProperties(body, {
+            autoBuild: { writable: false },
+            refresh: { writable: false },
+            refreshSelect: { writable: false },
+            config: { writable: false }
+        })
+        Object.defineProperties(body.config, {
+            sizeAttribute: {
+                set: function(value) {
+                    validateString("'config.sizeAttribute' property value must be a string");
+                    sizeAttribute = value;
+                }
+            },
+            wrapperStyle: {
+                set: function(value) {
+                    validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property");
+                    wrapperStyle = value;
+                }
+            },
+            labelStyle:{
+                set: function(value) {
+                    validateString(value, "A string of valid CSS styles needed for the 'fileLabelStyle' property");
+                    labelStyle = value;
+                }
+            },
+            inputIconStyle: {
+                set: function(value) {
+                    validateString(value, "A string of valid CSS styles needed for the 'config.inputIconStyle' property");
+                    selectIcon = value;
+                }
+            },
+            inputButtonStyle: {
+                set: function(value) {
+                    validateString(value, "A string of valid CSS styles needed for the 'config.inputButtonStyle' property");
+                    inputButtonStyle = value;
+                }
+            },
+            className: {
+                set: function(value) {
+                    validateString(value, "config.className property expect a string as value");
+                    fileClassName = value;
+                }
+            },
+            fileToolTip: {
+                set: function(value) {
+                    validateBoolean(value, "config.fileToolTip property expect a boolean as value");
+                    fileToolTip = value;
+                    if(value) toolTipHandler = new ToolTip();
+                }
+            },
+            toolTipStyles:{
+                set:function(value){
+                    var validKeys = Object.keys(toolTipStyles);
+                    var sourceKeys = Object.keys(value);
+                    validateObject(value, "file.config.toolTipStyles property expects an object");
+                    if (sourceKeys.length > 2) {
+                        throw new Error(temp + " cannot be more than 2 properties");
+                    }
+
+                    for (let x = 0; x < sourceKeys; x++) {
+                        if(validKeys.indexOf(sourceKeys[x]) == -1){
+                            throw new Error ("file.config.toolTipStyles property can only accept these any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
+                        }else{
+                            validateString(value[sourceKeys[x]], "file.config.toolTipStyles object key: "+sourceKeys[x]+" expects a string as value");
+                        }
+                    }
+                    toolTipStyles = value;
+                }
+            }
+        })
+        return body;
+    };
+    /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     Object.defineProperties(this, {
         checkbox: { writable: false },
         radio: { writable: false },

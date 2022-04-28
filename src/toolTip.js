@@ -13,94 +13,102 @@
 
 /***************************Tool tip*****************************/
 function ToolTip() {
-    var sy = 0,sx = 0,ini = false,tipBoxProperties = [],tipId = "",initialized = 0;
+    var tipBoxStyles = {arrowColor:"",fontColor:""},initialized = 0,toolTipClassName="";
 
     function createStyles() {
-        if ($$.ss("style[data-id='toolTipStyles']") == null) {
+        if ($$.ss("style[data-id='toolTipStyles-"+toolTipClassName+"']") == null) {
             var css = "";
-            if (tipBoxProperties[0] != undefined) {
-                css += ".vToolTipTop::before{border-top:10px solid " + tipBoxProperties[0] + ";}";
-                css += ".vToolTip{background-color:" + tipBoxProperties[0] + "}";
+            if (tipBoxStyles.arrowColor != "") {
+                css += ".vToolTipTop[data-tooltipid='"+toolTipClassName+"']::before{border-top:10px solid " + tipBoxStyles.backgroundColor + ";}";
+                css += ".vToolTip[data-tooltipid='"+toolTipClassName+"']{background-color:" + tipBoxStyles.backgroundColor + "}";
             }
-            if (tipBoxProperties[1] != undefined) {
-                css += ".vToolTip{color:" + tipBoxProperties[1] + "}";
+            if (tipBoxStyles.fontColor != "") {
+                css += ".vToolTip[data-tooltipid='"+toolTipClassName+"']{color:" + tipBoxStyles.fontColor + "}";
             }
-            attachStyleSheet("toolTipStyles", css);
+            attachStyleSheet("toolTipStyles-"+toolTipClassName, css);
         }
     }
-
     function createTipElement() {
         var tipElement = $$.ce("DIV");
-        var existing = $$.sa(".vToolTip");
-        existing.length > 0 ? tipId = existing.length + 1 : tipId = 1;
-        tipElement.setAttribute("class", "vToolTip vToolTipTop");
-        tipElement.setAttribute("data-tTipEvent", "off");
-        tipElement.setAttribute("data-toolTipId", tipId);
-        document.body.appendChild(tipElement);
-        addEvent(tipId);
-    }
+        var existing = $$.ss("div[data-toolTipId='"+toolTipClassName+"']");
 
-    function mouseOutControl(ele) {
-        var tipID = ele.getAttribute("data-tid");
-        var tipBox = $$.ss("div[data-toolTipId='" + tipID + "']");
-        if (ele.getAttribute("data-TID") != null) {
-            tipBox.style["display"] = "none";
-            tipBox.style["top"] = "0";
-            tipBox.style["left"] = "0";
+        if(existing == null){
+            tipElement.setAttribute("class", "vToolTip vToolTipTop");
+            tipElement.setAttribute("data-tTipEvent", "off");
+            tipElement.setAttribute("data-toolTipId", toolTipClassName);
+            document.body.appendChild(tipElement);
+            addEvent();
         }
-        var mainTip = ele.getAttribute("data-tempTitle");
+    }
+    function mouseOutControl() {
+        var tipBox = $$.ss("div[data-toolTipId='" + toolTipClassName + "']");
+        tipBox.style["display"] = "none";
+    }
+    function setCustomTitle(){
+        var members = $$.sa("."+toolTipClassName);
+        members.forEach(function(element){
+            var mainTip = element.getAttribute("title");
+            if (mainTip != null) {
+                element.classList.add("vtip");
+                element.setAttribute("data-tempTitle", mainTip);
+                element.setAttribute("data-vToolTipSwitch", "ON");
+                element.removeAttribute("title");
+            }
+        });
+    }
+    function setPos(e){
+        var tipBox = $$.ss("div[data-toolTipId='" + toolTipClassName + "']");
+        var mainTip = e.target.getAttribute("data-tempTitle");
+
         if (mainTip != null) {
-            ele.setAttribute("title", mainTip);
-            ele.removeAttribute("data-tempTitle");
+            mainTip.length < 1 ? tipBox.style["display"] = "none" : tipBox.style["display"] = "block";//display only if has content
+            tipBox.innerHTML = mainTip;
         }
+        var y = (e.clientY + scrollY) - tipBox.scrollHeight;
+        var x = (e.clientX + scrollX) - 10;
+        
+        tipBox.style["top"] = y + "px";
+        tipBox.style["left"] = x + "px";      
     }
-
-    function addEvent(id) {
-        var vTipCon = $$.ss("div[data-toolTipId='" + id + "']");
-        if (vTipCon.getAttribute("data-tTipEvent") == "off") {
-            $$.attachEventHandler("mouseover", "vtip", function(e) {
+    function addEvent() {
+        $$.attachEventHandler("mouseover", "vtip", function(e) {
+            if (e.target.classList.contains(toolTipClassName)){
                 if (e.target.getAttribute("data-vToolTipSwitch") == "ON") {
-                    sy = scrollY;
-                    sx = scrollX;
-                    var mainTip = e.target.getAttribute("title");
-                    if (mainTip != null) {
-                        e.target.setAttribute("data-tempTitle", mainTip);
-                        e.target.removeAttribute("title");
-                    }
+                    setPos(e);
                 }
-            });
-            $$.attachEventHandler("mousemove", "vtip", function(e) {
+            }
+            
+        });
+        $$.attachEventHandler("mousemove", "vtip", function(e) {
+            if (e.target.classList.contains(toolTipClassName)){
                 if (e.target.getAttribute("data-vToolTipSwitch") == "ON") {
-                    var tipID = e.target.getAttribute("data-tid");
-                    var tipBox = $$.ss("div[data-toolTipId='" + tipID + "']");
-                    tipBox.style["display"] == "none" ? tipBox.style["display"] = "block" : null;
-                    var y = (e.clientY + sy) - tipBox.scrollHeight;
-                    var x = (e.clientX + sx) - 10;
-                    var mainTip = e.target.getAttribute("data-tempTitle");
-                    if (mainTip != null) {
-                        mainTip.length < 1 ? tipBox.style["display"] = "none" : null;
-                        tipBox.innerHTML = mainTip;
-                    }
-
-                    tipBox.style["top"] = y + "px";
-                    tipBox.style["left"] = x + "px";
+                    setPos(e);
                 }
-            })
-            $$.attachEventHandler("mouseout", "vtip", function(e) {
+            }
+        })  
+        $$.attachEventHandler("mouseout", "vtip", function(e) {
+            if (e.target.classList.contains(toolTipClassName)){
                 if (e.target.getAttribute("data-vToolTipSwitch") == "ON") {
-                    mouseOutControl(e.target);
+                    mouseOutControl();
                 }
-            })
-            vTipCon.setAttribute("data-tTipEvent", "on");
-        }
+            }
+            
+        })
     }
     this.initialize = function() {
         if (initialized == 0) {
+            if (toolTipClassName == "") {
+                throw new Error("Setup imcomplete: toolTip class name must be supllied, specify using the 'config.className' property");
+            }
             createTipElement();
             createStyles();
+            setCustomTitle();
             initialized = 1;
         }
     };
+    this.refresh = function(){
+        setCustomTitle();
+    }
     this.config = {};
     this.on = function(element) {
         validateElement(element, "Argument 1 of the obj.on() method must be a valid HTML element");
@@ -118,34 +126,43 @@ function ToolTip() {
                 element.getAttribute("data-tempTitle") != null ? element.setAttribute("title", element.getAttribute("data-tempTitle")) : null;
                 element.setAttribute("data-vToolTipSwitch", "OFF");
             }
-        } else {
+        }else {
             throw new Error("No tool tip applied on target element");
         }
     }
-    this.clearTip = function() {
-        var anyTip = $$.ss(".vtip:not([title])");
-        anyTip != null ? mouseOutControl(anyTip) : null;
-    }
     Object.defineProperties(this.config, {
-        tipBoxProperties: {
+        tipBoxStyles: {
             set: function(value) {
-                var temp = "config.tipBoxProperties property array members";
-                validateArray(value, "config.arrowColor property expects an arry");
-                if (value.length > 2) {
-                    throw new Error(temp + " cannot be more than 2");
+                var validKeys = Object.keys(tipBoxStyles);
+                var sourceKeys = Object.keys(value);
+                validateObject(value, "file.config.tipBoxStyles property expects an object");
+                if (sourceKeys.length > 2) {
+                    throw new Error(temp + " cannot be more than 2 properties");
                 }
-                validateArrayMembers(value, "string", temp + "must all be string");
-                tipBoxProperties = value;
+
+                for (let x = 0; x < sourceKeys; x++) {
+                    if(validKeys.indexOf(sourceKeys[x]) == -1){
+                        throw new Error ("file.config.tipBoxStyles property can only accept these any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
+                    }else{
+                        validateString(value[sourceKeys[x]], "file.config.tipBoxStyles object key: "+sourceKeys[x]+" expects a string as value");
+                    }
+                }
+
+                tipBoxStyles = value;
             }
         },
+        className:{
+            set: function(value) {
+                validateString(value, "datePicker.config.className property expect a string as value");
+                toolTipClassName = value;
+            }
+        }
     })
     Object.defineProperties(this, {
-        initialize: { writable: false },
-        config: { writable: false },
-        set: { writable: false },
-        on: { writable: false },
-        off: { writable: false },
-        clearTip: { writable: false }
+        initialize: {writable: false},
+        config: {writable: false},
+        on: {writable: false},
+        off: {writable: false}
     })
 }
 /****************************************************************/

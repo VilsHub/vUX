@@ -1,8 +1,9 @@
 /*list parent container */
 .vlistParentXContainer{
-    overflow: hidden!important;
+    /* overflow: hidden!important; */
     width: 100%!important;
     position: relative!important;
+    overflow-x: scroll;
 }
 
 /*Style list parent */
