@@ -13,7 +13,7 @@
 
 
 /***************************TimeLine List*****************************/
-function TimeLineList(){
+export function TimeLineList(){
     var className ="";
     var dataAttributes = {
         timeLineBorderStyleAttrib:"",

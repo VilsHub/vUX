@@ -12,7 +12,7 @@
  */
 
 /************************ModalDisplayer***************************/
-function ModalDisplayer() {
+export function ModalDisplayer() {
     var self = this,cssWidth = "",exitOnAway=true,currentForm = null,id = null,totalHeight, effectName = "none",bodyOldPosition = "",mainFormCon = "",closeButton = null,mainFormConInner = "",overlayBackgroundType = "color",overlayStyle= "hsla(0, 0%, 100%, 0.48)",initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,sX = 0,endSy = 0,scrollable = false,computedModalHeight = 0,computedModalWidth = 0,modalHeigthBelow = 0,modalHeigthAbove = 0,paddingTop = 50;
     var modalWidths = ["500px", "500px", "86%"], brkpoints = { largeStart: 1000, mediumStart: 520 },pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
 

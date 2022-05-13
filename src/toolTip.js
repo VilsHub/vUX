@@ -12,7 +12,7 @@
  */
 
 /***************************Tool tip*****************************/
-function ToolTip() {
+export function ToolTip() {
     var tipBoxStyles = {arrowColor:"",fontColor:""},initialized = 0,toolTipClassName="";
 
     function createStyles() {

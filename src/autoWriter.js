@@ -13,7 +13,7 @@
 
 
 /**************************TypeWriter****************************/
-function AutoWriter() {
+export function AutoWriter() {
     var PlainTextCounter = 0, mainTextBox ,mainTexts, self = this, n, callBackDelay = 0, typingSpeed = [10, 20],
     ints = [], blinkCursor, dEraser=0, conE="", type = "single", cursorBlinkDelay = 300, init=false, familyN = 0, cursorStyle={style:"solid", width:"1px", color:"green"}, showCursor=false, family=0, currentText="";
 

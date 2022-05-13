@@ -13,7 +13,7 @@
 
 
 /***************************Carousel*****************************/
-function Carousel(container, viewport) {
+export function Carousel(container, viewport) {
     validateElement(container, "'Carousel(x,.)' constructor argument 1 must be an HTML Element");
     validateElement(viewport, "'Carousel(.,x)' constructor argument 2 must be an HTML Element");
     var self = this;

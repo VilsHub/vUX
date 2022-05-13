@@ -12,7 +12,7 @@
  */
 //Next ==> change loader to horizontal placed at top most
 /***************************content loader*****************************/
-function SPAEngine(defaultURL=null, defaultContentNode=null) {
+export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     if(defaultURL != null) validateString(defaultURL, "SPAEngine(x.) contructor argument 1 must be a string or null");
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(.x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
@@ -21,7 +21,7 @@ function SPAEngine(defaultURL=null, defaultContentNode=null) {
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         url:"",//the URL to be called
-        loaderMode:"",
+        // loaderMode:"",
         urlPath:"", //The URL that will be appended to the base page, need for pushstate
         cache:"",
         addToHistory:"", // attribute to set if to use history or not, default = true
@@ -71,7 +71,6 @@ function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
             //Check loadCllback
             if(ownLoadCallback != undefined){
-                // window[usedloadCallBack](element)
                 validateFunction(window[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
                 usedloadCallBack = window[ownLoadCallback];
             }else{ //set to the default content Node
@@ -88,54 +87,56 @@ function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
             cache = Boolean(cache == null?false:cache);
 
-            contentNode.dataset.state = "receiving";
-            contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
-
-            if(cache) { //Attempt load from storage
-                if (typeof(Storage) !== "undefined") { //Supports web storage
-                    if (sessionStorage.pageLink != undefined) { //atleast a page has been cached
-                        var existingLinks = JSON.parse(sessionStorage.getItem("pageLink"));
-                        var urlArr = Object.values(existingLinks);
-                        if (urlArr.has(url)) { //link exist, so get content
-                            var index = urlArr.indexOf(url);
-                            var content = JSON.parse(sessionStorage.getItem("linkContent"))
-                            var arrContent = Object.values(content);
-                            insertContent(contentNode, arrContent[index], dataLink);
-                            
-                            //show content
-                            showRuntime(contentNode);
-                            
-                            usedloadCallBack != null ? usedloadCallBack(element): null;
-                        } else { //link does not exist, get from server
-                            getContent(url, contentNode, element, cache);
-                        }
-                    } else { //pageContent has no data, load from server and create data
-                        getContent(url, contentNode, element, cache);
-                    }
-                } else { //Does not support web storage, use object
-                    if (tempStoarage.pageLink != undefined) { //atleast a page has been cached
-                        var existingLinks = JSON.parse(tempStoarage["pageLink"]);
-                        var urlArr = Object.values(existingLinks);
-                        if (urlArr.indexOf(url) != -1) { //link exist, so get content
-                            var index = urlArr.indexOf(url);
-                            var content = JSON.parse(tempStoarage["linkContent"]);
-                            var arrContent = Object.values(content);
-                            insertContent(contentNode, arrContent[index], dataLink);
-                            
-                            //show content
-                            showRuntime(contentNode);
+            if(contentNode.dataset.link != dataLink){
+                contentNode.dataset.state = "receiving";
+                contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
     
-                            loadCallBack != null ? usedloadCallBack(element) : null;
-                        } else { //link does not exist, get from server
+                if(cache) { //Attempt load from storage
+                    if (typeof(Storage) !== "undefined") { //Supports web storage
+                        if (sessionStorage.pageLink != undefined) { //atleast a page has been cached
+                            var existingLinks = JSON.parse(sessionStorage.getItem("pageLink"));
+                            var urlArr = Object.values(existingLinks);
+                            if (urlArr.has(url)) { //link exist, so get content
+                                var index = urlArr.indexOf(url);
+                                var content = JSON.parse(sessionStorage.getItem("linkContent"))
+                                var arrContent = Object.values(content);
+                                insertContent(contentNode, arrContent[index], dataLink);
+                                
+                                //show content
+                                showRuntime(contentNode);
+                                
+                                usedloadCallBack != null ? usedloadCallBack(element): null;
+                            } else { //link does not exist, get from server
+                                getContent(url, contentNode, element, cache);
+                            }
+                        } else { //pageContent has no data, load from server and create data
                             getContent(url, contentNode, element, cache);
                         }
-                    } else { //pageContent has no data, load from server and create data
-                        getContent(url, contentNode, element, cache);
+                    } else { //Does not support web storage, use object
+                        if (tempStoarage.pageLink != undefined) { //atleast a page has been cached
+                            var existingLinks = JSON.parse(tempStoarage["pageLink"]);
+                            var urlArr = Object.values(existingLinks);
+                            if (urlArr.indexOf(url) != -1) { //link exist, so get content
+                                var index = urlArr.indexOf(url);
+                                var content = JSON.parse(tempStoarage["linkContent"]);
+                                var arrContent = Object.values(content);
+                                insertContent(contentNode, arrContent[index], dataLink);
+                                
+                                //show content
+                                showRuntime(contentNode);
+        
+                                loadCallBack != null ? usedloadCallBack(element) : null;
+                            } else { //link does not exist, get from server
+                                getContent(url, contentNode, element, cache);
+                            }
+                        } else { //pageContent has no data, load from server and create data
+                            getContent(url, contentNode, element, cache);
+                        }
                     }
+                }else{
+                     //ignore cache storage and Load from server
+                    getContent(url, contentNode, element, cache);
                 }
-            }else{
-                 //ignore cache storage and Load from server
-                getContent(url, contentNode, element, cache);
             }
         }else { //just get only content
             getContent(url, null, element);

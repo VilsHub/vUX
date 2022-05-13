@@ -12,7 +12,7 @@
  */
 
 /***************************Touch handler*****************************/
-function TouchHandler(frame) {
+export function TouchHandler(frame) {
     var initialTouchPos = {},slideCallBack = null,mode = "slider",hasMoved = false,lastTouchPos = {},lastPoint = { x: 0, y: 0 },usePoint = 0,initialized = false,rafPending = false,pan = "x",pressed = false,viewPort = null;
     var pointerDownName = 'pointerdown',slopeValue = 0,pointerUpName = 'pointerup',pointerMoveName = 'pointermove',pointerCancelName = "pointercancel",viewPortTransition = "";
     var moved = 0,node = 0,enableTouch = false,maxStop = 0,targetDirection = null,SLIDE_LEFT = 1,SLIDE_RIGHT = 2,SLIDE_TOP = 3,SLIDE_BOTTOM = 4,DEFAULT = 5;

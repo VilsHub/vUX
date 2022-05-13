@@ -13,7 +13,7 @@
 
 
 /************************Form validator**************************/
-function FormValidator(form = null) {
+export function FormValidator(form = null) {
     if (form != null) {
         validateElement(form, "'config.form' property must be an element");
         var positionType = $$.sm(form).cssStyle("position");

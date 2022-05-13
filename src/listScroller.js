@@ -11,9 +11,8 @@
  * 
  */
 
-
 /************************ListScroller****************************/
-function ListScroller(container, listParent) {
+export function ListScroller(container, listParent) {
     /*
     listParent 	=> the ul element
     container	=> Element housing the ul element
@@ -75,13 +74,15 @@ function ListScroller(container, listParent) {
     function updateLastValue(e){
         if(hasButtons){
             var target = e.target;
-            var id = target.getAttribute("data-animateItem")
+            var id = target.dataset.animateItem;
             vModel.animate.data.startValue[id] = target.scrollLeft;
             scrollStatus(target);
         }
     }
 
-    function addVitalStyles() {
+    async function addVitalStyles() {
+        var path = await processAssetPath();
+        vModel.core.functions.linkStyleSheet(path+"css/listScroller.css", "listScroller");
         container.setAttribute("style", wrapperStyle);
         stylePlane();
     }
@@ -90,16 +91,13 @@ function ListScroller(container, listParent) {
         if (e.button == 0) {
             var maximumScroll = listParent.scrollWidth - container.clientWidth;
             var currentScrollSize = container.scrollLeft;
-            animationOptions.startValue = currentScrollSize;
-            
-            if (currentScrollSize < maximumScroll) {
-                $$.sm(container).animate(scroll, scrollSize, animationOptions)
-            }
+            animationOptions.startValue = currentScrollSize; 
+            $$.sm(container).animate(scroll, scrollSize, animationOptions)
         }
     }
 
     function scroll(ele, drawValue){
-        ele.scrollLeft = drawValue;
+        ele.scrollTo(drawValue, 0);
     }
 
     function scrollToRight(e) {
@@ -113,7 +111,7 @@ function ListScroller(container, listParent) {
     }
 
     function scrollStatus(viewPort) {
-        var id = viewPort.getAttribute("data-animateItem")
+        var id = viewPort.dataset.animateItem;
         var maxScrolled = (listParent.scrollWidth - container.clientWidth) + paddingLeft;
 
         if(container.scrollLeft == 0){// disabled left button

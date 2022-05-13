@@ -7,38 +7,31 @@ vUX is strictly built on JavaScript and has no dependencies, other than a JavaSc
 
 ## Installation
 
-To use vUX, 
-1. include the script **vUX-x.y.z.js** where **x y z** represents the version. Example is shown below:
+To use vUX you import it using ES6 native import, with 2 additional data attributes. Here are the steps below:
+
+1. Specify the module script to make use vUx as module, by setting the script element type attribute to module. Example
+
+    `<script type= "module" src="js/main.js"></script>`
+
+2. Add a data attribute of **id** to the target script element with value "*vUx*" (Case insensitive). This is very vital as the modules depend on it. That is,:
+
+    `<script type= "module" src="js/main.js" data-id="vUX"></script>`
+
+3. And finally add another data attribute of **library-path** to the target script element, with value set to the path of vUX source. The path could be relative or absolute. This also vital as it helps vUx to load in all dependency assets automatically. Example
+
+    `<script type= "module" src="js/main.js" data-id="vUX" data-library-path="http://library.vilshub.com/lib/vUX/4.0.0/vUX-4.0.0.beta.js"></script>`
+
+
+4. Then start making use of the vUx module first by first importing using ES6 native import in the target script file, to import vUx modules to the script. Example is shown below:
   
-    `<script src="vUX/vUX-4.0.0.js"></script>`
+    **main.js**
 
-    or
-
-    `<script src="vUX/vUX-4.0.0.min.js"></script>`
-
-    vUX handles any other files that needs to be loaded in, so you dont need to worry about any other vUX modules files to be loaded in, all you need to do is to specify the needed module as given on step 2
-
-2. Specify the optional modules (seperated with comma) to be used on the page using the the **data-modules** attribute on the script element. Example is shown below: 
-
-    `<script src="vUX/vUX-4.0.0.js" data-module="formValidator, timeLineList, carousel"></script>`
-
-    or
-
-    `<script src="vUX/vUX-4.0.0.min.js" data-module="formValidator, timeLineList, carousel"></script>`
-
-3. Prefix any script element (with script that uses the speficied vUX modules) src attribute with **data-**. This is to load the script element when all specified modules have been loaded in.  Example:
-   
-   `<script src="vUX/vUX-4.0.0.js" data-module="formValidator, timeLineList, carousel"></script>`
-
-   `<script data-src="js/services.js"></script>`
+    `import {FormComponents, ListScroller} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-4.0.0.beta.js"`
 
 
 **Note**
 
- - The file name should not be changed, as its needed to auto load assets needed by the library
- - If the minified version (with **.min.js** as suffix) of vUX is loaded, all minified assets will be loaded as well
- - All external script that is dependent on vUX should not be wrapped with the load event, as vUX handles this already
- - The available optional modules to inlude are (case sensitive): cShapes, formValidator, formComponents, modalDisplayer, toolTip, carousel, contentLoader, listScroller, touchHandler, timeLineList, autoWriter. 
+ - To see all the available optional modules to be imported for use, execute the command **vUxModules** on the console 
 
 ## Features
 

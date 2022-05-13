@@ -13,7 +13,7 @@
 
 
 /***************************Resizer*****************************/
-function Resizer(elementSelector){
+export function Resizer(elementSelector){
     validateString(elementSelector, "Resizer() constructor argument must be a string of target element selector");
     var pin=false, self=this, myResizeHandler=null, targetDirection=null, targetElementWidth=0,targetElementHeight=0,targetElement=$$.ss(elementSelector);
     var resizeHandlerProperties = {

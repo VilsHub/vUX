@@ -13,7 +13,7 @@
 
 
 /***********************Canvas Shapes**********************/
-function CShapes() {
+export function CShapes() {
     /*******************fixed dashed rectangle starts********************/
     this.fixedRectangle = function() {
         var FRlinecolor = "black", FRlinewidth = 5,FRsegment = [10, 2],FROrigin = [0, 0];

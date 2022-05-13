@@ -12,7 +12,7 @@
  */
 
 /********************Custom form component***********************/
-function FormComponents() {
+export function FormComponents() {
     /*********Helpers***********/
     function withLabel(ele) {
         var labelEle = ele.nextElementSibling == null ? ele.previousElementSibling : ele.nextElementSibling;
@@ -75,6 +75,11 @@ function FormComponents() {
         }
 
     }
+    async function addVitalStyles() {
+        var path = await processAssetPath();
+        vModel.core.functions.linkStyleSheet(path+"css/formComponents.css", "formComponents");
+    }
+    addVitalStyles();
     /***************************/
 
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
