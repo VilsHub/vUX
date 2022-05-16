@@ -11,19 +11,22 @@
  * 
  */
 //Next ==> change loader to horizontal placed at top most
+
+// import { validateNumber } from "./helpers";
+
 /***************************content loader*****************************/
 export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     if(defaultURL != null) validateString(defaultURL, "SPAEngine(x.) contructor argument 1 must be a string or null");
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(.x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
-    var customStyle = "",initialize = false,tempStoarage = {}, dataLink;
-    var loadCallBack = null, historyCallback=null, switchPoint=null, loadtoNode = true;
+    var customStyle = "",initialize = false,tempStoarage = {}, dataLink, menuParent = "";
+    var loadCallBack = null, historyCallback=null, viewSwitchPoint=null, loadtoNode = true;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         url:"",//the URL to be called
-        // loaderMode:"",
-        urlPath:"", //The URL that will be appended to the base page, need for pushstate
+        urlPath:"", //The URL that will be appended to the base page, needed for pushstate
         cache:"",
+        viewMode:"", //attribute to set if link is for mobile or desktop (only needed for app with 2 navigation systems: one for destop and ther other for mobile). if attribute exist then check if view state is mobile or desktop in order to select the right menu. Attribute value can only be "desktop" or "mobile". Example data-viewport = "mobile"
         addToHistory:"", // attribute to set if to use history or not, default = true
         loadIntoNode:"",// attribute to set if content is to be loaded into contentNode. Default=true
         pageTitle:"",//The title for the link content, only used when history is enable for the link
@@ -52,11 +55,11 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         var loadIntoNode = element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)];
         var url = element.dataset[hyphenatedToCamel(dataAttributes.url)];
         loadtoNode = Boolean(loadIntoNode == undefined? true: loadIntoNode?true:false);
-        
+
         if(loadtoNode){ //Load content into node
             var nodeId              = element.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
             var ownLoadCallback     = element.dataset[hyphenatedToCamel(dataAttributes.loadCallback)];
-            var cache               = element.dataset[hyphenatedToCamel(dataAttributes.cache)];  
+            var cache               = element.dataset[hyphenatedToCamel(dataAttributes.cache)];   
             var contentNode         = null;
             var usedloadCallBack    = null; 
             
@@ -78,12 +81,8 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                 validateFunction(usedloadCallBack, "'config.loadCallback' property value must be a function");
             }
 
-            if(element.dataset.link != null){//for mapping last click link to container
-                dataLink = element.dataset.link;
-            }else{
-                dataLink = $$.randomString();
-                element.dataset.link = dataLink;
-            }
+            dataLink = linkId(element, "link") //for mapping last click link to container
+            
 
             cache = Boolean(cache == null?false:cache);
 
@@ -138,6 +137,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                     getContent(url, contentNode, element, cache);
                 }
             }
+
         }else { //just get only content
             getContent(url, null, element);
         }
@@ -149,24 +149,36 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         })
         if(historyCallback != null) {
             addEventListener("popstate", function(e){
-                var data = e.state.data;
-                var url = e.state.url;
-                var ele = getElementWithPath(url);
-                var ownHistoryCallback  = ele.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
-                var usedHistoryCallback = null;     
+                if(e.state != null){
+                    var data                = e.state.data;
+                    var ele                 = $$.ss("[data-link-id='"+e.state.linkId+"']");
+                    var ownHistoryCallback  = ele.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
+                    var usedHistoryCallback = null;   
 
-                //Check historyCallback
-                if(ownHistoryCallback != undefined){
-                    validateFunction(ownLoadCallback, "No function with name'"+ownHistoryCallback+"'");
-                    usedHistoryCallback = ownHistoryCallback;
-                }else{ //set to the default content Node
-                    usedHistoryCallback = (historyCallback != null)? historyCallback:null;
+                    //Check historyCallback
+                    if(ownHistoryCallback != undefined){
+                        validateFunction(ownLoadCallback, "No function with name'"+ownHistoryCallback+"'");
+                        usedHistoryCallback = ownHistoryCallback;
+                    }else{ //set to the default content Node
+                        usedHistoryCallback = (historyCallback != null)? historyCallback:null;
+                    }
+
+                    $$.ss(".runTime").innerHTML = data;
+                    usedHistoryCallback(ele);
                 }
-
-                $$.ss(".runTime").innerHTML = data;
-                usedHistoryCallback(ele)
             }, false);
         }
+    }
+
+    function linkId(element, dataAttribute){
+        var id = null;
+        if(element.dataset[dataAttribute] != null){//for mapping last click link to container
+            id = element.dataset[dataAttribute];
+        }else{
+            id = $$.randomString();
+            element.dataset[dataAttribute] = id;
+        }
+        return id
     }
 
     function getContent(url, container=null, element=null, cache=null) {
@@ -340,7 +352,9 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     }
 
     function getElementWithPath(path){
+        
         var element = $$.ss("[data-"+dataAttributes["urlPath"]+"='"+path+"']");
+
         if(element == null){ // Trail back to get element
             var segments = path.xTrim().split("/");
             var totalSegment = segments.length;
@@ -361,15 +375,17 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     }
 
     function createState(element, data){
-        var pathUrl = element.dataset[hyphenatedToCamel(dataAttributes["urlPath"])];
-        var title   = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] 
+        var pathUrl     = element.dataset[hyphenatedToCamel(dataAttributes["urlPath"])];
+        var title       = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] 
+        var elementId   = linkId(element, "linkId");
        
         if(pathUrl != undefined){
             title = title == undefined?$$.ss("title").innerText:title;
             var historyObj = {
                 url:pathUrl,
                 data:data,
-                title:title
+                title:title,
+                linkId:elementId
             }
             history.pushState(historyObj, title, pathUrl);
         }else{
@@ -394,11 +410,10 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     }
 
     Object.defineProperties(this, {
-        loadFrom: { writable: false },
         config: { writable: false },
-        initialize: { writable: false },
-        switch: { writable: false },
+        initialize: { writable: false }
     })
+
     Object.defineProperties(this.config, {
         customStyle: {
             set: function(value) {
@@ -446,19 +461,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                 }else{
                     throw new Error("'config.dataAttributes' object value contains more than 7 entries");
                 }
-            }
-        },
-        switchPoint:{
-            set:function(value){ //for switching between two contentloader (for mobile and desktop view)
-                validateNumber(value, "contentLoaderObj.config.switchPoint property must be a number");
-                value = value < 0?0:value;
-                switchPoint = value;
-            }
-        },
-        forceAutoLoad:{
-            set:function(value){
-                validateBoolean(value, "contentLoaderObj.config.forceAutoLoad property must be a boolean");
-                forceAutoLoad = value;
             }
         },
         classes:{

@@ -43,9 +43,17 @@ let $$ = {
         }
         
         function dom(){
-            var self =this;
-            var ele = (selector instanceof Element)?selector:{all:document.querySelectorAll(selector), single:document.querySelectorAll(selector)[0]};
-            if(!isHTMLObject(ele)) validateElement(ele, "$$.sm(x) argument 1 must be an element or a string of CSS selector");
+            var self =this, ele;
+            if(selector instanceof Element){
+                ele = selector;
+            }else{
+                ele = {
+                    all:document.querySelectorAll(selector), 
+                    single:document.querySelectorAll(selector)[0]
+                }
+                validateElement(ele.single, "$$.sm(x) argument 1 must be an element or a string of CSS selector");
+            }
+ 
             
             this.index = function() {
                 var child = (selector instanceof Element)?selector:ele.single;
@@ -885,7 +893,7 @@ let $$ = {
         }
         return element;
     },
-    delay:function(duration, callBack = null, ){
+    delay:function(duration, callBack = null){
         validateNumber(duration, "'$$.delay()' method argument 1 must be numeric");
         if (duration < 0) throw new Error("'$$.delay()' method argument 1 must be greater than 0");
         var start = performance.now();
@@ -896,7 +904,7 @@ let $$ = {
             if (timeFrac < 1){
                 requestAnimationFrame(animate);
             }else{
-            if (callBack != null) callBack();
+                if (callBack != null) callBack();
             }
         })
     },
@@ -1344,7 +1352,7 @@ Array.prototype.has = function(value){
 
 window.$$ = $$;
 // var min = vUxHelpers.vModel.core.data.minified;
-
+export default $$;
 export {SPAEngine} from "./src/spaEngine.js";
 export {ListScroller} from "./src/listScroller.js";
 export {FormComponents} from "./src/formComponents.js";

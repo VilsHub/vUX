@@ -89,7 +89,6 @@ export function ListScroller(container, listParent) {
 
     function scrollToleft(e) {
         if (e.button == 0) {
-            var maximumScroll = listParent.scrollWidth - container.clientWidth;
             var currentScrollSize = container.scrollLeft;
             animationOptions.startValue = currentScrollSize; 
             $$.sm(container).animate(scroll, scrollSize, animationOptions)
@@ -98,6 +97,14 @@ export function ListScroller(container, listParent) {
 
     function scroll(ele, drawValue){
         ele.scrollTo(drawValue, 0);
+    }
+
+    function initialScroll(){
+        // to fixed wrong cursor icon
+        animationOptions.startValue = 0;
+        $$.sm(container).animate(scroll, 1, animationOptions);
+        $$.sm(container).animate(scroll, 0, animationOptions);
+        container.scrollTo(0,0);
     }
 
     function scrollToRight(e) {
@@ -159,8 +166,6 @@ export function ListScroller(container, listParent) {
                 if (buttons.length == 0) {
                     throw new Error("Setup error: scroll buttons not specified. Specify using the 'config.buttons' property");
                 }
-    
-                scrollStatus(container);
                 assignHandlers();
             }
             
@@ -177,6 +182,7 @@ export function ListScroller(container, listParent) {
     this.onScroller = function() {
         if (ready == 1) {
             listening = 1;
+            if(container.scrollLeft == 0) initialScroll(container);
             scrollStatus(container);
         }
     }
