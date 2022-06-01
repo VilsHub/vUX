@@ -1276,7 +1276,7 @@ Object.defineProperties(browserResizeProperty, {
 Object.defineProperties(window, {
     vUxModules: {
         get: function() {
-           console.log(vUxHelpers.vModel.core.data.modules);
+           console.log(vModel.core.data.modules);
         }
     }
 })

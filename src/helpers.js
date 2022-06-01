@@ -30,17 +30,17 @@ window.vModel = {
             assetPathProcessed:false,
             assetPath:null,
             modules:[
-                "SPAEngine",
-                "AutoWriter",
-                "Carousel",
-                "CShapes",
-                "FormComponents",
-                "ListScroller",
-                "ModalDisplayer",
-                "Resizer",
-                "SPAEngine",
-                "TimeLineList",
-                "TouchHandler"
+                "spaEngine.js",
+                "autoWriter.js",
+                "carousel.js",
+                "cShapes.js",
+                "formComponents.js",
+                "listScroller.js",
+                "modalDisplayer.js",
+                "resizer.js",
+                "spaEngine.js",
+                "timeLineList.js",
+                "touchHandler.js"
             ]
         }
     },

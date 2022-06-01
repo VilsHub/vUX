@@ -22,7 +22,7 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
     `<script type= "module" src="js/main.js" data-id="vUX" data-library-root="http://library.vilshub.com/lib/vUX/4.0.0/"></script>`
 
 
-4. Then start making use of the vUx module first by first importing using ES6 native import in the target script file, using the file name pattern **vUV-**. Example is shown below:
+4. Then start making use of the vUx module first by first importing using ES6 native import in the target script file, using the file name pattern **vUX-modulefile.js**. Example is shown below:
   
     **main.js**
 
@@ -33,7 +33,7 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
 
 **Note**
 
- - To see all the available optional modules to be imported for use, execute the command **vUxModules** on the console 
+ - To see all the available modules filename to be imported for use, execute the command **vUxModules** on the console 
 
 ## Features
 
