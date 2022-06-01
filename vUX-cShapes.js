@@ -10,7 +10,8 @@
  * 
  * 
  */
-
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
 /***********************Canvas Shapes**********************/
 export function CShapes() {

@@ -17,16 +17,18 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
 
     `<script type= "module" src="js/main.js" data-id="vUX"></script>`
 
-3. And finally add another data attribute of **library-path** to the target script element, with value set to the path of vUX source. The path could be relative or absolute. This also vital as it helps vUx to load in all dependency assets automatically. Example
+3. And finally add another data attribute of **library-root** to the target script element, with value set to the the root of library root. The path could be relative or absolute. This also vital as it helps vUx to load in all dependency assets automatically. Example
 
-    `<script type= "module" src="js/main.js" data-id="vUX" data-library-path="http://library.vilshub.com/lib/vUX/4.0.0/vUX-4.0.0.beta.js"></script>`
+    `<script type= "module" src="js/main.js" data-id="vUX" data-library-root="http://library.vilshub.com/lib/vUX/4.0.0/"></script>`
 
 
-4. Then start making use of the vUx module first by first importing using ES6 native import in the target script file, to import vUx modules to the script. Example is shown below:
+4. Then start making use of the vUx module first by first importing using ES6 native import in the target script file, using the file name pattern **vUV-**. Example is shown below:
   
     **main.js**
 
-    `import {FormComponents, ListScroller} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-4.0.0.beta.js"`
+    `import {FormComponents} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-formValidator.js"`
+
+    `import {ListScroller} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-listScroller.js"`
 
 
 **Note**

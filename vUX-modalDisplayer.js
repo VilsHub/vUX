@@ -10,6 +10,8 @@
  * 
  * 
  */
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
 /************************ModalDisplayer***************************/
 export function ModalDisplayer() {
@@ -487,6 +489,7 @@ export function ModalDisplayer() {
                 }
             }
             if (e.target.classList.contains(className)) {
+             
                 var formId = e.target.getAttribute(formIdAttribute);
                 var form = document.getElementById(formId);
                 if (form != null) {
@@ -541,29 +544,28 @@ export function ModalDisplayer() {
         }
     };
     this.config = {};
-
+    async function addVitalStyles() {
+        var path = await processAssetPath();
+        vModel.core.functions.linkStyleSheet(path+"css/modalDisplayer.css", "modalDisplayer");
+    }
     function show(modal) {
-        if (initialized) {
-            sY = scrollY;
-            currentForm = modal;
-            modal.id != null ? id = modal.id : null;
-            computedModalHeight = getDimensionOfHidden(modal)["height"];
-            computedModalWidth = getDimensionOfHidden(modal)["width"];
-            cssWidth = $$.sm(modal).cssStyle("width");
-            
-            if (effectName == "split") {
-                modal.style["width"] = computedModalWidth + "px";
-            } else {
-                modal.style["width"] = "100%";
-            }
-            //effect call
-            effects[effectName](modal);
-            if (overlayBackgroundType == "blur" && pageContainer != null) {
-                pageContainer.classList.add("vxKit");
-            }
+        if (!initialized) throw new Error("Please initialize using the 'initialize()' method, before triggering modal");
+        sY = scrollY;
+        currentForm = modal;
+        modal.id != null ? id = modal.id : null;
+        computedModalHeight = getDimensionOfHidden(modal)["height"];
+        computedModalWidth = getDimensionOfHidden(modal)["width"];
+        cssWidth = $$.sm(modal).cssStyle("width");
+        
+        if (effectName == "split") {
+            modal.style["width"] = computedModalWidth + "px";
         } else {
-            throw new Error("Please initialize using the 'initialize()' method, before triggering modal");
+            modal.style["width"] = "100%";
         }
+
+        //effect call
+        effects[effectName](modal);
+        if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.add("vxKit");
     };
     this.close = function() {
         if (modalOn == true) {
@@ -576,10 +578,11 @@ export function ModalDisplayer() {
         }
     };
     this.initialize = function() {
-        if (initialized == false) {
+        if (!initialized) {
             totalHeight = $$.ss("html").scrollHeight;
             if (className == "") throw new Error("Set up incomplete: No class name specified for modal, specify using 'config.className'");
             if (formIdAttribute == "") throw new Error("Set up incomplete: No formId attribute specified for modal, specify using 'config.formIdAttribute'");
+            addVitalStyles();
             createElements();
             addEventhandler();
             initialized = true;

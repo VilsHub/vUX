@@ -9,21 +9,26 @@
  * Date: 2021-07-19=T22:30Z
  */
 
-export let  vModel = {
+window.vModel = {
     core:{
         functions:{
             linkStyleSheet: function (url, name=null){
-                var linkEle = document.createElement("link");
-                linkEle.setAttribute("rel", "stylesheet");
-                linkEle.setAttribute("type", "text/css");
-                if(name != null) linkEle.dataset.id = name;
-                linkEle.setAttribute("href", url);
-                document.head.appendChild(linkEle);
+                let existingSheet = name != null?document.querySelector("link[data-id='"+name+"']"):null;
+                
+                if(existingSheet == null){ 
+                    let linkEle = document.createElement("link");
+                    linkEle.setAttribute("rel", "stylesheet");
+                    linkEle.setAttribute("type", "text/css");
+                    if(name != null) linkEle.dataset.id = name;
+                    linkEle.setAttribute("href", url);
+                    document.head.appendChild(linkEle);
+                }
             }
         },
         data:{
             minified:false,
             assetPathProcessed:false,
+            assetPath:null,
             modules:[
                 "SPAEngine",
                 "AutoWriter",
@@ -68,9 +73,8 @@ export let  vModel = {
                 sourceEntries.forEach(function(config){
                     if(config[0] != undefined){
                         if (validKeys.indexOf(config[0]) == -1) throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object keys must be one of the follwings: "+validKeys.join(", ")+". '"+ config[0]+"' is not one of them");
-                        
                         if (config[0] != "timingFunction" && config[0] != "positionProperty") config[0] = config[0].toLowerCase();
-                        if (config[0] != "positions" && config[0] != "dimensions"  && config[0] != "positionProperty") config[1] = config[1].toLowerCase();
+                        if (config[0] != "positions" && config[0] != "speed" && config[0] != "dimensions"  && config[0] != "positionProperty") config[1] = config[1].toLowerCase();
     
                         if(config[0] == "use"){
                             if(config[1] != "dimension" && config[1] != "position") throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.use property must be a either 'position' or 'dimension'");
@@ -186,53 +190,78 @@ export let  vModel = {
        },
        functions:{
            elementTag: function(element){
-                var id = element.getAttribute("data-animateItem");
+                var id = element.dataset.animateItem;
                 if(id == null){
                     id = "ele"+(vModel.animate.data.items++);
-                    element.setAttribute("data-animateItem", id)
+                    element.dataset.animateItem = id;
                 }
                 return id;
            }
        }
+    },
+    scroll:{
+        data:{
+            init:false,
+            iniSY:scrollY,
+            state:{direction: "", change: 0},
+        },
+        functions:{
+            init: function(){
+                if(!vModel.scroll.data.init){
+                    window.addEventListener("scroll", function() {
+                        let state = vModel.scroll.data.state;
+                        if (scrollY > vModel.scroll.data.iniSY) { //scrolled down
+                            state["change"] = scrollY - vModel.scroll.data.iniSY;
+                            state["direction"] = "down";
+                            vModel.scroll.data.iniSY = scrollY;
+                        } else {
+                            state["change"] = vModel.scroll.data.iniSY - scrollY;
+                            state["direction"] = "up";
+                            vModel.scroll.data.iniSY = scrollY;
+                        }                    
+                        vModel.scroll.data.state = state;
+                    }, false);
+                    vModel.scroll.data.init = true;
+                }
+            }
+        }
     }
+
 }
+
 
 window.processAssetPath = async function () {
     if(!vModel.core.data.assetPathProcessed){
-        var mainScript = document.querySelector("script[type ='module'][data-id]"); 
-        var init =false;
-        await function(){
-            var id = ""
+        let mainScript = document.querySelector("script[type ='module'][data-id]"); 
+        let init =false;       
+        const result = await (function() {
             while (!init){
                 mainScript = document.querySelector("script[type ='module'][data-id]"); 
                 if(mainScript != null){
-                    let id = mainScript.dataset.id;
+                    let id = mainScript.dataset.id;                   
                     if(id.toLowerCase() == "vux"){
                         init = true;
+                        let path = mainScript.dataset.libraryRoot;
+                        path = path.replace(/[\s\uFEFF\xA0\/]+$/g, ''); //remove "/" from path end if exist
+                        vModel.core.data.assetPathProcessed = true;
+                        vModel.core.data.assetPath = path+"/assets/";
+                        return path+"/assets/";
                     }
                 }
-            } 
-        }
-
-        var path = mainScript.dataset.libraryPath;
-        var pathSegments = path.split("/");
-        var lib = pathSegments[pathSegments.length-1];
-        var basePath = path.replace(lib, "");
-        var assetPath = basePath+"assets/";
-        window.vModel.core.data.minified = lib.search(".min") != -1?".min":"";
-
-        vModel.core.data.assetPathProcessed = true;
-        return assetPath; 
+            }
+        })() 
+ 
+        return result;
     }else{
-        return window.vModel.core.data.assetPath
+        return vModel.core.data.assetPath;
     }   
 }
 
 processAssetPath().then(function(assetPath){
-    window.vModel.core.data.assetPath = assetPath;
     vModel.core.functions.linkStyleSheet(assetPath+"css/core.css");
 })
 
+// console.log(vModel.core.data.assetPath)
 /*************************Helper functions***********************/
 export function cssGroupStyler(elementObj, StyleObject) {
     if(elementObj instanceof Element){
@@ -644,7 +673,7 @@ export function attachStyleSheet(dataID, css) {
     } else {
         styleElement.appendChild(document.createTextNode(css));
     }
-    document.getElementsByTagName('head')[0].appendChild(styleElement);
+    document.getElementsByTagName('body')[0].appendChild(styleElement);
 }
 
 export function validateAlpha(input) {

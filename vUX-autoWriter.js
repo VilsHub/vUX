@@ -10,7 +10,8 @@
  * 
  * **************Core**************
  */
-
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
 /**************************TypeWriter****************************/
 export function AutoWriter() {

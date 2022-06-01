@@ -10,6 +10,8 @@
  * 
  * 
  */
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
 /***************************Tool tip*****************************/
 export function ToolTip() {
@@ -95,12 +97,17 @@ export function ToolTip() {
             
         })
     }
+    async function addVitalStyles() {
+        var path = await processAssetPath();
+        vModel.core.functions.linkStyleSheet(path+"css/toolTip.css", "toolTip");
+    }
     this.initialize = function() {
         if (initialized == 0) {
             if (toolTipClassName == "") {
                 throw new Error("Setup imcomplete: toolTip class name must be supllied, specify using the 'config.className' property");
             }
             createTipElement();
+            addVitalStyles();
             createStyles();
             setCustomTitle();
             initialized = 1;

@@ -10,6 +10,8 @@
  * 
  * 
  */
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
 /***************************Touch handler*****************************/
 export function TouchHandler(frame) {

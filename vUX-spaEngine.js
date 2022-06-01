@@ -10,17 +10,16 @@
  * 
  * 
  */
-//Next ==> change loader to horizontal placed at top most
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
-// import { validateNumber } from "./helpers";
-
-/***************************content loader*****************************/
+/***************************SPA Engine*****************************/
 export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     if(defaultURL != null) validateString(defaultURL, "SPAEngine(x.) contructor argument 1 must be a string or null");
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(.x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
-    var customStyle = "",initialize = false,tempStoarage = {}, dataLink, menuParent = "";
-    var loadCallBack = null, historyCallback=null, viewSwitchPoint=null, loadtoNode = true;
+    var customStyle = "",initialize = false,tempStoarage = {}, dataLink, preClickCallback=null;
+    var loadCallBack = null, historyCallback=null, loadtoNode = true;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         url:"",//the URL to be called
@@ -37,7 +36,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         spaLink:"" //Must be specified, as it is used in registering SPA links
     }
     this.initialize = function() {
-        if (initialize == false) {
+        if (!initialize) {
             if (customStyle != "") addCustomStyle(); //Custom style set
             if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
             runSetup();
@@ -52,6 +51,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     }
 
     function loadFrom(element) {
+      
         var loadIntoNode = element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)];
         var url = element.dataset[hyphenatedToCamel(dataAttributes.url)];
         loadtoNode = Boolean(loadIntoNode == undefined? true: loadIntoNode?true:false);
@@ -83,13 +83,13 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
             dataLink = linkId(element, "link") //for mapping last click link to container
             
-
+            
             cache = Boolean(cache == null?false:cache);
 
             if(contentNode.dataset.link != dataLink){
                 contentNode.dataset.state = "receiving";
                 contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
-    
+                
                 if(cache) { //Attempt load from storage
                     if (typeof(Storage) !== "undefined") { //Supports web storage
                         if (sessionStorage.pageLink != undefined) { //atleast a page has been cached
@@ -99,11 +99,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                                 var index = urlArr.indexOf(url);
                                 var content = JSON.parse(sessionStorage.getItem("linkContent"))
                                 var arrContent = Object.values(content);
-                                insertContent(contentNode, arrContent[index], dataLink);
-                                
-                                //show content
-                                showRuntime(contentNode);
-                                
+                                insertContent(contentNode, arrContent[index], dataLink);                                
                                 usedloadCallBack != null ? usedloadCallBack(element): null;
                             } else { //link does not exist, get from server
                                 getContent(url, contentNode, element, cache);
@@ -119,11 +115,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                                 var index = urlArr.indexOf(url);
                                 var content = JSON.parse(tempStoarage["linkContent"]);
                                 var arrContent = Object.values(content);
-                                insertContent(contentNode, arrContent[index], dataLink);
-                                
-                                //show content
-                                showRuntime(contentNode);
-        
+                                insertContent(contentNode, arrContent[index], dataLink);        
                                 loadCallBack != null ? usedloadCallBack(element) : null;
                             } else { //link does not exist, get from server
                                 getContent(url, contentNode, element, cache);
@@ -182,6 +174,8 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     }
 
     function getContent(url, container=null, element=null, cache=null) {
+        if (preClickCallback != null) preClickCallback(element);
+        
         var xhr = $$.ajax({method:"GET", url:url}, "html");       
         
         xhr.addEventListener("load", function() {
@@ -190,7 +184,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
             //Check loadCllback
             if(ownLoadCallback != undefined){
-                // window[usedloadCallBack](element)
                 validateFunction(window[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
                 usedloadCallBack = window[ownLoadCallback];
             }else{ //set to the default content Node
@@ -207,7 +200,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                     }
 
                     if(container.dataset.state == "receiving"){
-                        
+
                         if (element != null && cache != null){
                             if (cache) { //insert and cache data
                                 //cache
@@ -248,14 +241,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                         }
         
                         insertContent(container, xhr.responseText, element);
-                    
-                        hideLoader(container);
-            
-                        //show content
-                        showRuntime(container);
-            
-            
-                        //call callback function if enable
 
                         usedloadCallBack != null ? usedloadCallBack(element): null;
                         
@@ -266,8 +251,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                             //store page details in history state                
                             if (addHistory) createState(element, xhr.responseText);
                         }
-        
-                    } 
+                    }
 
                 }else{//get and return only content
                      //call callback function if enable
@@ -278,24 +262,8 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                 alert("404 not found\nThe resource URL "+url+ " cannot be found on this server");
             }
         });
-
-        if(container != null){
-            var runtime = container.querySelector(".runTime");
-             //show loader here
-             if(runtime != null) runtime.classList.remove("xShow");
-             showLoader(container);
-        }
         
         xhr.send(); //auto load its content
-    }
-
-    function showRuntime(container){
-        var runtime = container.querySelector(".runTime");
-        if(runtime != null){
-            runtime.scrollHeight;
-            runtime.classList.add("xShow");
-        }
-        
     }
 
     function showLoader(container) {
@@ -318,25 +286,9 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
     function insertContent(container, content, element){
         if(element.dataset.link == container.dataset.link){//content for the last element clicked
-            var runtimeContainer = container.querySelector(".runTime");
-            if(runtimeContainer == null){
-                //create runtimeContainer
-                var runtimeContainerElement = $$.ce("DIV", {class:"runTime"});
-                container.appendChild(runtimeContainerElement);
-                runtimeContainer = container.querySelector(".runTime");
-            }
-            runtimeContainer.innerHTML = content;
+            document.querySelector("#entryPoint").innerHTML = content;
         }else{
-            console.log(element.dataset.link , container.dataset.link);
         }
-    }
-
-    function hideLoader(container){
-        var parent = container.parentNode;
-        
-        var spinner = parent.querySelector(".loaderCon");
-        if (spinner != null) $$.sm(spinner).hide();
-        
     }
 
     function boot(){
@@ -376,7 +328,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
     function createState(element, data){
         var pathUrl     = element.dataset[hyphenatedToCamel(dataAttributes["urlPath"])];
-        var title       = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] 
+        var title       = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
         var elementId   = linkId(element, "linkId");
        
         if(pathUrl != undefined){
@@ -391,8 +343,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         }else{
             console.warn("The SPA link :", element,"has no path URL set, history not enabled for it.");
         }
-
-       
     }
 
     function addCustomStyle() {
@@ -439,6 +389,12 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
             set: function(value) {
                 validateFunction(value, "config.loadCallback property value must be a function");
                 loadCallBack = value;
+            }
+        },
+        preClickCallback: {
+            set: function(value) {
+                validateFunction(value, "config.preClickCallback property value must be a function");
+                preClickCallback = value;
             }
         },
         historyCallback: {

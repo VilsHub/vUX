@@ -1,6 +1,6 @@
 /* Radio Button */
 .vRadioButtonWrapper {
-    height:auto;
+    /* height:auto; */
     display:block;
     position: relative;
     float:left;

@@ -10,6 +10,8 @@
  * 
  * 
  */
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
 /************************ListScroller****************************/
 export function ListScroller(container, listParent) {

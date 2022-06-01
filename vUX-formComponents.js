@@ -10,6 +10,8 @@
  * 
  * 
  */
+// Import vUX core
+import "./src/vUX-core-4.0.0.beta.js";
 
 /********************Custom form component***********************/
 export function FormComponents() {
@@ -194,7 +196,7 @@ export function FormComponents() {
                 if(labelAttribute != ""){
                     var option = nativeSelect.options[optionIndex];
                     var labelTemplate = option.getAttribute(labelAttribute);
-                    value = labelTemplate != null?labelTemplate:option.innerHTML
+                    var value = labelTemplate != null?labelTemplate:option.innerHTML
                     labelCon.innerHTML = value;
                 }else{
                     labelCon.innerHTML = ele.innerHTML;
@@ -495,11 +497,15 @@ export function FormComponents() {
 
             //configure Tooltip
             if (multiple) {
-                toolTipHandler.config.className = "selectInput-"+selectClassName;
-                toolTipHandler.initialize();
-                if (enableToolTip) {
-                    configureToolTip(nativeSelect, selectField);
-                }
+                import("./vUX-toolTip.js")
+                .then(function(module){
+                    toolTipHandler = new module.ToolTip();
+                    toolTipHandler.config.className = "selectInput-"+selectClassName;
+                    toolTipHandler.initialize();
+                    if (enableToolTip) {
+                        configureToolTip(nativeSelect, selectField);
+                    }
+                })
             };
         }
 
@@ -773,7 +779,6 @@ export function FormComponents() {
                 set: function(value) {
                     validateBoolean(value, "config.selectFieldToolTip property expect a boolean as value");
                     enableToolTip = value;
-                    if(value) toolTipHandler = new ToolTip();
                 }
             },
             searchIconStyle: {
@@ -1547,7 +1552,7 @@ export function FormComponents() {
                     updateActive(wrapper, e.target, "month");
                     writeToInput(wrapper, dateComponents);
                     dateComponents["timeParts"] != null ? toggleDoneButton(wrapper) : null;
-                    daysToolTip == true ? createToolTip(wrapper) : null;
+                    daysToolTip? createToolTip(wrapper) : null;
                 } else if (id == "day") { //hide dayCon and show time if specified
                     var wrapper = $$.sm(e.target).getParent(5);
                     var nativeDateInput = wrapper.nextElementSibling;
@@ -2556,10 +2561,14 @@ export function FormComponents() {
                 reCreateDatePicker();
                 createStyles();
                 AddEventHandlers();
-                if (daysToolTip == true) {
-                    tooTipHandler.config.tipBoxStyles = daysToolTipProperties;
-                    tooTipHandler.config.className = "datePickerToolTip-"+datePickerClassName;
-                    tooTipHandler.initialize();
+                if (daysToolTip) {
+                    import("./vUX-toolTip.js")
+                    .then(function(module){
+                        toolTipHandler = new module.ToolTip();
+                        tooTipHandler.config.tipBoxStyles = daysToolTipProperties;
+                        tooTipHandler.config.className = "datePickerToolTip-"+datePickerClassName;
+                        tooTipHandler.initialize();
+                    })
                 };
                 if (wrapAttribute != "") wrap("datePicker", wrapAttribute);
             },
@@ -2601,7 +2610,6 @@ export function FormComponents() {
                 set: function(value) {
                     validateBoolean(value, "'config.daysToolTip' property value must be a boolean");
                     daysToolTip = value;
-                    if(value) tooTipHandler = new ToolTip();
                 }
             },
             mobileView: {
@@ -2961,12 +2969,9 @@ export function FormComponents() {
                 if (wrapperStyle != "") css += ".v" + fileClassName + "{"+wrapperStyle+"}";
                 
                 if (fileLabelStyle != "") css += ".v" + fileClassName + " .fLabel {"+fileLabelStyle+"}";
-                
-                // if (fileIcon != "") css += ".v" + fileClassName + " .sIcon::before {" + fileIcon + "}";
-
                     
                 if (inputButtonStyle != "") css += ".v" + fileClassName + " .fButton{" + inputButtonStyle + "}";
-                    
+
                 attachStyleSheet("v" + fileClassName, css);
             }
         }
@@ -3025,7 +3030,7 @@ export function FormComponents() {
             fileLabel.classList.add("fLabel");
             fButton.classList.add("fButton");
 
-            labelText = label != ""? label:multiple?"Select files":"Select file";
+            var labelText = label != ""? label:multiple?"Select files":"Select file";
             fileLabel.innerText = labelText;
             fButton.innerText   = buttonLabel != ""?buttonLabel:"Browse...";
 
@@ -3047,9 +3052,14 @@ export function FormComponents() {
 
             //configure tool tip
             if(fileToolTip){
-                 toolTipHandler.config.tipBoxStyles = toolTipStyles;
-                 toolTipHandler.config.className = "fileInputToolTip-"+fileClassName;
-                 toolTipHandler.initialize();
+                import("./vUX-toolTip.js")
+                .then(function(module){
+                    toolTipHandler = new module.ToolTip();
+                    toolTipHandler.config.tipBoxStyles = toolTipStyles;
+                    toolTipHandler.config.className = "fileInputToolTip-"+fileClassName;
+                    toolTipHandler.initialize();
+                })
+                 
             }
         }
 
@@ -3066,7 +3076,6 @@ export function FormComponents() {
                 nativeFileInput.click();
             });
             $$.attachEventHandler("change", "xFnative", function(e) {
-                // var nativeFileInput = $$.sm(e.target).getParent(2).nextElementSibling;
                 inputLabeler(e.target);
             });
         }
@@ -3105,7 +3114,7 @@ export function FormComponents() {
         Object.defineProperties(body, {
             autoBuild: { writable: false },
             refresh: { writable: false },
-            refreshSelect: { writable: false },
+            refreshFile: { writable: false },
             config: { writable: false }
         })
         Object.defineProperties(body.config, {
@@ -3121,16 +3130,16 @@ export function FormComponents() {
                     wrapperStyle = value;
                 }
             },
-            labelStyle:{
+            fileLabelStyle:{
                 set: function(value) {
                     validateString(value, "A string of valid CSS styles needed for the 'fileLabelStyle' property");
-                    labelStyle = value;
+                    fileLabelStyle = value;
                 }
             },
-            inputIconStyle: {
+            fileLabel: {
                 set: function(value) {
-                    validateString(value, "A string of valid CSS styles needed for the 'config.inputIconStyle' property");
-                    selectIcon = value;
+                    validateString(value, "config.fileLabel property expects a string as value");
+                    label = value;
                 }
             },
             inputButtonStyle: {
@@ -3148,8 +3157,7 @@ export function FormComponents() {
             fileToolTip: {
                 set: function(value) {
                     validateBoolean(value, "config.fileToolTip property expect a boolean as value");
-                    fileToolTip = value;
-                    if(value) toolTipHandler = new ToolTip();
+                    fileToolTip = value;                  
                 }
             },
             toolTipStyles:{

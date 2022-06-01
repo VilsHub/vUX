@@ -8,7 +8,7 @@
  *
  * Date: 2021-07-19=T22:30Z
  */
-import * as vUxHelpers from "./src/helpers.js"
+import * as vUxHelpers from "./helpers.js"
 for (let name in vUxHelpers) {
     window[name] = vUxHelpers[name];
 }
@@ -817,7 +817,7 @@ let $$ = {
                 }
             },
             this.animate = function(draw, value, animationOptions=null){
-                //draw =>  the function that handles the actual drawing, it must accept an argument, which would be used for the animation
+                //draw =>  the function that handles the actual drawing, it must accepts 2 an arguments, which would be used for the animation
                 //draw(ele, x) means, draw the property of the element (ele) with the value 'x' for duration using the the timing function
                 
                 
@@ -893,20 +893,19 @@ let $$ = {
         }
         return element;
     },
-    delay:function(duration, callBack = null){
-        validateNumber(duration, "'$$.delay()' method argument 1 must be numeric");
-        if (duration < 0) throw new Error("'$$.delay()' method argument 1 must be greater than 0");
-        var start = performance.now();
-        requestAnimationFrame(function animate(time) {
-            // timeFraction goes from 0 to 1
-            var timeFrac = (time - start) / duration;
-            if (timeFrac > 1) timeFrac = 1;
-            if (timeFrac < 1){
-                requestAnimationFrame(animate);
-            }else{
-                if (callBack != null) callBack();
+    delay:function(duration, callback = null){
+        //duration is in miliseconds
+        validateNumber(duration, "'$$.delay(x.)' method argument 1 must be numeric");
+        if (callback != null) validateFunction(callback, "'$$.delay(.x)' method argument 2 must be a function or null");
+        if (duration < 0) throw new Error("'$$.delay(x.)' method argument 1 must be greater than 0");
+        let startTime = new Date();
+        let done = false;
+        while (!done){
+            if(((new Date()) - startTime) >= duration){
+                done = true;
+                if (callback != null) callback();
             }
-        })
+        }
     },
     attachEventHandler:function(event, DomClass, fn) {
         var idType = null;
@@ -1117,6 +1116,25 @@ let $$ = {
         },
         x:function(hide){
 
+        },
+        yStatus:function(totalHeight = null){
+            var TotalHeightBelow = totalHeight - window.innerHeight;
+            var remainingHeightBelow = totalHeight - (scrollY + window.innerHeight);
+            var state = "";
+            if (scrollY == TotalHeightBelow || scrollY == TotalHeightBelow - 1) {
+                state = "end";
+            } else {
+                state = "ON";//scroll has not reached the end
+            }
+            return {
+                TotalHeightBelow: TotalHeightBelow,
+                status: state,
+                remainingHeightBelow: remainingHeightBelow
+            }
+        },
+        direction:function(){
+            vModel.scroll.functions.init();
+            return vUxHelpers.vModel.scroll.data.state;
         }
     },
     linkStyleSheet:function(url){
@@ -1195,71 +1213,55 @@ let $$ = {
             }
         }
 
-    },
-    browserResizeProperty : function(){
-        var currentSize = window.innerWidth,alter = 0,mode = "null";
-        window.addEventListener("resize", function() {
-            if (window.innerWidth > currentSize) {
-                var diff = window.innerWidth - currentSize;
-                alter = diff;
-                currentSize = window.innerWidth;
-                mode = "expanded";
-            } else {
-                var diff = currentSize - window.innerWidth;
-                alter = diff;
-                currentSize = window.innerWidth;
-                mode = "shrinked";
-            }
-        }, false);
-    },
-    screenBreakPoint: function(breakPoints) {
-        validateObjectLiteral(breakPoints);
-        var screenMode = "";
-        var baseBeakPoints = {
-            largeStart: 1000, //large start point
-            mediumStart: 600 //medium start point
-        }
-        validateObjectMembers(breakPoints, baseBeakPoints);
-    
-        if (validateNumber(breakPoints["largeStart"])) {
-            baseBeakPoints.largeStart = breakPoints["largeStart"];
-        }
-        if (validateNumber(breakPoints["mediumStart"])) {
-            baseBeakPoints.mediumStart = breakPoints["mediumStart"];
-        }
-    },
-    verticalScroll: function (){
-        var iniSY = 0,
-            state = { direction: "", change: 0 };
-        window.addEventListener("scroll", function() {
-            if (scrollY > iniSY) { //scrolled down
-                state["change"] = scrollY - iniSY;
-                state["direction"] = "down";
-                iniSY = scrollY;
-            } else {
-                state["change"] = iniSY - scrollY;
-                state["direction"] = "up";
-                iniSY = scrollY;
-            }
-        }, false);
-    }    
+    }     
 }
-$$.verticalScroll.query = function(totalHeight = null) {
-    var TotalHeightBelow = totalHeight - window.innerHeight;
-    var remainingHeightBelow = totalHeight - (scrollY + window.innerHeight);
-    var state = "";
-    if (scrollY == TotalHeightBelow || scrollY == TotalHeightBelow - 1) {
-        state = "end";
-    } else {
-        state = "ON";
+window.ScreenBreakPoint = function(breakPoints) {
+    validateObjectLiteral(breakPoints);
+    var screenMode = "";
+    var baseBeakPoints = {
+        largeStart: 1000, //large start point
+        mediumStart: 600 //medium start point
     }
-    return {
-        TotalHeightBelow: TotalHeightBelow,
-        status: state,
-        remainingHeightBelow: remainingHeightBelow
+    validateObjectMembers(breakPoints, baseBeakPoints);
+
+    if (validateNumber(breakPoints["largeStart"])) {
+        baseBeakPoints.largeStart = breakPoints["largeStart"];
     }
-}
-Object.defineProperties($$.browserResizeProperty, {
+    if (validateNumber(breakPoints["mediumStart"])) {
+        baseBeakPoints.mediumStart = breakPoints["mediumStart"];
+    }
+
+    Object.defineProperties(this, {
+        screen: {
+            get: function() {
+                if (innerWidth > baseBeakPoints["largeStart"]) {
+                    return { mode: "large", actualSize: innerWidth };
+                } else if (innerWidth >= baseBeakPoints["mediumStart"] && innerWidth < baseBeakPoints["largeStart"]) {
+                    return { mode: "medium", actualSize: innerWidth };
+                } else {
+                    return { mode: "small", actualSize: innerWidth };
+                }
+            }
+        }
+    })
+} 
+window.browserResizeProperty = function(){
+    var currentSize = window.innerWidth,alter = 0,mode = "null";
+    window.addEventListener("resize", function() {
+        if (window.innerWidth > currentSize) {
+            var diff = window.innerWidth - currentSize;
+            alter = diff;
+            currentSize = window.innerWidth;
+            mode = "expanded";
+        } else {
+            var diff = currentSize - window.innerWidth;
+            alter = diff;
+            currentSize = window.innerWidth;
+            mode = "shrinked";
+        }
+    }, false);
+},  
+Object.defineProperties(browserResizeProperty, {
     mode: {
         get: function() {
             return mode;
@@ -1271,24 +1273,6 @@ Object.defineProperties($$.browserResizeProperty, {
         }
     }
 })
-Object.defineProperties($$.screenBreakPoint, {
-    screen: {
-        get: function() {
-            if (innerWidth > baseBeakPoints["largeStart"]) {
-                return { mode: "large", actualSize: innerWidth };
-            } else if (innerWidth >= baseBeakPoints["mediumStart"] && innerWidth < baseBeakPoints["largeStart"]) {
-                return { mode: "medium", actualSize: innerWidth };
-            } else {
-                return { mode: "small", actualSize: innerWidth };
-            }
-        }
-    }
-})
-Object.defineProperty($$.verticalScroll, "query", {
-    get: function() {
-        return state;
-    }
-});
 Object.defineProperties(window, {
     vUxModules: {
         get: function() {
@@ -1347,12 +1331,4 @@ Array.prototype.has = function(value){
     return this.indexOf(value) != -1;
 }
 /****************************************************************/
-
-/****************************************************************/
-
 window.$$ = $$;
-// var min = vUxHelpers.vModel.core.data.minified;
-export default $$;
-export {SPAEngine} from "./src/spaEngine.js";
-export {ListScroller} from "./src/listScroller.js";
-export {FormComponents} from "./src/formComponents.js";
