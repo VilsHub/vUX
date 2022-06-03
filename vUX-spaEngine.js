@@ -142,11 +142,13 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         if(historyCallback != null) {
             addEventListener("popstate", function(e){
                 if(e.state != null){
-                    var data                = e.state.data;
-                    var ele                 = $$.ss("[data-link-id='"+e.state.linkId+"']");
-                    var ownHistoryCallback  = ele.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
-                    var usedHistoryCallback = null;   
-
+                    let data                = e.state.data;
+                    let ele                 = $$.ss("[data-link-id='"+e.state.linkId+"']");
+                    let ownHistoryCallback  = ele.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
+                    let usedHistoryCallback = null;   
+                    let contentNodeId       = ele.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
+                    let contentNode         = (contentNodeId != undefined)? $$.ss("#"+contentNodeId) : defaultContentNode
+                    
                     //Check historyCallback
                     if(ownHistoryCallback != undefined){
                         validateFunction(ownLoadCallback, "No function with name'"+ownHistoryCallback+"'");
@@ -154,8 +156,8 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                     }else{ //set to the default content Node
                         usedHistoryCallback = (historyCallback != null)? historyCallback:null;
                     }
-
-                    $$.ss(".runTime").innerHTML = data;
+                    
+                    contentNode.innerHTML = data;
                     usedHistoryCallback(ele);
                 }
             }, false);
