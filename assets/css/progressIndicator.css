@@ -13,7 +13,7 @@
     30%{width:30%;} 
     40%{width:40%;} 
     60%{width:60%;} 
-    to{width:102%;}
+    to{width:100%;}
 }
 @keyframes screenLoader{
     100% {
@@ -26,6 +26,14 @@
     }
     100% {
         box-shadow:0 0 1px 2px rgba(255, 255, 255, 0);
+    }
+}
+@keyframes vspin{
+    from{
+        transform: rotate(0deg);
+    }
+    to{
+        transform: rotate(360deg);
     }
 }
 .vLoader.twinDisc{
@@ -62,7 +70,7 @@
 /* Twin Disc ends */
 
 /* Linear progress Starts*/
-.vProgressItem{
+.vProgressItem.linear{
     width: 100%;
     height: auto;
     position: absolute;
@@ -95,18 +103,8 @@
     animation-direction:alternate-reverse;
 }
 .vProgressItem .track .progress.style3{
-     /* animation-name: none; */
-    /*animation-fill-mode: forwards;
-    animation-iteration-count: 1;
-    position: relative;
-    animation-duration: 3.8s;
-    animation-timing-function: linear;
-    animation-timing-function: cubic-bezier(.02,.98,.39,.87);
-    animation-delay: 200ms; */
     animation: none;
-    /* transition: width 100ms cubic-bezier(.02,.98,.39,.87); */
     width: 0%;
-   
 }
 .vProgressItem .track .progress.style3.halted::before{
     animation-name: glow;
@@ -129,3 +127,38 @@
     display: none;
 }
 /* Linear progress Ends*/
+
+
+/* Circular progress Starts*/
+.vProgressItem.circular{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.568);
+    top: 0;
+    left:0;
+    z-index: 102;
+    display: grid;
+    place-items: center;
+}
+.vProgressItem .spinner{
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: transparent;
+    border-radius: 50%;
+    animation-name: vspin;
+    animation-duration: 1.8s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+.vProgressItem .spinner::before{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    content: "O";
+    text-align: center;
+    line-height: 50px;
+}
+
+/* Circular progress ends */

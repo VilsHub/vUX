@@ -11,6 +11,7 @@
  * 
  */
 // Import vUX core
+import { validateNumber, validateString } from "./src/helpers.js";
 import "./src/vUX-core-4.0.0.beta.js";
 
 /***************************progress Indicator*****************************/
@@ -25,19 +26,18 @@ export function ProgressIndicator(defaultProgressSpace=null) {
         linear:{
             trackColor:"#ccc", //valid css color
             progressColor:"purple", //valid css color
-            location:"top", // top | middle | bottom
-            custom:"",
-            style:3
+            location:"top", // top | center | bottom | offset eg. : top:44px
+            style:3 // the linear progress type: 1, 2, or 3
         },
         circular:{
+            icon:"",
+            overlay:""
 
         },
         grid:{
 
         },
-        custom:{
-
-        }
+        custom:"" //CSS style for custom progress indicator type
     }
     this.showProgress = function (element){
         if (!initialized) throw new Error("Please initialize using the 'initialize()' method, before trying to show progress");
@@ -47,16 +47,19 @@ export function ProgressIndicator(defaultProgressSpace=null) {
 
     this.hideProgress = function (element){
         let targetSpace = getProgressSpaceElement(element).querySelector(".vProgressItem");
-        
-        if(progressType == "linear"){
-            clearInterval(tinyIncrement);
-            let progress = targetSpace.querySelector(".progress");
-            progress.classList.add("completed");
-            progress.classList.remove("halted", "tiny", "slow");
-            progress.style.transitionDuration = ".2s";
-            progress.style.width = "100%"            
-        }else{//others
 
+        if(progressType == "linear"){
+            if(progressStyle.linear.style == 3){
+                clearInterval(tinyIncrement);
+                let progress = targetSpace.querySelector(".progress");
+                progress.classList.add("completed");
+                progress.classList.remove("halted", "tiny", "slow");
+                progress.style.transitionDuration = ".2s";
+                progress.style.width = "100%" 
+            }
+            targetSpace.classList.add("done");
+        }else{//others
+            if(targetSpace != null) targetSpace.classList.add("done");
         }
     }
 
@@ -64,7 +67,6 @@ export function ProgressIndicator(defaultProgressSpace=null) {
         if(!initialized){
             addEvents();
             addVitalStyles();
-            // buildProgressBlock();
             initialized = true;
         }
     }
@@ -74,6 +76,13 @@ export function ProgressIndicator(defaultProgressSpace=null) {
     async function addVitalStyles(){
         let path = await processAssetPath();
         vModel.core.functions.linkStyleSheet(path+"css/progressIndicator.css", "progressIndicator");
+        if(progressType != "linear"){
+            if(progressStyle.circular.icon.length > 0) {
+                let css = `.vProgressItem .spinner::before{${progressStyle.circular.icon}}`;
+                attachStyleSheet(dataAttributes["progressSpaceId"], css);
+            }
+
+        }
     }
 
     function buildProgressBlock(element){
@@ -112,8 +121,8 @@ export function ProgressIndicator(defaultProgressSpace=null) {
     }
 
     function animationController(){
-        let element = $$.ss(".vProgressItem .style3");
         if(progressType == "linear" && progressStyle.linear.style == 3){
+            let element = $$.ss(".vProgressItem .style3");
             element.style.width = "57%";
         }
     }
@@ -161,22 +170,50 @@ export function ProgressIndicator(defaultProgressSpace=null) {
         }
     }
 
+    function getComputedlocation(location){
+        let computed = null;
+        if(location == "top"){
+            computed = "top:0px;bottom:auto";
+        }else if(location == "center"){
+            computed = "top:50%;margin-top:-1.5px;";
+        }else if (location == "bottom"){
+            computed = "bottom:0px;top:auto";
+        }else{
+            computed = location;//custom style
+        }
+        return computed;
+    }
+
     function setTemplate(spaceEle){
         let template;
         let exist = spaceEle.querySelector(".vProgressItem");
         if(exist == null){
             if(progressType == "linear"){
-                let style3Properties = progressStyle.linear.style == 3?"width:0%; transition: width .8s cubic-bezier(0,.53,0,.3)":"";
+                let style3Properties    = progressStyle.linear.style == 3?"width:0%; transition: width .8s cubic-bezier(0,.53,0,.3);":"";
+                let trackColor          = progressStyle.linear.trackColor;
+                let progressColor       = progressStyle.linear.progressColor;
+                let location            = getComputedlocation(progressStyle.linear.location);
+                let overflow            = progressStyle.linear.style == 3?"visible":"hidden";
+
                 template = `
-                    <div class="vProgressItem"><div class="track"><div class="progress style3" style="${style3Properties}"></div></div></div>
+                    <div class="vProgressItem linear" style="${location};overflow:${overflow}"><div class="track" style="background-color:${trackColor}"><div class="progress style${progressStyle.linear.style}" style="${style3Properties} background-color:${progressColor};"></div></div></div>
                 `;
+            }else if(progressType == "circular"){
+                let parentSpace = spaceEle.parentNode;
+                let ovlerlayStyle = progressStyle.circular.overlay;
+                if (!$$.sm(parentSpace).isPositioned()) parentSpace.style.position = "relative";
+               
+                template = `
+                    <div class="vProgressItem circular" style="${ovlerlayStyle}"><div class="spinner"></div></div>
+                `;
+
             }
             
             spaceEle.innerHTML   += template;
         }else{
             exist.classList.remove("done");
         }
-        return new Promise((s, r)=>{s()})
+        return new Promise((s, r)=>s())
     }
 
     Object.defineProperties(this, {
@@ -194,49 +231,47 @@ export function ProgressIndicator(defaultProgressSpace=null) {
         progressStyle: {
             set: function(value) {
                 validateObjectLiteral(value, "config.progressStyle property value must be a literal object");
-                const validProgressTypes = Object.entries(progressStyle);
-                const totalValid = validProgressTypes.length;
-                const sourceProgressStyles = Object.entries(value);
-                console.log(sourceProgressStyles)
-                // const totalSourceItems = sourceProgressStyles[0].length;
-                // console.log(sourceProgressStyles[0]);
-                //Check length
-                // if (totalSourceItems > totalValid) throw new Error("config.progressStyle property value, must be an object with at max 4 properties.");
-               
-
-                for (let x = 0; x < 0; x++) {
-                    //valid properties
-                    // const validProgressType     = validProgressTypes;
-                    const validInnerProperties  = Object.keys(validProgressTypes[x][1]);
-                    const totalInnerProperties  = validInnerProperties.length;
-
-                    //source properties
-                    const targetProgressType    = validInnerProperties[x][0].toLowerCase();
-                    const targetInnerProps      = Object.keys(validInnerProperties[x][1]);
-                    const totalTargetInnerProps = targetInnerProps.length;
-                    console.log(validInnerProperties)
-                    if (!validProgressTypes.has(targetProgressType)) throw new Error(`config.progressStyle object property ${targetProgressType} is not valid. Here are the available properties`+ validProgressTypes.join(", "));
-                    console.log(validProgressTypes.has(targetProgressType))
-                    // if (totalTargetInnerProps > totalInnerProperties) throw new Error("config.progressStyle property value, must be an object with at max 4 properties.");
-                    
-                    // if () throw new Error("config.progressStyle property value, must be an object with at max 4 properties.");
-                    
-                    // let keyExist = progressStyle[element][]
-                    
-                    // console.log(totalTargetInnerProps)
-                    // console.log(totalInnerProperties)
-
-                    // if(element =! "grid"){
-
-                    // }else{
-
-                    // }
-                }
-
-                // if (validProgressTypes) throw new Error()
-                console.log(validProgressTypes);
-                // progressStyle = value;
+                const validProgressArray    = Object.entries(progressStyle);
+                const validProgressStyles   = validProgressArray.map((a)=> a[0]);
+                const totalValid            = validProgressArray.length;
+                const sourceProgressStyles  = Object.entries(value);
+                const totalSourceItems      = sourceProgressStyles.length;
                 
+                //Check length
+                if (totalSourceItems > totalValid) throw new Error("'config.progressStyle' property value, must be an object with at max 4 properties.");
+
+                for (let x = 0; x < totalSourceItems; x++) {                    
+                    // source properties
+                    const targetProgressType    = sourceProgressStyles[x][0].toLowerCase();
+                    if (!validProgressStyles.has(targetProgressType)) throw new Error(`'config.progressStyle' object property '${targetProgressType}' is not valid. Here are the available properties: `+ validProgressStyles.join(", "));
+
+                    if (targetProgressType != "custom"){
+                        validateObjectLiteral(sourceProgressStyles[x][1], `'config.progressStyle' object property '${targetProgressType}' value must be a literal object`);
+                    }else{
+                        validateString(sourceProgressStyles[x][1], `'config.progressStyle' object property '${targetProgressType}' value must be a string`);
+                    }
+                    
+                    const targetInnerProps      = Object.keys(sourceProgressStyles[x][1]);
+                    const totalTargetInnerProps = targetInnerProps.length;
+
+                    if(targetProgressType != "custom" && totalTargetInnerProps > 0){
+                        const validInnerProgressStyles   = Object.keys(progressStyle[targetProgressType]);
+                        for (let y=0; y<totalTargetInnerProps; y++){
+                            if (!validInnerProgressStyles.has(targetInnerProps[y])) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' is not valid. Here are the available config keys: `+ validInnerProgressStyles.join(", "));
+                            const targetInnerPropValue = sourceProgressStyles[x][1][targetInnerProps[y]];
+                           
+                            if(targetInnerProps[y] != "style"){
+                                validateString(targetInnerPropValue, `'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be a string`);
+                            }else{
+                                validateNumber(targetInnerPropValue, `'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be a number`);
+                                if(targetInnerPropValue > 3 || targetInnerPropValue < 0) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be either 1, 2 or 3`);
+                            }
+
+                            //Assign values
+                            progressStyle[targetProgressType][targetInnerProps[y]] = sourceProgressStyles[x][1][targetInnerProps[y]];
+                        }
+                    }
+                }    
             }
         },
         progressType: {

@@ -54,7 +54,6 @@ let $$ = {
                 validateElement(ele.single, "$$.sm(x) argument 1 must be an element or a string of CSS selector");
             }
  
-            
             this.index = function() {
                 var child = (selector instanceof Element)?selector:ele.single;
                 var index = 0,

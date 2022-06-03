@@ -266,24 +266,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         xhr.send(); //auto load its content
     }
 
-    function showLoader(container) {
-        //crreate loader if does not exist else just hide it
-        var existing = container.querySelector(".loaderCon");
-        if(existing == null){
-            if(!$$.sm(container).isPositioned()) container.style["position"] = "relative";
-            container.style["height"] = "100%";
-            var con = $$.ce("DIV");
-            con.classList.add("loaderCon");
-            var spinner = $$.ce("DIV");
-            spinner.id = "xSpin";
-            $$.sm(spinner).center();
-            con.appendChild(spinner);
-            container.appendChild(con);
-        }else{
-            $$.sm(existing).unHide();
-        }
-    }
-
     function insertContent(container, content, element){
         if(element.dataset.link == container.dataset.link){//content for the last element clicked
             document.querySelector("#entryPoint").innerHTML = content;
@@ -365,26 +347,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     })
 
     Object.defineProperties(this.config, {
-        customStyle: {
-            set: function(value) {
-                var temp1 = "config.customStyle property";
-                var temp2 = temp1 + " value must ";
-
-                function temp3(n) { return " array value element " + n + " must be a string or null" }
-                validateArray(value, temp2 + " be an array");
-                validateArrayLength(value, 3, temp2 + "be an array of 3 members");
-                if (value[0] != null) { //has overlay style
-                    validateString(value[0], temp1 + temp3(1));
-                }
-                if (value[1] != null) { //has loaderBox style
-                    validateString(value[1], temp1 + temp3(2));
-                }
-                if (value[2] != null) { //has loaderIcon style
-                    validateString(value[2], temp1 + temp3(2));
-                }
-                customStyle = value;
-            }
-        },
         loadCallback: {
             set: function(value) {
                 validateFunction(value, "config.loadCallback property value must be a function");
