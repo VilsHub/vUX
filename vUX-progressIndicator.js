@@ -16,7 +16,7 @@ import "./src/vUX-core-4.0.0.beta.js";
 
 /***************************progress Indicator*****************************/
 export function ProgressIndicator(defaultProgressSpace=null) {
-    let progressSpeed=1.8,progressType="linear", initialized=false;
+    let progressSpeed=1.8,progressType="linear", initialized=false,cShapes=null,gbr,cShapesObj;
     let network         = "online";
     let smallIncrement  = null;
     let dataAttributes = {
@@ -31,11 +31,13 @@ export function ProgressIndicator(defaultProgressSpace=null) {
         },
         circular:{
             icon:"",
-            overlay:""
-
+            overlay:"",
+            labelContent:"",
+            labelStyle:""
         },
         grid:{
-
+            gridGab:5,
+			gridColor:"red"
         },
         custom:"" //CSS style for custom progress indicator type
     }
@@ -60,6 +62,7 @@ export function ProgressIndicator(defaultProgressSpace=null) {
             targetSpace.classList.add("done");
         }else{//others
             if(targetSpace != null) targetSpace.classList.add("done");
+            if(progressType == "grid") gbr.stop();
         }
     }
 
@@ -124,6 +127,24 @@ export function ProgressIndicator(defaultProgressSpace=null) {
         if(progressType == "linear" && progressStyle.linear.style == 3){
             let element = $$.ss(".vProgressItem .style3");
             element.style.width = "57%";
+        }else if(progressType == "grid"){
+            let TargetCanvas = $$.ss(".vProgressItem canvas");
+
+            cShapes.then(function(module){
+                cShapesObj = new module.CShapes();
+                gbr = cShapesObj.animatedRectangle();
+                gbr.config.easing = "linear";
+                gbr.config.duration = 5000;
+                gbr.config.segment = [12, 5];
+                gbr.config.lineColor = "red";
+                gbr.config.lineWidth = 5;
+                // gbr.config.fn = function(){
+                //     colorCycler();
+                //     gbr.config.lineColor = colors[activeColor];
+                // };
+                gbr.config.iterationCount = "infinite";
+                gbr.draw(TargetCanvas);
+            })
         }
     }
 
@@ -186,7 +207,8 @@ export function ProgressIndicator(defaultProgressSpace=null) {
 
     function setTemplate(spaceEle){
         let template;
-        let exist = spaceEle.querySelector(".vProgressItem");
+        let exist = spaceEle.querySelector(".vProgressItem"); 
+        
         if(exist == null){
             if(progressType == "linear"){
                 let style3Properties    = progressStyle.linear.style == 3?"width:0%; transition: width .8s cubic-bezier(0,.53,0,.3);":"";
@@ -199,14 +221,29 @@ export function ProgressIndicator(defaultProgressSpace=null) {
                     <div class="vProgressItem linear" style="${location};overflow:${overflow}"><div class="track" style="background-color:${trackColor}"><div class="progress style${progressStyle.linear.style}" style="${style3Properties} background-color:${progressColor};"></div></div></div>
                 `;
             }else if(progressType == "circular"){
-                let parentSpace = spaceEle.parentNode;
                 let ovlerlayStyle = progressStyle.circular.overlay;
-                if (!$$.sm(parentSpace).isPositioned()) parentSpace.style.position = "relative";
+                let label = "";
+                if (!$$.sm(spaceEle).isPositioned()) spaceEle.style.position = "relative";
                
+                if(progressStyle.circular.labelContent.length > 0){
+                    label += `<div style="margin-top:50px;${progressStyle.circular.labelStyle}">${progressStyle.circular.labelContent}</div>`;
+                }
+
                 template = `
-                    <div class="vProgressItem circular" style="${ovlerlayStyle}"><div class="spinner"></div></div>
+                    <div class="vProgressItem circular" style="${ovlerlayStyle}">
+                        <div class="spinner"></div>
+                        ${label}
+                    </div>
                 `;
 
+               
+            }else if(progressType == "grid"){
+                if (!$$.sm(spaceEle).isPositioned()) spaceEle.style.position = "relative";
+                template = `
+                    <div class="vProgressItem grid">
+                        <canvas id="vProgressItem-grid"></canvas>
+                    </div>
+                `;
             }
             
             spaceEle.innerHTML   += template;
@@ -258,13 +295,20 @@ export function ProgressIndicator(defaultProgressSpace=null) {
                         const validInnerProgressStyles   = Object.keys(progressStyle[targetProgressType]);
                         for (let y=0; y<totalTargetInnerProps; y++){
                             if (!validInnerProgressStyles.has(targetInnerProps[y])) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' is not valid. Here are the available config keys: `+ validInnerProgressStyles.join(", "));
+                            
                             const targetInnerPropValue = sourceProgressStyles[x][1][targetInnerProps[y]];
                            
-                            if(targetInnerProps[y] != "style"){
+                            if(targetInnerProps[y] != "style" && targetInnerProps[y] != "gridGab"){
                                 validateString(targetInnerPropValue, `'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be a string`);
                             }else{
                                 validateNumber(targetInnerPropValue, `'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be a number`);
-                                if(targetInnerPropValue > 3 || targetInnerPropValue < 0) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be either 1, 2 or 3`);
+                               
+                                if(targetInnerProps[y] == "style"){
+                                    if(targetInnerPropValue > 3 || targetInnerPropValue < 0) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be either 1, 2 or 3`);
+                                }else{
+                                    if(targetInnerPropValue < 0) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be greater than 0`);
+                                }
+                                
                             }
 
                             //Assign values
@@ -280,6 +324,9 @@ export function ProgressIndicator(defaultProgressSpace=null) {
                 validateString(value, "config.progressType property value must be a string");
                 if(!validProgressTypes.has(value)) throw new Error("The specified progress type '"+ value +"' is not supported, the suported progress types are: "+ validProgressTypes.join(", "));
                 progressType = value.toLowerCase();
+                if(progressType == "grid"){
+                    cShapes = import("./vUX-cShapes.js");
+                }
             }
         },
         dataAttributes:{

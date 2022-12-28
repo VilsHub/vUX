@@ -1193,25 +1193,49 @@ let $$ = {
                 }
         }
     },
-    getTimeSegments: function(seconds){
-        var minutes     = parseInt(seconds/60);
-        var timeMinutes = minutes % 60;
-        var timeHours   = parseInt(minutes/60);
-        var seconds     = seconds-((timeMinutes*60)+(timeHours*(60*60)));
-        
+    getTimeSegments: function(targetTime, compare=true){
+        //TargetTime in seconds
+        let currentTime = null;
+        if(compare){
+            if(targetTime < currentTime){
+                currentTime = parseInt(Date.now()/1000);
+                console.warn("The specified time stamp  in $$.getTimeSegments(x.) is behind current time, nothing to return");
+                return null;
+            }
+        } 
 
-        var hoursUnit   = timeHours > 1?"hrs":"hr";
-        var minutesUnit = timeMinutes > 1?"mins":"min";
+        let remainingTime   = compare ? (targetTime - currentTime) : targetTime;
+        let seconds         = remainingTime;
+        let minutes         = Math.floor(remainingTime/60);
+        let hours           = Math.floor(remainingTime/3600);
+        let days            = Math.floor(remainingTime/86400);
+        let months          = Math.floor(remainingTime/2592100);
+        let years           = Math.floor(remainingTime/31104000);
+
+        //Get remainders
+        let remSeconds      = seconds % 60;
+        let remMinutes      = minutes % 60;
+        let remHours        = hours % 24;
+        let remDays         = days % 30;
+        let remMonths       = months % 12;
+        let remYears        = years % 360;
+
+
+        let hoursUnit       = remHours > 1?"hrs":"hr";
+        let minutesUnit     = remMinutes > 1?"mins":"min";
+
         return{
-            hours:timeHours,
-            minutes:timeMinutes,
-            seconds:seconds,
+            years:remYears,
+            months:remMonths,
+            days:remDays,
+            hours:remHours,
+            minutes:remMinutes,
+            seconds:remSeconds,
             units:{
                 hours:hoursUnit,
                 minutes:minutesUnit
             }
         }
-
     }     
 }
 window.ScreenBreakPoint = function(breakPoints) {

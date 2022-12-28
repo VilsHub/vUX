@@ -97,7 +97,7 @@ export function CShapes() {
 
     /*******************animated dashed rectangle starts********************/
     this.animatedRectangle = function() {
-        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARactive = "",ARstop = 0,animationCount = 1,cycle = 0,fn = null;
+        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARactive = "",ARstop = 0,animationCount = 1,cycle = 0,callback = null;
 
         var body = {
             config: {},
@@ -141,19 +141,21 @@ export function CShapes() {
                 requestAnimationFrame(function animate() {
                     var tf = timeFraction(animationStart, duration);
                     var progress = timing[easing](tf);
-
+                    
                     if (direction == true) { //clockwise
                         canObj.lineDashOffset = -1 * (progress * 100);
                     } else { //anti clockwise
                         canObj.lineDashOffset = progress * 100;
                     }
+                    
                     canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
                     canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
                     canObj.stroke();
+                    
                     if (ARstop == 0 && ARactive == canvasElement.id && progress < 1) {
                         requestAnimationFrame(animate);
                     } else if (progress == 1) {
-                        fn != null ? fn() : null;
+                        callback != null ? callback() : null;
                         if (animationCount != "infinite") {
                             cycle++;
                             if (cycle < animationCount) {
@@ -234,36 +236,31 @@ export function CShapes() {
             },
             easing: {
                 set: function(value) {
-                    if (validateString(value)) {
-                        if (validateObjectMember(timing, value)) {
-                            AReasing = value;
-                        }
-                    }
+                    validateString(value);
+                    validateObjectMember(timing, value);
+                    AReasing = value;
                 }
             },
             duration: {
                 set: function(value) {
-                    if (validateNumber(value)) {
-                        if (value > 0) {
-                            ARduration = value;
-                        } else {
-                            ARduration = 0;
-                        }
+                    validateNumber(value);
+                    if (value > 0) {
+                        ARduration = value;
+                    } else {
+                        ARduration = 0;
                     }
                 }
             },
             clockWise: {
                 set: function(value) {
-                    if (validateBoolean(value)) {
-                        ARclockWise = value;
-                    }
+                    validateBoolean(value); 
+                    ARclockWise = value;
                 }
             },
-            fn: {
+            callback: {
                 set: function(value) {
-                    if (validateFunction(value, "'config.fn' property value must be a function")) {
-                        fn = value;
-                    }
+                    validateFunction(value, "'config.callback' property value must be a function");
+                    callback = value;
                 }
             }
         });

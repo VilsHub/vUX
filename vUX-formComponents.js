@@ -2915,10 +2915,18 @@ export function FormComponents() {
                 set: function(value) {
                     validateArray(value, "An array of valid CSS styles needed for 'config.handleStyles' property");
                     function temp(n){return "'config.handleStyles' array element "+n+" must be a string of valid CSS"}
-                    if(value[0] != undefined) validateString(value[0], temp(1)); //nomal style
-                    if(value[1] != undefined) validateString(value[1], temp(2)); //off style
-                    if(value[2] != undefined) validateString(value[2], temp(3)); //on style
-                    handleStyles = value;
+                    if(value[0] != undefined){
+                        validateString(value[0], temp(1)); //nomal style
+                        handleStyles[0] = value[0];
+                    } 
+                    if(value[1] != undefined){
+                        validateString(value[1], temp(2)); //off style 
+                        handleStyles[1] = value[1];
+                    } 
+                    if(value[2] != undefined){
+                        validateString(value[2], temp(3)); //on style  
+                        handleStyles[2] = value[2];
+                    } 
                 }
             },
             labelStyles:{
@@ -3120,7 +3128,7 @@ export function FormComponents() {
         Object.defineProperties(body.config, {
             sizeAttribute: {
                 set: function(value) {
-                    validateString("'config.sizeAttribute' property value must be a string");
+                    validateString(value, "'config.sizeAttribute' property value must be a string");
                     sizeAttribute = value;
                 }
             },

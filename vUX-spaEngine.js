@@ -148,6 +148,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                     let usedHistoryCallback = null;   
                     let contentNodeId       = ele.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
                     let contentNode         = (contentNodeId != undefined)? $$.ss("#"+contentNodeId) : defaultContentNode
+                    let nodeLink            = ele.dataset.link;
                     
                     //Check historyCallback
                     if(ownHistoryCallback != undefined){
@@ -156,8 +157,10 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                     }else{ //set to the default content Node
                         usedHistoryCallback = (historyCallback != null)? historyCallback:null;
                     }
-                    
+
+                    contentNode.dataset.link = nodeLink;
                     contentNode.innerHTML = data;
+                    
                     usedHistoryCallback(ele);
                 }
             }, false);

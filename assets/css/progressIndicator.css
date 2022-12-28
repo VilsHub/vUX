@@ -69,15 +69,26 @@
 }
 /* Twin Disc ends */
 
-/* Linear progress Starts*/
-.vProgressItem.linear{
+/* Progress Item */
+.vProgressItem{
     width: 100%;
     height: auto;
     position: absolute;
-    background-color: transparent;
+    /* background-color: transparent; */
     top: 0;
     left:0;
     z-index: 102;
+}
+
+/* Linear progress Starts*/
+.vProgressItem.linear{
+    /* width: 100%; */
+    /* height: auto; */
+    /* position: absolute; */
+    /* background-color: transparent; */
+    /* top: 0; */
+    /* left:0; */
+    /* z-index: 102; */
 }
 .vProgressItem .track{
     width: 100%;
@@ -131,13 +142,13 @@
 
 /* Circular progress Starts*/
 .vProgressItem.circular{
-    width: 100%;
+    /* width: 100%; */
     height: 100%;
-    position: absolute;
+    /* position: absolute; */
     background-color: rgba(255, 255, 255, 0.568);
-    top: 0;
-    left:0;
-    z-index: 102;
+    /* top: 0; */
+    /* left:0; */
+    /* z-index: 102; */
     display: grid;
     place-items: center;
 }
@@ -156,9 +167,19 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    content: "O";
+    content: "";
     text-align: center;
     line-height: 50px;
 }
 
 /* Circular progress ends */
+
+.vProgressItem.grid{
+    height: 100%;
+}
+
+.vProgressItem.grid canvas{
+    height: 100%;
+    position: relative;
+    width: 99.9%;
+}
