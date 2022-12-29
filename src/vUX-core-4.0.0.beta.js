@@ -1198,10 +1198,10 @@ let $$ = {
         let currentTime = null;
         if(compare){
             if(targetTime < currentTime){
-                currentTime = parseInt(Date.now()/1000);
                 console.warn("The specified time stamp  in $$.getTimeSegments(x.) is behind current time, nothing to return");
                 return null;
             }
+            currentTime = parseInt(Date.now()/1000);
         } 
 
         let remainingTime   = compare ? (targetTime - currentTime) : targetTime;
