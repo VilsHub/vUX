@@ -38,7 +38,7 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
 ## Features
 
 
-The beta version (**v4.0.0.beta** ) has the following features added:
+The beta version (**v4.0.0-beta** ) has the following features added:
 
 
 

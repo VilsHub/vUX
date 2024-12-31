@@ -220,7 +220,6 @@ top:0;
     width: 200%;
     position: absolute;
     height: 100%;
-    display: flex;
     transition: left .1s cubic-bezier(.83,0,.65,.34);
 }
 .vSlideSwitchWrapper.sOff .vSliderBg{
@@ -233,8 +232,9 @@ top:0;
     left:0px;
 }
 .vSlideSwitchWrapper .vSliderBg > div{
-    flex:1;
+    float: left;
     font-size: 12px;
+    width: 50%;
 }
 .vSlideSwitchWrapper .vSliderBg-OFF{
     text-align: right;

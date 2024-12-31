@@ -1,0 +1,19 @@
+.dItem.square {
+    border-radius: 0;;
+    position: absolute;
+    width: 0;
+    height: 0;
+    background-color: rgba(255, 255, 255, 0.623);
+}
+.dItem-Area {
+    position: relative;
+}
+
+.dItem-Area.drw-mode {
+    cursor:crosshair;
+}
+
+.dItem-Area.draw-mode{
+    /* cursor: se-resize; */
+    color:rgba(255, 253, 253, 0);
+}

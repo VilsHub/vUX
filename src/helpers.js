@@ -233,25 +233,38 @@ window.vModel = {
 window.processAssetPath = async function () {
     if(!vModel.core.data.assetPathProcessed){
         let mainScript = document.querySelector("script[type ='module'][data-id]"); 
-        let init =false;       
-        const result = await (function() {
-            while (!init){
-                mainScript = document.querySelector("script[type ='module'][data-id]"); 
-                if(mainScript != null){
-                    let id = mainScript.dataset.id;                   
-                    if(id.toLowerCase() == "vux"){
-                        init = true;
-                        let path = mainScript.dataset.libraryRoot;
-                        path = path.replace(/[\s\uFEFF\xA0\/]+$/g, ''); //remove "/" from path end if exist
-                        vModel.core.data.assetPathProcessed = true;
-                        vModel.core.data.assetPath = path+"/assets/";
-                        return path+"/assets/";
+        let init =false;
+        try {
+            const result = await (function() {
+                while (!init){
+                    mainScript = document.querySelector("script[type ='module'][data-id]"); 
+                    if(mainScript != null){
+                        let id = mainScript.dataset.id;                   
+                        if(id.toLowerCase() == "vux"){
+                            let path = mainScript.dataset.libraryRoot;
+                            if(path != undefined){
+                                path = path.replace(/[\s\uFEFF\xA0\/]+$/g, ''); //remove "/" from path end if exist
+                                vModel.core.data.assetPathProcessed = true;
+                                vModel.core.data.assetPath = path+"/assets/";
+                                init = true;
+                                return path+"/assets/";
+                            }else{
+                                throw new Error("No 'data-library-root' atrribute set on the script element with the 'src' attribute value = "+mainScript.src);
+                            }
+                            
+                        }
                     }
                 }
+            })() 
+            
+            if(init == true){
+                return result;
             }
-        })() 
- 
-        return result;
+            
+        } catch (error) {
+            return error;
+        }    
+       
     }else{
         return vModel.core.data.assetPath;
     }   
@@ -261,7 +274,7 @@ processAssetPath().then(function(assetPath){
     vModel.core.functions.linkStyleSheet(assetPath+"css/core.css");
 })
 
-// console.log(vModel.core.data.assetPath)
+
 /*************************Helper functions***********************/
 export function cssGroupStyler(elementObj, StyleObject) {
     if(elementObj instanceof Element){
@@ -287,8 +300,7 @@ export function percentageToAngle(percentage, start){
 
 export function runGroupStyler(element, StyleObject){
     for (var property in StyleObject) {
-        var cleanCSSProperty = camelToCSSstandard(property);
-        element.style[cleanCSSProperty] = StyleObject[property];
+        element.style[property] = StyleObject[property];
     }
 }
 
@@ -673,7 +685,7 @@ export function attachStyleSheet(dataID, css) {
     } else {
         styleElement.appendChild(document.createTextNode(css));
     }
-    document.getElementsByTagName('body')[0].appendChild(styleElement);
+    document.getElementsByTagName('head')[0].appendChild(styleElement);
 }
 
 export function validateAlpha(input) {

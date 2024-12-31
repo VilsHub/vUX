@@ -11,7 +11,8 @@
  * 
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import { validateArray, validateObjectLiteral, validateString } from "./src/helpers.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /********************Custom form component***********************/
 export function FormComponents() {
@@ -78,8 +79,18 @@ export function FormComponents() {
 
     }
     async function addVitalStyles() {
-        var path = await processAssetPath();
-        vModel.core.functions.linkStyleSheet(path+"css/formComponents.css", "formComponents");
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/formComponents.css", "formComponents");
+            }else{
+                throw new Error(path)
+            }
+           
+        } catch (error) {
+            console.error(error)
+        }
     }
     addVitalStyles();
     /***************************/
@@ -119,6 +130,7 @@ export function FormComponents() {
                     var index = sOptions[x].index;
                     sOptions[x].getAttribute("disabled") != null ? optionEle.setAttribute("data-disabled", "true") : optionEle.setAttribute("data-disabled", "false");
                     optionEle.setAttribute("order", ++n.v);
+
                     if (isMultiple == true) { //multiple select
                         if (sOptions[x].selected) {
                             var comma = selectField.innerHTML.length > 0 ? ", " : "";
@@ -2704,7 +2716,17 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*SlideSwitch^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.slideSwitch = function(){
-        var slideSwitchWrapperStyles = ["", "", ""], slideSwitchClassName = "", handleStyles=["", "", ""], showLabel=true, labelStyles=["", ""], sizeAttribute="", labelAttribute="", slideDistance="";
+        var slideSwitchClassName = "", showLabel=true, slideDistance="";
+        var dataAttributes = {//data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+            size: "",
+            label: ""
+        }
+        var styles = {
+            label:["", ""], //on, off
+            handle:["", "", ""], //normal, on, off
+            wrapper:["", "", ""] //normal, on, off
+        }
+
         function sliderSwitchStyleSheet(){
             if ($$.ss("style[data-id='v" + slideSwitchClassName + "']") == null) {
                 var css = "";
@@ -2719,14 +2741,14 @@ export function FormComponents() {
                 css += ".v" + slideSwitchClassName + ".sOn::before {left:CALC(100% - "+wrapperHeight+")}"; //Slide distance
                
                 //user defined handle styles
-                css += ".v" + slideSwitchClassName + "::before {"+handleStyles[0]+"}"; //normal style
-                css += ".v" + slideSwitchClassName + ".sOn::before {"+handleStyles[1]+"}"; //On style
-                css += ".v" + slideSwitchClassName + ".sOff::before {"+handleStyles[2]+"}"; //Off style
+                css += ".v" + slideSwitchClassName + "::before {"+styles.handle[0]+"}"; //normal style
+                css += ".v" + slideSwitchClassName + ".sOn::before {"+styles.handle[1]+"}"; //On style
+                css += ".v" + slideSwitchClassName + ".sOff::before {"+styles.handle[2]+"}"; //Off style
 
                 //user defined wrapper styles
-                css += ".v" + slideSwitchClassName + "{"+slideSwitchWrapperStyles[0]+"}"; //normal style
-                css += ".v" + slideSwitchClassName + ".sOn{"+slideSwitchWrapperStyles[1]+"}"; //on style
-                css += ".v" + slideSwitchClassName + ".sOff{"+slideSwitchWrapperStyles[2]+"}"; //off style
+                css += ".v" + slideSwitchClassName + "{"+styles.wrapper[0]+"}"; //normal style
+                css += ".v" + slideSwitchClassName + ".sOn{"+styles.wrapper[1]+"}"; //on style
+                css += ".v" + slideSwitchClassName + ".sOff{"+styles.wrapper[2]+"}"; //off style
 
 
                 attachStyleSheet("v" + slideSwitchClassName, css);
@@ -2737,8 +2759,8 @@ export function FormComponents() {
                 css += ".v" + slideSwitchClassName + "::before {"+handleMainStyle2+"}"; //normal style
                 css += ".v" + slideSwitchClassName + ".sOn::before {left:CALC(100% - "+wrapperHeight+")}";
                 if (slideDistance != ""){
-                    if (slideDistance[0] != undefined) css += ".v" + slideSwitchClassName + ".sOff::before {left:"+slideDistance[0]+"!important;}"; //off
-                    if (slideDistance[1] != undefined) css += ".v" + slideSwitchClassName + ".sOn::before {left:"+slideDistance[1]+"!important;}"; //on
+                    if (slideDistance[1] != undefined) css += ".v" + slideSwitchClassName + ".sOff::before {left:"+slideDistance[1]+"!important;}"; //off
+                    if (slideDistance[0] != undefined) css += ".v" + slideSwitchClassName + ".sOn::before {left:"+slideDistance[0]+"!important;}"; //on
                 }  
                 attachStyleSheet("vSecondary", css);
             }
@@ -2775,14 +2797,15 @@ export function FormComponents() {
         function runSlideSwitchBuild(nativeCheckbox){
             if (nativeCheckbox.getAttribute("type") != "checkbox") throw new Error("Only checkboxes can be made a slide switch");
             var parent = nativeCheckbox.parentNode;
-            var checkboxParentPosition = $$.sm(parent).cssStyle("position");
-            var temp = "SliderSwitch input " + sizeAttribute + " value contains invalid CSS size";
+            var checkboxParentPosition = $$.sm(parent).cssStyle("position");            
+
+            var temp = "SliderSwitch input " + dataAttributes.size + " value contains invalid CSS size";
             
-            if(sizeAttribute == "") throw new Error("One of the native checkBox input to be made sliderSitch has no dimension specified with the " + sizeAttribute + " attribute");
+            if(dataAttributes.size == "") throw new Error("One of the native checkBox input to be made sliderSitch has no dimension specified with the " + dataAttributes.size + " attribute");
             
-            var dimension = nativeCheckbox.getAttribute(sizeAttribute);
+            var dimension = nativeCheckbox.dataset[hyphenatedToCamel(dataAttributes.size)];
             
-            if(dimension == null) throw new Error("One of the native checkBox input to be made sliderSitch has no dimension specified with the " + sizeAttribute + " attribute");
+            if(dimension == null) throw new Error("One of the native checkBox input to be made sliderSitch has no dimension specified with the " + dataAttributes.size + " attribute");
 
             var parseDimension = dimension.split(",");
             validateDimension(parseDimension[0], temp);
@@ -2806,7 +2829,7 @@ export function FormComponents() {
             slideSwitchWrapper.classList.add("vSlideSwitchWrapper", "v" + slideSwitchClassName);
 
             //Wrapper custom style
-            slideSwitchWrapper.setAttribute("style", slideSwitchWrapperStyles[0]+defaultStyle);
+            slideSwitchWrapper.setAttribute("style", styles.wrapper[0]+defaultStyle);
 
             //Set check state
             if(nativeCheckbox.checked) {
@@ -2834,15 +2857,15 @@ export function FormComponents() {
 
             //Add labels if enable
             if(showLabel){
-                var labels = nativeCheckbox.getAttribute(labelAttribute).split(",");
+                var labels = nativeCheckbox.dataset[hyphenatedToCamel(dataAttributes.label)].split(",");
                 labels[0] == undefined?"On":labels[0];
                 labels[1] == undefined?"Off":labels[1];
                 sliderBgON.appendChild(document.createTextNode(labels[0])); 
                 sliderBgOFF.appendChild(document.createTextNode(labels[1])); 
 
             }
-            sliderBgOFF.setAttribute("style", labelStyles[0]); //off labelbg style
-            sliderBgON.setAttribute("style", labelStyles[1]); //on labelbg style
+            sliderBgOFF.setAttribute("style", styles.label[1]); //off labelbg style
+            sliderBgON.setAttribute("style", styles.label[0]); //on labelbg style
             // slideSwitchWrapper
             
             //Insert Slider BG states to Slider Bg
@@ -2861,7 +2884,7 @@ export function FormComponents() {
         var body = {
             autoBuild: function() {
                 if (slideSwitchClassName == "") throw new Error("Setup imcomplete: sliderSwitch class name must be supllied, specify using the 'config.className' property");
-                if (sizeAttribute == "") throw new Error("Setup imcomplete: sliderSwitch size attribute to be used has not been specified, the attribute to be used must be specified using the 'config.sizeAttribute' property");
+                if (dataAttributes.size == "") throw new Error("Setup imcomplete: sliderSwitch size attribute to be used has not been specified, the attribute to be used must be specified using the 'config.sizeAttribute' property");
                 var existingSheet = $$.ss("#v" + slideSwitchClassName);
                 convertCheckboxTosliderSwitch();
                 existingSheet == null ? sliderSwitchStyleSheet() : null;
@@ -2895,49 +2918,6 @@ export function FormComponents() {
                     slideSwitchClassName = value;
                 }
             },
-            sizeAttribute: {
-                set: function(value) {
-                    validateString("'config.sizeAttribute' property value must be a string");
-                    sizeAttribute = value;
-                }
-            },
-            wrapperStyles: {
-                set: function(value) {
-                    validateArray(value, "An array of valid CSS styles needed for 'config.wrapperStyles' property");
-                    function temp(n){return "'config.wrapperStyles' array element "+n+" must be a string of valid CSS"}
-                    if(value[0] != undefined) validateString(value[0], temp(1)); //nomal style
-                    if(value[1] != undefined) validateString(value[1], temp(2)); //off style
-                    if(value[2] != undefined) validateString(value[2], temp(3)); //on style
-                    slideSwitchWrapperStyles = value;
-                }
-            },
-            handleStyles:{
-                set: function(value) {
-                    validateArray(value, "An array of valid CSS styles needed for 'config.handleStyles' property");
-                    function temp(n){return "'config.handleStyles' array element "+n+" must be a string of valid CSS"}
-                    if(value[0] != undefined){
-                        validateString(value[0], temp(1)); //nomal style
-                        handleStyles[0] = value[0];
-                    } 
-                    if(value[1] != undefined){
-                        validateString(value[1], temp(2)); //off style 
-                        handleStyles[1] = value[1];
-                    } 
-                    if(value[2] != undefined){
-                        validateString(value[2], temp(3)); //on style  
-                        handleStyles[2] = value[2];
-                    } 
-                }
-            },
-            labelStyles:{
-                set: function(value) {
-                    validateArray(value, "An array of valid CSS styles needed for 'config.labelStyles' property");
-                    function temp(n){return "'config.labelStyles' array element "+n+" must be a string of valid CSS"}
-                    if(value[0] != undefined) validateString(value[0], temp(1)); //off stale label style
-                    if(value[1] != undefined) validateString(value[1], temp(2)); //on state label style
-                    labelStyles = value;
-                }
-            },
             showLabel :{
                 set: function(value) {
                     if (validateBoolean(value, "A boolean is needed for the 'config.showLabel' property")) {
@@ -2945,25 +2925,83 @@ export function FormComponents() {
                     }
                 }
             },
-            labelAttribute:{
-                set: function(value) {
-                    validateString("'config.labelAtribute' property value must be a string");
-                    labelAttribute = value;
-                }
-            },
             slideDistance:{
                 set: function(value) {
-                    validateString("'config.slideDistance' property value must be a string");
+                    validateArray(value, "'config.slideDistance' property value must be a string");
                     slideDistance = value;
                 }
-            }
+            },
+            dataAttributeNames:{
+                set: function(value) {
+                    
+                    var validOptions = Object.keys(dataAttributes);
+                    validateObjectLiteral(value, "'config.dataAttributeNames' property value must be an object");
+                    var entries = Object.entries(value);
+                    if(entries.length <= 2){
+                        entries.forEach(function(entry){
+                            if(validOptions.indexOf(entry[0]) == -1) throw new Error("The data attribute '"+ entry[0] +"' specified is not supported, the suported specifiers are: "+ validOptions.join(", "));
+                            dataAttributes[entry[0]] = entry[1];
+                        });
+                    }else{
+                        throw new Error("'config.dataAttributeNames' object value contains more than 2 entries");
+                    }
+                }
+            },
+            styles:{
+                set: function(value) {
+                    
+                    var validOptions = Object.keys(styles);
+                    validateObjectLiteral(value, "'config.dataAttributeNames' property value must be an object");
+                    var entries = Object.entries(value);
+                    if(entries.length <= 3){
+                        entries.forEach(function(entry){
+                            if(validOptions.indexOf(entry[0]) == -1) throw new Error("The style '"+ entry[0] +"' specified is not supported, the suported specifiers are: "+ validOptions.join(", "));
+
+                            //validate value;
+                            validateArray(entry[1], "The style property '"+ entry[0] +"' expects an array of "+styles[entry[0]].length+" elements");
+
+
+                            //validate length
+                            if (!(styles[entry[0]].length == entry[1].length)){
+                                throw new Error("The style property '"+ entry[0] +"' expects an array of "+styles[entry[0]].length+" elements. "+entry[1].length +" supplied");
+                            }
+
+
+                            //Validate values
+                            function temp(n, a, c){return "'config.style."+a+"' array element "+n+" must be a string of valid CSS. The supplied element '"+c+"' is not a string"}
+
+                            let total = styles[entry[0]].length;
+
+                            for (let index = 0; index < total; index++) {
+                                if(entry[1][index] != undefined) validateString(entry[1][index], temp(index+1, entry[0], entry[1][index] ));
+                            }
+
+                            styles[entry[0]] = entry[1];
+                        });
+                    }else{
+                        throw new Error("'config.styles' object value contains more than 3 entries");
+                    }
+                }
+            },
         });
         return body;
     }
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom file builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.file = function() {
-        var fileDim = [],label="", toolTipHandler=null, toolTipStyles={arrowColor:"",backgrondColor:""}, buttonLabel="",wrapperStyle = "",toolTipHandler = null,fileToolTip = false,fileLabelStyle = "", fileClassName = "",inputButtonStyle = "",sizeAttribute = "";
+        var fileDim = [],label="", toolTipHandler=null, buttonLabel="",toolTipHandler = null, fileToolTip = false, fileClassName = "", enableButtonIcon=false;
+
+        var styles = {
+            toolTip:{arrowColor:"",fontColor:""},
+            fileLabel:"", 
+            wrapper:"",
+            inputButton:"",
+            buttonIcon:""
+        }
+
+        var dataAttributes = {//data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+            size: ""
+        }
 
         function fileStyleSheet() {
             if ($$.ss("style[data-id='v" + fileClassName + "']") == null) {
@@ -2971,14 +3009,19 @@ export function FormComponents() {
                 var css = "";
                 css += ".v" + fileClassName + "{width:" + fileDim[0] + "; height:" + fileDim[1] + "; z-index: 60;"+"}";
                 css += ".v" + fileClassName + " .fLabel {line-height:" + fileDim[1] + ";}";
-                css += ".v" + fileClassName + " .fButton::before {line-height:" + fileDim[1] + ";}";
                 css += ".v" + fileClassName + " .fButton {height:" + fileDim[1] + ";}";
                 
-                if (wrapperStyle != "") css += ".v" + fileClassName + "{"+wrapperStyle+"}";
+                if (styles.wrapper != "") css += ".v" + fileClassName + "{"+styles.wrapper+"}";
                 
-                if (fileLabelStyle != "") css += ".v" + fileClassName + " .fLabel {"+fileLabelStyle+"}";
+                if (styles.fileLabel != "") css += ".v" + fileClassName + " .fLabel {"+styles.fileLabel+"}";
                     
-                if (inputButtonStyle != "") css += ".v" + fileClassName + " .fButton{" + inputButtonStyle + "}";
+                if (styles.inputButton != "") css += ".v" + fileClassName + " .fButton{" + styles.inputButton + "}";
+
+                if (enableButtonIcon == true){
+                    css += ".v" + fileClassName + " .fButton{position:relative; padding-left:"+fileDim[1]+"; }";
+                    css += ".v" + fileClassName + " .fButton::before {line-height:" + fileDim[1] + "; height:"+fileDim[1]+"; content:'-'; width: "+fileDim[1]+"; position:absolute; left:0; top:0; text-align:center;}";
+                    css += ".v" + fileClassName + " .fButton::before {"+styles.buttonIcon+"}";
+                } 
 
                 attachStyleSheet("v" + fileClassName, css);
             }
@@ -2996,12 +3039,13 @@ export function FormComponents() {
             var multiple = false;
             var fileParentPosition = $$.sm(fileParent).cssStyle("position");
 
-            var dimension = nativeFile.getAttribute(sizeAttribute);
+            var dimension = nativeFile.dataset[hyphenatedToCamel(dataAttributes.size)];
+
             if (dimension == null) {
-                throw new Error("One of the native select input to be made custom has no dimension specified with the '" + sizeAttribute + "' attribute");
+                throw new Error("One of the native select input to be made custom has no dimension specified with the '" + dataAttributes.size + "' attribute");
             }
 
-            var temp = "File input " + sizeAttribute + " value contains invalid CSS size";
+            var temp = "File input " + dataAttributes.size + " value contains invalid CSS size";
             var parseDimension = dimension.split(",");
             validateDimension(parseDimension[0], temp);
             validateDimension(parseDimension[1], temp);
@@ -3063,7 +3107,7 @@ export function FormComponents() {
                 import("./vUX-toolTip.js")
                 .then(function(module){
                     toolTipHandler = new module.ToolTip();
-                    toolTipHandler.config.tipBoxStyles = toolTipStyles;
+                    toolTipHandler.config.tipBoxStyles = styles.toolTip;
                     toolTipHandler.config.className = "fileInputToolTip-"+fileClassName;
                     toolTipHandler.initialize();
                 })
@@ -3093,8 +3137,8 @@ export function FormComponents() {
                 if (fileClassName == "") {
                     throw new Error("Setup imcomplete: file input class name must be supllied, specify using the 'config.className' property");
                 }
-                if (sizeAttribute == "") {
-                    throw new Error("Setup imcomplete: file input size attribute to be used has not been specified, the attribute to be used must be specified using the 'config.sizeAttribute' property");
+                if (dataAttributes.size == "") {
+                    throw new Error("Setup imcomplete: file input size attribute to be used has not been specified, this attribute must be specified using the 'config.dataAttributeNames.sizeAttribute' property");
                 }
                 var existingSheet = $$.ss("#v" + fileClassName);
 
@@ -3126,34 +3170,10 @@ export function FormComponents() {
             config: { writable: false }
         })
         Object.defineProperties(body.config, {
-            sizeAttribute: {
-                set: function(value) {
-                    validateString(value, "'config.sizeAttribute' property value must be a string");
-                    sizeAttribute = value;
-                }
-            },
-            wrapperStyle: {
-                set: function(value) {
-                    validateString(value, "A string of valid CSS styles needed for the 'wrapperStyle' property");
-                    wrapperStyle = value;
-                }
-            },
-            fileLabelStyle:{
-                set: function(value) {
-                    validateString(value, "A string of valid CSS styles needed for the 'fileLabelStyle' property");
-                    fileLabelStyle = value;
-                }
-            },
             fileLabel: {
                 set: function(value) {
                     validateString(value, "config.fileLabel property expects a string as value");
                     label = value;
-                }
-            },
-            inputButtonStyle: {
-                set: function(value) {
-                    validateString(value, "A string of valid CSS styles needed for the 'config.inputButtonStyle' property");
-                    inputButtonStyle = value;
                 }
             },
             className: {
@@ -3168,23 +3188,75 @@ export function FormComponents() {
                     fileToolTip = value;                  
                 }
             },
-            toolTipStyles:{
-                set:function(value){
-                    var validKeys = Object.keys(toolTipStyles);
-                    var sourceKeys = Object.keys(value);
-                    validateObject(value, "file.config.toolTipStyles property expects an object");
-                    if (sourceKeys.length > 2) {
-                        throw new Error(temp + " cannot be more than 2 properties");
+            buttonLabel: {
+                set: function(value) {
+                    validateString(value, "'config.buttonLabel' property value must be a string");
+                    buttonLabel = value;
+                }
+            },
+            enableButtonIcon:{
+                set: function(value) {
+                    validateBoolean(value, "config.enableButtonIcon property expect a boolean as value");
+                    enableButtonIcon = value;                  
+                }
+            },
+            dataAttributeNames:{
+                set: function(value) {
+                    
+                    var validOptions = Object.keys(dataAttributes);
+                    validateObjectLiteral(value, "'config.dataAttributeNames' property value must be an object");
+                    var entries = Object.entries(value);
+                    if(entries.length <= 2){
+                        entries.forEach(function(entry){
+                            if(validOptions.indexOf(entry[0]) == -1) throw new Error("The data attribute '"+ entry[0] +"' specified is not supported, the suported specifiers are: "+ validOptions.join(", "));
+                            dataAttributes[entry[0]] = entry[1];
+                        });
+                    }else{
+                        throw new Error("'config.dataAttributeNames' object value contains more than 2 entries");
                     }
+                }
+            },
+            styles:{
+                set: function(value) {
+                    
+                    var validOptions = Object.keys(styles);
+                    validateObjectLiteral(value, "'config.dataAttributeNames' property value must be an object");
+                    var entries = Object.entries(value);
 
-                    for (let x = 0; x < sourceKeys; x++) {
-                        if(validKeys.indexOf(sourceKeys[x]) == -1){
-                            throw new Error ("file.config.toolTipStyles property can only accept these any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
-                        }else{
-                            validateString(value[sourceKeys[x]], "file.config.toolTipStyles object key: "+sourceKeys[x]+" expects a string as value");
-                        }
+                    if(entries.length <= 5){
+                        entries.forEach(function(entry){
+                            if(validOptions.indexOf(entry[0]) == -1) throw new Error("The style '"+ entry[0] +"' specified is not supported, the suported specifiers are: "+ validOptions.join(", "));
+
+                            //validate value;
+                            if (entry[0] == "toolTip"){ ///Validate toolTip object value
+                                validateObjectLiteral(entry[1], "The style property '"+ entry[0] +"' expects an object as value");
+                                //valid keys
+                                let validSub = Object.keys(styles.toolTip);
+
+                                let subProperties = Object.entries(entry[1]);
+
+                                subProperties.forEach(property => {
+                                    if (validSub.indexOf(property[0]) == -1 ){ //Invalid property
+                                        throw new Error("The style property '"+ entry[0] +"' expects an object as value, with any of the following keys: "+ validSub.join(", "));
+                                    }
+                                });
+
+
+                                //validate key values
+                                if(typeof subProperties[0][1] != "string" || typeof subProperties[1][1] != "string"){ 
+                                    throw new Error("The style property '"+ entry[0] +"' expects an object as value, with any of the following keys: "+ validSub.join(", ")+ " set to string value of vallid CSS styles");
+                                }
+
+                            }else{
+                                //Validate rest of string values
+                                validateString(entry[1], "config.styles."+entry[0]+"' value must be a string of valid CSS. The supplied value '"+entry[1]+"' is not a string");
+                            }
+
+                            styles[entry[0]] = entry[1];
+                        });
+                    }else{
+                        throw new Error("'config.styles' object value contains more than 3 entries");
                     }
-                    toolTipStyles = value;
                 }
             }
         })

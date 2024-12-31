@@ -11,7 +11,7 @@
  * 
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /************************Form validator**************************/
 export function FormValidator(form = null) {
@@ -328,8 +328,19 @@ export function FormValidator(form = null) {
     //create style styleSheet
     async function setStyleSheet() {
         //link module css sheet
-        var path = await processAssetPath();
-        vModel.core.functions.linkStyleSheet(path+"css/formValidator.css", "formValidator");
+
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/formValidator.css", "formValidator");
+            }else{
+                throw new Error(path)
+            }
+           
+        } catch (error) {
+            console.error(error)
+        }
 
         //Attach custom style
         if ($$.ss("style[data-id='formValidatorStyles']") == null) {

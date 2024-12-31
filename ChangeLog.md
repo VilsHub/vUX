@@ -1,26 +1,30 @@
 # Changelog
-## v4.0.0.beta
-## Fixed
-- Fixed modal multiple display bug
-- Fixed draw() call on backward compatibility (> ver 2.0)
-- Fixed datepicker auto place issue
-
+## v4.0.0-beta
 ## Added
-- Added slideSwitch sub module to custom form module
-- Added blur overlayType to modalDisplayer module
-- Added optionStateStyle to selectCustom input
-- Added wrapAttribute property to both custom select and datepicker
-- Added utility namespace ($$), with some modules moved to it
-- Added return datatype option to Ajax.Create() static method
+- domDrawer module
+- $$.styleElement() feature
+- slideSwitch sub module to custom form module
+- blur overlayType to modalDisplayer module
+- optionStateStyle to selectCustom input
+- wrapAttribute property to both custom select and datepicker
+- utility namespace ($$), with some modules moved to it
+- return datatype option to Ajax.Create() static method
 - Resizer module
 - Slide utility
+- SPAEngine.render() feature for CSR (Client server rendering)
+
+## Fixed
+- modal multiple display bug
+- draw() call on backward compatibility (> ver 2.0)
+- datepicker auto place issue
+- 404 on loading core.css error
 
 ## Removed
-- Removed colorOverlayStyle in modalDisplayerObj
-- Removed config.smallView property, to be set using attributes for individual elements, leading to the addition of config/smallViewAttribute property for setting the attribute to be used
+- colorOverlayStyle in modalDisplayerObj
+- config.smallView property, to be set using attributes for individual elements, leading to the addition of config/smallViewAttribute property for setting the attribute to be used
 - loadProgressIndicator Removed, as IO.dowload() send download status, to be used by user for their needs
 - imageManipulator module removed, now handled by $$.sm.filter()
-- Removed validator.config.progressIndicatorStyle
+- validator.config.progressIndicatorStyle
 
 ## Changed
 - modalDisplayerObj overlayType property changed to overlayBackgroundType

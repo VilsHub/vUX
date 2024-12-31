@@ -11,4 +11,4 @@
  * **************Core**************
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";

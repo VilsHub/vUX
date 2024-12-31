@@ -11,7 +11,7 @@
  * 
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /************************ListScroller****************************/
 export function ListScroller(container, listParent) {
@@ -83,8 +83,20 @@ export function ListScroller(container, listParent) {
     }
 
     async function addVitalStyles() {
-        var path = await processAssetPath();
-        vModel.core.functions.linkStyleSheet(path+"css/listScroller.css", "listScroller");
+
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/listScroller.css", "listScroller");
+            }else{
+                throw new Error(path)
+            }
+           
+        } catch (error) {
+            console.error(error)
+        }
+
         container.setAttribute("style", wrapperStyle);
         stylePlane();
     }

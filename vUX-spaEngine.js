@@ -11,24 +11,23 @@
  * 
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************SPA Engine*****************************/
 export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     if(defaultURL != null) validateString(defaultURL, "SPAEngine(x.) contructor argument 1 must be a string or null");
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(.x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
-    var customStyle = "",initialize = false,tempStoarage = {}, dataLink, preClickCallback=null;
+    var initialize = false,tempStoarage = {}, dataLink, preClickCallback=null, functions={};
     var loadCallBack = null, historyCallback=null, loadtoNode = true;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         url:"",//the URL to be called
         urlPath:"", //The URL that will be appended to the base page, needed for pushstate
         cache:"",
-        viewMode:"", //attribute to set if link is for mobile or desktop (only needed for app with 2 navigation systems: one for destop and ther other for mobile). if attribute exist then check if view state is mobile or desktop in order to select the right menu. Attribute value can only be "desktop" or "mobile". Example data-viewport = "mobile"
         addToHistory:"", // attribute to set if to use history or not, default = true
         loadIntoNode:"",// attribute to set if content is to be loaded into contentNode. Default=true
-        pageTitle:"",//The title for the link content, only used when history is enable for the link
+        pageTitle:"",//The title for the SPA link returned content, only used when history is enable for the link
         loadCallback:"callback-load", //if exist override the default 
 		historyCallback:"callback-history", //if exist override the default 
     }
@@ -37,7 +36,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     }
     this.initialize = function() {
         if (!initialize) {
-            if (customStyle != "") addCustomStyle(); //Custom style set
             if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
             runSetup();
             initialize = true;
@@ -74,8 +72,8 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
             //Check loadCllback
             if(ownLoadCallback != undefined){
-                validateFunction(window[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
-                usedloadCallBack = window[ownLoadCallback];
+                validateFunction(functions[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
+                usedloadCallBack = functions[ownLoadCallback];
             }else{ //set to the default content Node
                 usedloadCallBack = (loadCallBack != null)? loadCallBack:null;
                 validateFunction(usedloadCallBack, "'config.loadCallback' property value must be a function");
@@ -152,11 +150,15 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                     
                     //Check historyCallback
                     if(ownHistoryCallback != undefined){
-                        validateFunction(ownLoadCallback, "No function with name'"+ownHistoryCallback+"'");
-                        usedHistoryCallback = ownHistoryCallback;
+                        validateFunction(functions[ownLoadCallback], "No function with name'"+ownHistoryCallback+"'");
+                        usedHistoryCallback = functions[ownHistoryCallback];
                     }else{ //set to the default content Node
                         usedHistoryCallback = (historyCallback != null)? historyCallback:null;
                     }
+
+                    //Set page title
+                    let title   = ele.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
+                    title == undefined? $$.ss("title").innerText : $$.ss("title").innerText = title;
 
                     contentNode.dataset.link = nodeLink;
                     contentNode.innerHTML = data;
@@ -189,15 +191,15 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
             //Check loadCllback
             if(ownLoadCallback != undefined){
-                validateFunction(window[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
-                usedloadCallBack = window[ownLoadCallback];
+                validateFunction(functions[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
+                usedloadCallBack = functions[ownLoadCallback];
             }else{ //set to the default content Node
                 usedloadCallBack = (loadCallBack != null)? loadCallBack:null;
                 validateFunction(usedloadCallBack, "'config.loadCallback' property value must be a function");
             }
 
             if(xhr.status == 200){
-                if(container != null){ //content is to loaded in
+                if(container != null){ //content is to be loaded in
 
                     if(element != null){
                         var useHistory = element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)];
@@ -273,6 +275,11 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
     function insertContent(container, content, element){
         if(element.dataset.link == container.dataset.link){//content for the last element clicked
+            //set page title is set
+            let title   = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
+            title == undefined?$$.ss("title").innerText:$$.ss("title").innerText = title;
+
+            //set Content
             document.querySelector("#entryPoint").innerHTML = content;
         }else{
         }
@@ -332,20 +339,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         }
     }
 
-    function addCustomStyle() {
-        var css = "";
-        if (customStyle[0] != "") { //overlay style
-            css += ".loaderCon{" + customStyle[0] + "}";
-        }
-        if (customStyle[1] != "") { //loaderBox style
-            css += ".loaderCon #xSpin{" + customStyle[1] + "}";
-        }
-        if (customStyle[2] != "") { //loaderIcon style
-            css += ".loaderCon #xSpin::before{" + customStyle[2] + "}";
-        }
-        attachStyleSheet("spaEngine", css);
-    }
-
     Object.defineProperties(this, {
         config: { writable: false },
         initialize: { writable: false }
@@ -370,11 +363,11 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                 historyCallback = value;
             }
         },
-        dataAttributes:{
+        dataAttributeNames:{
             set: function(value) {
                 // The trigger element will hold the defined attributes
                 var validOptions = Object.keys(dataAttributes);
-                validateObjectLiteral(value, "'config.dataAttributes' property value must be an object");
+                validateObjectLiteral(value, "'config.dataAttributeNames' property value must be an object");
                 var entries = Object.entries(value);
                 if(entries.length <= 7){
                     entries.forEach(function(entry){
@@ -382,7 +375,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                         dataAttributes[entry[0]] = entry[1];
                     });
                 }else{
-                    throw new Error("'config.dataAttributes' object value contains more than 7 entries");
+                    throw new Error("'config.dataAttributeNames' object value contains more than 7 entries");
                 }
             }
         },
@@ -401,7 +394,110 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                     throw new Error("'config.classes' object value contains more than "+totalOptions+" entries");
                 }
             }
+        },
+        functions:{
+            set: function(value) {
+                validateObjectLiteral(value, "'config.functions' property value must be an object");
+                functions = value
+            }
         }
     })
+}
+
+// Rendering engine
+SPAEngine.render = function (configs, callback){
+    // Check if route exist and if protected
+    let route           = location.pathname;
+
+    // Validate configs and callback
+
+
+    let routes          = Object.entries(configs.routes);
+    let routeProperties = routeExist(route, routes);
+
+    // Check if route exist
+    if (routeProperties.status){
+
+        // Check if route is protected
+        if (routeProperties.properties.protected){
+            // check if logged in
+            if (isLoggedIn()){
+                renderContent(configs, routeProperties);
+            }else{
+                // Redirect to Auth page
+                location.assign(routeProperties.authURL);
+            }
+
+        }else{
+            renderContent(configs, routeProperties);
+        }
+
+    }else{
+        document.querySelector("body").innerText = "404";
+    }
+
+    function routeExist(sourceRoute, targetRoutes){
+    /**
+     * @param string sourceRoute: The route to check
+     * @param array targetRoutes: The route instance from the defined routes to check against
+     */
+        let totalElements   = targetRoutes.length;
+        let state           = {
+            status: false,
+            properties: null
+        };
+
+        for (let index = 0; index < totalElements; index++) {
+            const targetRoute = targetRoutes[index];
+
+            if (sourceRoute == targetRoute[1]["pattern"]) {
+                state.status        = true;
+                state.properties    = targetRoute;
+                break;
+            }
+            
+        }
+
+        return state;
+    }
+
+    function isLoggedIn(){
+        let status=null;
+        if (sessionStorage.userProperties == undefined) {
+            status = false;
+        }else{
+            if (sessionStorage.userProperties.auth){
+                status = true;
+            }
+        }
+    }
+
+    function renderContent(configs, routeProperties){
+        // load block sections
+        let contentBlockSections = configs.blockSections[routeProperties.properties[0]];
+        let allSections = Object.entries(contentBlockSections);
+        let totalSections = allSections.length;
+      
+        if (totalSections > 0){
+            allSections.forEach(element => {
+                let url = element[1].source;
+                let mountPoint = element[1].mountPoint;
+                getSection(url, mountPoint);
+            });
+        }
+
+        
+    }
+
+    function saveblockSessionData(){
+
+    }
+
+    async function getSection(url, mountPoint) {
+        const response = await fetch(url);
+        const html = await response.text();
+        $$.ss(mountPoint).innerHTML = html;
+    }
+    
 }
 /**********************************************************************/

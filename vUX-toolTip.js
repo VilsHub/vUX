@@ -11,7 +11,7 @@
  * 
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************Tool tip*****************************/
 export function ToolTip() {
@@ -98,8 +98,18 @@ export function ToolTip() {
         })
     }
     async function addVitalStyles() {
-        var path = await processAssetPath();
-        vModel.core.functions.linkStyleSheet(path+"css/toolTip.css", "toolTip");
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/toolTip.css", "toolTip");
+            }else{
+                throw new Error(path)
+            }
+           
+        } catch (error) {
+            console.error(error)
+        }
     }
     this.initialize = function() {
         if (initialized == 0) {
@@ -142,16 +152,16 @@ export function ToolTip() {
             set: function(value) {
                 var validKeys = Object.keys(tipBoxStyles);
                 var sourceKeys = Object.keys(value);
-                validateObject(value, "file.config.tipBoxStyles property expects an object");
+                validateObject(value, "config.tipBoxStyles property expects an object");
                 if (sourceKeys.length > 2) {
                     throw new Error(temp + " cannot be more than 2 properties");
                 }
 
                 for (let x = 0; x < sourceKeys; x++) {
                     if(validKeys.indexOf(sourceKeys[x]) == -1){
-                        throw new Error ("file.config.tipBoxStyles property can only accept these any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
+                        throw new Error ("config.tipBoxStyles property can only accept these any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
                     }else{
-                        validateString(value[sourceKeys[x]], "file.config.tipBoxStyles object key: "+sourceKeys[x]+" expects a string as value");
+                        validateString(value[sourceKeys[x]], "config.tipBoxStyles object key: "+sourceKeys[x]+" expects a string as value");
                     }
                 }
 

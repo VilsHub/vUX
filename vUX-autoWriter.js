@@ -11,12 +11,12 @@
  * **************Core**************
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /**************************TypeWriter****************************/
 export function AutoWriter() {
     var PlainTextCounter = 0, mainTextBox ,mainTexts, self = this, n, callBackDelay = 0, typingSpeed = [10, 20],
-    ints = [], blinkCursor, dEraser=0, conE="", type = "single", cursorBlinkDelay = 300, init=false, familyN = 0, cursorStyle={style:"solid", width:"1px", color:"green"}, showCursor=false, family=0, currentText="";
+    execWrite = null, blinkCursor, conE="", type = "single", cursorBlinkDelay = 300, init=false, familyN = 0, cursorStyle={style:"solid", width:"1px", color:"green"}, showCursor=false, family=0, currentText="";
 
     // |    => line break
     // *n*  => backspace n times
@@ -34,12 +34,18 @@ export function AutoWriter() {
     function pauseWriting(con){
         if(showCursor){
             blinkCursor = setInterval(function(){
-                con.nextElementSibling.classList.toggle("hide");
+                if(con.nextElementSibling != null){
+                    con.nextElementSibling.classList.toggle("hide");
+                }
             }, cursorBlinkDelay);
         }
     }
     function doneWriting(con){
-        if(showCursor) con.nextElementSibling.classList.add("hide");
+        if(showCursor){
+            if(con.nextElementSibling != null){
+                con.nextElementSibling.classList.add("hide");
+            }
+        }
     }
     function resumeWriting(con){
         if(showCursor) clearInterval(blinkCursor);
@@ -58,31 +64,30 @@ export function AutoWriter() {
         };
     }
     function write(con, text, char, fn){
-        if (dEraser != 0) clearTimeout(dEraser);
         con.innerHTML += char;
         if (text.length > 0){
-            self.writeText(con, text, fn);
             PlainTextCounter++;
+            self.writeText(con, text, fn);
         }
     }
     function erase(n, con){
         var p_Delted = "", delay ;
         for (var x = 0; x < n; x++) {
-            delay = $$.randomInteger(typingSpeed[0], typingSpeed[1]);
-            $$.delay(delay, function(){
-                var deleted = Array.from(con.innerHTML);
-                deleted.pop();
-                p_Delted = deleted.join("");
-                con.innerHTML = p_Delted;
-            })
+            var deleted = Array.from(con.innerHTML);
+            deleted.pop();
+            p_Delted = deleted.join("");
+            con.innerHTML = p_Delted;
         }
         return delay * n;
     }
     function addSpan(con){
-        var spanE = $$.ce("span", {class:"vAutoWriter"});
-        var blinker = $$.ce("span", {class:"vAutoWriterBlinker", style:"border-left:"+cursorStyle.style+" "+cursorStyle.width+" "+ cursorStyle.color});
-        con.appendChild(spanE);
-        if(showCursor) con.appendChild(blinker);
+        let exist = con.querySelector(".vAutoWriter");
+        if(exist == null){
+            var spanE = $$.ce("span", {class:"vAutoWriter"});
+            var blinker = $$.ce("span", {class:"vAutoWriterBlinker", style:"border-left:"+cursorStyle.style+" "+cursorStyle.width+" "+ cursorStyle.color});
+            con.appendChild(spanE);
+            if(showCursor) con.appendChild(blinker);
+        }
     }
     function writeType(con, text){
         if(Object.getPrototypeOf(con).constructor.name == "NodeList"){
@@ -95,21 +100,37 @@ export function AutoWriter() {
         }
     }
     function clearMemory(){
-        var total = ints.length;
-        for (var x=0; x<= total; x++){
-            clearTimeout(x)
+        clearTimeout(execWrite);
+    }
+    async function setStyleSheet() {
+        //link module css sheet
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/autoWriter.css", "autoWriter");
+            }else{
+                throw new Error(path)
+            }
+           
+        } catch (error) {
+            console.error(error)
         }
     }
     this.writeText = function(textBox, text, fn=null) {
+
+        validateElement(textBox, "writeTextObj.writeText(x..) method argument 1 must be a valid HTML element");
+        validateString(text, "writeTextObj.writeText(.x.) method argument 2 must be a string");
+        if (fn != null) validateFunction(fn, "writeTextObj.writeText(..x) method argument 3 must be a function");
+
         if(!init){
             mainTextBox = textBox;
             mainTexts = text;
             type = writeType(textBox, text);
             family = textBox.length;
+            setStyleSheet();
             init = true;
         }
-
-        if (fn != null) validateFunction(fn, "writeTextObj.writeText(..x) method argument 3 must be a function");
 
         if(type == "single"){
             if(conE == ""){
@@ -128,36 +149,54 @@ export function AutoWriter() {
         
         n = $$.randomInteger(typingSpeed[0], typingSpeed[1]);
         
-        if (PlainTextCounter < currentText.length - 1) {
-            ints[ints.length] = setTimeout(function() {
-                var char = currentText[PlainTextCounter];
-                if(char == "|"){//line break
-                    write(conE, currentText, "<br/>", fn);
-                }else if(char == "*"){ //erase
-                    var deleteDetails = getDeletedDetails(PlainTextCounter, currentText)
-                    var dSpeed = erase(deleteDetails.value, conE);
-                    PlainTextCounter = (PlainTextCounter) + deleteDetails.value;
-                    char = currentText[PlainTextCounter];
-                    dEraser = setTimeout(function(){
-                        write(conE, currentText, char, fn)
-                    }, dSpeed);
-                }else if(char == "~"){//Delay
-                    pauseWriting(conE);
-                    var delayDuration = getDuration(PlainTextCounter, currentText);
-                    if(true){
-                        $$.delay(delayDuration, function(){
+        if (PlainTextCounter < currentText.length) {
+
+            clearTimeout(execWrite);
+
+            execWrite = setTimeout(function() {
+                // if (document.hidden || document.mozHidden || document.webkitHidden || document.msHidden) {
+
+                // }else{
+                    var char = currentText[PlainTextCounter];
+                    if(char == "|"){//line break
+                        write(conE, currentText, "<br/>", fn);
+                    }else if(char == "*"){ //erase
+                        var deleteDetails = getDeletedDetails(PlainTextCounter, currentText);
+                        self.deleteText(deleteDetails.value, conE);
+                        PlainTextCounter = (PlainTextCounter) + (deleteDetails.length)+2;
+                        char = currentText[PlainTextCounter];
+
+                        if (char != undefined){
+                            write(conE, currentText, char, fn);
+                        }else{
+                            doneWriting(conE);
+                        }
+                        
+                    }else if(char == "~"){//Delay
+                        var delayDuration   = getDuration(PlainTextCounter, currentText);
+
+                        pauseWriting(conE);
+                        
+                        var beginType       = setTimeout(function (){
+                            clearTimeout(beginType);
                             resumeWriting(conE);
+
                             PlainTextCounter = (PlainTextCounter) + (delayDuration.toString().length + 2);
                             char = currentText[PlainTextCounter];
+
                             write(conE, currentText, char, fn);
-                        })
+                        }, delayDuration);
+                        
+                    }else{//write
+                        write(conE, currentText, char, fn);
                     }
-                }else{//write
-                    write(conE, currentText, char, fn);
-                }
+                // }
+                
             }, n);
+
         }else {
             PlainTextCounter = -1;
+
             doneWriting(conE);
             if(type == "single"){
                 clearMemory();
@@ -175,6 +214,27 @@ export function AutoWriter() {
                 }
             }
         }
+    }
+    this.deleteText = function(n, textBox, fn=null) {
+
+        validateInteger(n, "writeTextObj.deleteText(x..) method argument 1 must be an integer");
+        validateElement(textBox, "writeTextObj.deleteText(.x.) method argument 2 must be a valid HTML element");
+        if (fn != null) validateFunction(fn, "writeTextObj.deleteText(..x) method argument 3 must be a function");
+        
+        let speed = $$.randomInteger(typingSpeed[0], typingSpeed[1]);
+        let deletCount = 0;
+        
+        let del = setInterval(function (){
+            erase(1, textBox);
+            if (deletCount == n){ //deletion completed
+                clearInterval(del);
+                if (fn != null){
+                    setTimeout(fn, callBackDelay);
+                }
+            }
+            deletCount++;
+        }, speed);
+
     }
     this.config = {}
     Object.defineProperties(this.config, {
@@ -222,7 +282,8 @@ export function AutoWriter() {
     })
     Object.defineProperties(this, {
         writeText: { writable: false },
-        config: { writable: false }
+        config: { writable: false },
+        deleteText: { writable: false }
     })
 }
 /****************************************************************/

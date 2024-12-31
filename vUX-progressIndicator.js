@@ -12,7 +12,7 @@
  */
 // Import vUX core
 import { validateNumber, validateString } from "./src/helpers.js";
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************progress Indicator*****************************/
 export function ProgressIndicator(defaultProgressSpace=null) {
@@ -77,14 +77,24 @@ export function ProgressIndicator(defaultProgressSpace=null) {
     this.config = {}
 
     async function addVitalStyles(){
-        let path = await processAssetPath();
-        vModel.core.functions.linkStyleSheet(path+"css/progressIndicator.css", "progressIndicator");
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/progressIndicator.css", "progressIndicator");
+            }else{
+                throw new Error(path)
+            }
+           
+        } catch (error) {
+            console.error(error)
+        }
+       
         if(progressType != "linear"){
             if(progressStyle.circular.icon.length > 0) {
                 let css = `.vProgressItem .spinner::before{${progressStyle.circular.icon}}`;
                 attachStyleSheet(dataAttributes["progressSpaceId"], css);
             }
-
         }
     }
 
@@ -329,11 +339,11 @@ export function ProgressIndicator(defaultProgressSpace=null) {
                 }
             }
         },
-        dataAttributes:{
+        dataAttributeNames:{
             set: function(value) {
                 // The trigger element will hold the defined attributes
                 var validOptions = Object.keys(dataAttributes);
-                validateObjectLiteral(value, "'config.dataAttributes' property value must be an object");
+                validateObjectLiteral(value, "'config.dataAttributeNames' property value must be an object");
                 var entries = Object.entries(value);
                 if(entries.length <= 1){
                     entries.forEach(function(entry){
@@ -341,7 +351,7 @@ export function ProgressIndicator(defaultProgressSpace=null) {
                         dataAttributes[entry[0]] = entry[1];
                     });
                 }else{
-                    throw new Error("'config.dataAttributes' object value contains more than 7 entries");
+                    throw new Error("'config.dataAttributeNames' object value contains more than 7 entries");
                 }
             }
         },

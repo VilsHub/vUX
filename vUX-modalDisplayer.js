@@ -11,7 +11,7 @@
  * 
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /************************ModalDisplayer***************************/
 export function ModalDisplayer() {
@@ -545,8 +545,18 @@ export function ModalDisplayer() {
     };
     this.config = {};
     async function addVitalStyles() {
-        var path = await processAssetPath();
-        vModel.core.functions.linkStyleSheet(path+"css/modalDisplayer.css", "modalDisplayer");
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/modalDisplayer.css", "modalDisplayer");
+            }else{
+                throw new Error(path)
+            }
+           
+        } catch (error) {
+            console.error(error)
+        }
     }
     function show(modal) {
         if (!initialized) throw new Error("Please initialize using the 'initialize()' method, before triggering modal");

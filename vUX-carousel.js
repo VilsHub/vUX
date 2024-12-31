@@ -11,7 +11,7 @@
  * 
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.beta.js";
+import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************Carousel*****************************/
 export function Carousel(container, viewport) {
