@@ -14,11 +14,10 @@
 import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************SPA Engine*****************************/
-export function SPAEngine(defaultURL=null, defaultContentNode=null) {
-    if(defaultURL != null) validateString(defaultURL, "SPAEngine(x.) contructor argument 1 must be a string or null");
-    if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(.x) contructor argument 2, an element (the contentNode) must be either be null or an element");
+export function SPAEngine(defaultContentNode=null) {
+    if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
-    var initialize = false,tempStoarage = {}, dataLink, preClickCallback=null, functions={};
+    var initialize = false,tempStoarage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
     var loadCallBack = null, historyCallback=null, loadtoNode = true;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
@@ -34,10 +33,15 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
     var classes = {
         spaLink:"" //Must be specified, as it is used in registering SPA links
     }
+    var routeConfigs = null;
     this.initialize = function() {
         if (!initialize) {
             if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
-            runSetup();
+            if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
+            
+            boot();
+
+            // runSetup();
             initialize = true;
         }
     }
@@ -45,7 +49,6 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
 
     function runSetup(){
         registerEventhandlers();
-        boot(); //handle other pages other than the default onload
     }
 
     function loadFrom(element) {
@@ -100,10 +103,10 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                                 insertContent(contentNode, arrContent[index], dataLink);                                
                                 usedloadCallBack != null ? usedloadCallBack(element): null;
                             } else { //link does not exist, get from server
-                                getContent(url, contentNode, element, cache);
+                                getLinkContent(url, contentNode, element, cache);
                             }
                         } else { //pageContent has no data, load from server and create data
-                            getContent(url, contentNode, element, cache);
+                            getLinkContent(url, contentNode, element, cache);
                         }
                     } else { //Does not support web storage, use object
                         if (tempStoarage.pageLink != undefined) { //atleast a page has been cached
@@ -116,20 +119,20 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
                                 insertContent(contentNode, arrContent[index], dataLink);        
                                 loadCallBack != null ? usedloadCallBack(element) : null;
                             } else { //link does not exist, get from server
-                                getContent(url, contentNode, element, cache);
+                                getLinkContent(url, contentNode, element, cache);
                             }
                         } else { //pageContent has no data, load from server and create data
-                            getContent(url, contentNode, element, cache);
+                            getLinkContent(url, contentNode, element, cache);
                         }
                     }
                 }else{
                      //ignore cache storage and Load from server
-                    getContent(url, contentNode, element, cache);
+                    getLinkContent(url, contentNode, element, cache);
                 }
             }
 
         }else { //just get only content
-            getContent(url, null, element);
+            getLinkContent(url, null, element);
         }
     }
 
@@ -180,7 +183,7 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         return id
     }
 
-    function getContent(url, container=null, element=null, cache=null) {
+    function getLinkContent(url, container=null, element=null, cache=null) {
         if (preClickCallback != null) preClickCallback(element);
         
         var xhr = $$.ajax({method:"GET", url:url}, "html");       
@@ -271,21 +274,100 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         });
         
         xhr.send(); //auto load its content
+        
+    }
+
+    async function getPageContent(name, url){
+
+        var getFromServer = false;
+        var content = "";
+        var status = false;
+
+        if (sessionStorage.pageContents == undefined) {
+            sessionStorage.pageContents = JSON.stringify({});
+            getFromServer = true;
+        }else{
+            var allPageContents = sessionStorage.getIterable("pageContents");
+            if (allPageContents[name] != undefined){
+                getFromServer = false;
+            }
+        }
+
+        if (getFromServer){
+            const response = await fetch(url);
+
+            if (response.ok){
+                status= true
+                content = await response.text();
+
+                // Save data
+                saveSectionData("pageContents", name, content);
+            }else{
+                console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+            }
+
+        }else{
+            status=true;
+            content = allPageContents[name];
+        }
+
+        return{
+            status:status,
+            content:content
+        }
     }
 
     function insertContent(container, content, element){
-        if(element.dataset.link == container.dataset.link){//content for the last element clicked
-            //set page title is set
-            let title   = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
-            title == undefined?$$.ss("title").innerText:$$.ss("title").innerText = title;
+        if (element != null){
+            if(element.dataset.link == container.dataset.link){//content for the last element clicked
 
-            //set Content
-            document.querySelector("#entryPoint").innerHTML = content;
+                //set page title is set
+                let title   = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
+                title == undefined?$$.ss("title").innerText:$$.ss("title").innerText = title;
+    
+                //set Content
+                container.innerHTML = content;
+    
+            }
         }else{
+            //set Content
+            container.innerHTML = content;
         }
     }
 
     function boot(){
+
+        // Check if route exist and if protected
+        let route           = location.pathname;
+
+        let routes          = Object.entries(routeConfigs.routes);
+        let routeProperties = routeExist(route, routes);
+
+
+        // Check if route exist
+        if (routeProperties.status){
+
+            // Check if route is protected
+            if (routeProperties.properties.protected){
+                // check if logged in
+                if (isLoggedIn()){
+                    renderContent(routeConfigs, routeProperties);
+                }else{
+                    // Redirect to Auth page
+                    location.assign(routeProperties.authURL);
+                }
+
+            }else{
+                renderContent(routeConfigs, routeProperties);
+            }
+
+        }else{
+            document.querySelector("body").innerText = "404";
+        }
+
+    }
+
+    function runApp(){
         //get element with path
         var urlPath = location.pathname;
         var element = getElementWithPath(urlPath);
@@ -293,7 +375,39 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         if(element != null){ //load from element
             loadFrom(element);
         }else{//get content into container
-            getContent(location.pathname, defaultContentNode, null, null);
+            getLinkContent(location.pathname, defaultContentNode, null, null);
+        }
+    }
+
+    function loadPageContents(){
+
+        let route = location.pathname;
+        var content = null;
+        if(routeConfigs.routes.default.pattern == route){
+            // load the default content
+            if(routeConfigs.routes.default.protected){
+                if (isLoggedIn()){
+                    content = getPageContent("default", routeConfigs.routes.default.target);
+                }else{
+                    // Redirect to Auth page
+                    location.assign(routeConfigs.routes.default.authURL);
+                }
+            }else{
+                content = getPageContent("default", routeConfigs.routes.default.target);
+            }
+
+            content.then(function(data){
+                if(data.status){
+                    if(defaultContentNode != null){
+                        defaultContentNode.innerHTML = data.content;
+                        if (bootCallback != null) bootCallback();
+                    }
+                }
+            })            
+        }else{
+            // non default route
+            let routes          = Object.entries(routeConfigs.routes);
+            let routeProperties = routeExist(route, routes);
         }
     }
 
@@ -339,6 +453,215 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         }
     }
 
+    function routeExist(sourceRoute, targetRoutes){
+        /**
+         * @param string sourceRoute: The route to check
+         * @param array targetRoutes: The route instance from the defined routes to check against
+         */
+            let totalElements   = targetRoutes.length;
+            let state           = {
+                status: false,
+                properties: null
+            };
+    
+            for (let index = 0; index < totalElements; index++) {
+                const targetRoute = targetRoutes[index];
+    
+                if (sourceRoute == targetRoute[1]["pattern"]) {
+                    state.status        = true;
+                    state.properties    = targetRoute;
+                    break;
+                }
+                
+            }
+    
+            return state;
+    }
+
+    function isLoggedIn(){
+        let status=null;
+        if (sessionStorage.userProperties == undefined) {
+            status = false;
+        }else{
+            if (sessionStorage.userProperties.auth){
+                status = true;
+            }
+        }
+    }
+
+    function renderContent(configs, routeProperties){
+        // load all block sections
+        let contentBlockSections    = configs.blockSections;
+
+        // Block sections
+        let allBlockSections        = Object.entries(contentBlockSections);
+        let totalBlockSections      = allBlockSections.length;      
+
+       
+        var  sectionPromises = [];
+
+        if (totalBlockSections > 0){
+
+            // store all block section promises in the sectionPromises array
+            sectionPromises = allBlockSections.map((element) => {
+                let name        = element[0];
+                let url         = element[1].source;
+                let mountPoint  = element[1].mountPoint;
+                
+                // Returns a promise
+                return getSectionContents("blockSections", name, url, mountPoint);
+            });
+
+        }
+
+        // load all page sections
+        if (configs.pageSections[routeProperties.properties[0]] != undefined){
+            
+            // Page sections
+            let contentPageSections     = configs.pageSections[routeProperties.properties[0]];
+            var allPageSections         = Object.entries(contentPageSections);
+            let totalPageSections       = allPageSections.length;
+
+            if(totalPageSections > 0){
+                
+                // store all page section promises in the sectionPromises array
+                var tmpSectionPromises = allPageSections.map((element) => {
+
+                    let name        = element[0];
+                    let url         = element[1].source;
+                    let mountPoint  = element[1].mountPoint;
+                    let replace     = element[1].replaceOld;
+                    
+                    // Assuming getSectionContents is a function that returns a promise
+                    return getSectionContents("pageSections", name, url, mountPoint, replace);
+                });
+                    
+
+                // Concatenate page section to block section if possible
+                if(tmpSectionPromises !== undefined && tmpSectionPromises.length > 0){
+                    sectionPromises = sectionPromises.concat(tmpSectionPromises);
+                }
+            }
+
+        }
+        
+        // Use Promise.all to wait for all promises then load page content
+        Promise.all(sectionPromises)
+        .then((results) => {
+            loadPageContents();
+        })
+        .catch((error) => {
+            console.error("Error processing sections:", error);
+        });
+        
+    }
+
+    function saveSectionData(sectionType, key, data){
+
+         /**
+         *  @param string $sectionType: blockSections | pageSections 
+         * 
+         */ 
+
+        if (typeof(Storage) !== "undefined") {
+            //storage is supported
+
+            if(sessionStorage[sectionType] !== undefined){
+                let sectionData = sessionStorage.getIterable(sectionType);
+                sectionData[key] = data;
+                sessionStorage.setIterable(sectionType, sectionData);
+            }else{
+                let sectionData = {};
+                sectionData[key] = data;
+                sessionStorage.setIterable(sectionType, sectionData);
+            }
+            
+        }
+    }
+
+    function sectionDataExist(sectionType, key){
+
+        /**
+         *  @param string $sectionType: blockSections | pageSections 
+         * 
+         */ 
+
+        if (typeof(Storage) !== "undefined") {
+            //storage is supported
+
+            if(sessionStorage[sectionType] == undefined){
+                // Not saved
+                return false;
+            }else{
+                // Exist, check if key exist
+                let sectionData = sessionStorage.getIterable(sectionType);
+                if (sectionData[key] !== undefined){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+        } else {
+            // Sorry! No Web Storage support..
+            return false;
+        }
+            
+    }
+
+    async function getSectionContents(sectionType, name, url, mountPoint, replace=true) {
+        let  html = "";
+
+        // check if its cached
+        const section = sectionDataExist(sectionType, name);
+
+        if(section){
+            // get saved data
+            let blockSections = sessionStorage.getIterable(sectionType);
+            html = blockSections[name];
+        }else{
+            const response = await fetch(url);
+            html = await response.text();
+
+            parseScriptElements(html);
+
+            // Save the data
+            saveSectionData(sectionType, name, html);
+        }
+    
+        if(replace){
+            $$.ss(mountPoint).innerHTML = html;
+        }else{
+            // Append 
+            $$.ss(mountPoint).insertAdjacentHTML('beforeend', html);
+        }
+        
+    }
+
+    async function parseScriptElements(data){
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data, 'text/html');
+
+        // Get all <script> tags
+        const scripts = doc.querySelectorAll('script');
+
+        // Dynamically load each script
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.type = script.type || 'text/javascript';
+
+            // Copy attributes from the original <script>
+            Array.from(script.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+
+            newScript.dataset.parsed = true;
+
+            // Append the new <script> to the document's <head>
+            document.head.appendChild(newScript);
+        });
+    }
+
     Object.defineProperties(this, {
         config: { writable: false },
         initialize: { writable: false }
@@ -349,6 +672,12 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
             set: function(value) {
                 validateFunction(value, "config.loadCallback property value must be a function");
                 loadCallBack = value;
+            }
+        },
+        bootCallback: {
+            set: function(value) {
+                validateFunction(value, "config.bootCallback property value must be a function");
+                bootCallback = value;
             }
         },
         preClickCallback: {
@@ -398,106 +727,14 @@ export function SPAEngine(defaultURL=null, defaultContentNode=null) {
         functions:{
             set: function(value) {
                 validateObjectLiteral(value, "'config.functions' property value must be an object");
-                functions = value
+                functions = value;
+            }
+        },
+        routeConfigs: {
+            set: function(value){
+                routeConfigs = value;
             }
         }
     })
-}
-
-// Rendering engine
-SPAEngine.render = function (configs, callback){
-    // Check if route exist and if protected
-    let route           = location.pathname;
-
-    // Validate configs and callback
-
-
-    let routes          = Object.entries(configs.routes);
-    let routeProperties = routeExist(route, routes);
-
-    // Check if route exist
-    if (routeProperties.status){
-
-        // Check if route is protected
-        if (routeProperties.properties.protected){
-            // check if logged in
-            if (isLoggedIn()){
-                renderContent(configs, routeProperties);
-            }else{
-                // Redirect to Auth page
-                location.assign(routeProperties.authURL);
-            }
-
-        }else{
-            renderContent(configs, routeProperties);
-        }
-
-    }else{
-        document.querySelector("body").innerText = "404";
-    }
-
-    function routeExist(sourceRoute, targetRoutes){
-    /**
-     * @param string sourceRoute: The route to check
-     * @param array targetRoutes: The route instance from the defined routes to check against
-     */
-        let totalElements   = targetRoutes.length;
-        let state           = {
-            status: false,
-            properties: null
-        };
-
-        for (let index = 0; index < totalElements; index++) {
-            const targetRoute = targetRoutes[index];
-
-            if (sourceRoute == targetRoute[1]["pattern"]) {
-                state.status        = true;
-                state.properties    = targetRoute;
-                break;
-            }
-            
-        }
-
-        return state;
-    }
-
-    function isLoggedIn(){
-        let status=null;
-        if (sessionStorage.userProperties == undefined) {
-            status = false;
-        }else{
-            if (sessionStorage.userProperties.auth){
-                status = true;
-            }
-        }
-    }
-
-    function renderContent(configs, routeProperties){
-        // load block sections
-        let contentBlockSections = configs.blockSections[routeProperties.properties[0]];
-        let allSections = Object.entries(contentBlockSections);
-        let totalSections = allSections.length;
-      
-        if (totalSections > 0){
-            allSections.forEach(element => {
-                let url = element[1].source;
-                let mountPoint = element[1].mountPoint;
-                getSection(url, mountPoint);
-            });
-        }
-
-        
-    }
-
-    function saveblockSessionData(){
-
-    }
-
-    async function getSection(url, mountPoint) {
-        const response = await fetch(url);
-        const html = await response.text();
-        $$.ss(mountPoint).innerHTML = html;
-    }
-    
 }
 /**********************************************************************/

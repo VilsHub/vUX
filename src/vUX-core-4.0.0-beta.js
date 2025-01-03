@@ -1362,9 +1362,13 @@ String.prototype.toUpperCaseFirst = function(){
     return this.charAt(0).toUpperCase() + this.slice(1)
 }
 Storage.prototype.setIterable = function (key, iterable){
+    // This is used to assign literal object as value to storage API
+    // To update already stored iterable, you would need to retrieve, and set the new value, then set again using the static method
+    
     this[key] = JSON.stringify(iterable);
 }
 Storage.prototype.getIterable = function (key){
+    // This is used to retireve stored literal object from storage API
     return JSON.parse(this[key]);
 }
 Date.prototype.isValid = function() {
