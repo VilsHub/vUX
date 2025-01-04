@@ -21,7 +21,10 @@ window.vModel = {
                     linkEle.setAttribute("type", "text/css");
                     if(name != null) linkEle.dataset.id = name;
                     linkEle.setAttribute("href", url);
-                    document.head.appendChild(linkEle);
+                    setTimeout(function(){
+                        document.head.appendChild(linkEle);
+
+                    }, 300)
                 }
             }
         },

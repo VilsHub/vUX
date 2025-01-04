@@ -40,16 +40,11 @@ export function SPAEngine(defaultContentNode=null) {
             if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
             
             boot();
-
-            // runSetup();
+            startRouter();
             initialize = true;
         }
     }
     this.config = {}
-
-    function runSetup(){
-        registerEventhandlers();
-    }
 
     function loadFrom(element) {
       
@@ -136,7 +131,7 @@ export function SPAEngine(defaultContentNode=null) {
         }
     }
 
-    function registerEventhandlers(){
+    function startRouter(){
         $$.attachEventHandler("click", classes.spaLink, function(e){
             loadFrom(e.target);
         })
@@ -295,13 +290,19 @@ export function SPAEngine(defaultContentNode=null) {
 
         if (getFromServer){
             const response = await fetch(url);
-
+            content = await response.text();
+            
             if (response.ok){
-                status= true
-                content = await response.text();
-
-                // Save data
-                saveSectionData("pageContents", name, content);
+                if (response.headers.get('X-Fallback') === 'true') {
+                    // Handle invalid route
+                    throw new Error('404: File '+url+' not found');
+    
+                }else{
+                    status= true
+                    // Save data
+                    saveSectionData("pageContents", name, content);
+                }
+                
             }else{
                 console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
             }
@@ -619,16 +620,17 @@ export function SPAEngine(defaultContentNode=null) {
             // get saved data
             let blockSections = sessionStorage.getIterable(sectionType);
             html = blockSections[name];
+
         }else{
             const response = await fetch(url);
             html = await response.text();
-
-            parseScriptElements(html);
 
             // Save the data
             saveSectionData(sectionType, name, html);
         }
     
+        parseScriptElements(html);
+
         if(replace){
             $$.ss(mountPoint).innerHTML = html;
         }else{
