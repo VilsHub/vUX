@@ -41,6 +41,7 @@ export function SPAEngine(defaultContentNode=null) {
             
             boot();
             startRouter();
+            // SetPageState() //links state and page title
             initialize = true;
         }
     }
@@ -352,14 +353,14 @@ export function SPAEngine(defaultContentNode=null) {
             if (routeProperties.properties.protected){
                 // check if logged in
                 if (isLoggedIn()){
-                    renderContent(routeConfigs, routeProperties);
+                    renderContent(routeProperties);
                 }else{
                     // Redirect to Auth page
                     location.assign(routeProperties.authURL);
                 }
 
             }else{
-                renderContent(routeConfigs, routeProperties);
+                renderContent(routeProperties);
             }
 
         }else{
@@ -385,6 +386,7 @@ export function SPAEngine(defaultContentNode=null) {
         let route = location.pathname;
         var content = null;
         if(routeConfigs.routes.default.pattern == route){
+
             // load the default content
             if(routeConfigs.routes.default.protected){
                 if (isLoggedIn()){
@@ -397,19 +399,27 @@ export function SPAEngine(defaultContentNode=null) {
                 content = getPageContent("default", routeConfigs.routes.default.target);
             }
 
-            content.then(function(data){
-                if(data.status){
-                    if(defaultContentNode != null){
-                        defaultContentNode.innerHTML = data.content;
-                        if (bootCallback != null) bootCallback();
-                    }
-                }
-            })            
+            
         }else{
             // non default route
             let routes          = Object.entries(routeConfigs.routes);
             let routeProperties = routeExist(route, routes);
+
+            if (routeProperties.status){
+                content = getPageContent(routeProperties.properties[0], routeProperties.properties[1].target);
+            }
         }
+
+        
+
+        content.then(function(data){
+            if(data.status){
+                if(defaultContentNode != null){
+                    defaultContentNode.innerHTML = data.content;
+                    if (bootCallback != null) bootCallback();
+                }
+            }
+        })            
     }
 
     function getElementWithPath(path){
@@ -466,17 +476,80 @@ export function SPAEngine(defaultContentNode=null) {
             };
     
             for (let index = 0; index < totalElements; index++) {
-                const targetRoute = targetRoutes[index];
-    
-                if (sourceRoute == targetRoute[1]["pattern"]) {
-                    state.status        = true;
-                    state.properties    = targetRoute;
-                    break;
+                const targetRoute   = targetRoutes[index];
+                const isDynamic     = isDynamicRoute(targetRoute[1]["pattern"]);
+
+                if(!isDynamic.status){
+                    if (sourceRoute == targetRoute[1]["pattern"]) {
+                        state.status        = true;
+                        state.properties    = targetRoute;
+                        break;
+                    }
+                }else{
+                    // is dynamic
+                    if (isDynamic.type == "regex"){
+                        if(matchRegex(targetRoute[1]["pattern"], sourceRoute)){
+                            state.status        = true;
+                            state.properties    = targetRoute;
+                            break;
+                        };
+                    }else if(isDynamic.type == "any"){
+                        console.log("any");
+                    }else{
+                        console.log("both");
+                    }
                 }
                 
             }
     
             return state;
+    }
+
+    function matchRegex(pattern, route){
+        // Remove / from both ends of pattern and route
+        pattern = pattern.xTrim("/");
+        route = route.xTrim("/");
+
+        let routeSegments = route.split("/");
+        let patternSegments = pattern.split("/");
+        let totalRouteSegments = routeSegments.length;
+        let totalPatternSegment = patternSegments.length;
+        let status = true;
+
+        if(totalRouteSegments == totalPatternSegment){
+
+            for (let x = 0; x < totalPatternSegment; x++){
+
+                if (segmentIsRegex(patternSegments[x])){
+                    // remove the colon : character
+                    let parsedPattern = new RegExp(patternSegments[x].trimChar(":"));
+    
+                    if(!parsedPattern.test(routeSegments[x])){
+                        status = false;
+                        break;
+                    }
+                    
+                }else{
+                    if (routeSegments[x] != patternSegments[x]) {
+                        status = false;
+                        break;   
+                    }
+                }                
+            }
+
+        }else{
+            status = false;
+        }
+  
+        return status;
+    }
+
+    function segmentIsRegex(segment){
+        if (segment.includes(":") ) {
+           return true;
+        }else{
+            return false;
+        }
     }
 
     function isLoggedIn(){
@@ -490,9 +563,9 @@ export function SPAEngine(defaultContentNode=null) {
         }
     }
 
-    function renderContent(configs, routeProperties){
+    function renderContent(routeProperties){
         // load all block sections
-        let contentBlockSections    = configs.blockSections;
+        let contentBlockSections    = routeConfigs.blockSections;
 
         // Block sections
         let allBlockSections        = Object.entries(contentBlockSections);
@@ -516,10 +589,10 @@ export function SPAEngine(defaultContentNode=null) {
         }
 
         // load all page sections
-        if (configs.pageSections[routeProperties.properties[0]] != undefined){
+        if (routeProperties.properties[1].pageSections != undefined){
             
             // Page sections
-            let contentPageSections     = configs.pageSections[routeProperties.properties[0]];
+            let contentPageSections     = routeProperties.properties[1].pageSections;
             var allPageSections         = Object.entries(contentPageSections);
             let totalPageSections       = allPageSections.length;
 
@@ -576,7 +649,7 @@ export function SPAEngine(defaultContentNode=null) {
                 sectionData[key] = data;
                 sessionStorage.setIterable(sectionType, sectionData);
             }
-            
+
         }
     }
 
@@ -662,6 +735,32 @@ export function SPAEngine(defaultContentNode=null) {
             // Append the new <script> to the document's <head>
             document.head.appendChild(newScript);
         });
+    }
+
+    function isDynamicRoute(route){
+        let status  = {status: false};
+        let id      = 0;
+
+        if (route.includes(":") ) {
+            status.status =  true;
+            id = id+1;
+        }
+        
+        if (route.includes(";")){
+            status.status =  true;
+            id = id+2;
+            
+        }
+
+        if (id == 1){ // regex
+            status.type =  "regex";
+        }else if(id == 2){ // data
+            status.type =  "data";
+        }else if(id == 3){ //both
+            status.type =  "both";
+        }
+
+        return status;
     }
 
     Object.defineProperties(this, {
