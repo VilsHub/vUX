@@ -17,17 +17,16 @@ import "./src/vUX-core-4.0.0-beta.js";
 export function SPAEngine(defaultContentNode=null) {
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
-    var initialize = false,tempStoarage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
-    var loadCallBack = null, historyCallback=null, loadtoNode = true;
+    var initialize = false,tempStorage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
+    var clickedLoadCallback = null, historyCallback=null, loadtoNode = true;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
-        url:"",//the URL to be called
-        urlPath:"", //The URL that will be appended to the base page, needed for pushstate
+        // urlPath:"", //The URL that will be appended to the base page, needed for pushstate
         cache:"",
         addToHistory:"", // attribute to set if to use history or not, default = true
         loadIntoNode:"",// attribute to set if content is to be loaded into contentNode. Default=true
         pageTitle:"",//The title for the SPA link returned content, only used when history is enable for the link
-        loadCallback:"callback-load", //if exist override the default 
+        clickedLoadCallback:"clicked-callback", //if exist override the default 
 		historyCallback:"callback-history", //if exist override the default 
     }
     var classes = {
@@ -48,94 +47,44 @@ export function SPAEngine(defaultContentNode=null) {
     this.config = {}
 
     function loadFrom(element) {
-      
-        var loadIntoNode = element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)];
-        var url = element.dataset[hyphenatedToCamel(dataAttributes.url)];
-        loadtoNode = Boolean(loadIntoNode == undefined? true: loadIntoNode?true:false);
 
-        if(loadtoNode){ //Load content into node
-            var nodeId              = element.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
-            var ownLoadCallback     = element.dataset[hyphenatedToCamel(dataAttributes.loadCallback)];
-            var cache               = element.dataset[hyphenatedToCamel(dataAttributes.cache)];   
-            var contentNode         = null;
-            var usedloadCallBack    = null; 
-            
-            //Check NodeId
-            if(nodeId != undefined){
-                contentNode = $$.ss("#"+nodeId);
-                validateElement(contentNode, "No container found with the ID '"+nodeId+"'");
-            }else{ //set to the default content Node
-                if(defaultContentNode == null) throw new Error("No content node has been specified. ");
-                contentNode = defaultContentNode;
-            }
+        // Check if route exist and if protected
+        let route           = element.getAttribute("href");
+        let routes          = Object.entries(routeConfigs.routes);
+        let routeProperties = routeExist(route, routes);
 
-            //Check loadCllback
-            if(ownLoadCallback != undefined){
-                validateFunction(functions[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
-                usedloadCallBack = functions[ownLoadCallback];
-            }else{ //set to the default content Node
-                usedloadCallBack = (loadCallBack != null)? loadCallBack:null;
-                validateFunction(usedloadCallBack, "'config.loadCallback' property value must be a function");
-            }
+        // Check if route exist
+        if (routeProperties.status){
 
-            dataLink = linkId(element, "link") //for mapping last click link to container
-            
-            
-            cache = Boolean(cache == null?false:cache);
-
-            if(contentNode.dataset.link != dataLink){
-                contentNode.dataset.state = "receiving";
-                contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
-                
-                if(cache) { //Attempt load from storage
-                    if (typeof(Storage) !== "undefined") { //Supports web storage
-                        if (sessionStorage.pageLink != undefined) { //atleast a page has been cached
-                            var existingLinks = JSON.parse(sessionStorage.getItem("pageLink"));
-                            var urlArr = Object.values(existingLinks);
-                            if (urlArr.has(url)) { //link exist, so get content
-                                var index = urlArr.indexOf(url);
-                                var content = JSON.parse(sessionStorage.getItem("linkContent"))
-                                var arrContent = Object.values(content);
-                                insertContent(contentNode, arrContent[index], dataLink);                                
-                                usedloadCallBack != null ? usedloadCallBack(element): null;
-                            } else { //link does not exist, get from server
-                                getLinkContent(url, contentNode, element, cache);
-                            }
-                        } else { //pageContent has no data, load from server and create data
-                            getLinkContent(url, contentNode, element, cache);
-                        }
-                    } else { //Does not support web storage, use object
-                        if (tempStoarage.pageLink != undefined) { //atleast a page has been cached
-                            var existingLinks = JSON.parse(tempStoarage["pageLink"]);
-                            var urlArr = Object.values(existingLinks);
-                            if (urlArr.indexOf(url) != -1) { //link exist, so get content
-                                var index = urlArr.indexOf(url);
-                                var content = JSON.parse(tempStoarage["linkContent"]);
-                                var arrContent = Object.values(content);
-                                insertContent(contentNode, arrContent[index], dataLink);        
-                                loadCallBack != null ? usedloadCallBack(element) : null;
-                            } else { //link does not exist, get from server
-                                getLinkContent(url, contentNode, element, cache);
-                            }
-                        } else { //pageContent has no data, load from server and create data
-                            getLinkContent(url, contentNode, element, cache);
-                        }
-                    }
+            // Check if route is protected
+            if (routeProperties.properties.protected){
+                // check if logged in
+                if (isLoggedIn()){
+                    getLinkContent(element, routeProperties);
                 }else{
-                     //ignore cache storage and Load from server
-                    getLinkContent(url, contentNode, element, cache);
+                    // Redirect to Auth page
+                    location.assign(routeProperties.authURL);
                 }
+
+            }else{
+                getLinkContent(element, routeProperties);
             }
 
-        }else { //just get only content
-            getLinkContent(url, null, element);
+        }else{
+            document.querySelector("body").innerText = "404";
         }
+        
     }
 
     function startRouter(){
+
+        // Register Listeners
+
         $$.attachEventHandler("click", classes.spaLink, function(e){
+            e.preventDefault();
             loadFrom(e.target);
         })
+
         if(historyCallback != null) {
             addEventListener("popstate", function(e){
                 if(e.state != null){
@@ -166,6 +115,83 @@ export function SPAEngine(defaultContentNode=null) {
                 }
             }, false);
         }
+
+    }
+
+    function getLinkContent(element, routeProperties){
+
+        var loadIntoNode = null;
+
+        if (element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)] != undefined){
+            loadIntoNode = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
+        }else{
+            loadIntoNode = true;
+        }
+        
+        var routeName   = routeProperties.properties[0];
+
+        if(loadtoNode){ //Load content into node
+            var nodeId              = element.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
+            var ownLoadCallback     = element.dataset[hyphenatedToCamel(dataAttributes.clickedLoadCallback)];
+            var cache               = element.dataset[hyphenatedToCamel(dataAttributes.cache)];   
+            var contentNode         = null;
+            var usedloadCallBack    = null; 
+            
+            //Check NodeId
+            if(nodeId != undefined){
+                contentNode = $$.ss("#"+nodeId);
+                validateElement(contentNode, "No container found with the ID '"+nodeId+"'");
+            }else{ //set to the default content Node
+                if(defaultContentNode == null) throw new Error("No content node has been specified. ");
+                contentNode = defaultContentNode;
+            }
+
+            //Check loadCallback
+            if(ownLoadCallback != undefined){
+                validateFunction(functions[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
+                usedloadCallBack = functions[ownLoadCallback];
+            }else{ //set to the default content Node
+                usedloadCallBack = (clickedLoadCallback != null)? clickedLoadCallback:null;
+                validateFunction(usedloadCallBack, "'config.clickedLoadCallback' property value must be a function");
+            }
+
+            dataLink = linkId(element, "link") //for mapping last click link to container
+            
+            cache = Boolean(cache == null?true:cache); //The default is set to true, and content loaded will be cached 
+
+            if(contentNode.dataset.link != dataLink){
+                contentNode.dataset.state = "receiving";
+                contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
+                
+                if(cache) { //Attempt load from storage
+                    var existingLinksContents = {};
+
+                    if (typeof(Storage) !== "undefined") { //Supports web storage
+                        if (sessionStorage.linkContents != undefined) { //atleast a page has been cached
+                            existingLinksContents = sessionStorage.getIterable("linkContents");
+                        }
+                    }else{
+                        if (tempStorage.linkContents != undefined) { //atleast a page has been cached
+                            existingLinksContents = JSON.parse(tempStorage["linkContents"]);
+                        }
+                    }
+
+                    if (existingLinksContents[routeName] != undefined) { //link exist, so get content from cache
+                        insertContent(contentNode, existingLinksContents[routeName] , element);                                
+                        usedloadCallBack != null ? usedloadCallBack(element): null;
+                    } else { //link does not exist, get from server
+                        fetchData(contentNode, element, cache, routeProperties);
+                    }
+
+                }else{
+                     //ignore cache storage and Load from server
+                    fetchData(contentNode, element, cache, routeProperties);
+                }
+            }
+
+        }else { //just get only content
+            fetchData(null, element, routeProperties);
+        }
     }
 
     function linkId(element, dataAttribute){
@@ -179,13 +205,18 @@ export function SPAEngine(defaultContentNode=null) {
         return id
     }
 
-    function getLinkContent(url, container=null, element=null, cache=null) {
+    function fetchData(container=null, element=null, cache=null, routeProperties) {
+  
+        var urlTarget   = routeProperties.properties[1]["target"];
+        var routeName   = routeProperties.properties[0];
+
         if (preClickCallback != null) preClickCallback(element);
-        
-        var xhr = $$.ajax({method:"GET", url:url}, "html");       
+
+        var xhr = $$.ajax({method:"GET", url:urlTarget}, "html");       
         
         xhr.addEventListener("load", function() {
-            var ownLoadCallback     = element.dataset[hyphenatedToCamel(dataAttributes.loadCallback)];
+
+            var ownLoadCallback     = element.dataset[hyphenatedToCamel(dataAttributes.clickedLoadCallback)];
             var usedloadCallBack    = null; 
 
             //Check loadCllback
@@ -193,8 +224,8 @@ export function SPAEngine(defaultContentNode=null) {
                 validateFunction(functions[ownLoadCallback], "No function with name'"+ownLoadCallback+"'");
                 usedloadCallBack = functions[ownLoadCallback];
             }else{ //set to the default content Node
-                usedloadCallBack = (loadCallBack != null)? loadCallBack:null;
-                validateFunction(usedloadCallBack, "'config.loadCallback' property value must be a function");
+                usedloadCallBack = (clickedLoadCallback != null)? clickedLoadCallback:null;
+                validateFunction(usedloadCallBack, "'config.clickedLoadCallback' property value must be a function");
             }
 
             if(xhr.status == 200){
@@ -209,39 +240,29 @@ export function SPAEngine(defaultContentNode=null) {
 
                         if (element != null && cache != null){
                             if (cache) { //insert and cache data
+
                                 //cache
                                 if (typeof(Storage) !== "undefined") { //Supports web storage
-                                    if (sessionStorage.pageLink == undefined) {
-                                        sessionStorage.pageLink = JSON.stringify({});
-                                        sessionStorage.linkContent = JSON.stringify({});
+                                    if (sessionStorage.linkContents == undefined) {
+                                        sessionStorage.linkContents = JSON.stringify({});
                                     }
-                                    var pageLink = JSON.parse(sessionStorage.pageLink);
-                                    var linkContent = JSON.parse(sessionStorage.linkContent);
-                
-                                    var length = Object.keys(pageLink).length;
-                
-                                    pageLink[length] = url;
-                                    linkContent[length] = xhr.responseText;
-                
+                                    
+                                    var linkContents = sessionStorage.getIterable("linkContents");
+                                    linkContents[routeName] = xhr.responseText; 
+                                    
                                     //rebuild
-                                    sessionStorage.pageLink = JSON.stringify(pageLink);
-                                    sessionStorage.linkContent = JSON.stringify(linkContent);
+                                    sessionStorage.setIterable("linkContents", linkContents);
+
                                 } else { //Does not support web storage, use object
-                                    if (tempStoarage.pageLink == undefined) {
-                                        tempStoarage.pageLink = JSON.stringify({});
-                                        tempStoarage.linkContent = JSON.stringify({});
+
+                                    if (tempStorage.linkContents == undefined) {
+                                        tempStorage.linkContents = JSON.stringify({});
                                     }
-                                    var pageLink = JSON.parse(tempStoarage.pageLink);
-                                    var linkContent = JSON.parse(tempStoarage.linkContent);
+
+                                    var linkContents = JSON.parse(tempStorage.linkContents);
                 
-                                    var length = Object.keys(pageLink).length;
-                
-                                    pageLink[length] = url;
-                                    linkContent[length] = xhr.responseText;
-                
-                                    //rebuild
-                                    tempStoarage.pageLink = JSON.stringify(pageLink);
-                                    tempStoarage.linkContent = JSON.stringify(linkContent);
+                                    linkContents[routeName] = xhr.responseText;
+                          
                                 }
                             }
                         }
@@ -253,7 +274,6 @@ export function SPAEngine(defaultContentNode=null) {
                         container.dataset.state = "received";  
         
                         if(element != null){
-                            // container.setAttribute("data-link", element.getAttribute("data-link"));  
                             //store page details in history state                
                             if (addHistory) createState(element, xhr.responseText);
                         }
@@ -320,17 +340,26 @@ export function SPAEngine(defaultContentNode=null) {
     }
 
     function insertContent(container, content, element){
-        if (element != null){
-            if(element.dataset.link == container.dataset.link){//content for the last element clicked
 
+        if (element != null){
+
+            if(element.dataset.link == container.dataset.link){//content for the last element clicked
                 //set page title is set
-                let title   = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
-                title == undefined?$$.ss("title").innerText:$$.ss("title").innerText = title;
-    
+                if(dataAttributes["pageTitle"] != undefined){
+                    let title = ""
+                    if(element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] != undefined){
+                        title  = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
+                    }else{
+
+                    }
+                    
+                    title == undefined?$$.ss("title").innerText:$$.ss("title").innerText = title;
+                }
+                
                 //set Content
                 container.innerHTML = content;
-    
             }
+
         }else{
             //set Content
             container.innerHTML = content;
@@ -348,7 +377,7 @@ export function SPAEngine(defaultContentNode=null) {
 
         // Check if route exist
         if (routeProperties.status){
-
+  
             // Check if route is protected
             if (routeProperties.properties.protected){
                 // check if logged in
@@ -446,22 +475,25 @@ export function SPAEngine(defaultContentNode=null) {
     }
 
     function createState(element, data){
-        var pathUrl     = element.dataset[hyphenatedToCamel(dataAttributes["urlPath"])];
-        var title       = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
+        var title = null;
+        if(element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] != undefined){
+            title   = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
+        }else{
+            title   = $$.ss("title").innerText
+        }
+
         var elementId   = linkId(element, "linkId");
        
-        if(pathUrl != undefined){
-            title = title == undefined?$$.ss("title").innerText:title;
-            var historyObj = {
-                url:pathUrl,
-                data:data,
-                title:title,
-                linkId:elementId
-            }
-            history.pushState(historyObj, title, pathUrl);
-        }else{
-            console.warn("The SPA link :", element,"has no path URL set, history not enabled for it.");
+  
+        title = title == undefined?$$.ss("title").innerText:title;
+        var historyObj = {
+            url:element.href,
+            data:data,
+            title:title,
+            linkId:elementId
         }
+        history.pushState(historyObj, title, element.href);
+        
     }
 
     function routeExist(sourceRoute, targetRoutes){
@@ -472,14 +504,15 @@ export function SPAEngine(defaultContentNode=null) {
             let totalElements   = targetRoutes.length;
             let state           = {
                 status: false,
-                properties: null
+                properties: null,
+                data: {}
             };
     
             for (let index = 0; index < totalElements; index++) {
                 const targetRoute   = targetRoutes[index];
                 const isDynamic     = isDynamicRoute(targetRoute[1]["pattern"]);
 
-                if(!isDynamic.status){
+                if(!isDynamic){
                     if (sourceRoute == targetRoute[1]["pattern"]) {
                         state.status        = true;
                         state.properties    = targetRoute;
@@ -487,17 +520,16 @@ export function SPAEngine(defaultContentNode=null) {
                     }
                 }else{
                     // is dynamic
-                    if (isDynamic.type == "regex"){
-                        if(matchRegex(targetRoute[1]["pattern"], sourceRoute)){
-                            state.status        = true;
-                            state.properties    = targetRoute;
-                            break;
-                        };
-                    }else if(isDynamic.type == "any"){
-                        console.log("any");
-                    }else{
-                        console.log("both");
+                    
+                    let dynamicData = getDynamicData(targetRoute[1]["pattern"], sourceRoute);
+
+                    if (dynamicData.status){
+                        state.data          = dynamicData.data;
+                        state.properties    = targetRoute;
+                        state.status        = true;
+                        break;
                     }
+                    
                 }
                 
             }
@@ -505,7 +537,7 @@ export function SPAEngine(defaultContentNode=null) {
             return state;
     }
 
-    function matchRegex(pattern, route){
+    function getDynamicData(pattern, route){
         // Remove / from both ends of pattern and route
         pattern = pattern.xTrim("/");
         route = route.xTrim("/");
@@ -514,7 +546,10 @@ export function SPAEngine(defaultContentNode=null) {
         let patternSegments = pattern.split("/");
         let totalRouteSegments = routeSegments.length;
         let totalPatternSegment = patternSegments.length;
-        let status = true;
+        let state = {
+            status: true,
+            data:{}
+        };
 
         if(totalRouteSegments == totalPatternSegment){
 
@@ -525,15 +560,21 @@ export function SPAEngine(defaultContentNode=null) {
                     let parsedPattern = new RegExp(patternSegments[x].trimChar(":"));
     
                     if(!parsedPattern.test(routeSegments[x])){
-                        status = false;
+                        state.status = false;
                         break;
+                    }else{
+                        state.data[x+1] = routeSegments[x];
                     }
                     
                 }else{
-                    if (routeSegments[x] != patternSegments[x]) {
-                        status = false;
+                   
+                    if (segmentIsData(patternSegments[x])){
+                        state.data[x+1] = routeSegments[x];
+                    }else if (routeSegments[x] != patternSegments[x]) {
+                        state.status = false;
                         break;   
                     }
+                    
                 }                
             }
 
@@ -541,11 +582,19 @@ export function SPAEngine(defaultContentNode=null) {
             status = false;
         }
   
-        return status;
+        return state;
     }
 
     function segmentIsRegex(segment){
-        if (segment.includes(":") ) {
+        if (segment[0] == ":") {
+           return true;
+        }else{
+            return false;
+        }
+    }
+
+    function segmentIsData(segment){
+        if (segment[0] == ";") {
            return true;
         }else{
             return false;
@@ -581,9 +630,10 @@ export function SPAEngine(defaultContentNode=null) {
                 let name        = element[0];
                 let url         = element[1].source;
                 let mountPoint  = element[1].mountPoint;
+                let replace     = element[1].replaceOld;
                 
                 // Returns a promise
-                return getSectionContents("blockSections", name, url, mountPoint);
+                return getSectionContents("blockSections", name, url, mountPoint, replace);
             });
 
         }
@@ -605,7 +655,7 @@ export function SPAEngine(defaultContentNode=null) {
                     let url         = element[1].source;
                     let mountPoint  = element[1].mountPoint;
                     let replace     = element[1].replaceOld;
-                    
+
                     // Assuming getSectionContents is a function that returns a promise
                     return getSectionContents("pageSections", name, url, mountPoint, replace);
                 });
@@ -738,28 +788,11 @@ export function SPAEngine(defaultContentNode=null) {
     }
 
     function isDynamicRoute(route){
-        let status  = {status: false};
-        let id      = 0;
+        let status  = false;
 
-        if (route.includes(":") ) {
-            status.status =  true;
-            id = id+1;
+        if (route.includes(":") || route.includes(";")) {
+            status =  true;
         }
-        
-        if (route.includes(";")){
-            status.status =  true;
-            id = id+2;
-            
-        }
-
-        if (id == 1){ // regex
-            status.type =  "regex";
-        }else if(id == 2){ // data
-            status.type =  "data";
-        }else if(id == 3){ //both
-            status.type =  "both";
-        }
-
         return status;
     }
 
@@ -769,10 +802,10 @@ export function SPAEngine(defaultContentNode=null) {
     })
 
     Object.defineProperties(this.config, {
-        loadCallback: {
+        clickedLoadCallback: {
             set: function(value) {
-                validateFunction(value, "config.loadCallback property value must be a function");
-                loadCallBack = value;
+                validateFunction(value, "config.clickedLoadCallback property value must be a function");
+                clickedLoadCallback = value;
             }
         },
         bootCallback: {

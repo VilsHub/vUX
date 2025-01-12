@@ -922,7 +922,8 @@ let $$ = {
     },
     attachEventHandler:function(event, DomClass, fn) {
         var idType = null;
-        validateString(event, "'$$.attachEventHandler()' argument 1 must be a string specifying the event type");
+        validateString(event, "'$$.attachEventHandler(x..)' argument 1 must be a string specifying the event type");
+
         if (typeof DomClass == "string") {//class name and class to exclude
             // string value = "include, exclude" | "include"
             idType = "single";
@@ -932,7 +933,8 @@ let $$ = {
         } else {
             throw new Error("'$$.attachEventHandler()' argument 2 must be a string or array of string, specifying the class name of the element(s) o");
         }
-        validateFunction(fn, "'$$.attachEventHandler()' argument 3 must be a function to be called on the trigger");
+
+        validateFunction(fn, "'$$.attachEventHandler(..x)' argument 3 must be a function to be called on the trigger");
         var eventComponents = event.split(":");
 
         addEventListener(eventComponents[0], function(e) {
@@ -940,6 +942,7 @@ let $$ = {
                 var constraints = DomClass.split(",");
                 if (e.target.classList != null) {
                     if (e.target.classList.contains(constraints[0])){
+
                         if(constraints[1] != undefined){
                             if (!e.target.classList.contains(constraints[1].trim())){
                                 if(eventComponents.length == 1){
@@ -1259,7 +1262,12 @@ let $$ = {
                 return JSON.parse(rawData.target.responseText);
             }
         }
-    }   
+    },
+    getURLParams: function(key){
+        let searchParams = new URL(location.href).search;
+        const queryParams = new URLSearchParams(searchParams);
+        return queryParams.get(key);
+    }    
 }
 window.ScreenBreakPoint = function(breakPoints) {
     validateObjectLiteral(breakPoints);

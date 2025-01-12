@@ -11,7 +11,8 @@
 - return datatype option to Ajax.Create() static method
 - Resizer module
 - Slide utility
-- SPAEngine.render() feature for CSR (Client server rendering)
+- SPAEngine module for redering SPA (Single Page Application) with CSR (Client server rendering)
+- $$.getURLParams()
 
 ## Fixed
 - modal multiple display bug
