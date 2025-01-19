@@ -18,10 +18,9 @@ export function SPAEngine(defaultContentNode=null) {
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
     var initialize = false,tempStorage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
-    var clickedLoadCallback = null, historyCallback=null, loadtoNode = true;
+    var clickedLoadCallback = null, historyCallback=null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
-        // urlPath:"", //The URL that will be appended to the base page, needed for pushstate
         cache:"",
         addToHistory:"", // attribute to set if to use history or not, default = true
         loadIntoNode:"",// attribute to set if content is to be loaded into contentNode. Default=true
@@ -41,6 +40,7 @@ export function SPAEngine(defaultContentNode=null) {
             boot();
             startRouter();
             // SetPageState() //links state and page title
+            startCacheBuilder();
             initialize = true;
         }
     }
@@ -85,52 +85,56 @@ export function SPAEngine(defaultContentNode=null) {
             loadFrom(e.target);
         })
 
-        if(historyCallback != null) {
-            addEventListener("popstate", function(e){
-                if(e.state != null){
-                    let data                = e.state.data;
-                    let ele                 = $$.ss("[data-link-id='"+e.state.linkId+"']");
+
+        addEventListener("popstate", function(e){
+
+            if(e.state != null){
+                let data                = e.state.data;
+                let ele                 = $$.ss("[data-link-id='"+e.state.linkId+"']");
+                let usedHistoryCallback = null;   
+                // let contentNode         = (contentNodeId != undefined)? $$.ss("#"+contentNodeId) : defaultContentNode
+                // let nodeLink            = ele.dataset.link;
+
+                if(ele != null){
                     let ownHistoryCallback  = ele.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
-                    let usedHistoryCallback = null;   
-                    let contentNodeId       = ele.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
-                    let contentNode         = (contentNodeId != undefined)? $$.ss("#"+contentNodeId) : defaultContentNode
-                    let nodeLink            = ele.dataset.link;
-                    
-                    //Check historyCallback
+                    // let contentNodeId       = ele.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
+                      //Check historyCallback
                     if(ownHistoryCallback != undefined){
                         validateFunction(functions[ownLoadCallback], "No function with name'"+ownHistoryCallback+"'");
                         usedHistoryCallback = functions[ownHistoryCallback];
                     }else{ //set to the default content Node
                         usedHistoryCallback = (historyCallback != null)? historyCallback:null;
                     }
-
-                    //Set page title
-                    let title   = ele.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
-                    title == undefined? $$.ss("title").innerText : $$.ss("title").innerText = title;
-
-                    contentNode.dataset.link = nodeLink;
-                    contentNode.innerHTML = data;
-                    
-                    usedHistoryCallback(ele);
                 }
-            }, false);
-        }
+
+                //Set page title
+                $$.ss("title").innerText = e.state.title;
+
+                // console.log(e.state.title);
+                // console.log(e.state);
+                // contentNode.dataset.link = nodeLink;
+                // contentNode.innerHTML = data;
+                
+                // usedHistoryCallback(ele);
+            }
+        }, false);
 
     }
 
-    function getLinkContent(element, routeProperties){
-
-        var loadIntoNode = null;
+    async function getLinkContent(element, routeProperties){
 
         if (element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)] != undefined){
             loadIntoNode = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
-        }else{
-            loadIntoNode = true;
         }
-        
+
+        if (element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)] != undefined){
+            addToHistory = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
+        }
+
         var routeName   = routeProperties.properties[0];
 
-        if(loadtoNode){ //Load content into node
+        // Load links contents
+        if(loadIntoNode){ //Load content into node
             var nodeId              = element.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
             var ownLoadCallback     = element.dataset[hyphenatedToCamel(dataAttributes.clickedLoadCallback)];
             var cache               = element.dataset[hyphenatedToCamel(dataAttributes.cache)];   
@@ -164,6 +168,7 @@ export function SPAEngine(defaultContentNode=null) {
                 contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
                 
                 if(cache) { //Attempt load from storage
+
                     var existingLinksContents = {};
 
                     if (typeof(Storage) !== "undefined") { //Supports web storage
@@ -190,8 +195,81 @@ export function SPAEngine(defaultContentNode=null) {
             }
 
         }else { //just get only content
-            fetchData(null, element, routeProperties);
+            fetchData(null, element, cache, routeProperties);
         }
+
+        // Load page sections
+        let pageSections        = Object.entries(routeProperties.properties[1].pageSections);
+        let totalPageSections   = pageSections.length;
+        
+        for (let z = 0; z < totalPageSections; z++) {
+
+            let sectionId           = routeName+"-"+pageSections[z][0];
+            // console.log(pageSections[z][1]);
+            // return
+            let mountPoint          = pageSections[z][1].mountPoint;
+            let replace             = pageSections[z][1].replaceOld;
+            let cachedPageSections  = sessionStorage.getIterable("pageSections");
+
+            if(cachedPageSections[sectionId] != undefined){ //get from cache and mount
+                let targetSection = cachedPageSections[sectionId];
+                if(replace){
+                    $$.ss(mountPoint).innerHTML = targetSection;
+                }else{
+                    $$.ss(mountPoint).insertAdjacentHTML('beforeend', targetSection);
+                }
+            }else{ //get from server mount and cache
+
+                let url = routeConfigs.routes[routeName].pageSections[totalPageSections[z][0]];
+
+                const response = await fetch(url);
+                content = await response.text();
+                
+                if (response.ok){
+                    if (response.headers.get('X-Fallback') === 'true') {
+                        // Handle invalid route
+                        throw new Error('404: File '+url+' not found');
+        
+                    }else{
+                        // Save data
+                        saveSectionData("pageSections", sectionId, content);
+                    }
+                    
+                }else{
+                    console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+                }
+            }
+            
+        }
+
+        // Set Page title
+        setPageTitle(element, routeProperties);
+
+        // Set path on address bar
+
+        //store page details in history state                
+        if (addToHistory) createState(routeProperties.properties[1].pageTitle, routeProperties.properties[1].path, $$.ss("body").innerHTML);
+
+    }
+
+    function setPageTitle(element, routeProperties){
+        // Set Page title
+        let title = ""
+        if(dataAttributes["pageTitle"] != "" && element != null){//Get title from element
+            if(element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] != undefined){
+                title  = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
+            }
+        }else{ //Get title from route
+
+            if (routeProperties.properties[1] != undefined){
+                title = routeProperties.properties[1].pageTitle;
+            }else{
+                title = routeProperties.properties.pageTitle;
+            }
+            
+        }
+
+        title == undefined?$$.ss("title").innerText:$$.ss("title").innerText = title;
     }
 
     function linkId(element, dataAttribute){
@@ -231,11 +309,6 @@ export function SPAEngine(defaultContentNode=null) {
             if(xhr.status == 200){
                 if(container != null){ //content is to be loaded in
 
-                    if(element != null){
-                        var useHistory = element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)];
-                        var addHistory = useHistory == undefined? true: Boolean(useHistory)
-                    }
-
                     if(container.dataset.state == "receiving"){
 
                         if (element != null && cache != null){
@@ -273,10 +346,6 @@ export function SPAEngine(defaultContentNode=null) {
                         
                         container.dataset.state = "received";  
         
-                        if(element != null){
-                            //store page details in history state                
-                            if (addHistory) createState(element, xhr.responseText);
-                        }
                     }
 
                 }else{//get and return only content
@@ -340,26 +409,11 @@ export function SPAEngine(defaultContentNode=null) {
     }
 
     function insertContent(container, content, element){
-
         if (element != null){
-
-            if(element.dataset.link == container.dataset.link){//content for the last element clicked
-                //set page title is set
-                if(dataAttributes["pageTitle"] != undefined){
-                    let title = ""
-                    if(element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] != undefined){
-                        title  = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
-                    }else{
-
-                    }
-                    
-                    title == undefined?$$.ss("title").innerText:$$.ss("title").innerText = title;
-                }
-                
+            if(element.dataset.link == container.dataset.link){//content for the last element clicked                
                 //set Content
                 container.innerHTML = content;
             }
-
         }else{
             //set Content
             container.innerHTML = content;
@@ -398,24 +452,19 @@ export function SPAEngine(defaultContentNode=null) {
 
     }
 
-    function runApp(){
-        //get element with path
-        var urlPath = location.pathname;
-        var element = getElementWithPath(urlPath);
-
-        if(element != null){ //load from element
-            loadFrom(element);
-        }else{//get content into container
-            getLinkContent(location.pathname, defaultContentNode, null, null);
-        }
-    }
-
     function loadPageContents(){
 
         let route = location.pathname;
         var content = null;
+        var routeProperties = null;
+
         if(routeConfigs.routes.default.pattern == route){
 
+            routeProperties = {
+                status: true,
+                properties: routeConfigs.routes.default,
+                data: {}
+            };
             // load the default content
             if(routeConfigs.routes.default.protected){
                 if (isLoggedIn()){
@@ -432,10 +481,12 @@ export function SPAEngine(defaultContentNode=null) {
         }else{
             // non default route
             let routes          = Object.entries(routeConfigs.routes);
-            let routeProperties = routeExist(route, routes);
+            routeProperties = routeExist(route, routes);
+            
 
             if (routeProperties.status){
-                content = getPageContent(routeProperties.properties[0], routeProperties.properties[1].target);
+                let pageIdContent   = routeProperties[0]+"-"+routeProperties.properties[0];
+                content = getPageContent(pageIdContent, routeProperties.properties[1].target);
             }
         }
 
@@ -445,6 +496,13 @@ export function SPAEngine(defaultContentNode=null) {
             if(data.status){
                 if(defaultContentNode != null){
                     defaultContentNode.innerHTML = data.content;
+
+                    // Set page title
+                    setPageTitle(null, routeProperties);
+
+                    //store page details in history state 
+                    createState(routeProperties.properties.pageTitle, routeProperties.properties.path, $$.ss("body").innerHTML);
+
                     if (bootCallback != null) bootCallback();
                 }
             }
@@ -474,25 +532,13 @@ export function SPAEngine(defaultContentNode=null) {
         }
     }
 
-    function createState(element, data){
-        var title = null;
-        if(element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])] != undefined){
-            title   = element.dataset[hyphenatedToCamel(dataAttributes["pageTitle"])]; 
-        }else{
-            title   = $$.ss("title").innerText
-        }
-
-        var elementId   = linkId(element, "linkId");
-       
-  
-        title = title == undefined?$$.ss("title").innerText:title;
+    function createState(title, url, data){
+        console.log("yut", title);
         var historyObj = {
-            url:element.href,
             data:data,
-            title:title,
-            linkId:elementId
+            title:title
         }
-        history.pushState(historyObj, title, element.href);
+        history.pushState(historyObj, title, url);
         
     }
 
@@ -645,13 +691,15 @@ export function SPAEngine(defaultContentNode=null) {
             let contentPageSections     = routeProperties.properties[1].pageSections;
             var allPageSections         = Object.entries(contentPageSections);
             let totalPageSections       = allPageSections.length;
+            let routeName               = routeProperties.properties[0];
+
 
             if(totalPageSections > 0){
                 
                 // store all page section promises in the sectionPromises array
                 var tmpSectionPromises = allPageSections.map((element) => {
 
-                    let name        = element[0];
+                    let name        = routeName+"-"+element[0];
                     let url         = element[1].source;
                     let mountPoint  = element[1].mountPoint;
                     let replace     = element[1].replaceOld;
@@ -733,6 +781,11 @@ export function SPAEngine(defaultContentNode=null) {
             
     }
 
+    async function aGet(url){
+        const response = await fetch(url);
+        return await response.text();
+    }
+
     async function getSectionContents(sectionType, name, url, mountPoint, replace=true) {
         let  html = "";
 
@@ -785,6 +838,69 @@ export function SPAEngine(defaultContentNode=null) {
             // Append the new <script> to the document's <head>
             document.head.appendChild(newScript);
         });
+    }
+
+    async function preloadScriptsAndStyles(data){
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data, 'text/html');
+
+        // Get all <script> tags
+        const scripts = doc.querySelectorAll('script');
+        const styles = doc.querySelectorAll('link');
+
+        // Dynamically load each script
+        scripts.forEach(script => {
+            fetch(script.src);
+        });
+
+        styles.forEach(style => {
+            fetch(style.href);
+        });
+    }
+
+    function startCacheBuilder(){
+        let routesEntries   = Object.entries(routeConfigs.routes);
+        let totalRoutes     = routesEntries.length;
+        
+        setTimeout(function(){
+            for (let x = 0; x < totalRoutes; x++) {
+                const routeName             = routesEntries[x][0];
+                const skipInCacheBuilder    = routesEntries[x][1].skipInCacheBuilder;
+                
+                
+                // load and cache router sections content if meant to cache
+                if(!skipInCacheBuilder){
+                    
+                    const pageSections          = Object.entries(routesEntries[x][1].pageSections);
+                    const totalPageSections     = pageSections.length;
+    
+                    for (let y = 0; y < totalPageSections; y++) {
+                        const sectionId     = routeName+"-"+pageSections[y][0];
+                        const sectionSource = pageSections[y][1].source;
+    
+                        if (cacheBuilderTracker[sectionId] == undefined){
+                            // load and cache router sections
+                            const html = aGet(sectionSource);
+                            html.then(function(data){
+                                
+                                // Save the data
+                                const activeCache = sessionStorage.getIterable("pageSections");
+                                if(activeCache[sectionId] == undefined){
+                                    saveSectionData("pageSections", sectionId, data);
+                                    preloadScriptsAndStyles(data);
+                                    cacheBuilderTracker[sectionId] = true;
+                                }
+                            })    
+                        }
+                    
+                    }
+
+                }
+                
+            }
+            
+        }, 400)
+
     }
 
     function isDynamicRoute(route){
