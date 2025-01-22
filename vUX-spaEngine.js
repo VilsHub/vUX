@@ -87,35 +87,49 @@ export function SPAEngine(defaultContentNode=null) {
 
 
         addEventListener("popstate", function(e){
-
+            // {
+            //     routeProperties: routeProperties,
+            //     content: content,
+            //     elementId: id
+            // }
             if(e.state != null){
-                let data                = e.state.data;
-                let ele                 = $$.ss("[data-link-id='"+e.state.linkId+"']");
+                let parsedData          = JSON.parse(e.state);
+                let routeId             = parsedData.routeId;
+                let ele                 = parsedData.elementId;
                 let usedHistoryCallback = null;   
-                // let contentNode         = (contentNodeId != undefined)? $$.ss("#"+contentNodeId) : defaultContentNode
-                // let nodeLink            = ele.dataset.link;
+                let contentNode         = defaultContentNode
+                let title               = routeConfigs.routes[routeId].pageTitle;
+                let hasCallback         = false;
+         
 
+                
+                
                 if(ele != null){
                     let ownHistoryCallback  = ele.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
-                    // let contentNodeId       = ele.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
-                      //Check historyCallback
+                    let contentNodeId       = ele.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
+                    
+                    //Check historyCallback
                     if(ownHistoryCallback != undefined){
                         validateFunction(functions[ownLoadCallback], "No function with name'"+ownHistoryCallback+"'");
                         usedHistoryCallback = functions[ownHistoryCallback];
+                        hasCallback = true;
                     }else{ //set to the default content Node
                         usedHistoryCallback = (historyCallback != null)? historyCallback:null;
+                        hasCallback = (historyCallback != null)? true:false;
                     }
                 }
 
                 //Set page title
-                $$.ss("title").innerText = e.state.title;
+                $$.ss("title").innerText = title;
+  
+                // Set contents
 
-                // console.log(e.state.title);
-                // console.log(e.state);
-                // contentNode.dataset.link = nodeLink;
-                // contentNode.innerHTML = data;
                 
-                // usedHistoryCallback(ele);
+                // Set page sections
+                
+
+                // Call history Callback                
+                if (hasCallback) usedHistoryCallback(ele);
             }
         }, false);
 
@@ -244,12 +258,24 @@ export function SPAEngine(defaultContentNode=null) {
 
         // Set Page title
         setPageTitle(element, routeProperties);
+    }
 
-        // Set path on address bar
+    function saveState(routeId, contents, element){
+        let historyData = {
+            routeId: routeId,
+            contents: contents,
+            elementId: null
+        }
+
+        if(element != null){
+            historyData["elementId"] = element.id;
+        }
+
+        let path = routeConfigs.routes[routeId].path;
+        let title = routeConfigs.routes[routeId].pageTitle;
 
         //store page details in history state                
-        if (addToHistory) createState(routeProperties.properties[1].pageTitle, routeProperties.properties[1].path, $$.ss("body").innerHTML);
-
+        history.pushState(JSON.stringify(historyData), title, path);
     }
 
     function setPageTitle(element, routeProperties){
@@ -345,6 +371,8 @@ export function SPAEngine(defaultContentNode=null) {
                         usedloadCallBack != null ? usedloadCallBack(element): null;
                         
                         container.dataset.state = "received";  
+                        
+                        saveState(routeName, xhr.responseText, element.id);
         
                     }
 
@@ -462,6 +490,7 @@ export function SPAEngine(defaultContentNode=null) {
 
             routeProperties = {
                 status: true,
+                name: "default",
                 properties: routeConfigs.routes.default,
                 data: {}
             };
@@ -480,7 +509,7 @@ export function SPAEngine(defaultContentNode=null) {
             
         }else{
             // non default route
-            let routes          = Object.entries(routeConfigs.routes);
+            let routes      = Object.entries(routeConfigs.routes);
             routeProperties = routeExist(route, routes);
             
 
@@ -489,8 +518,6 @@ export function SPAEngine(defaultContentNode=null) {
                 content = getPageContent(pageIdContent, routeProperties.properties[1].target);
             }
         }
-
-        
 
         content.then(function(data){
             if(data.status){
@@ -501,45 +528,12 @@ export function SPAEngine(defaultContentNode=null) {
                     setPageTitle(null, routeProperties);
 
                     //store page details in history state 
-                    createState(routeProperties.properties.pageTitle, routeProperties.properties.path, $$.ss("body").innerHTML);
+                    saveState(routeProperties.name, data.content, null);
 
                     if (bootCallback != null) bootCallback();
                 }
             }
         })            
-    }
-
-    function getElementWithPath(path){
-        
-        var element = $$.ss("[data-"+dataAttributes["urlPath"]+"='"+path+"']");
-
-        if(element == null){ // Trail back to get element
-            var segments = path.xTrim().split("/");
-            var totalSegment = segments.length;
-            var n = totalSegment-1;
-            for (var x = 0; x < totalSegment; x++) {
-                segments.splice(n)
-                var trail = "/"+segments.join("/"); 
-                element = $$.ss("["+dataAttributes["urlPath"]+"='"+trail+"']");
-                if(element != null){
-                    n--;
-                    break;
-                }                
-            }
-            return element;
-        }else{
-            return element
-        }
-    }
-
-    function createState(title, url, data){
-        console.log("yut", title);
-        var historyObj = {
-            data:data,
-            title:title
-        }
-        history.pushState(historyObj, title, url);
-        
     }
 
     function routeExist(sourceRoute, targetRoutes){
@@ -550,6 +544,7 @@ export function SPAEngine(defaultContentNode=null) {
             let totalElements   = targetRoutes.length;
             let state           = {
                 status: false,
+                name: null,
                 properties: null,
                 data: {}
             };
@@ -561,6 +556,7 @@ export function SPAEngine(defaultContentNode=null) {
                 if(!isDynamic){
                     if (sourceRoute == targetRoute[1]["pattern"]) {
                         state.status        = true;
+                        state.name          = targetRoute[0];
                         state.properties    = targetRoute;
                         break;
                     }
@@ -571,6 +567,7 @@ export function SPAEngine(defaultContentNode=null) {
 
                     if (dynamicData.status){
                         state.data          = dynamicData.data;
+                        state.name          = targetRoute[0];
                         state.properties    = targetRoute;
                         state.status        = true;
                         break;
