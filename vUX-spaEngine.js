@@ -18,7 +18,7 @@ export function SPAEngine(defaultContentNode=null) {
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
     var initialize = false,tempStorage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
-    var clickedLoadCallback = null, historyCallback=null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedHistory={},savedPageSection={},routeProperties=null;
+    var clickedLoadCallback = null, historyCallback=null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         cache:"",
@@ -50,10 +50,10 @@ export function SPAEngine(defaultContentNode=null) {
 
         // Check if route exist and if protected
         let route           = element.getAttribute("href");
-        let routes          = Object.entries(routeConfigs.routes);
+        // let routes          = Object.entries(routeConfigs.routes);
 
         // Set routeProperties
-        routeProperties     = routeExist(route, routes);
+        routeProperties     = routeExist(route);
 
         // Check if route exist
         if (routeProperties.status){
@@ -166,8 +166,8 @@ export function SPAEngine(defaultContentNode=null) {
             }
         }else{ //Get title from route
 
-            if (routeProperties.properties[1] != undefined){
-                title = routeProperties.properties[1].pageTitle;
+            if (routeProperties.properties != undefined){
+                title = routeProperties.properties.pageTitle;
             }
             
         }
@@ -285,8 +285,8 @@ export function SPAEngine(defaultContentNode=null) {
         // Check if route exist and if protected
         let route           = location.pathname;
 
-        let routes          = Object.entries(routeConfigs.routes);
-        routeProperties     = routeExist(route, routes);
+        // let routes          = Object.entries(routeConfigs.routes);
+        routeProperties     = routeExist(route);
 
 
         // Check if route exist
@@ -340,11 +340,9 @@ export function SPAEngine(defaultContentNode=null) {
             
         }else{
             // non default route
-            routeProperties = routeExist(route, routeConfigs.routes);
-
+            routeProperties = routeExist(route);
             if (routeProperties.status){
-                let pageIdContent   = routeProperties[0]+"-"+routeProperties.properties[0];
-                content = getPageContent(pageIdContent, routeProperties.properties[1].target);
+                content = getPageContent(routeProperties.name, routeProperties.properties.target);
             }
         }
 
@@ -354,7 +352,7 @@ export function SPAEngine(defaultContentNode=null) {
                     defaultContentNode.innerHTML = data.content;
 
                     // Set page title
-                    setPageTitle(null, routeProperties);
+                    setPageTitle(null);
 
                     //store page details in history state 
                     saveState(data.content, null);
@@ -426,12 +424,10 @@ export function SPAEngine(defaultContentNode=null) {
                     }
 
                     if (existingLinksContents[routeName] != undefined) { //link exist, so get content from cache
-                        insertContent(contentNode, existingLinksContents[routeName] , element); 
-                        
-                        if(!savedHistory[routeName]){
-                            saveState(existingLinksContents[routeName], element.id);
-                            savedHistory[routeName] = true;
-                        } 
+                        insertContent(contentNode, existingLinksContents[routeName] , element);           
+
+                        saveState(existingLinksContents[routeName], element.id);
+
                         contentNode.dataset.state = "received";
                         usedloadCallBack != null ? usedloadCallBack(element): null;
                     } else { //link does not exist, get from server
@@ -521,6 +517,8 @@ export function SPAEngine(defaultContentNode=null) {
             var allPageContents = sessionStorage.getIterable("pageContents");
             if (allPageContents[name] != undefined){
                 getFromServer = false;
+            }else{
+                getFromServer = true;
             }
         }
 
@@ -554,7 +552,7 @@ export function SPAEngine(defaultContentNode=null) {
         }
     }
 
-    function routeExist(sourceRoute, targetRoutes){
+    function routeExist(sourceRoute){
         /**
          * @param string sourceRoute: The route to check
          * @param array targetRoutes: The route instance from the defined routes to check against
@@ -566,14 +564,15 @@ export function SPAEngine(defaultContentNode=null) {
                 properties: null,
                 data: {}
             };
+
+            let targetRoutes = Object.entries(routeConfigs.routes);
     
             for (const index in targetRoutes) {
-                if (Object.prototype.hasOwnProperty.call(targetRoutes, index)) {                   
-
+                if (Object.prototype.hasOwnProperty.call(targetRoutes, index)) { 
 
                     const targetRoute   = targetRoutes[index];
                     const isDynamic     = isDynamicRoute(targetRoute[1]["pattern"]);
-    
+
                     if(!isDynamic){
                         if (sourceRoute == targetRoute[1]["pattern"]) {
                             state.status        = true;

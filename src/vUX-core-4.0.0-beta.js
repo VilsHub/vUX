@@ -1267,7 +1267,8 @@ let $$ = {
         let searchParams = new URL(location.href).search;
         const queryParams = new URLSearchParams(searchParams);
         return queryParams.get(key);
-    }    
+    },
+    fn: {}    
 }
 window.ScreenBreakPoint = function(breakPoints) {
     validateObjectLiteral(breakPoints);
