@@ -19,15 +19,15 @@ export function SPAEngine(defaultContentNode=null) {
     if (defaultContentNode != null) validateElement(defaultContentNode, "SPAEngine(x) contructor argument 2, an element (the contentNode) must be either be null or an element");
    
     var initialize = false,tempStorage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
-    var clickLoadCallback = null, historyCallback=null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
+    var clickLoadCallback = null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         cache:"",
         addToHistory:"", // attribute to set if to use history or not, default = true
         loadIntoNode:"",// attribute to set if content is to be loaded into contentNode. Default=true
         pageTitle:"",//The title for the SPA link returned content, only used when history is enable for the link
-        clickLoadCallback:"click-callback", 
-		historyCallback:"callback-history", //if exist override the default 
+        clickLoadCallback:"click-callback", //the data attribute name that will set the key to hold the target function in the route.clickLoadCallbacks property
+		historyCallback:"history-callback", //the data attribute name that will set the key to hold the target function in the route.historyCallbacks property
     }
     var classes = {
         spaLink:"" //Must be specified, as it is used in registering SPA links
@@ -90,35 +90,41 @@ export function SPAEngine(defaultContentNode=null) {
 
 
         addEventListener("popstate", function(e){
-
             if(e.state != null){
+
                 let parsedData          = JSON.parse(e.state);
                 let routeProperties     = parsedData.routeProperties;
-                let routeId             = routeProperties.name;
-                let ele                 = parsedData.elementId;
+                let routeName           = routeProperties.name;
+                let ele                 = parsedData.elementId; //Element must have an ID
                 let usedHistoryCallback = null;   
                 let contentNode         = defaultContentNode
-                let title               = routeConfigs.routes[routeId].pageTitle;
-                let hasCallback         = false;
+                let title               = routeConfigs.routes[routeName].pageTitle;
+                let element             = null;
+                let callbackKey         = null;
 
                 if(ele != null){
                     
-                    let targetElement       = $$.ss("#"+ele);
-                    let ownHistoryCallback  = targetElement.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
-                    let contentNodeId       = targetElement.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
+                    element             = $$.ss("#"+ele);
+                    callbackKey         = element.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
+                    let contentNodeId   = element.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
                     
                     // Select the content node using the contentNodeId
                     if(contentNodeId != undefined){
-                        contentNode         = $$.ss("#"+contentNodeId);
+                        contentNode     = $$.ss("#"+contentNodeId);
                     }
                     
                     //Check historyCallback
-                    if(ownHistoryCallback != undefined){
-                        usedHistoryCallback = functions[ownHistoryCallback];
-                        hasCallback = true;
-                    }else{ //set to the default content Node
-                        usedHistoryCallback = (historyCallback != null)? historyCallback:null;
-                        hasCallback = (historyCallback != null)? true:false;
+                    if(callbackKey != undefined){
+                        if (routeConfigs.routes[routeName].historyCallbacks[callbackKey] != undefined){
+                            usedHistoryCallback = routeConfigs.routes[routeName].historyCallbacks[callbackKey];
+                        }else{
+                            console.warn("No function set for the key 'routes['"+routeName+"'].historyCallbacks['"+callbackKey+"']'");
+                        } 
+            
+                    }
+                }else if(routeConfigs.routes[routeName].historyCallbacks != undefined){
+                    if(routeConfigs.routes[routeName].historyCallbacks["default"] != undefined){
+                        usedHistoryCallback = routeConfigs.routes[routeName].historyCallbacks["default"];
                     }
                 }
 
@@ -129,15 +135,15 @@ export function SPAEngine(defaultContentNode=null) {
                 contentNode.innerHTML = parsedData.contents;
        
                 // Set page sections
-                loadPageSections(routeProperties, routeId);
+                loadPageSections(routeProperties, routeName);
                 
                 // Flush other page section content
                 flushElements(routeProperties.properties.flush);
 
                 // Call history Callback  
-                // Work on history callback, then progress object inclusion  
-                // usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey)}, 200): null;            
-                // if (hasCallback) usedHistoryCallback(ele);
+                // Work on progress object inclusion  
+                if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey)}, 200);        
+
             }
         }, false);
 
@@ -377,7 +383,7 @@ export function SPAEngine(defaultContentNode=null) {
         }
 
         if (element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)] != undefined){
-            addToHistory = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
+            addToHistory = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
         }
 
         var routeName   = routeProperties.name;
@@ -440,7 +446,6 @@ export function SPAEngine(defaultContentNode=null) {
                         saveState(existingLinksContents[routeName], element.id);
 
                         contentNode.dataset.state = "received";
-                        console.log(usedloadCallBack, "kop");
                         usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey)}, 200): null;
 
                     } else { //link does not exist, get from server
@@ -941,12 +946,6 @@ export function SPAEngine(defaultContentNode=null) {
             set: function(value) {
                 validateFunction(value, "config.preClickCallback property value must be a function");
                 preClickCallback = value;
-            }
-        },
-        historyCallback: {
-            set: function(value) {
-                validateFunction(value, "config.historyCallback property value must be a function");
-                historyCallback = value;
             }
         },
         dataAttributeNames:{
