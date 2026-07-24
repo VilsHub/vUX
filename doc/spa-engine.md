@@ -95,6 +95,34 @@ spa.initialize();
 
 `config.classes.spaLink` and `config.routeConfigs` are mandatory — `initialize()` throws if either is missing.
 
+## Constructor
+
+```js
+new SPAEngine(defaultContentNode)
+```
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `defaultContentNode` | Element or `null` | `null` | The element route content is mounted into when an SPA link does not name its own target via the `contentNodeId` data attribute. A link-level `contentNodeId` always takes priority over this default. When `null`, every SPA link **must** carry a `contentNodeId` data attribute — a link without one throws. |
+
+## Methods
+
+| Method | Description |
+|---|---|
+| `initialize()` | Boots the engine with all preconfigured settings: mounts the entry route, registers the click and history listeners, and starts the background cache builder. Call it once, after all `config` properties are set. Throws if `config.classes.spaLink` or `config.routeConfigs` is missing. Subsequent calls are ignored. |
+
+## Config properties
+
+| Property | Required | Description |
+|---|---|---|
+| `config.classes` | yes | Object of class names the engine needs. Only key: `spaLink` — the class that marks an element as an SPA link; it is used to register the global click listener. |
+| `config.routeConfigs` | yes | The route configuration object — see [Route properties](#route-properties). |
+| `config.dataAttributeNames` | no | Renames the `data-*` attributes the engine reads off SPA links — see [Link data attributes](#link-data-attributes). |
+| `config.bootCallback` | no | Function called after the entry route's content is mounted on first page load. |
+| `config.clickLoadCallback` | no | Fallback function called after an SPA link's content loads, when the link has no dedicated click-callback data attribute. A dedicated callback on the link always wins over this one. |
+| `config.preClickCallback` | no | Function called just before a link's content is fetched from the server — e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
+| `config.functions` | no | Reserved. Accepted and validated, but not currently consulted — dedicated callbacks are looked up in each route's `clickLoadCallbacks` / `historyCallbacks` objects instead. |
+
 ## Route properties
 
 Every entry in `routeConfigs.routes` supports:
@@ -142,7 +170,7 @@ The captured `params` object is passed as the **last argument** to every callbac
 | `routes.<name>.clickLoadCallbacks.<key>` | `(element, routeName, callbackKey, params)` | After a click on a SPA link carrying `data-<clickLoadCallback>="<key>"` mounts its content. |
 | `config.clickLoadCallback` | `(element, routeName, callbackKey, params)` | Fallback: after a click on a SPA link that has **no** click-callback data attribute. |
 | `routes.<name>.historyCallbacks.<key>` | `(element, routeName, callbackKey, params)` | On back/forward navigation to an entry created by a link carrying `data-<historyCallback>="<key>"`. The `default` key covers entries with no originating link. |
-| `config.preClickCallback` | `(element)` | Immediately before a link's content is fetched from the server — e.g. to show a loading indicator. |
+| `config.preClickCallback` | `(element)` | Immediately before a link's content is fetched from the server — e.g. to show a loading indicator. Skipped when the content is served from cache. |
 
 Content-mounting callbacks fire ~200ms after the fragment is inserted.
 
@@ -150,15 +178,21 @@ Content-mounting callbacks fire ~200ms after the fragment is inserted.
 
 The attribute *names* are configurable through `config.dataAttributeNames` (specify them without the `data-` prefix; the engine reads `data-<name>` off the link):
 
-| Key | Purpose |
-|---|---|
-| `clickLoadCallback` | Names the key in the route's `clickLoadCallbacks` to run after this link loads. |
-| `historyCallback` | Names the key in the route's `historyCallbacks` to run when this link's history entry is revisited. |
-| `contentNodeId` | ID of the element to mount this link's content into, instead of the default content node. |
-| `cache` | Set to disable/enable sessionStorage caching for this link's content (default: enabled). |
-| `addToHistory` | Whether this navigation is pushed to the browser history (default: `true`). |
-| `loadIntoNode` | If disabled, the content is fetched but not mounted (the click callback still runs). |
-| `pageTitle` | Per-link document title, overriding the route's `pageTitle`. |
+| Key | Value | Default | Purpose |
+|---|---|---|---|
+| `clickLoadCallback` | string | — | Names the key in the route's `clickLoadCallbacks` to run after this link loads. Overrides the global `config.clickLoadCallback`. |
+| `historyCallback` | string | — | Names the key in the route's `historyCallbacks` to run when this link's history entry is revisited. |
+| `contentNodeId` | string (element ID) | — | ID of the element to mount this link's content into. Takes priority over the constructor's default content node. Required on every link when the constructor was given `null`. |
+| `cache` | boolean | `true` | Whether the fetched content is cached in sessionStorage for subsequent requests. |
+| `addToHistory` | boolean | `true` | Whether this navigation is pushed to the browser history. |
+| `loadIntoNode` | boolean | `true` | When disabled, the content is fetched but not mounted (the click callback still runs). |
+| `pageTitle` | string | route's `pageTitle` | Per-link document title. Only used when history is enabled for the link. |
+
+Boolean attributes follow HTML conventions: set the value to `"false"` or `"0"` to disable, any other value (including bare presence) enables. Example — load a fragment fresh every time and keep it out of the browser history:
+
+```html
+<a href="/preview" id="pv" class="spa-link" data-cache="false" data-add-to-history="false">Preview</a>
+```
 
 Example, using the names registered in the quick start:
 
