@@ -150,7 +150,9 @@ export function SPAEngine(defaultContentNode=null) {
     }
 
     function saveState(contents, elementId){
- 
+
+        if (!addToHistory) return; //link opted out of history via the addToHistory data attribute
+
         var routeName   = routeProperties.name;
         let historyData = {
             routeProperties: routeProperties,
@@ -193,6 +195,11 @@ export function SPAEngine(defaultContentNode=null) {
             element.dataset[dataAttribute] = id;
         }
         return id
+    }
+
+    function parseBooleanAttribute(value){
+        //HTML-friendly boolean: "false" and "0" disable, any other value (including bare presence) enables
+        return !(value === "false" || value === "0");
     }
 
     function fetchData(container=null, element=null, cache=null) {
@@ -380,12 +387,16 @@ export function SPAEngine(defaultContentNode=null) {
 
     async function getLinkContent(element){
 
+        //reset per-link flags so one link's attributes don't leak into the next navigation
+        loadIntoNode = true;
+        addToHistory = true;
+
         if (element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)] != undefined){
-            loadIntoNode = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
+            loadIntoNode = parseBooleanAttribute(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
         }
 
         if (element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)] != undefined){
-            addToHistory = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
+            addToHistory = parseBooleanAttribute(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
         }
 
         var routeName   = routeProperties.name;
@@ -422,7 +433,7 @@ export function SPAEngine(defaultContentNode=null) {
 
             dataLink = linkId(element, "link") //for mapping last click link to container
             
-            cache = Boolean(cache == null?true:cache); //The default is set to true, and content loaded will be cached 
+            cache = cache == null ? true : parseBooleanAttribute(cache); //The default is set to true, and content loaded will be cached
 
             if(contentNode.dataset.link != dataLink){
                 contentNode.dataset.state = "receiving";
