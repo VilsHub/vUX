@@ -142,7 +142,7 @@ export function SPAEngine(defaultContentNode=null) {
 
                 // Call history Callback  
                 // Work on progress object inclusion  
-                if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey)}, 200);        
+                if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey, routeProperties.data)}, 200);
 
             }
         }, false);
@@ -158,7 +158,8 @@ export function SPAEngine(defaultContentNode=null) {
             elementId: elementId
         }
 
-        let path = routeConfigs.routes[routeName].path;
+        //push the actual requested route so dynamic URLs (e.g "/user/7") survive in the address bar
+        let path = routeProperties.route != undefined ? routeProperties.route : routeConfigs.routes[routeName].path;
         let title = routeConfigs.routes[routeName].pageTitle;
 
         //store page details in history state                
@@ -259,7 +260,7 @@ export function SPAEngine(defaultContentNode=null) {
                         insertContent(container, xhr.responseText, element);
 
                         // Pass: element, routeid, callbackKey
-                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey)}, 200): null;
+                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
 
                         container.dataset.state = "received";  
                         
@@ -269,7 +270,7 @@ export function SPAEngine(defaultContentNode=null) {
 
                 }else{//get and return only content
                      //call callback function if enable
-                     usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey)}, 200): null;
+                     usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
                 }
             }else{
                 //message box to show error
@@ -336,6 +337,7 @@ export function SPAEngine(defaultContentNode=null) {
                 status: true,
                 name: "default",
                 properties: routeConfigs.routes.default,
+                route: route,
                 data: {}
             };
             // load the default content
@@ -370,7 +372,7 @@ export function SPAEngine(defaultContentNode=null) {
                     //store page details in history state 
                     saveState(data.content, null);
 
-                    if (bootCallback != null) bootCallback(routeProperties.name);
+                    if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
                 }
             }
         })            
@@ -446,7 +448,7 @@ export function SPAEngine(defaultContentNode=null) {
                         saveState(existingLinksContents[routeName], element.id);
 
                         contentNode.dataset.state = "received";
-                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey)}, 200): null;
+                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
 
                     } else { //link does not exist, get from server
                         fetchData(contentNode, element, cache);
@@ -580,6 +582,7 @@ export function SPAEngine(defaultContentNode=null) {
                 status: false,
                 name: null,
                 properties: null,
+                route: sourceRoute, //the actual requested route, e.g "/user/7" for the pattern "/user/;id"
                 data: {}
             };
 
@@ -648,15 +651,26 @@ export function SPAEngine(defaultContentNode=null) {
                     }
                     
                 }else{
-                   
+
                     if (segmentIsData(patternSegments[x])){
-                        state.data[x+1] = routeSegments[x];
+                        // ";name" captures the segment, ";name:regex" validates it against the regex first
+                        let spec            = patternSegments[x].slice(1);
+                        let separatorIndex  = spec.indexOf(":");
+                        let name            = separatorIndex == -1 ? spec : spec.slice(0, separatorIndex);
+                        let segmentPattern  = separatorIndex == -1 ? null : spec.slice(separatorIndex + 1);
+
+                        if (segmentPattern != null && !(new RegExp(segmentPattern)).test(routeSegments[x])){
+                            state.status = false;
+                            break;
+                        }
+
+                        state.data[name != "" ? name : x+1] = routeSegments[x];
                     }else if (routeSegments[x] != patternSegments[x]) {
                         state.status = false;
-                        break;   
+                        break;
                     }
-                    
-                }                
+
+                }
             }
 
         }else{
