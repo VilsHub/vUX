@@ -25,8 +25,9 @@ A consuming page declares a single module script and tells vUX where the library
 | Guide | Module | Description |
 |---|---|---|
 | [SPA Engine — setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+| [Progress Indicator](progress-indicator.md) | `vUX-progressIndicator.js` | Linear, circular and grid loading indicators; pairing with SPA navigation |
 
-Guides for the remaining modules (`Carousel`, `FormValidator`, `ModalDisplayer`, `ListScroller`, `ProgressIndicator`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`, `FormComponents`) are coming next.
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ModalDisplayer`, `ListScroller`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`, `FormComponents`) are coming next.
 
 ## Other references
 
