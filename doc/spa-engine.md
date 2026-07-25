@@ -120,6 +120,7 @@ new SPAEngine(defaultContentNode)
 | `config.dataAttributeNames` | no | Renames the `data-*` attributes the engine reads off SPA links — see [Link data attributes](#link-data-attributes). |
 | `config.bootCallback` | no | Function called after the entry route's content is mounted on first page load. |
 | `config.clickLoadCallback` | no | Fallback function called after an SPA link's content loads, when the link has no dedicated click-callback data attribute. A dedicated callback on the link always wins over this one. |
+| `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback` — see [Callbacks](#callbacks). |
 | `config.preClickCallback` | no | Function called just before a link's content is fetched from the server — e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
 | `config.functions` | no | Reserved. Accepted and validated, but not currently consulted — dedicated callbacks are looked up in each route's `clickLoadCallbacks` / `historyCallbacks` objects instead. |
 
@@ -141,6 +142,7 @@ Every entry in `routeConfigs.routes` supports:
 | `flush` | array | CSS selectors whose elements are emptied (`innerHTML = ""`) when the route loads — used to clear another route's leftovers. |
 | `clickLoadCallbacks` | object | Named functions available to links via the click-callback data attribute (see "Callbacks"). |
 | `historyCallbacks` | object | Named functions invoked on back/forward navigation. The `default` key runs when the history entry has no originating link (e.g. the entry route). |
+| `exitCallback` | function | Called just **before** this route's mounted content is replaced by another route — release timers, intervals, observers and listeners the page started. Takes priority over the global `config.exitCallback`. |
 
 ## Dynamic routes & route parameters
 
@@ -167,6 +169,8 @@ The captured `params` object is passed as the **last argument** to every callbac
 | Callback | Signature | When it runs |
 |---|---|---|
 | `config.bootCallback` | `(routeName, params)` | After the entry route's content is mounted on initial page load. |
+| `routes.<name>.exitCallback` | `(routeName, params)` | Just before the route's mounted content is replaced — on link navigation, back/forward, or any other content swap. This is the teardown hook: cancel timers, disconnect observers, destroy components (e.g. a [DataView](data-view.md)). Content-swapping the DOM does not stop the JavaScript a page started; without cleanup here, it leaks. |
+| `config.exitCallback` | `(routeName, params)` | Fallback teardown: used for routes that define no `exitCallback` of their own. |
 | `routes.<name>.clickLoadCallbacks.<key>` | `(element, routeName, callbackKey, params)` | After a click on a SPA link carrying `data-<clickLoadCallback>="<key>"` mounts its content. |
 | `config.clickLoadCallback` | `(element, routeName, callbackKey, params)` | Fallback: after a click on a SPA link that has **no** click-callback data attribute. |
 | `routes.<name>.historyCallbacks.<key>` | `(element, routeName, callbackKey, params)` | On back/forward navigation to an entry created by a link carrying `data-<historyCallback>="<key>"`. The `default` key covers entries with no originating link. |
