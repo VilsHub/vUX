@@ -1,0 +1,26 @@
+<h1>Live table — DataView</h1>
+<p>500 rows managed by <code>vUX-dataView.js</code>: the JSON model lives in memory, every row is bound to its DOM node by key, and updates are targeted DOM operations — no rebuild, no diffing. Leaving this route fires the SPA engine's <code>exitCallback</code>, which stops the ticker and destroys the view.</p>
+
+<div id="tableControls">
+    <button type="button" id="btnSortPrice">Sort by price</button>
+    <button type="button" id="btnSortId">Sort by id</button>
+    <button type="button" id="btnFilter">Filter price &gt; 500</button>
+    <button type="button" id="btnClearFilter">Clear filter</button>
+    <button type="button" id="btnTicker">Start ticker (50 cells / 100ms)</button>
+    <button type="button" id="btnBench">Benchmark: 200 updates vs full rebuild</button>
+</div>
+<p id="tableStatus">-</p>
+
+<table id="stockTable" border="1" cellspacing="0" cellpadding="4">
+    <thead>
+        <tr><th>ID</th><th>Symbol</th><th>Price</th><th>Change</th></tr>
+    </thead>
+    <tbody>
+        <tr data-v-row>
+            <td data-v-field="id"></td>
+            <td data-v-field="symbol"></td>
+            <td data-v-field="price"></td>
+            <td data-v-field="change"></td>
+        </tr>
+    </tbody>
+</table>

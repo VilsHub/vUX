@@ -1,5 +1,6 @@
 import {SPAEngine} from "/lib/vUX/vUX-spaEngine.js";
 import {ProgressIndicator} from "/lib/vUX/vUX-progressIndicator.js";
+import {TablePage} from "/pages/table.js";
 
 function demoLog(msg){
     document.querySelector("#log").textContent += msg + "\n";
@@ -7,6 +8,7 @@ function demoLog(msg){
 
 function run(){
     var spa = new SPAEngine($$.ss("#contentBoundary"));
+    var tablePage = new TablePage(demoLog);
 
     // Progress indicator: shown while a route fetch is in flight, completed on mount
     var progressSpace = $$.ss("#progressSpace");
@@ -74,6 +76,30 @@ function run(){
                     }
                 },
                 historyCallbacks: {}
+            },
+            table: {
+                pattern: "/table",
+                target: "/display/table.html",
+                protected: false,
+                authURL: "",
+                skipInCacheBuilder: true,
+                path: "/table",
+                group: "",
+                pageTitle: "Live table | vUX SPA example",
+                pageSections: {},
+                flush: [],
+                clickLoadCallbacks: {
+                    showTable: function(element, routeName, callbackKey, params){
+                        completeLoadProgress();
+                        tablePage.mount();
+                    }
+                },
+                historyCallbacks: {},
+                // exit hook: fired before this route's content is replaced by another route
+                exitCallback: function(routeName, params){
+                    demoLog("[exit] leaving route '" + routeName + "'");
+                    tablePage.destroy();
+                }
             }
         }
     };
@@ -92,24 +118,35 @@ function run(){
         // fallback for links with no dedicated click-callback (e.g. the Home link)
         completeLoadProgress();
     };
+    spa.config.exitCallback = function(routeName, params){
+        // fallback for routes with no dedicated exitCallback
+        demoLog("[exit] leaving route '" + routeName + "'");
+    };
     spa.config.bootCallback = function(routeName, params){
         demoLog("=== bootCallback ===");
         demoLog("arguments received   : " + JSON.stringify([routeName, params]));
         reportParamRecovery("bootCallback", null, routeName, undefined, params);
+        if (routeName === "table") tablePage.mount(); // direct load of /table
     };
     spa.config.routeConfigs = routeConfigs;
     spa.initialize();
 
     // ?autorun clicks through the links automatically — used for headless testing
     if (location.pathname === "/" && new URLSearchParams(location.search).has("autorun")) {
-        setTimeout(function(){
-            demoLog("[auto] clicking /user/7");
-            document.querySelector("#userLink").click();
-        }, 800);
-        setTimeout(function(){
-            demoLog("[auto] clicking /user/8 (addToHistory=false, cache=false)");
-            document.querySelector("#user8Link").click();
-        }, 3000);
+        function auto(delay, label, selector){
+            setTimeout(function(){
+                demoLog("[auto] " + label);
+                document.querySelector(selector).click();
+            }, delay);
+        }
+        auto(800,  "clicking /user/7", "#userLink");
+        auto(3000, "clicking /user/8 (addToHistory=false, cache=false)", "#user8Link");
+        auto(5200, "clicking /table", "#tableLink");
+        auto(7200, "sort by price", "#btnSortPrice");
+        auto(7600, "filter price > 500", "#btnFilter");
+        auto(8000, "start ticker", "#btnTicker");
+        auto(8400, "benchmark", "#btnBench");
+        auto(9500, "clicking / (should fire the table exit hook)", "#homeLink");
     }
 }
 

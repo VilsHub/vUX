@@ -5,6 +5,8 @@ A minimal single-page application built with `SPAEngine` and `ProgressIndicator`
 - **Routing** — a static default route (`/`) and a dynamic route `/user/;id:[0-9]+` with a named, regex-validated parameter delivered to the callbacks (`params.id`).
 - **Progress indication** — a linear style-3 bar across the top of the viewport, shown by `spa.config.preClickCallback` when a fragment is fetched from the server and completed by the load callbacks. Cached navigations show no bar.
 - **Per-link data attributes** — the "User 8" link uses `data-cache="false"` (re-fetch every time) and `data-add-to-history="false"` (URL and history untouched).
+- **Live table island** — the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown** — leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
 
 Everything a callback receives is printed to the diagnostics panel at the bottom of the page.
 
