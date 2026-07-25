@@ -16,6 +16,8 @@ import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************progress Indicator*****************************/
 export function ProgressIndicator(defaultProgressSpace=null) {
+    if (defaultProgressSpace != null) validateElement(defaultProgressSpace, "ProgressIndicator(x) constructor argument 1 must either be null or an element (the default progress space)");
+
     let progressSpeed=1.8,progressType="linear", initialized=false,cShapes=null,gbr,cShapesObj;
     let network         = "online";
     let smallIncrement  = null;
@@ -41,18 +43,27 @@ export function ProgressIndicator(defaultProgressSpace=null) {
         },
         custom:"" //CSS style for custom progress indicator type
     }
-    this.showProgress = function (element){
+    this.showProgress = function (element=null){
         if (!initialized) throw new Error("Please initialize using the 'initialize()' method, before trying to show progress");
-        validateElement(element, "progressIndicatorObj.showProgress(x) argument 1 must be a valid HTML element");
+        if (element != null){
+            validateElement(element, "progressIndicatorObj.showProgress(x) argument 1 must be a valid HTML element");
+        }else if (defaultProgressSpace == null){
+            throw new Error("progressIndicatorObj.showProgress(x) requires an element when no default progress space was passed to the constructor");
+        }
         showLoader(element);
     },
 
-    this.hideProgress = function (element){
+    this.hideProgress = function (element=null){
+        if (element != null){
+            validateElement(element, "progressIndicatorObj.hideProgress(x) argument 1 must be a valid HTML element");
+        }else if (defaultProgressSpace == null){
+            throw new Error("progressIndicatorObj.hideProgress(x) requires an element when no default progress space was passed to the constructor");
+        }
         let targetSpace = getProgressSpaceElement(element).querySelector(".vProgressItem");
 
         if(progressType == "linear"){
             if(progressStyle.linear.style == 3){
-                clearInterval(tinyIncrement);
+                clearInterval(smallIncrement);
                 let progress = targetSpace.querySelector(".progress");
                 progress.classList.add("completed");
                 progress.classList.remove("halted", "tiny", "slow");
@@ -184,21 +195,23 @@ export function ProgressIndicator(defaultProgressSpace=null) {
 
     function getProgressSpaceElement(element){
         let targetSpace;
-        if(defaultProgressSpace == null){
-            // check if element has target progress space element
-            let id = element.dataset[hyphenatedToCamel(dataAttributes["progressSpaceId"])];
-            if(id == "self"){
-                targetSpace = element;
-            }else if(id != undefined){ // query for the element with target ID
-                let elementWithId = $$.ss("#"+id);
-                if(elementWithId == null) throw new Error("No element found with the ID '"+id+"', passed to the progressIdicatorObj.showProgress()");
-                targetSpace = elementWithId;
-            }else{
-                targetSpace = element;
-            }
 
-            return targetSpace;
+        // the element's progressSpaceId data attribute takes priority over the default progress space
+        let id = element != null ? element.dataset[hyphenatedToCamel(dataAttributes["progressSpaceId"])] : undefined;
+
+        if(id == "self"){
+            targetSpace = element;
+        }else if(id != undefined){ // query for the element with target ID
+            let elementWithId = $$.ss("#"+id);
+            if(elementWithId == null) throw new Error("No element found with the ID '"+id+"', passed to the progressIdicatorObj.showProgress()");
+            targetSpace = elementWithId;
+        }else if(defaultProgressSpace != null){
+            targetSpace = defaultProgressSpace;
+        }else{
+            targetSpace = element;
         }
+
+        return targetSpace;
     }
 
     function getComputedlocation(location){
@@ -259,6 +272,15 @@ export function ProgressIndicator(defaultProgressSpace=null) {
             spaceEle.innerHTML   += template;
         }else{
             exist.classList.remove("done");
+
+            //reset a finished style 3 bar so it restarts from 0% instead of animating backwards from 100%
+            let progress = exist.querySelector(".progress");
+            if (progress != null && progress.classList.contains("style3")){
+                progress.classList.remove("completed", "halted", "slow", "tiny");
+                progress.style.transitionDuration = ".8s";
+                progress.style.width = "0%";
+                void exist.offsetWidth; //flush styles so the upcoming width change animates from 0%
+            }
         }
         return new Promise((s, r)=>s())
     }
