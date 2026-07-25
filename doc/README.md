@@ -31,6 +31,7 @@ Guides for the remaining modules (`Carousel`, `FormValidator`, `ModalDisplayer`,
 
 ## Other references
 
+- [SPA example app](../examples/spa/README.md) — runnable example combining `SPAEngine` and `ProgressIndicator`, with a bundled dev server.
 - [README](../README.md) — installation and the public feature list per release.
 - [ChangeLog](../ChangeLog.md) — API renames and changes between releases.
 - `window.vUxModules` — type this in the browser console to print the importable module list at runtime.

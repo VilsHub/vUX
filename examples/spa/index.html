@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>vUX SPA example</title>
+        <script type="module" src="/main.js" data-id="vUX" data-library-root="/lib/vUX/"></script>
+    </head>
+    <body>
+        <div id="progressSpace" style="position:fixed; top:0; left:0; width:100%; height:3px; z-index:200;"></div>
+        <nav>
+            <a href="/" id="homeLink" class="spa-link">Home</a>
+            <a href="/user/7" id="userLink" class="spa-link" data-click-callback="showUser">User 7</a>
+            <a href="/user/8" id="user8Link" class="spa-link" data-click-callback="showUser" data-cache="false" data-add-to-history="false">User 8 (no history, no cache)</a>
+        </nav>
+
+        <section id="contentBoundary">
+            <!-- SPA content here -->
+        </section>
+
+        <pre id="log"><!-- diagnostics --></pre>
+    </body>
+</html>
