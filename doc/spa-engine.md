@@ -4,6 +4,18 @@
 
 [← Back to documentation index](README.md)
 
+## Why no virtual DOM?
+
+The engine renders by swapping server-rendered HTML fragments into content nodes — there is no virtual DOM. For navigation-shaped apps this is a deliberate advantage, not a missing feature:
+
+- **Full-view swaps are the browser's fast path.** A navigation is: fetch (or cache hit) → one `innerHTML` assignment → the browser's native parser builds the subtree in a single pass. A virtual DOM framework must build the same real DOM anyway, *plus* allocate a virtual tree, diff it against the previous one, and translate the diff into DOM calls. Diffing pays off only for small updates to large retained views; a route transition replaces everything, so the diff computes an answer that was already known.
+- **No framework runtime.** There is nothing to download, parse and boot before first interaction — no ~140KB runtime, no hydration pass, no build step. The engine is ~1,000 lines of native ES6.
+- **Less memory, less GC pressure.** A virtual DOM app permanently holds a JavaScript mirror of the UI (component trees, props, hook state) and allocates a fresh tree every re-render. This engine retains only the real DOM plus cached HTML strings — which double as the history state, making back/forward navigation a single synchronous `innerHTML` with zero network and zero computation.
+- **No reconciliation-induced bug class.** List-key mistakes that bleed state between rows, stale closures, render cascades, the `memo`/`useMemo` tuning discipline, SSR hydration mismatches, and ownership fights with imperative libraries (maps, canvas, editors) all exist *because* an abstraction sits between the code and the DOM. Here components own the DOM directly, so there is no second owner to disagree with.
+- **HTML stays the source of truth.** Fragments over the wire is the same architectural bet as HTMX/Turbo/Hotwire: HTML is already a serialization format for UI, and browsers are extremely good at consuming it — no JSON → virtual tree → DOM pipeline.
+
+**The honest trade-off:** a virtual DOM earns its cost for frequent, fine-grained updates to a large *stateful* view — a live table, a dashboard, a feed — where naive `innerHTML` replacement is slower and destroys focus, scroll and input state. vUX answers that case per-section rather than per-app: mount a [DataView](data-view.md) island inside the route that has the hot-update workload (keyed direct binding, `O(changes)` updates, state-preserving sorts), and release it in the route's [`exitCallback`](#callbacks) when the user navigates away. The rest of the app never pays for reactivity it doesn't use.
+
 ## Prerequisites
 
 **1. Server rewrite.** Because routes like `/user/7` are virtual, your web server must serve the SPA's entry HTML for any route that is not a real file (the usual history-fallback rewrite). Without it, a page refresh or a shared link on a non-default route returns a server 404.
