@@ -20,6 +20,7 @@ export function SPAEngine(defaultContentNode=null) {
    
     var initialize = false,tempStorage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
     var clickLoadCallback = null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
+    var exitCallback=null, activeRoute=null;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         cache:"",
@@ -131,8 +132,10 @@ export function SPAEngine(defaultContentNode=null) {
                 //Set page title
                 $$.ss("title").innerText = title;
   
-                // Set contents
+                // Notify outgoing route, then set contents
+                fireExitCallback();
                 contentNode.innerHTML = parsedData.contents;
+                activeRoute = {name: routeName, data: routeProperties.data};
        
                 // Set page sections
                 loadPageSections(routeProperties, routeName);
@@ -289,15 +292,35 @@ export function SPAEngine(defaultContentNode=null) {
         
     }
 
+    function fireExitCallback(){
+        // Notify the outgoing route before its content is replaced, so pages can release timers/listeners
+        if (activeRoute == null) return;
+
+        let usedExitCallback    = null;
+        let outgoingRoute       = routeConfigs.routes[activeRoute.name];
+
+        if (outgoingRoute != undefined && outgoingRoute.exitCallback != undefined){
+            usedExitCallback = outgoingRoute.exitCallback;
+        }else if (exitCallback != null){
+            usedExitCallback = exitCallback;
+        }
+
+        if (usedExitCallback != null) usedExitCallback(activeRoute.name, activeRoute.data);
+    }
+
     function insertContent(container, content, element){
         if (element != null){
-            if(element.dataset.link == container.dataset.link){//content for the last element clicked                
+            if(element.dataset.link == container.dataset.link){//content for the last element clicked
                 //set Content
+                fireExitCallback();
                 container.innerHTML = content;
+                activeRoute = {name: routeProperties.name, data: routeProperties.data};
             }
         }else{
             //set Content
+            fireExitCallback();
             container.innerHTML = content;
+            activeRoute = {name: routeProperties.name, data: routeProperties.data};
         }
     }
 
@@ -371,7 +394,7 @@ export function SPAEngine(defaultContentNode=null) {
         content.then(function(data){
             if(data.status){
                 if(defaultContentNode != null){
-                    defaultContentNode.innerHTML = data.content;
+                    insertContent(defaultContentNode, data.content, null);
 
                     // Set page title
                     setPageTitle(null);
@@ -685,9 +708,9 @@ export function SPAEngine(defaultContentNode=null) {
             }
 
         }else{
-            status = false;
+            state.status = false; //segment count mismatch: this route does not match the pattern
         }
-  
+
         return state;
     }
 
@@ -965,6 +988,12 @@ export function SPAEngine(defaultContentNode=null) {
             set: function(value) {
                 validateFunction(value, "config.bootCallback property value must be a function");
                 bootCallback = value;
+            }
+        },
+        exitCallback: {
+            set: function(value) {
+                validateFunction(value, "config.exitCallback property value must be a function");
+                exitCallback = value;
             }
         },
         preClickCallback: {
