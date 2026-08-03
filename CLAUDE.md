@@ -40,6 +40,14 @@ Two patterns coexist: (a) static stylesheets in `assets/css/*.css`, linked at ru
 
 The version is baked into filenames (`vUX-core-4.0.0-beta.js`) and into the absolute CDN import URLs shown in the README (`http://library.vilshub.com/lib/vUX/<version>/vUX-*.js`). Bumping a version touches filenames, the import in `vUX-core.js`, and the module registry list in `vModel.core.data.modules` (`src/helpers.js`).
 
+## Change logging (required for every change)
+
+Every change must be recorded under `./changelog/<feature-Name>/`, in three places:
+
+1. **Per-file diffs** — for each changed file, write `./changelog/<feature-Name>/logs/<fileName>_ai_change.log`. For each modified section, echo the initial and the changed section under the headings `OLD_SECTION` and `NEW_SECTION`, and explain the reason for the modification compared to the last state before modification.
+2. **Modified file list** — write `./changelog/<feature-Name>/modified_files/ai_change_files.log`, using the heading `<Target-Module>` followed by the list of all files modified for that module.
+3. **Summary** — write a summary of the affected projects to `./changelog/<feature-Name>/summary/summary.log`.
+
 ## Reference
 
 - `README.md` — install/import contract and the public feature list per release.
