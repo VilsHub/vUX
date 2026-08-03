@@ -1,0 +1,135 @@
+FEATURE: modal-displayer-verification
+DATE: 2026-08-03
+SCOPE: verify the ModalDisplayer module, optimise where needed, and document it
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected. No other project in the
+workspace consumes these files. There is no build step, no package manifest and no
+dependency graph to propagate through: the library is shipped as source and loaded
+directly by consuming pages, so all changes take effect on the next page load.
+
+Consumer-visible surface:
+  - vUX-modalDisplayer.js       behaviour fixes; no public API added or removed
+  - assets/css/modalDisplayer.css  one new rule (.vModal.xScroll)
+
+No public API was renamed, removed or added, so no entry is required in
+ChangeLog.md's rename record and no version bump is implied. Existing consumer code
+continues to work unchanged; the fixes only make documented behaviour that was
+previously broken actually take effect.
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+The repository has no test runner, so the module was verified by driving a real
+browser (headless Chromium via Playwright) against a new example page served over
+HTTP from the repository root, asserting DOM state, computed styles, callback
+invocation and scroll position across the full open/close cycle of every effect.
+
+Baseline run before any fix:   23 passed, 6 failed
+Final run after fixes:         32 passed, 0 failed
+
+The test harness itself lives outside the repository (it is a verification tool,
+not a shipped artifact); the example page it drives is committed under
+examples/modal/ as documentation.
+
+--------------------------------------------------------------------------------
+DEFECTS FOUND AND FIXED
+--------------------------------------------------------------------------------
+
+1. ReferenceError on tall modals (crash)
+   positionVertically() called `VerticalScroll.query(...)`. VerticalScroll is
+   defined nowhere in the library. Any modal within 100px of the viewport height
+   threw, aborting the open half-way and corrupting state so the following close()
+   also threw. Tall modals were entirely unusable. The surrounding branches were
+   found to be redundant (both live branches applied identical styles; the third was
+   unreachable), so the function was reduced to its single meaningful behaviour.
+
+2. Tall modals unreachable below the fold
+   The overlay carried the class `xScroll`, which no stylesheet defined. With the
+   body frozen at `position: fixed` and the overlay at `overflow: visible`, nothing
+   could scroll, so content past the first viewport height was unreachable. Added
+   `.vModal.xScroll { overflow-y: auto; overflow-x: hidden }`.
+
+3. config.overlayStyle had no effect
+   `overlay["style"] = overlayStyle` assigns to a read-only CSSStyleDeclaration and
+   was silently discarded; the overlay was always transparent. Now applied as the
+   `background` declaration.
+
+4. Duplicate overlay with a second instance
+   The dedupe guard queried `style[data-id='vModalStyles']`, but the marker is on
+   the overlay div, so it never matched. A second ModalDisplayer appended a second
+   overlay and the module's `$$.ss(".vModal")` lookups then resolved ambiguously,
+   breaking both instances. Selector corrected to `div[data-id=...]`.
+
+5. openProcessor never fired for the default effect
+   The callback was only invoked from the transitionend handler, which effect
+   "none" (the default) never reaches. Now called directly in the none path.
+
+6. Per-trigger widths leaked permanently
+   A trigger carrying the widths attribute overwrote modalWidths with no reset, so
+   its sizing applied to every modal opened afterwards. Defaults are now restored
+   when a trigger omits the attribute.
+
+7. Blur overlay never removed on the "none" close path
+   With overlayBackgroundType = "blur" and the default effect, the vxKit blur class
+   was added on open but never removed, leaving the host page permanently blurred.
+
+8. Host page scroll-behavior permanently rewritten
+   Closing a modal set an inline `scroll-behavior: smooth` on <html> and never
+   reverted it, silently changing every subsequent scroll on the consumer's site.
+   Now suppressed only for the duration of the restore jump, then restored.
+
+--------------------------------------------------------------------------------
+OPTIMISATIONS
+--------------------------------------------------------------------------------
+
+- getDimensionOfHidden() was called twice per open to read two members of the same
+  result. That helper mutates element styles and reads scrollHeight/scrollWidth,
+  forcing synchronous layout each time. Now called once.
+- Removed an unused `$$.ss("html").scrollHeight` read from initialize(), another
+  forced layout serving nothing.
+- Removed ten dead closure variables (totalHeight, closeButton, sX, endSy,
+  scrollable, modalHeigthBelow, modalHeigthAbove, paddingTop and related), all
+  leftovers of the pre-v4 positioning workflow.
+- Trigger and close-button matching now uses closest() instead of
+  classList.contains(), so triggers containing nested markup (icons, spans) work.
+  This is a usability fix as much as a cleanup.
+
+Net effect on vUX-modalDisplayer.js: 69 lines changed, 39 removed.
+
+--------------------------------------------------------------------------------
+DOCUMENTATION ADDED
+--------------------------------------------------------------------------------
+
+- doc/modal-displayer.md — full usage guide: trigger-driven model, quick start,
+  complete config table with types and defaults, API, effects, tall-modal
+  behaviour, and the constraints that are easy to get wrong.
+- examples/modal/ — runnable demo (page, wiring module, README) covering all four
+  effects, per-trigger widths, a tall scrolling modal, all three close routes and
+  the open/close callbacks.
+- doc/README.md — guide registered in the index; example linked.
+
+--------------------------------------------------------------------------------
+CONFIRMED WORKING (unchanged behaviour)
+--------------------------------------------------------------------------------
+
+All four effects open and close cleanly; content is restored to its original
+position and hidden state after every cycle; body scroll locking and scroll
+position restoration; close by close button, Escape key and overlay click;
+exitOnAway; reopening after close; live width recalculation on browser resize;
+the mainForm and displayForm getters; and automatic linking of
+assets/css/modalDisplayer.css through the assetPath contract.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS (documented, not fixed)
+--------------------------------------------------------------------------------
+
+- Only one modal may be open at a time; the module keeps a single overlay and a
+  single set of state variables. Stacked modals would require a redesign.
+- Modal content is cloned via innerHTML into the overlay, so event listeners bound
+  directly to nodes inside the content do not survive an open/close cycle. The
+  guide directs consumers to delegate, or to bind through displayForm on open.

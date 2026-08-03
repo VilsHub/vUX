@@ -1,0 +1,20 @@
+FEATURE: modal-displayer-verification
+DATE: 2026-08-03
+
+ModalDisplayer
+  Modified:
+    vUX-modalDisplayer.js
+    assets/css/modalDisplayer.css
+  Added:
+    doc/modal-displayer.md
+    examples/modal/index.html
+    examples/modal/main.js
+    examples/modal/README.md
+
+Documentation index
+  Modified:
+    doc/README.md
+
+Repository conventions
+  Modified:
+    CLAUDE.md

@@ -7,543 +7,425 @@
  * https://library.vilshub.com/lib/vUX/license
  *
  * Date: 2021-07-19=T22:30Z
- * 
- * 
+ *
+ *
  */
 // Import vUX core
 import "./src/vUX-core-4.0.0-beta.js";
 
 /************************ModalDisplayer***************************/
+
+//Open modals are held in one stack shared by every ModalDisplayer instance, so a
+//modal opened from inside a displayed modal nests on top of it instead of
+//overwriting it. The stack has to be shared rather than per instance because the
+//state it guards - the body freeze and the page scroll position - belongs to the
+//document, not to an instance: it is captured when the stack becomes non empty and
+//released only when it empties again.
+var modalStack = [];
+var pageState = { scrollY: 0, bodyPosition: "", frozen: false };
+var globalHandlersAttached = false;
+
+function topLayer() {
+    return modalStack.length > 0 ? modalStack[modalStack.length - 1] : null;
+}
+
+function layerOf(node) {
+    for (var x = modalStack.length - 1; x >= 0; x--) {
+        if (modalStack[x].overlay.contains(node)) return modalStack[x];
+    }
+    return null;
+}
+
+function freezePage() {
+    if (pageState.frozen) return; //only the bottom layer freezes; nested opens must not re-capture
+    pageState.scrollY = window.scrollY;
+    pageState.bodyPosition = document.body.style["position"];
+    document.body.style["position"] = "fixed";
+    document.body.style["top"] = "-" + pageState.scrollY + "px";
+    pageState.frozen = true;
+}
+
+function releasePage() {
+    if (!pageState.frozen) return;
+    document.body.style["position"] = pageState.bodyPosition;
+    document.body.style["top"] = "";
+    pageState.frozen = false;
+
+    //jump back instantly, then leave the page's own scroll-behavior as it was
+    var htmlEle = $$.ss("html");
+    var previousScrollBehavior = htmlEle.style["scroll-behavior"];
+    htmlEle.style["scroll-behavior"] = "auto";
+    scrollTo(0, pageState.scrollY);
+    htmlEle.style["scroll-behavior"] = previousScrollBehavior;
+}
+
+function applyWidths(layer) {
+    var mode = new ScreenBreakPoint(layer.brkpoints).screen.mode;
+    if (mode == "large") {
+        layer.space.style["width"] = layer.widths[0];
+    } else if (mode == "medium") {
+        layer.space.style["width"] = layer.widths[1];
+    } else {
+        layer.space.style["width"] = layer.widths[2];
+    }
+}
+
+function positionLayer(layer) {
+    //A modal at least as tall as the viewport less 100px is pinned below the top
+    //edge and scrolls inside its own overlay; anything shorter stays centred by CSS.
+    if ((window.innerHeight - layer.height) < 100) {
+        layer.space.style["top"] = "50px";
+        layer.space.style["padding-bottom"] = "50px";
+        layer.space.style["transform"] = "translateY(0%) translateX(-50%)";
+    }
+}
+
+var openEffects = {
+    none: function(layer) {
+        layer.overlay.classList.add("show");
+        completeOpen(layer);
+    },
+    split: function(layer) {
+        var effectsCon = $$.ce("DIV");
+        var leftEle = $$.ce("DIV");
+        var rightEle = $$.ce("DIV");
+        var boxCSS = "position:absolute; top:0; width:50%; height:" + layer.height + "px; overflow:hidden;";
+
+        effectsCon.setAttribute("style", "position:relative; width:" + layer.width + "px; height:" + layer.height + "px;");
+        effectsCon.setAttribute("class", "vEffects trans_in split");
+
+        leftEle.setAttribute("style", boxCSS + " left:-200%; transition:left .4s cubic-bezier(0,.87,.12,1) 0s;");
+        leftEle.setAttribute("class", "vEffectBox vLeft");
+        rightEle.setAttribute("style", boxCSS + " right:-200%; transition:right .4s cubic-bezier(0,.87,.12,1) 0s;");
+        rightEle.setAttribute("class", "vEffectBox vRight");
+
+        effectsCon.appendChild(leftEle);
+        effectsCon.appendChild(rightEle);
+        layer.space.appendChild(effectsCon);
+        layer.effectsCon = effectsCon;
+
+        fillEffectBox(leftEle, layer)["style"]["left"] = "0px";
+        fillEffectBox(rightEle, layer)["style"]["right"] = "0px";
+
+        layer.overlay.classList.add("show");
+        leftEle.scrollWidth; //force reflow so the transition runs from the off screen position
+        rightEle.scrollWidth;
+        leftEle.style["left"] = "0%";
+        rightEle.style["right"] = "0%";
+    },
+    flip: function(layer) {
+        var effectsCon = $$.ce("DIV");
+        var flipper = $$.ce("DIV");
+        var flipperBGElement = $$.ce("DIV");
+        var flipperFormElement = $$.ce("DIV");
+
+        effectsCon.setAttribute("style", "position:relative; width:" + layer.width + "px; height:" + layer.height + "px; perspective:4000px;");
+        effectsCon.setAttribute("class", "vEffects trans_in flip");
+
+        flipper.setAttribute("class", "vEffectBox vFlipper");
+        flipper.setAttribute("style", "transition:transform .6s linear 0s; width:100%; height:100%; transform-style:preserve-3d; backface-visibility:hidden; transform:rotateX(0deg);");
+
+        flipperBGElement.setAttribute("class", "vFlipBg");
+        flipperBGElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility:hidden; z-index:2; background-color:" + layer.backgroundColor + ";");
+
+        flipperFormElement.setAttribute("class", "vFlipForm");
+        flipperFormElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility:hidden; z-index:1; transform:rotateX(-180deg);");
+
+        flipper.appendChild(flipperFormElement);
+        flipper.appendChild(flipperBGElement);
+        effectsCon.appendChild(flipper);
+        layer.space.appendChild(effectsCon);
+        layer.effectsCon = effectsCon;
+
+        fillEffectBox(flipperFormElement, layer);
+
+        layer.overlay.classList.add("show");
+        flipper.scrollHeight;
+        flipper.style["transform"] = "rotateX(180deg)";
+    },
+    box: function(layer) {
+        var effectsCon = $$.ce("DIV");
+        var box = $$.ce("DIV");
+
+        effectsCon.setAttribute("style", "position:relative; width:" + layer.width + "px; height:" + layer.height + "px;");
+        effectsCon.setAttribute("class", "vEffects trans_in box");
+
+        box.setAttribute("class", "vEffectBox vBoxForm");
+        box.setAttribute("style", "position:absolute; transition:all .3s linear 0s; width:0%; height:0%; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); overflow:hidden;");
+
+        effectsCon.appendChild(box);
+        layer.space.appendChild(effectsCon);
+        layer.effectsCon = effectsCon;
+
+        fillEffectBox(box, layer);
+
+        layer.overlay.classList.add("show");
+        box.scrollHeight;
+        box.style["width"] = "100%";
+        box.style["height"] = "100%";
+    }
+};
+
+var closeEffects = {
+    none: function(layer) {
+        completeClose(layer);
+    },
+    split: function(layer) {
+        var leftE = startCloseTransition(layer, ".vLeft");
+        var rightE = layer.effectsCon.querySelector(".vRight");
+
+        fillEffectBox(leftE, layer)["style"]["left"] = "0px";
+        leftE.style["transition"] = "left .4s cubic-bezier(.86,.01,.99,.48)";
+        leftE.scrollWidth;
+        leftE.style["left"] = "-200%";
+
+        fillEffectBox(rightE, layer)["style"]["right"] = "0px";
+        rightE.style["transition"] = "right .4s cubic-bezier(.86,.01,.99,.48)";
+        rightE.scrollWidth;
+        rightE.style["right"] = "-200%";
+    },
+    flip: function(layer) {
+        var flipper = startCloseTransition(layer, ".vFlipper");
+        var flipperFormE = layer.effectsCon.querySelector(".vFlipForm");
+        var flipperBg = layer.effectsCon.querySelector(".vFlipBg");
+
+        flipper.style["transform"] = "rotateX(0deg)";
+        fillEffectBox(flipperFormE, layer);
+
+        //bring the form face back to the front so the modal is what flips away
+        flipperFormE.style["transform"] = "rotateX(0deg)";
+        flipperFormE.style["z-index"] = "3";
+        flipperBg.style["transform"] = "rotateX(180deg)";
+
+        flipper.scrollWidth;
+        flipper.style["transform"] = "rotateX(-180deg)";
+    },
+    box: function(layer) {
+        var box = startCloseTransition(layer, ".vBoxForm");
+        fillEffectBox(box, layer);
+        box.scrollWidth;
+        box.style["width"] = "0%";
+        box.style["height"] = "0%";
+    }
+};
+
+//Copies the modal into an animation box. The copy drops its id so that only the
+//one finally handed to the user (in the layer host) carries it.
+function fillEffectBox(box, layer) {
+    box.innerHTML = layer.sourceOuter;
+    var copy = box.childNodes[0];
+    copy.removeAttribute("id");
+    copy.style["display"] = "block";
+    return copy;
+}
+
+function startCloseTransition(layer, boxSelector) {
+    layer.effectsCon.classList.remove("trans_in");
+    layer.effectsCon.classList.add("trans_out");
+    layer.effectsCon.style["display"] = "block";
+    layer.host.style["display"] = "none";
+    return layer.effectsCon.querySelector(boxSelector);
+}
+
+function completeOpen(layer) {
+    if (layer.opened) return; //the box effect transitions two properties, so transitionend fires twice
+    layer.opened = true;
+
+    layer.host.innerHTML = layer.sourceOuter;
+    layer.host.style["height"] = layer.height + "px";
+
+    var content = layer.host.childNodes[0];
+    if (content != null) {
+        content.style["display"] = "block";
+        content.style["width"] = "100%";
+    }
+    //the animation boxes are kept, hidden, because the closing effect replays through them
+    if (layer.effectsCon != null) layer.effectsCon.style["display"] = "none";
+    layer.openProcessor();
+}
+
+function completeClose(layer) {
+    if (layer.destroyed) return;
+    layer.destroyed = true;
+
+    restoreSource(layer);
+    if (layer.overlay.parentNode != null) layer.overlay.parentNode.removeChild(layer.overlay);
+
+    var index = modalStack.indexOf(layer);
+    if (index > -1) modalStack.splice(index, 1);
+
+    releaseBlur(layer);
+    if (modalStack.length == 0) releasePage(); //the page stays frozen while any layer is still up
+    layer.closeProcessor();
+}
+
+function restoreSource(layer) {
+    var source = layer.source;
+    if (layer.sourceId != null) source.setAttribute("id", layer.sourceId);
+    if (layer.sourceClass != null) {
+        source.setAttribute("class", layer.sourceClass);
+    } else {
+        source.removeAttribute("class");
+    }
+    source.innerHTML = layer.sourceInner;
+    source.style["display"] = "none";
+    source.style["width"] = layer.sourceInlineWidth;
+}
+
+function applyBlur(layer) {
+    if (layer.overlayBackgroundType == "blur" && layer.pageContainer != null) {
+        layer.pageContainer.classList.add("vxKit");
+    }
+}
+
+function releaseBlur(layer) {
+    if (layer.overlayBackgroundType != "blur" || layer.pageContainer == null) return;
+    for (var x = 0; x < modalStack.length; x++) { //a layer still up may want the same container blurred
+        if (modalStack[x].overlayBackgroundType == "blur" && modalStack[x].pageContainer === layer.pageContainer) return;
+    }
+    layer.pageContainer.classList.remove("vxKit");
+}
+
+function closeTopLayer() {
+    var layer = topLayer();
+    if (layer == null || layer.closing) return;
+    layer.closing = true;
+    closeEffects[layer.effect](layer);
+}
+
+function openLayer(settings, source) {
+    var layer = {
+        owner: settings.owner,
+        source: source,
+        sourceId: source.getAttribute("id"),
+        sourceClass: source.getAttribute("class"),
+        sourceInner: source.innerHTML,
+        sourceInlineWidth: source.style["width"],
+        sourceOuter: "",
+        backgroundColor: $$.sm(source).cssStyle("background-color"),
+        effect: settings.effect,
+        widths: settings.widths,
+        brkpoints: settings.brkpoints,
+        exitOnAway: settings.exitOnAway,
+        closeButtonClass: settings.closeButtonClass,
+        openProcessor: settings.openProcessor,
+        closeProcessor: settings.closeProcessor,
+        overlayBackgroundType: settings.overlayBackgroundType,
+        overlayStyle: settings.overlayStyle,
+        pageContainer: settings.pageContainer,
+        effectsCon: null,
+        opened: false,
+        closing: false,
+        destroyed: false
+    };
+
+    var dimension = getDimensionOfHidden(source);
+    layer.height = dimension["height"];
+    layer.width = dimension["width"];
+
+    freezePage(); //must run before the overlay goes up, while the page scroll is still readable
+
+    var overlay = $$.ce("DIV");
+    overlay.classList.add("vModal", "xScroll");
+    overlay.style["z-index"] = 999 + modalStack.length; //each layer sits above the one it was opened from
+    if (layer.overlayBackgroundType == "color" && layer.overlayStyle != "") {
+        overlay.style["background"] = layer.overlayStyle;
+    }
+
+    var space = $$.ce("DIV");
+    space.classList.add("modalSpace");
+
+    var host = $$.ce("DIV");
+    host.classList.add("vModalHost");
+
+    if (modalStack.length == 0) { //keep the pre stacking markers on the first layer, for existing selectors
+        overlay.setAttribute("data-id", "vModalStyles");
+        host.setAttribute("id", "newModal");
+    }
+
+    space.appendChild(host);
+    overlay.appendChild(space);
+    document.body.appendChild(overlay);
+
+    layer.overlay = overlay;
+    layer.space = space;
+    layer.host = host;
+
+    modalStack.push(layer);
+    applyWidths(layer);
+    positionLayer(layer);
+
+    //The displayed copy keeps the modal's id and the source gives it up, so that
+    //getElementById() while a modal is open resolves to what the user can see.
+    source.style["width"] = layer.effect == "split" ? layer.width + "px" : "100%";
+    layer.sourceOuter = source.outerHTML;
+    source.removeAttribute("id");
+    source.classList.add("vOld");
+    source.innerHTML = "";
+
+    applyBlur(layer);
+    openEffects[layer.effect](layer);
+    return layer;
+}
+
+function attachGlobalHandlers() {
+    //Escape, away clicks, close buttons and transition tracking act on the shared
+    //stack, so they are bound once for the document rather than once per instance -
+    //otherwise every instance would pop a layer for a single Escape press.
+    if (globalHandlersAttached) return;
+    globalHandlersAttached = true;
+
+    document.body.addEventListener("keydown", function(e) {
+        if (topLayer() == null) return;
+        if (keyboardEventHanler(e)["handled"] == true && e.key == "Escape") closeTopLayer();
+    }, false);
+
+    document.body.addEventListener("transitionend", function(e) {
+        //only the library's own animation boxes count; a transition on consumer
+        //content inside the modal bubbles up here too and must be ignored
+        if (e.target.classList == undefined || !e.target.classList.contains("vEffectBox")) return;
+
+        var layer = layerOf(e.target);
+        if (layer == null || layer.effectsCon == null || !layer.effectsCon.contains(e.target)) return;
+
+        if (layer.effectsCon.classList.contains("trans_in")) {
+            if (layer.effect == "split") {
+                e.target.innerHTML = "";
+                if (!e.target.classList.contains("vRight")) return; //wait for the second half
+            }
+            completeOpen(layer);
+        } else if (layer.effectsCon.classList.contains("trans_out")) {
+            if (layer.effect == "split" && !e.target.classList.contains("vLeft")) return;
+            completeClose(layer);
+        }
+    }, false);
+
+    window.addEventListener("resize", function() {
+        for (var x = 0; x < modalStack.length; x++) applyWidths(modalStack[x]);
+    }, false);
+
+    document.addEventListener("click", function(e) {
+        var layer = topLayer();
+        if (layer == null) return;
+        if (layer.exitOnAway && e.target === layer.overlay) {
+            closeTopLayer();
+            return;
+        }
+        if (layer.closeButtonClass != "" && e.target.closest("." + layer.closeButtonClass) != null) {
+            closeTopLayer();
+        }
+    }, false);
+}
+
 export function ModalDisplayer() {
-    var self = this,cssWidth = "",exitOnAway=true,currentForm = null,id = null,totalHeight, effectName = "none",bodyOldPosition = "",mainFormCon = "",closeButton = null,mainFormConInner = "",overlayBackgroundType = "color",overlayStyle= "hsla(0, 0%, 100%, 0.48)",initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,sX = 0,endSy = 0,scrollable = false,computedModalHeight = 0,computedModalWidth = 0,modalHeigthBelow = 0,modalHeigthAbove = 0,paddingTop = 50;
-    var modalWidths = ["500px", "500px", "86%"], brkpoints = { largeStart: 1000, mediumStart: 520 },pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+    var self = this,initialized = false,effectName = "none",exitOnAway = true,overlayBackgroundType = "color",overlayStyle = "hsla(0, 0%, 100%, 0.48)",openProcessor = function() {},closeProcessor = function() {},pageContainer = null;
+    var defaultModalWidths = ["500px", "500px", "86%"],modalWidths = defaultModalWidths,brkpoints = { largeStart: 1000, mediumStart: 520 },className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
 
     //modalWidths => [a, b, c] => a = large; b = medium; c = small
     //screenBreakPoints => [a,b] => a = largeStart ; b = mediumStart
 
-    var effects = {
-        none: function(modal) {
-            var newModal = $$.ce("DIV");
-            newModal.setAttribute("id", "newModal");
-            modalOn = true;
-            var modayBody = $$.ss(".vModal");
-            var modalCon = modayBody.querySelector(".modalSpace");
-
-            //Create and set newmodal style
-            var newModalCSS = "width:" + cssWidth + "; height:" + computedModalHeight + "px;";
-            newModal.setAttribute("style", newModalCSS);
-
-            positionVertically(modalCon, computedModalHeight);
-            modalCon.appendChild(newModal);
-
-            //Call new modal
-            var newM = modalCon.querySelector("#newModal");
-
-            newM.innerHTML = modal.outerHTML;
-
-            //Store up main form content
-            mainFormConInner = modal.innerHTML;
-
-            var RecallOld = newM.querySelector("#" + modal.id);
-            RecallOld.style["display"] = "block";
-
-            //Tag old for resseting purpose
-            modal.classList.add("vOld");
-            modal.setAttribute("id", "vOld");
-            modal.innerHTML = "";
-
-            modayBody.classList.add("show");
-        },
-        split: function(modal) {
-            var newModal = $$.ce("DIV");
-            var effectsCon = $$.ce("DIV");
-            var leftEle = $$.ce("DIV");
-            var rightEle = $$.ce("DIV");
-            //left style
-            var lcss = "position:absolute;left:-200%; top:0; transition:left .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:" + computedModalHeight + "px; overflow:hidden;";
-            var rcss = "position:absolute;right:-200%; top:0; transition:right .4s cubic-bezier(0,.87,.12,1) 0s; width:50%; height:" + computedModalHeight + "px; overflow:hidden;";
-
-            //EffectsCons attributes
-            effectsCon.setAttribute("style", "position:relative; width:" + computedModalWidth + "px; height:" + computedModalHeight + "px;");
-            effectsCon.setAttribute("id", "effectsCon");
-            effectsCon.setAttribute("class", "trans_in split");
-
-            //left and right style attribute
-            leftEle.setAttribute("id", "eleft");
-            leftEle.setAttribute("style", lcss);
-            leftEle.classList.add("effectE");
-            rightEle.setAttribute("style", rcss);
-            rightEle.setAttribute("id", "eright");
-            rightEle.classList.add("effectE");
-
-            newModal.setAttribute("id", "newModal");
-
-            modalOn = true;
-            var modayBody = $$.ss(".vModal");
-            var modalCon = modayBody.querySelector(".modalSpace");
-
-            positionVertically(modalCon, computedModalHeight);
-
-            //Append left and right to effectsCon
-            effectsCon.appendChild(leftEle);
-            effectsCon.appendChild(rightEle);
-
-            //Append effectsCon to modalSpace
-            modalCon.appendChild(newModal);
-            modalCon.appendChild(effectsCon);
-
-            //Call left and right effect box
-            var leftE = modalCon.querySelector("#eleft");
-            var rightE = modalCon.querySelector("#eright");
-
-            //insert main form to both left and right effect box and make visible
-            leftE.innerHTML = modal.outerHTML;
-            leftE.childNodes[0].style["display"] = "block";
-            leftE.childNodes[0].style["left"] = "0px";
-            rightE.innerHTML = modal.outerHTML;
-            rightE.childNodes[0].style["display"] = "block";
-            rightE.childNodes[0].style["right"] = "0px";
-
-            //Store up main form content
-            mainFormCon = modal.outerHTML;
-            mainFormConInner = modal.innerHTML;
-
-            //Tag old for resseting purpose
-            modal.classList.add("vOld");
-            modal.setAttribute("id", "vOld");
-            modal.innerHTML = "";
-
-            modayBody.classList.add("show");
-            leftE.scrollWidth;
-            rightE.scrollWidth;
-            leftE.style["left"] = "0%";
-            rightE.style["right"] = "0%";
-        },
-        flip: function(modal) {
-            var newModal = $$.ce("DIV");
-            var effectsCon = $$.ce("DIV");
-            var flipper = $$.ce("DIV");
-            var flipperBGElement = $$.ce("DIV");
-            var flipperFormElement = $$.ce("DIV");
-
-            var mainFormBg = $$.sm(modal).cssStyle("background-color");
-
-            //Create Style for flipper
-            var flipperCSS = "transition:transform .6s linear 0s; width:100%; height:100%; transform-style:preserve-3d; backface-visibilty: hidden; transform:rotateX(0deg); ";
-
-            //flipperBGElement styles
-            flipperBGElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility: hidden; z-index:2; background-color:" + mainFormBg + ";");
-            flipperBGElement.setAttribute("id", "fBG");
-            //flipperFormElement styles and other attributes
-            flipperFormElement.setAttribute("style", "position:absolute; height:100%; width:100%; backface-visibility: hidden; z-index:1; transform:rotateX(-180deg);");
-            flipperFormElement.setAttribute("id", "flpform");
-            //Set attribute for effectsCon
-            effectsCon.setAttribute("style", "position:relative; width:" + computedModalWidth + "px; height:" + computedModalHeight + "px; perspective: 4000px;");
-            effectsCon.setAttribute("id", "effectsCon");
-            effectsCon.setAttribute("class", "trans_in flip");
-
-            //Set attributes for flipper
-            flipper.setAttribute("id", "flipper");
-            flipper.setAttribute("style", flipperCSS);
-
-
-            //Set attribute for newModal
-            newModal.setAttribute("id", "newModal");
-
-            modalOn = true;
-            var modayBody = $$.ss(".vModal");
-            var modalCon = modayBody.querySelector(".modalSpace");
-
-            positionVertically(modalCon, computedModalHeight);
-
-            //Append flipperBGElement and flipperFormElement to effectsCon
-            flipper.appendChild(flipperFormElement);
-            flipper.appendChild(flipperBGElement);
-
-            //Append flipper to effectsCon
-            effectsCon.appendChild(flipper);
-
-            //Append effectsCon and new modal to modalSpace
-            modalCon.appendChild(newModal);
-            modalCon.appendChild(effectsCon);
-
-            //Call flipperFormElement box
-            var flipperFormE = modalCon.querySelector("#flipper #flpform");
-            var flipperEffectBox = modalCon.querySelector("#flipper");
-
-            //insert main form to flipper and make visible
-            flipperFormE.innerHTML = modal.outerHTML;
-            flipperFormE.childNodes[0].style["display"] = "block";
-
-            //Store up main form content
-            mainFormCon = modal.outerHTML;
-            mainFormConInner = modal.innerHTML;
-
-            //Tag old for resseting purpose
-            modal.classList.add("vOld");
-            modal.setAttribute("id", "vOld");
-            modal.innerHTML = "";
-
-            modayBody.classList.add("show");
-
-            flipperEffectBox.scrollHeight;
-            flipperEffectBox.style["transform"] = "rotateX(180deg)";
-        },
-        box: function(modal) {
-            var newModal = $$.ce("DIV");
-            var effectsCon = $$.ce("DIV");
-            var box = $$.ce("DIV");
-
-            //Set attribute for effectsCon
-            effectsCon.setAttribute("style", "position:relative; width:" + computedModalWidth + "px; height:" + computedModalHeight + "px;");
-            effectsCon.setAttribute("id", "effectsCon");
-            effectsCon.setAttribute("class", "trans_in box");
-
-            //Create Style and attributes for Box
-            var boxCSS = "position:absolute; transition:all .3s linear 0s; width:0%; height:0%; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); overflow:hidden";
-            box.setAttribute("style", boxCSS);
-            box.setAttribute("id", "Boxform");
-
-            //Set attribute for newModal
-            newModal.setAttribute("id", "newModal");
-
-            modalOn = true;
-            var modayBody = $$.ss(".vModal");
-            var modalCon = modayBody.querySelector(".modalSpace");
-
-            positionVertically(modalCon, computedModalHeight);
-
-            //Append Nox to effectsCon
-            effectsCon.appendChild(box);
-
-            //Append effectsCon and new modal to modalSpace
-            modalCon.appendChild(newModal);
-            modalCon.appendChild(effectsCon);
-
-            //Call Box Element
-            var BoxFormE = modalCon.querySelector("#Boxform");
-
-            //insert main form to Box and make visible
-            BoxFormE.innerHTML = modal.outerHTML;
-            BoxFormE.childNodes[0].style["display"] = "block";
-
-            //Store up main form content
-            mainFormCon = modal.outerHTML;
-            mainFormConInner = modal.innerHTML;
-
-            //Tag old for resseting purpose
-            modal.classList.add("vOld");
-            modal.setAttribute("id", "vOld");
-            modal.innerHTML = "";
-
-            modayBody.classList.add("show");
-            BoxFormE.scrollHeight;
-            BoxFormE.style["width"] = "100%";
-            BoxFormE.style["height"] = "100%";
-        }
-    };
-    var closeEffect = {
-        none: function(oldModal, currentModal) {
-            var modalBody = $$.ss(".vModal");
-            var modalCon = $$.ss(".vModal .modalSpace");
-            var recallCurrent = $$.ss(".vModal .modalSpace #newModal");
-            resetOldModalProperties(oldModal, currentModal);
-            modalCon.removeAttribute("style");
-
-            modalCon.removeChild(recallCurrent);
-            modalBody.classList.remove("show");
-            modalOn = false;
-            scrollable = false;
-            document.body.style["position"] = bodyOldPosition;
-            document.body.style["top"] = "0";
-            scrollTo(0, sY);
-            closeProcessor();
-        },
-        split: function(oldModal, currentModal) {
-            var modalBody = $$.ss(".vModal");
-            var modalCon = $$.ss(".vModal .modalSpace");
-            var recallCurrent = $$.ss(".vModal .modalSpace #newModal");
-            var effectsCon = modalCon.querySelector("#effectsCon");
-            var leftE = effectsCon.querySelector("#eleft");
-            var rightE = effectsCon.querySelector("#eright");
-
-            effectsCon.classList.remove("trans_in");
-            effectsCon.classList.add("trans_out");
-            effectsCon.style["display"] = "block";
-            recallCurrent.style["display"] = "none";
-
-            leftE.innerHTML = mainFormCon;
-            leftE.childNodes[0].style["display"] = "block";
-            leftE.childNodes[0].style["left"] = "0px";
-            leftE.style["transition"] = "left .4s cubic-bezier(.86,.01,.99,.48)";
-            leftE.scrollWidth;
-            leftE.style["left"] = "-200%";
-
-            rightE.innerHTML = mainFormCon;
-            rightE.childNodes[0].style["display"] = "block";
-            rightE.childNodes[0].style["right"] = "0px";
-            rightE.style["transition"] = "right .4s cubic-bezier(.86,.01,.99,.48)";
-            rightE.scrollWidth;
-            rightE.style["right"] = "-200%";
-
-            resetOldModalProperties(oldModal, currentModal);
-            modalCon.removeChild(recallCurrent);
-        },
-        flip: function(oldModal, currentModal) {
-            var modalBody = $$.ss(".vModal");
-            var modalCon = $$.ss(".vModal .modalSpace");
-            var recallCurrent = $$.ss(".vModal .modalSpace #newModal");
-            var effectsCon = modalCon.querySelector("#effectsCon");
-            var flipper = effectsCon.querySelector("#flipper");
-            var flipperFormE = effectsCon.querySelector("#flpform");
-            var flipperBg = effectsCon.querySelector("#fBG");
-
-            flipper.style["transform"] = "rotateX(0deg)";
-
-
-            //Reinsert main form content in box and display
-            flipperFormE.innerHTML = mainFormCon;
-            flipperFormE.childNodes[0].style["display"] = "block";
-
-            //Modify Styles to fit in display
-            flipperFormE.style["transform"] = "rotateX(0deg)";
-            flipperFormE.style["z-index"] = "3";
-            flipperBg.style["transform"] = "rotateX(180deg)";
-
-            effectsCon.classList.remove("trans_in");
-            effectsCon.classList.add("trans_out");
-            effectsCon.style["display"] = "block";
-
-            flipper.scrollWidth;
-            flipper.style["transform"] = "rotateX(-180deg)";
-            resetOldModalProperties(oldModal, currentModal);
-            modalCon.removeChild(recallCurrent);
-        },
-        box: function(oldModal, currentModal) {
-            var modalBody = $$.ss(".vModal");
-            var modalCon = $$.ss(".vModal .modalSpace");
-            var recallCurrent = $$.ss(".vModal .modalSpace #newModal");
-            var effectsCon = modalCon.querySelector("#effectsCon");
-
-            var box = effectsCon.querySelector("#Boxform");
-
-            effectsCon.classList.remove("trans_in");
-            effectsCon.classList.add("trans_out");
-            effectsCon.style["display"] = "block";
-
-            //Reinsert main form content in box and display
-            box.innerHTML = mainFormCon;
-            box.childNodes[0].style["display"] = "block";
-
-            box.scrollWidth;
-            box.style["width"] = "0%";
-            box.style["height"] = "0%";
-            resetOldModalProperties(oldModal, currentModal);
-            modalCon.removeChild(recallCurrent);
-        }
-    }
-
-    function positionVertically(modal, height) {
-        var browserHeight = window.innerHeight;
-        var diff = browserHeight - height;
-        sX = window.scrollX;
-        sY = window.scrollY;
-        modalHeigthBelow = ((paddingTop * 2) + computedModalHeight) - window.innerHeight;
-        if (diff < 100) {
-            scrollable = true;
-            var heightBelow = VerticalScroll.query(parseInt($$.sm("html").cssStyle("height"), "px"))["remainingHeightBelow"];
-            if (heightBelow >= modalHeigthBelow) {
-                modal.style["top"] = "50px";
-                modal.style["padding-bottom"] = "50px";
-                modal.style["transform"] = "translateY(0%) translateX(-50%)";
-            } else {
-                modalHeigthAbove = ((paddingTop * 2) + computedModalHeight) - window.innerHeight;
-                if (modalHeigthAbove > 0) {
-                    modal.style["top"] = "50" + "px";
-                    modal.style["padding-bottom"] = "50px";
-                    modal.style["transform"] = "translateY(0%) translateX(-50%)";
-                } else {
-                    $$.sm(modal).center();
-                }
-            }
-        }
-        if (modalOn == true) {
-            bodyOldPosition = $$.sm("body").cssStyle("position");
-            document.body.style["position"] = "fixed";
-            document.body.style["top"] = "-" + sY + "px";
-        }
-    }
-
-    function releaseModal(e) {
-        var modalBody = $$.ss(".vModal");
-        var modalCon = $$.ss(".vModal .modalSpace");
-
-        modalCon.removeAttribute("style");
-        e.target.parentNode.classList.remove("trans_out");
-        modalCon.removeChild(modalCon.querySelector("#effectsCon"));
-        modalBody.classList.remove("show");
-
-        modalOn = false;
-        scrollable = false;
-        document.body.style["position"] = bodyOldPosition;
-        document.body.style["top"] = "0";
-        mainFormCon = "";
-        mainFormConInner = "";
-        bodyOldPosition = "";
-        $$.ss("html").style["scroll-behavior"] = "unset";
-        scrollTo(0, sY);
-        closeProcessor();
-        if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.remove("vxKit");
-        $$.ss("html").style["scroll-behavior"] = "smooth";
-    }
-
-    function addEventhandler() {
-        var mainModal = $$.ss(".modalSpace");
-        document.body.addEventListener("keydown", function(e) {
-            if (modalOn == true) {
-                if (keyboardEventHanler(e)["handled"] == true) {
-                    if (e.key == "Escape") {
-                        self.close();
-                    }
-                }
-            }
-        }, false);
-        document.body.addEventListener("transitionend", function(e) {
-            if (modalOn == true) {
-                if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("split")) {
-                    e.target.innerHTML = "";
-                    e.target.parentNode.style["display"] = "none";
-
-                    if (e.target.id == "eright") {
-                        //display main modalformCon
-                        var newM = $$.ss(".vModal #newModal");
-
-                        newM.style["width"] = "100%";
-                        newM.style["height"] = computedModalHeight + "px";
-                        // insert main form to new formCon and display
-                        newM.innerHTML = mainFormCon;
-                        newM.style["display"] = "block";
-                        newM.childNodes[0].style["display"] = "block";
-                        newM.childNodes[0].style["width"] = "100%";
-                        openProcessor();
-                        fixModalWidth(mainModal);
-                    }
-                } else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("split")) {
-                    if (e.target.id == "eleft") {
-                        releaseModal(e);
-                    }
-                } else if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("flip")) {
-                    //Remove effect modal
-                    e.target.querySelector("#flpform").innerHTML = "";
-                    e.target.parentNode.style["display"] = "none";
-
-                    //Call new modal
-                    var newM = $$.ss(".vModal #newModal");
-
-                    //insert main form to new formCon and display
-                    newM.innerHTML = mainFormCon;
-                    newM.style["display"] = "block";
-                    newM.style["width"] = computedModalWidth + "px";
-                    newM.style["height"] = computedModalHeight + "px";
-                    newM.childNodes[0].style["display"] = "block";
-                    openProcessor();
-                    fixModalWidth(mainModal);
-                } else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("flip")) {
-                    releaseModal(e);
-                } else if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("box")) {
-                    // //Remove effect modal
-                    e.target.innerHTML = "";
-                    e.target.parentNode.style["display"] = "none";
-
-                    // //display main modal
-                    var newM = $$.ss(".vModal #newModal");
-
-                    // // insert main form to new formCon and display
-                    newM.innerHTML = mainFormCon;
-                    newM.style["display"] = "block";
-                    newM.style["height"] = computedModalHeight + "px";
-                    newM.style["width"] = computedModalWidth + "px";
-                    newM.childNodes[0].style["display"] = "block";
-                    openProcessor();
-                    fixModalWidth(mainModal);
-                } else if (e.target.parentNode.classList.contains("trans_out") && e.target.parentNode.classList.contains("box")) {
-                    releaseModal(e);
-                }
-            }
-        }, false);
-        window.addEventListener("resize", function() {
-            if (modalOn == true) {
-                fixModalWidth(mainModal);
-            }
-        });
-        document.addEventListener("click", function(e) {
-            if(exitOnAway){
-                if (e.target.classList.contains("vModal")) {
-                self.close();
-                }
-            }
-                
-            if (closeButtonClass != "") {
-                if (e.target.classList.contains(closeButtonClass)) {
-                    self.close();
-                }
-            }
-            if (e.target.classList.contains(className)) {
-             
-                var formId = e.target.getAttribute(formIdAttribute);
-                var form = document.getElementById(formId);
-                if (form != null) {
-                    if(e.target.getAttribute(modalWidthsAttribute) != null){
-                        modalWidths = e.target.getAttribute(modalWidthsAttribute).split(",");
-                    }
-                    show(form);
-                }
-            }
-        }, false);
-    }
-    function fixModalWidth(mainModal){
-        var sbpoint = new ScreenBreakPoint(brkpoints);
-        if (sbpoint.screen.mode == "large") {
-            mainModal.style["width"] = modalWidths[0];
-        } else if (sbpoint.screen.mode == "medium") {
-            mainModal.style["width"] = modalWidths[1];
-        } else if (sbpoint.screen.mode == "small") {
-            mainModal.style["width"] = modalWidths[2];
-        }
-    }
-    function resetOldModalProperties(oldModal, currentModal) {
-        oldModal.setAttribute("id", currentModal.id);
-        oldModal.setAttribute("class", (currentModal.getAttribute("class")));
-        oldModal.style["display"] = "none";
-        oldModal.style["width"] = cssWidth;
-        oldModal.innerHTML = mainFormConInner;
-    }
-
-    function createElements() {
-        if ($$.ss("style[data-id='vModalStyles']") == null) {
-            //Create
-            var overlay = $$.ce("DIV");
-            var effectsCon = $$.ce("DIV");
-
-            //Set attributes
-            overlay.classList.add("vModal", "xScroll");
-            overlay.setAttribute("data-id", "vModalStyles");
-
-            if (overlayBackgroundType == "color") {
-                if (overlayStyle != "") overlay["style"] = overlayStyle;
-            }
-
-            effectsCon.classList.add("modalSpace");
-
-            //Append modal
-            //modalSpace to overlay
-            overlay.appendChild(effectsCon);
-
-            //Modal to document
-            document.body.appendChild(overlay);
-        }
-    };
     this.config = {};
+
     async function addVitalStyles() {
         try {
             var path = await processAssetPath();
@@ -553,85 +435,107 @@ export function ModalDisplayer() {
             }else{
                 throw new Error(path)
             }
-           
+
         } catch (error) {
             console.error(error)
         }
     }
+
     function show(modal) {
         if (!initialized) throw new Error("Please initialize using the 'initialize()' method, before triggering modal");
-        sY = scrollY;
-        currentForm = modal;
-        modal.id != null ? id = modal.id : null;
-        computedModalHeight = getDimensionOfHidden(modal)["height"];
-        computedModalWidth = getDimensionOfHidden(modal)["width"];
-        cssWidth = $$.sm(modal).cssStyle("width");
-        
-        if (effectName == "split") {
-            modal.style["width"] = computedModalWidth + "px";
-        } else {
-            modal.style["width"] = "100%";
+        for (var x = 0; x < modalStack.length; x++) { //a modal cannot be stacked on itself
+            if (modalStack[x].source === modal) return;
         }
+        openLayer({
+            owner: self,
+            effect: effectName,
+            widths: modalWidths,
+            brkpoints: brkpoints,
+            exitOnAway: exitOnAway,
+            closeButtonClass: closeButtonClass,
+            openProcessor: openProcessor,
+            closeProcessor: closeProcessor,
+            overlayBackgroundType: overlayBackgroundType,
+            overlayStyle: overlayStyle,
+            pageContainer: pageContainer
+        }, modal);
+    }
 
-        //effect call
-        effects[effectName](modal);
-        if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.add("vxKit");
-    };
+    function addEventhandler() {
+        attachGlobalHandlers();
+        //Opening stays per instance: each instance recognises its own trigger class
+        //and id attribute. Triggers inside a displayed modal work like any other.
+        document.addEventListener("click", function(e) {
+            var trigger = e.target.closest("." + className);
+            if (trigger == null) return;
+
+            var modal = document.getElementById(trigger.getAttribute(formIdAttribute));
+            if (modal == null) return;
+            if (layerOf(modal) != null) return; //resolved to the displayed copy of an already open modal
+
+            if (modalWidthsAttribute != "" && trigger.getAttribute(modalWidthsAttribute) != null) {
+                modalWidths = trigger.getAttribute(modalWidthsAttribute).split(",");
+            } else {
+                modalWidths = defaultModalWidths;
+            }
+            show(modal);
+        }, false);
+    }
+
     this.close = function() {
-        if (modalOn == true) {
-            var modalParent = $$.ss(".vModal");
-            var OldModal = $$.ss("#vOld");
-            var currentModal = modalParent.querySelector("#newModal").childNodes[0];
-            currentForm = null;
-            id = null;
-            closeEffect[effectName](OldModal, currentModal);
+        closeTopLayer();
+    };
+    this.closeAll = function() {
+        while (modalStack.length > 0) { //unwound without animation, top down
+            var layer = topLayer();
+            layer.closing = true;
+            completeClose(layer);
         }
     };
     this.initialize = function() {
         if (!initialized) {
-            totalHeight = $$.ss("html").scrollHeight;
             if (className == "") throw new Error("Set up incomplete: No class name specified for modal, specify using 'config.className'");
             if (formIdAttribute == "") throw new Error("Set up incomplete: No formId attribute specified for modal, specify using 'config.formIdAttribute'");
             addVitalStyles();
-            createElements();
             addEventhandler();
             initialized = true;
         }
     }
     Object.defineProperties(this, {
         config: { writable: false },
-        show: { writable: false },
         close: { writable: false },
+        closeAll: { writable: false },
         initialize: { writable: false },
         mainForm: {
             get: function() {
-                if (modalOn == true) {
-                    return {
-                        element: currentForm,
-                        id: id
-                    };
-                } else {
-                    return null;
-                }
+                var layer = topLayer();
+                if (layer == null) return null;
+                return {
+                    element: layer.source,
+                    id: layer.sourceId
+                };
             }
-        }, 
+        },
         displayForm: {
             get: function() {
-                if (modalOn == true) {
-                    return {
-                        element: $$.ss("#newModal").childNodes[0],
-                        id: $$.ss("#newModal").childNodes[0].id
-                    };
-                } else {
-                    return null;
-                }
+                var layer = topLayer();
+                if (layer == null) return null;
+                return {
+                    element: layer.host.childNodes[0],
+                    id: layer.sourceId
+                };
+            }
+        },
+        depth: {
+            get: function() {
+                return modalStack.length;
             }
         }
     });
     Object.defineProperties(this.config, {
         effect: {
             set: function(value) {
-                validateObjectMember(effects, value, "Invalid effect type specified for the 'effect' property")
+                validateObjectMember(openEffects, value, "Invalid effect type specified for the 'effect' property")
                 effectName = value;
             }
         },

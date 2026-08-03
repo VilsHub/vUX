@@ -1,0 +1,161 @@
+FEATURE: modal-stacking
+DATE: 2026-08-03
+SCOPE: add real modal stacking to ModalDisplayer
+FOLLOWS: changelog/modal-displayer-verification
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected. No other project in the
+workspace consumes these files, and there is no build step or dependency graph to
+propagate through; changes take effect on the next page load.
+
+Consumer-visible surface:
+  - vUX-modalDisplayer.js         restructured internally; two members added
+  - assets/css/modalDisplayer.css one selector widened
+
+Public API is additive: closeAll() and depth are new, and no existing member was
+renamed or removed. Two behaviour changes do affect existing consumers — see
+BEHAVIOUR CHANGES below.
+
+--------------------------------------------------------------------------------
+WHAT WAS BUILT
+--------------------------------------------------------------------------------
+
+A trigger inside a displayed modal now opens a new modal on top of it. The modal
+underneath stays open and intact, and closing the top one reveals it again.
+
+Design, and why it is shaped this way:
+
+1. One overlay per layer, created on open and removed on close, each with its own
+   z-index, its own responsive width and its own scroll container. A single shared
+   overlay cannot represent two modals — it has one backdrop and one scroll box.
+
+2. All per-modal state moved from closure variables onto a layer object held in an
+   array. Overwriting those variables was the mechanism by which nesting destroyed
+   the first modal.
+
+3. Nothing is addressed by global id any more. Each layer holds direct node
+   references and finds its animation boxes by class, scoped to itself. Duplicate
+   ids across layers were what made close() restore the wrong element.
+
+4. Page-level state is handled at the stack boundary. The body freeze and scroll
+   capture happen when the stack becomes non-empty and are released when it empties,
+   so nesting cannot re-capture a already-frozen body.
+
+5. The stack is module scoped and shared by every ModalDisplayer instance, because
+   the state it protects — the body freeze, the scroll position — belongs to the
+   document. A stack per instance would let two instances independently freeze and
+   unfreeze the body, recreating the bug this change fixes. Instance configuration
+   is snapshotted onto each layer at open time, so a layer always closes with the
+   settings and callbacks of the instance that opened it.
+
+6. Event handlers that act on the stack (Escape, away click, close button,
+   transitionend, resize) are bound once for the document rather than once per
+   instance; otherwise two instances would pop two layers for one Escape press.
+   Opening stays per instance, since each recognises its own trigger class.
+
+7. Layers close last-in-first-out, enforced rather than merely offered. This is the
+   defining property of a modal stack, not a restriction on it: a modal takes
+   exclusive control of interaction, so a covered layer is unreachable by
+   definition and has no user-reachable way to be dismissed. Closing one out of
+   order would leave the dialog it spawned floating above nothing. Every close path
+   (close(), Escape, away click, close button) therefore acts on the topmost layer,
+   and no API accepts a specific layer. closeAll() exists for dismissing the whole
+   stack at once, top down.
+
+Refused rather than allowed to corrupt state: stacking a modal on itself, and
+triggers pointing at a modal that is already displayed.
+
+--------------------------------------------------------------------------------
+BUGS FIXED ALONG THE WAY
+--------------------------------------------------------------------------------
+
+1. Nested open destroyed the first modal and froze the page permanently.
+   Reproduced before the change: after opening a modal from inside another and
+   closing, document.getElementById("loginModal") returned null, its inputs were
+   gone, an element was stranded as id="vOld", two #newModal elements remained in
+   the overlay, the scroll position was lost, and body stayed position:fixed so the
+   page could never be scrolled again. Nothing threw — the failure was silent.
+
+2. openProcessor fired twice for the "box" effect. Its animation box uses
+   `transition: all`, animating width and height, so transitionend fired once per
+   property and the completion logic ran twice. Measured per effect before the
+   change: none 1, split 1, flip 1, box 2. Completion is now idempotent per layer.
+
+3. Responsive widths never applied on open with the default "none" effect. The
+   width was only set from the transitionend and resize handlers, neither of which
+   the "none" effect reaches, leaving config.modalWidths, modalWidthsAttribute and
+   screenBreakPoints inert unless the user resized the window.
+
+4. Consumer transitions inside a modal could drive the open/close state machine.
+   The old transitionend handler matched on the event target's parent classes, so
+   any animated element inside a modal could trigger it. It now requires one of the
+   library's own animation boxes.
+
+5. backface-visibility was misspelled "backface-visibilty" in the flip effect's
+   inline CSS, so no browser applied it and the reverse face was not hidden.
+
+6. Closing wrote position:static onto the body even when the page had no inline
+   position, because the restore value was read from computed style. It now captures
+   and restores the inline value.
+
+--------------------------------------------------------------------------------
+BEHAVIOUR CHANGES (existing consumers should read this)
+--------------------------------------------------------------------------------
+
+1. Modals opened with effect "none" are now sized by the responsive width triple
+   (default 500px / 500px / 86%) instead of by their own content width. This is the
+   fix described in bug 3 above. Consumers relying on content-width sizing with the
+   default effect should set config.modalWidths, or the per-trigger widths
+   attribute, to their previous size.
+
+2. No overlay exists in the DOM until the first modal opens. Previously one was
+   built at initialize() and stayed in the document. Code that queried .vModal or
+   [data-id='vModalStyles'] at startup will now find nothing until a modal is open.
+
+Backward compatibility retained deliberately: the first layer still carries
+data-id="vModalStyles" on its overlay and id="newModal" on its content host, so
+selectors written against the pre-stacking DOM keep working for single-modal use.
+Layers above the first omit them, since duplicate ids are the defect being fixed.
+New code should target the .vModalHost class.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Driven in headless Chromium against the example page served over HTTP from the
+repository root, asserting DOM state, computed styles, callback counts, z-index
+ordering, id uniqueness, body freeze state and scroll position.
+
+  Main suite            68 passed, 0 failed
+  Stacking edge suite   16 passed, 0 failed
+
+The main suite carries forward every check from the previous feature (all four
+effects opening and closing, content restoration, scroll preservation, tall modals,
+per-trigger widths, blur) and adds stacking coverage: two layers open together, both
+modals visible, z-index ordering, no duplicate ids, getters following the top layer,
+Escape popping exactly one layer, the lower modal surviving intact, the page staying
+frozen while any layer is up, closeAll(), the self-stacking guard, and two instances
+sharing one stack with one Escape popping one layer.
+
+The edge suite covers three-deep nesting with per-level unwinding and scroll
+restoration, blur reference behaviour across layers (not released while a layer
+still wants it), and a close button popping only its own layer.
+
+Callback counts were re-measured per effect after the change: all four effects now
+report exactly one openProcessor and one closeProcessor call per cycle.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS
+--------------------------------------------------------------------------------
+
+- closeAll() unwinds without animation, since animating several layers out at once
+  has no coherent visual result.
+- Modal content is still copied via innerHTML, so listeners bound directly to nodes
+  inside the content do not survive an open/close cycle. Consumers should delegate,
+  or bind through displayForm on open. Unchanged by this work and documented.
+- While the body is frozen it is position:fixed without an explicit width, so a page
+  whose layout depends on body width may reflow behind the overlay. Pre-existing and
+  left alone to avoid changing layout for existing consumers.

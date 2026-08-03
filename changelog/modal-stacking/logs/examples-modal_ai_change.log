@@ -1,0 +1,74 @@
+FILE: examples/modal/index.html, examples/modal/README.md
+FEATURE: modal-stacking
+DATE: 2026-08-03
+PRIOR STATE: as left by feature 'modal-displayer-verification'
+
+================================================================================
+CHANGE 1 — index.html: nested triggers and a second modal
+================================================================================
+
+OLD_SECTION
+        <div id="loginModal" class="demo-modal">
+            <h2>Sign in</h2>
+            <input type="text" placeholder="Username">
+            <input type="password" placeholder="Password">
+            <button type="button">Sign in</button>
+            <button type="button" class="modal-close">Cancel</button>
+        </div>
+
+NEW_SECTION
+        <div id="loginModal" class="demo-modal">
+            <h2>Sign in</h2>
+            <input type="text" placeholder="Username">
+            <input type="password" placeholder="Password">
+            <button type="button">Sign in</button>
+            <button type="button" class="modal-close">Cancel</button>
+            <hr>
+            <!-- triggers inside a displayed modal stack a new layer on top of it -->
+            <button type="button" class="open-modal open-nested" data-form="nestedModal">Forgot password?</button>
+            <button type="button" class="open-modal open-self" data-form="loginModal">Open myself (ignored)</button>
+        </div>
+
+        <div id="nestedModal" class="demo-modal">
+            <h2>Nested: reset password</h2>
+            <p>Opened from inside the sign-in modal — the modal underneath stays open.</p>
+            <input type="email" placeholder="Email">
+            <button type="button" class="modal-close">Back</button>
+        </div>
+
+REASON
+The example is both the documentation demo and the fixture the automated browser
+suite drives, so stacking needed a realistic case in it. "Forgot password?" inside
+the sign-in modal is the canonical reason to nest, and it exercises the whole path:
+a trigger living inside a displayed modal's cloned content, opening a second layer
+while the first stays intact.
+
+The "Open myself" trigger demonstrates the self-stacking guard. Without the guard
+this is the input that would blank the modal's source a second time and lose its
+content permanently, so having it visible in the demo documents the refusal as
+intended behaviour rather than an oversight.
+
+No CSS was needed for the second modal; it reuses the .demo-modal class, which
+confirms that a stacked layer needs no special styling from the consumer.
+
+================================================================================
+CHANGE 2 — README.md: stacking and the new API members
+================================================================================
+
+OLD_SECTION
+- Trigger-driven opening (`config.className` + `config.formIdAttribute`).
+- Closing by close button, `Escape`, and overlay click.
+...
+The instance is exposed as `window.demoModal`, so you can try `demoModal.close()`, `demoModal.mainForm` and `demoModal.displayForm` from the browser console.
+
+NEW_SECTION
+- Trigger-driven opening (`config.className` + `config.formIdAttribute`).
+- **Stacking** — "Forgot password?" inside the sign-in modal opens a second layer over it; `Escape` pops one layer at a time. "Open myself" shows that a modal cannot be stacked on itself.
+- Closing by close button, `Escape`, and overlay click.
+...
+The instance is exposed as `window.demoModal`, so you can try `demoModal.close()`, `demoModal.closeAll()`, `demoModal.depth`, `demoModal.mainForm` and `demoModal.displayForm` from the browser console.
+
+REASON
+Describes what the two new buttons demonstrate, and adds the members introduced by
+this change to the list of things worth trying from the console — depth in particular
+is the quickest way to see the stack behaving.

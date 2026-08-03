@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>vUX ModalDisplayer example</title>
+        <script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+        <style>
+            body { font-family: sans-serif; margin: 0; }
+            #page { padding: 24px; }
+            .demo-modal { display: none; width: 420px; background: #fff; border-radius: 6px; padding: 24px; box-sizing: border-box; }
+            .demo-modal h2 { margin-top: 0; }
+            .demo-modal input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; }
+            /* fixed height so appended log lines don't change document height
+               (a growing element above the fold triggers browser scroll anchoring) */
+            #log { height: 80px; overflow: auto; margin: 0; background: #f0f0f0; padding: 6px; }
+            .filler { height: 1200px; background: linear-gradient(#f5f5f5, #ddd); }
+            #tallContent { height: 1100px; background: repeating-linear-gradient(#fafafa, #eee 80px); }
+            button { padding: 8px 14px; }
+        </style>
+    </head>
+    <body>
+        <div id="page">
+            <h1>ModalDisplayer demo</h1>
+
+            <label>
+                Effect:
+                <select id="effect">
+                    <option value="none">none</option>
+                    <option value="split">split</option>
+                    <option value="flip">flip</option>
+                    <option value="box">box</option>
+                </select>
+            </label>
+
+            <p>
+                <button class="open-modal" data-form="loginModal">Open login modal</button>
+                <button class="open-modal" data-form="loginModal" data-widths="300px,300px,90%">Open (custom widths)</button>
+                <button class="open-modal" data-form="tallModal">Open tall modal</button>
+            </p>
+
+            <pre id="log"><!-- open/close diagnostics --></pre>
+
+            <div class="filler">Scroll me — the page position is preserved while a modal is open.</div>
+        </div>
+
+        <!-- Modal content: hidden elements with unique ids -->
+        <div id="loginModal" class="demo-modal">
+            <h2>Sign in</h2>
+            <input type="text" placeholder="Username">
+            <input type="password" placeholder="Password">
+            <button type="button">Sign in</button>
+            <button type="button" class="modal-close">Cancel</button>
+            <hr>
+            <!-- triggers inside a displayed modal stack a new layer on top of it -->
+            <button type="button" class="open-modal open-nested" data-form="nestedModal">Forgot password?</button>
+            <button type="button" class="open-modal open-self" data-form="loginModal">Open myself (ignored)</button>
+        </div>
+
+        <div id="nestedModal" class="demo-modal">
+            <h2>Nested: reset password</h2>
+            <p>Opened from inside the sign-in modal — the modal underneath stays open.</p>
+            <input type="email" placeholder="Email">
+            <button type="button" class="modal-close">Back</button>
+        </div>
+
+        <div id="tallModal" class="demo-modal">
+            <h2>Tall modal</h2>
+            <div id="tallContent">This modal is taller than the viewport.</div>
+            <button type="button" class="modal-close">Close</button>
+        </div>
+    </body>
+</html>

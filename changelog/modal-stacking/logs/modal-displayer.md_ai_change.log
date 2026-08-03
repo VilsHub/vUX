@@ -1,0 +1,151 @@
+FILE: doc/modal-displayer.md
+FEATURE: modal-stacking
+DATE: 2026-08-03
+PRIOR STATE: as left by feature 'modal-displayer-verification'
+
+================================================================================
+CHANGE 1 — New "Stacking" section
+================================================================================
+
+OLD_SECTION
+(no such section — the guide described a single modal at a time)
+
+NEW_SECTION
+## Stacking
+
+Modals stack. A trigger placed **inside** a displayed modal opens a new modal on top
+of it; the one underneath stays open and intact, and closing the top one reveals it
+again.
+[...markup example, per-layer overlay/z-index/scroll explanation, LIFO rule,
+closeAll(), page-state-at-the-stack-boundary explanation, shared-stack-across-
+instances explanation, and the two refused cases...]
+
+REASON
+Documents the feature added by this change. The section covers the parts a consumer
+cannot infer from the API: that layers close strictly top down, that the body freeze
+and scroll capture happen at the stack boundary rather than per modal, that the
+stack is shared across every ModalDisplayer instance on the page, and that opening a
+modal onto itself or onto an already displayed modal is refused rather than allowed
+to corrupt state.
+
+================================================================================
+CHANGE 2 — Replace the "one modal at a time" limitation
+================================================================================
+
+OLD_SECTION
+- **One modal at a time.** Opening a second modal while one is open is not supported; close the first from a trigger inside it.
+- **`Escape` always closes**, independent of `exitOnAway`.
+
+NEW_SECTION
+- **`Escape` always closes** the topmost layer, independent of `exitOnAway`.
+
+REASON
+The stated limitation no longer holds and its advice was actively harmful: "close the
+first from a trigger inside it" describes the nesting path that silently destroyed
+the first modal and left the page permanently frozen. It is removed outright; see
+CHANGE 6 for why no replacement caveat belongs here.
+
+================================================================================
+CHANGE 6 — State last-in-first-out as the stack's defining property, not a caveat
+================================================================================
+
+OLD_SECTION
+Each layer gets its own overlay element with an increasing `z-index`, its own responsive width, and its own scroll container, so a tall modal at layer 2 scrolls independently of layer 1. Layers are strictly last-in-first-out: `Escape`, an overlay click and a close button all pop **only the topmost layer**. Use `closeAll()` to unwind the whole stack at once.
+
+(and, under "Requirements and gotchas")
+- **Layers close top-down only.** There is no API to close a layer from the middle of the stack; that would leave the visual ordering inconsistent.
+
+NEW_SECTION
+Each layer gets its own overlay element with an increasing `z-index`, its own responsive width, and its own scroll container, so a tall modal at layer 2 scrolls independently of layer 1.
+
+**Layers close last-in-first-out, and that is the point of a modal stack rather than a restriction on it.** A modal takes exclusive control of interaction: while it is up, everything beneath it is unreachable by definition. So a covered layer has no way to be acted on, and closing one out of order would leave the dialog it spawned floating above nothing. `Escape`, an overlay click and a close button therefore all pop **only the topmost layer**, and there is deliberately no API that takes a specific layer. `closeAll()` unwinds the whole stack when you need to dismiss everything at once — on a route change or logout, for example.
+
+(the "Requirements and gotchas" bullet is deleted)
+
+REASON
+Corrects a framing error, on reviewer feedback, with no code change.
+
+The first write-up listed top-down unwinding under "Requirements and gotchas" and,
+in the summary, under "Known limitations" — as though closing a middle layer were a
+capability the implementation had failed to provide. That is the wrong way round.
+Last-in-first-out is not a constraint imposed on a modal stack; it is what makes it
+a modal stack. A modal is modal precisely because it takes exclusive control of
+interaction, so every layer below the top is unreachable by construction and has no
+user-reachable path to being dismissed. An API that closed a specific layer would
+let code desynchronise the visual stack from the interaction model, leaving a child
+dialog floating above a parent that no longer exists.
+
+Filing an invariant as a shortcoming also invites the wrong follow-up work: a future
+reader would reasonably treat it as a gap worth closing. The text now states the
+rule positively, explains why it follows from modality, and notes that the absence
+of a layer-targeting API is deliberate rather than pending.
+
+The implementation already enforced this and is unchanged: close(), Escape, away
+clicks and close buttons all route through closeTopLayer(), and no exported member
+accepts a layer. Only the documentation was wrong.
+
+================================================================================
+CHANGE 3 — API table: closeAll(), depth, and top-of-stack semantics
+================================================================================
+
+OLD_SECTION
+| `initialize()` | method | Links styles, builds the overlay, attaches listeners. Call once. |
+| `close()` | method | Closes the open modal programmatically; no-op when nothing is open. |
+| `mainForm` | getter | `{ element, id }` for the *original* content element, or `null` when closed. |
+| `displayForm` | getter | `{ element, id }` for the *displayed* clone in the overlay, or `null` when closed. |
+
+NEW_SECTION
+| `initialize()` | method | Links styles and attaches listeners. Call once. |
+| `close()` | method | Closes the topmost open modal; no-op when nothing is open. |
+| `closeAll()` | method | Unwinds every open layer immediately, without animation. |
+| `mainForm` | getter | `{ element, id }` for the *original* content element of the topmost modal, or `null` when none is open. |
+| `displayForm` | getter | `{ element, id }` for the *displayed* clone of the topmost modal, or `null` when none is open. |
+| `depth` | getter | Number of modals currently stacked (`0` when none is open). |
+
+REASON
+Adds the two new members and restates the existing ones in terms of the stack. The
+initialize() description also drops "builds the overlay", which is no longer true —
+overlays are created per layer when a modal opens, so no overlay exists in the
+document until then.
+
+================================================================================
+CHANGE 4 — New "Internal DOM" section, and the getElementById note
+================================================================================
+
+OLD_SECTION
+(not documented)
+
+NEW_SECTION
+## Internal DOM
+[...markup of one overlay per layer, and the note that the first layer keeps
+data-id="vModalStyles" and id="newModal" for backward compatibility...]
+
+- While a modal is open, `document.getElementById(<modal id>)` returns the **displayed copy**, not the hidden original ...
+
+REASON
+Two things consumers need and could previously only discover by reading the source.
+The DOM section matters because writing CSS against a modal requires knowing the
+wrapper structure, and because anyone with existing selectors on #newModal needs to
+know it now exists only on the first layer and that .vModalHost is the forward
+compatible target.
+
+The getElementById note documents long standing behaviour that was never written
+down: the displayed copy carries the modal's id while the source gives it up. It
+becomes materially more important with stacking, since it is the reason a trigger
+pointing at an already displayed modal is ignored.
+
+================================================================================
+CHANGE 5 — Width guidance in requirements
+================================================================================
+
+OLD_SECTION
+- **Give the content an explicit width and background.** The overlay provides no chrome of its own.
+
+NEW_SECTION
+- **Give the content an explicit background.** The overlay provides no chrome of its own. Width comes from the responsive widths above, so the content is sized for you.
+
+REASON
+Follows the behaviour change recorded as CHANGE 10 in the module log. Responsive
+widths are now applied on open for every effect, including "none", so telling the
+consumer to set an explicit width on the content would conflict with the width the
+component itself applies.

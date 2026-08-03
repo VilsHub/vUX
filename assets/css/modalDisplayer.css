@@ -7,6 +7,12 @@
   display:none;
   min-width:320px;
 }
+/* the page body is frozen while a modal is open, so a modal taller
+   than the viewport has to scroll inside the overlay itself */
+.vModal.xScroll{
+  overflow-y:auto;
+  overflow-x:hidden;
+}
 .show {
   display:block;
 }
@@ -17,6 +23,8 @@
   transform:translateX(-50%) translateY(-50%);
   position:absolute;
 }
+/* #newModal is the pre-stacking id, kept on the first layer for existing selectors */
+.vModal .modalSpace .vModalHost,
 .vModal .modalSpace #newModal{
   width:100%;
 }

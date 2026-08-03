@@ -1,0 +1,37 @@
+FILE: assets/css/modalDisplayer.css
+FEATURE: modal-stacking
+DATE: 2026-08-03
+PRIOR STATE: as left by feature 'modal-displayer-verification'
+
+================================================================================
+CHANGE 1 — Style the content host by class as well as by id
+================================================================================
+
+OLD_SECTION
+.vModal .modalSpace #newModal{
+  width:100%;
+}
+
+NEW_SECTION
+/* #newModal is the pre-stacking id, kept on the first layer for existing selectors */
+.vModal .modalSpace .vModalHost,
+.vModal .modalSpace #newModal{
+  width:100%;
+}
+
+REASON
+The element holding the displayed modal used to be identified by id="newModal".
+With stacking there is one such element per layer, and repeating an id across layers
+is exactly the collision that made nesting destroy the underlying modal, so the host
+is now identified by the class vModalHost.
+
+The id selector is kept rather than replaced because the first layer still carries
+id="newModal" for backward compatibility with consumer stylesheets and scripts
+written against the pre-stacking DOM. Both selectors therefore need the same rule:
+the class covers every layer, the id covers nothing extra but keeps the original
+selector meaningful for anyone who copied it.
+
+No other rule needed changing. .vModal already positions each overlay fixed at full
+viewport size, which is what a per-layer overlay requires, and layer ordering is set
+with an inline z-index in the module rather than in CSS, since it depends on the
+layer's depth in the stack.
