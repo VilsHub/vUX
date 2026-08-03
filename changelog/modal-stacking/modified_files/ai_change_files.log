@@ -1,0 +1,16 @@
+FEATURE: modal-stacking
+DATE: 2026-08-03
+
+ModalDisplayer
+  Modified:
+    vUX-modalDisplayer.js
+    assets/css/modalDisplayer.css
+
+Documentation
+  Modified:
+    doc/modal-displayer.md
+
+Example
+  Modified:
+    examples/modal/index.html
+    examples/modal/README.md

@@ -1,0 +1,341 @@
+FILE: vUX-modalDisplayer.js
+FEATURE: modal-displayer-verification
+DATE: 2026-08-03
+
+================================================================================
+CHANGE 1 — Remove dead state variables; add defaultModalWidths
+================================================================================
+
+OLD_SECTION
+    var self = this,cssWidth = "",exitOnAway=true,currentForm = null,id = null,totalHeight, effectName = "none",bodyOldPosition = "",mainFormCon = "",closeButton = null,mainFormConInner = "",overlayBackgroundType = "color",overlayStyle= "hsla(0, 0%, 100%, 0.48)",initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,sX = 0,endSy = 0,scrollable = false,computedModalHeight = 0,computedModalWidth = 0,modalHeigthBelow = 0,modalHeigthAbove = 0,paddingTop = 50;
+    var modalWidths = ["500px", "500px", "86%"], brkpoints = { largeStart: 1000, mediumStart: 520 },pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+
+NEW_SECTION
+    var self = this,cssWidth = "",exitOnAway=true,currentForm = null,id = null,effectName = "none",bodyOldPosition = "",mainFormCon = "",mainFormConInner = "",overlayBackgroundType = "color",overlayStyle= "hsla(0, 0%, 100%, 0.48)",initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,computedModalHeight = 0,computedModalWidth = 0;
+    var defaultModalWidths = ["500px", "500px", "86%"],modalWidths = defaultModalWidths, brkpoints = { largeStart: 1000, mediumStart: 520 },pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+
+REASON
+Before modification the closure declared ten variables that were assigned but never
+read, or never assigned at all: totalHeight, closeButton, sX, endSy, scrollable,
+modalHeigthBelow, modalHeigthAbove and paddingTop. They were leftovers of the
+pre-v4 positioning workflow and only obscured the module's real state. They are
+removed. `defaultModalWidths` is added to hold the responsive default triple so
+that a per-trigger width override can be reverted (see CHANGE 6).
+
+================================================================================
+CHANGE 2 — Fire openProcessor for the "none" effect
+================================================================================
+
+OLD_SECTION
+            modal.innerHTML = "";
+
+            modayBody.classList.add("show");
+        },
+        split: function(modal) {
+
+NEW_SECTION
+            modal.innerHTML = "";
+
+            modayBody.classList.add("show");
+            openProcessor();
+        },
+        split: function(modal) {
+
+REASON
+`openProcessor` is documented as the "modal is now open" callback, but it was only
+invoked from the `transitionend` handler, which the three animated effects reach and
+the `none` effect never does. With `effect = "none"` (the default) a consumer's
+open callback therefore never ran. Since the `none` effect is synchronous, the call
+is made directly after the overlay is shown. Verified by the
+"[none] openProcessor called" check.
+
+================================================================================
+CHANGE 3 — Rewrite positionVertically(); remove undefined VerticalScroll reference
+================================================================================
+
+OLD_SECTION
+    function positionVertically(modal, height) {
+        var browserHeight = window.innerHeight;
+        var diff = browserHeight - height;
+        sX = window.scrollX;
+        sY = window.scrollY;
+        modalHeigthBelow = ((paddingTop * 2) + computedModalHeight) - window.innerHeight;
+        if (diff < 100) {
+            scrollable = true;
+            var heightBelow = VerticalScroll.query(parseInt($$.sm("html").cssStyle("height"), "px"))["remainingHeightBelow"];
+            if (heightBelow >= modalHeigthBelow) {
+                modal.style["top"] = "50px";
+                modal.style["padding-bottom"] = "50px";
+                modal.style["transform"] = "translateY(0%) translateX(-50%)";
+            } else {
+                modalHeigthAbove = ((paddingTop * 2) + computedModalHeight) - window.innerHeight;
+                if (modalHeigthAbove > 0) {
+                    modal.style["top"] = "50" + "px";
+                    modal.style["padding-bottom"] = "50px";
+                    modal.style["transform"] = "translateY(0%) translateX(-50%)";
+                } else {
+                    $$.sm(modal).center();
+                }
+            }
+        }
+        if (modalOn == true) {
+
+NEW_SECTION
+    function positionVertically(modal, height) {
+        var browserHeight = window.innerHeight;
+        var diff = browserHeight - height;
+        sY = window.scrollY;
+        if (diff < 100) { //modal (nearly) taller than viewport: pin to top and let the overlay scroll
+            modal.style["top"] = "50px";
+            modal.style["padding-bottom"] = "50px";
+            modal.style["transform"] = "translateY(0%) translateX(-50%)";
+        }
+        if (modalOn == true) {
+
+REASON
+This was the module's most serious defect. `VerticalScroll` is not defined anywhere
+in the library (confirmed by grepping the whole repository — the only occurrence was
+this call site), so every attempt to open a modal within 100px of the viewport
+height threw `ReferenceError: VerticalScroll is not defined`, aborting the open
+half-way and leaving the overlay in a broken state that also broke the next
+`close()` call. Tall modals were completely unusable.
+
+Inspecting the dead branches shows they were redundant regardless: both the `then`
+and the `else > if` branch applied exactly the same three style declarations, and
+`modalHeigthAbove` was computed with the identical expression as `modalHeigthBelow`.
+So the whole `VerticalScroll` query only ever chose between two identical outcomes.
+The remaining `else > else` branch (`$$.sm(modal).center()`) was unreachable in
+practice: it required `modalHeigthAbove <= 0`, i.e. a modal shorter than
+`innerHeight - 100`, which contradicts the enclosing `diff < 100` condition.
+
+The function is therefore reduced to its one meaningful behaviour: when the modal
+is at least as tall as the viewport minus 100px, pin it 50px from the top with
+bottom padding; otherwise leave the CSS-driven vertical centring in place. This
+removes the crash and preserves the intended layout. Paired with CHANGE 8, which
+makes the overlay scrollable so a pinned tall modal is actually reachable.
+
+================================================================================
+CHANGE 4 — Extract restoreScrollPosition(); stop forcing smooth scroll on <html>
+================================================================================
+
+OLD_SECTION
+        mainFormCon = "";
+        mainFormConInner = "";
+        bodyOldPosition = "";
+        $$.ss("html").style["scroll-behavior"] = "unset";
+        scrollTo(0, sY);
+        closeProcessor();
+        if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.remove("vxKit");
+        $$.ss("html").style["scroll-behavior"] = "smooth";
+    }
+
+NEW_SECTION
+        mainFormCon = "";
+        mainFormConInner = "";
+        bodyOldPosition = "";
+        restoreScrollPosition();
+        closeProcessor();
+        if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.remove("vxKit");
+    }
+
+    function restoreScrollPosition() { //jump back instantly, then restore the page's own scroll-behavior
+        var htmlEle = $$.ss("html");
+        var previousScrollBehavior = htmlEle.style["scroll-behavior"];
+        htmlEle.style["scroll-behavior"] = "auto";
+        scrollTo(0, sY);
+        htmlEle.style["scroll-behavior"] = previousScrollBehavior;
+    }
+
+REASON
+Closing a modal permanently rewrote the host page's `scroll-behavior` to `smooth`
+as an inline style on `<html>`. That is a global side effect on the consumer's page
+that outlives the modal, silently changing the behaviour of every subsequent anchor
+jump and `scrollTo()` on the site, and it was never undone. The new helper suppresses
+smooth scrolling only for the duration of the restore jump (so the position snaps
+back rather than animating) and then puts the page's own inline value back, whatever
+it was. The logic is extracted into a function because the same restore is now needed
+from two call sites (see CHANGE 5).
+
+================================================================================
+CHANGE 5 — Make the "none" close path consistent with the animated ones
+================================================================================
+
+OLD_SECTION
+            modalCon.removeChild(recallCurrent);
+            modalBody.classList.remove("show");
+            modalOn = false;
+            scrollable = false;
+            document.body.style["position"] = bodyOldPosition;
+            document.body.style["top"] = "0";
+            scrollTo(0, sY);
+            closeProcessor();
+        },
+
+NEW_SECTION
+            modalCon.removeChild(recallCurrent);
+            modalBody.classList.remove("show");
+            modalOn = false;
+            document.body.style["position"] = bodyOldPosition;
+            document.body.style["top"] = "0";
+            restoreScrollPosition();
+            closeProcessor();
+            if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.remove("vxKit");
+        },
+
+REASON
+Two inconsistencies between the `none` close path and `releaseModal()` (used by the
+animated effects). First, the blur overlay was never taken down: with
+`overlayBackgroundType = "blur"` and the default `none` effect, `show()` added the
+`vxKit` blur class to `pageContainer` but nothing removed it, so the page stayed
+permanently blurred after the modal closed. The removal line is added. Second, the
+raw `scrollTo` is routed through `restoreScrollPosition()` so both paths handle
+`scroll-behavior` identically. `scrollable = false` drops with its variable.
+
+================================================================================
+CHANGE 6 — Delegate trigger matching with closest(); reset per-trigger widths
+================================================================================
+
+OLD_SECTION
+            if (closeButtonClass != "") {
+                if (e.target.classList.contains(closeButtonClass)) {
+                    self.close();
+                }
+            }
+            if (e.target.classList.contains(className)) {
+
+                var formId = e.target.getAttribute(formIdAttribute);
+                var form = document.getElementById(formId);
+                if (form != null) {
+                    if(e.target.getAttribute(modalWidthsAttribute) != null){
+                        modalWidths = e.target.getAttribute(modalWidthsAttribute).split(",");
+                    }
+                    show(form);
+                }
+            }
+
+NEW_SECTION
+            if (closeButtonClass != "") {
+                if (e.target.closest("." + closeButtonClass) != null) {
+                    self.close();
+                }
+            }
+            var trigger = e.target.closest("." + className);
+            if (trigger != null) {
+                var formId = trigger.getAttribute(formIdAttribute);
+                var form = document.getElementById(formId);
+                if (form != null) {
+                    if(trigger.getAttribute(modalWidthsAttribute) != null){
+                        modalWidths = trigger.getAttribute(modalWidthsAttribute).split(",");
+                    }else{
+                        modalWidths = defaultModalWidths;
+                    }
+                    show(form);
+                }
+            }
+
+REASON
+Two problems. (a) `e.target.classList.contains(...)` only matched when the user
+clicked the trigger element itself. A trigger containing markup — an icon, a
+`<span>` label, anything nested — delivered the child as `e.target`, so the click was
+ignored. Nested content in triggers and close buttons is ordinary usage, so both
+checks now walk up with `closest()`.
+(b) `modalWidths` was overwritten whenever a trigger carried the widths attribute
+but was never restored, so a single trigger with custom widths permanently changed
+the sizing of every other modal opened afterwards for the life of the instance.
+A trigger without the attribute now explicitly restores `defaultModalWidths`.
+Verified by the "data-widths attribute honoured" and "default widths restored on
+next open" checks.
+
+================================================================================
+CHANGE 7 — Fix overlay dedupe selector and overlay background application
+================================================================================
+
+OLD_SECTION
+        if ($$.ss("style[data-id='vModalStyles']") == null) {
+            //Create
+            var overlay = $$.ce("DIV");
+            var effectsCon = $$.ce("DIV");
+
+            //Set attributes
+            overlay.classList.add("vModal", "xScroll");
+            overlay.setAttribute("data-id", "vModalStyles");
+
+            if (overlayBackgroundType == "color") {
+                if (overlayStyle != "") overlay["style"] = overlayStyle;
+            }
+
+NEW_SECTION
+        if ($$.ss("div[data-id='vModalStyles']") == null) {
+            //Create
+            var overlay = $$.ce("DIV");
+            var effectsCon = $$.ce("DIV");
+
+            //Set attributes
+            overlay.classList.add("vModal", "xScroll");
+            overlay.setAttribute("data-id", "vModalStyles");
+
+            if (overlayBackgroundType == "color") {
+                if (overlayStyle != "") overlay.style["background"] = overlayStyle;
+            }
+
+REASON
+Two defects in one block. (a) The guard against building a second overlay searched
+for `style[data-id='vModalStyles']`, but the marker is written onto the overlay
+`<div>`, never onto a `<style>` element — so the guard never matched. A second
+`ModalDisplayer` instance on the same page appended a second `.vModal` overlay, and
+from then on the `$$.ss(".vModal")` lookups used throughout the module resolved to
+whichever came first, breaking both instances. The selector now targets the `div`
+that actually carries the marker.
+(b) `overlay["style"] = overlayStyle` assigns to the element's `style` property,
+which is a read-only `CSSStyleDeclaration`; the assignment was silently discarded
+and `config.overlayStyle` had no effect at all — the overlay was always fully
+transparent. The value is now applied as the `background` declaration, which accepts
+the documented colour syntax. Verified by the "second instance does not duplicate
+overlay" and "overlayStyle color applied to overlay" checks.
+
+================================================================================
+CHANGE 8 — Measure the modal once instead of twice
+================================================================================
+
+OLD_SECTION
+        sY = scrollY;
+        currentForm = modal;
+        modal.id != null ? id = modal.id : null;
+        computedModalHeight = getDimensionOfHidden(modal)["height"];
+        computedModalWidth = getDimensionOfHidden(modal)["width"];
+        cssWidth = $$.sm(modal).cssStyle("width");
+
+NEW_SECTION
+        sY = scrollY;
+        currentForm = modal;
+        modal.id != null ? id = modal.id : null;
+        var modalDimension = getDimensionOfHidden(modal);
+        computedModalHeight = modalDimension["height"];
+        computedModalWidth = modalDimension["width"];
+        cssWidth = $$.sm(modal).cssStyle("width");
+
+REASON
+`getDimensionOfHidden()` (src/helpers.js) is expensive and destructive: it mutates
+the element's position/opacity/display, reads `scrollHeight` and `scrollWidth` —
+each a forced synchronous layout — then restores the styles. Calling it twice to
+read two members of the same returned object doubled that work and forced two extra
+reflows on every open, for identical results. It is now called once and both
+dimensions are read from the single result.
+
+================================================================================
+CHANGE 9 — Drop the unused totalHeight read from initialize()
+================================================================================
+
+OLD_SECTION
+        if (!initialized) {
+            totalHeight = $$.ss("html").scrollHeight;
+            if (className == "") throw new Error(
+
+NEW_SECTION
+        if (!initialized) {
+            if (className == "") throw new Error(
+
+REASON
+Follow-on from CHANGE 1: `totalHeight` was assigned here and never read anywhere in
+the module. The assignment also forced a layout on every `initialize()` call for no
+purpose. Removed together with its declaration.

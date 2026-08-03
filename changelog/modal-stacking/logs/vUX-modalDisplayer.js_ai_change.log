@@ -1,0 +1,728 @@
+FILE: vUX-modalDisplayer.js
+FEATURE: modal-stacking
+DATE: 2026-08-03
+PRIOR STATE: as left by feature 'modal-displayer-verification'
+
+The module was restructured rather than patched, so the sections below are grouped
+by the concern that changed. The starting point is the post-verification file, in
+which all state lived in single closure variables and one overlay was built at
+initialize() time.
+
+================================================================================
+CHANGE 1 — Replace single-modal closure state with a shared layer stack
+================================================================================
+
+OLD_SECTION
+export function ModalDisplayer() {
+    var self = this,cssWidth = "",exitOnAway=true,currentForm = null,id = null,effectName = "none",bodyOldPosition = "",mainFormCon = "",mainFormConInner = "",overlayBackgroundType = "color",overlayStyle= "hsla(0, 0%, 100%, 0.48)",initialized = false,openProcessor = function() {},closeProcessor = function() {},modalOn = false,sY = 0,computedModalHeight = 0,computedModalWidth = 0;
+    var defaultModalWidths = ["500px", "500px", "86%"],modalWidths = defaultModalWidths, brkpoints = { largeStart: 1000, mediumStart: 520 },pageContainer = null,className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+
+NEW_SECTION
+//Open modals are held in one stack shared by every ModalDisplayer instance, so a
+//modal opened from inside a displayed modal nests on top of it instead of
+//overwriting it. The stack has to be shared rather than per instance because the
+//state it guards - the body freeze and the page scroll position - belongs to the
+//document, not to an instance: it is captured when the stack becomes non empty and
+//released only when it empties again.
+var modalStack = [];
+var pageState = { scrollY: 0, bodyPosition: "", frozen: false };
+var globalHandlersAttached = false;
+
+function topLayer() {
+    return modalStack.length > 0 ? modalStack[modalStack.length - 1] : null;
+}
+
+function layerOf(node) {
+    for (var x = modalStack.length - 1; x >= 0; x--) {
+        if (modalStack[x].overlay.contains(node)) return modalStack[x];
+    }
+    return null;
+}
+
+export function ModalDisplayer() {
+    var self = this,initialized = false,effectName = "none",exitOnAway = true,overlayBackgroundType = "color",overlayStyle = "hsla(0, 0%, 100%, 0.48)",openProcessor = function() {},closeProcessor = function() {},pageContainer = null;
+    var defaultModalWidths = ["500px", "500px", "86%"],modalWidths = defaultModalWidths,brkpoints = { largeStart: 1000, mediumStart: 520 },className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+
+REASON
+This is the root of the change. Every piece of per-modal state was a single closure
+variable (currentForm, id, cssWidth, mainFormCon, mainFormConInner,
+computedModalHeight/Width, modalOn, sY, bodyOldPosition). Opening a second modal
+overwrote all of them, which is why nesting silently destroyed the first modal:
+its stored innerHTML, id and class were replaced by the second modal's before the
+first was ever restored.
+
+Those variables become fields on a layer object, and layers live in an array. All
+per-modal values are now read from a layer, so opening N modals keeps N independent
+sets of state.
+
+The stack is module scoped, not instance scoped, deliberately. Two ModalDisplayer
+instances on one page share a single document body and a single scroll position;
+with a stack per instance each would independently freeze and unfreeze the body,
+reintroducing the exact bug this change fixes. Instance-specific configuration is
+snapshotted onto the layer at open time instead (see CHANGE 4), so each layer still
+behaves according to the instance that opened it.
+
+Config variables that remain per instance are unchanged; only the runtime state moved.
+
+================================================================================
+CHANGE 2 — One overlay per layer, created on open, instead of one built at init
+================================================================================
+
+OLD_SECTION
+    function createElements() {
+        if ($$.ss("div[data-id='vModalStyles']") == null) {
+            //Create
+            var overlay = $$.ce("DIV");
+            var effectsCon = $$.ce("DIV");
+
+            //Set attributes
+            overlay.classList.add("vModal", "xScroll");
+            overlay.setAttribute("data-id", "vModalStyles");
+
+            if (overlayBackgroundType == "color") {
+                if (overlayStyle != "") overlay.style["background"] = overlayStyle;
+            }
+
+            effectsCon.classList.add("modalSpace");
+
+            //Append modal
+            //modalSpace to overlay
+            overlay.appendChild(effectsCon);
+
+            //Modal to document
+            document.body.appendChild(overlay);
+        }
+    };
+
+NEW_SECTION
+    var overlay = $$.ce("DIV");
+    overlay.classList.add("vModal", "xScroll");
+    overlay.style["z-index"] = 999 + modalStack.length; //each layer sits above the one it was opened from
+    if (layer.overlayBackgroundType == "color" && layer.overlayStyle != "") {
+        overlay.style["background"] = layer.overlayStyle;
+    }
+
+    var space = $$.ce("DIV");
+    space.classList.add("modalSpace");
+
+    var host = $$.ce("DIV");
+    host.classList.add("vModalHost");
+
+    if (modalStack.length == 0) { //keep the pre stacking markers on the first layer, for existing selectors
+        overlay.setAttribute("data-id", "vModalStyles");
+        host.setAttribute("id", "newModal");
+    }
+
+    space.appendChild(host);
+    overlay.appendChild(space);
+    document.body.appendChild(overlay);
+
+REASON
+A single shared overlay cannot represent two modals: it has one backdrop, one scroll
+container and one z-index. Overlays are therefore built per layer inside openLayer()
+and removed when that layer closes, and createElements() is deleted along with its
+call from initialize().
+
+Each overlay gets an explicit z-index of 999 + depth so layers paint in stack order,
+and each is its own scroll container, so a tall modal at layer 2 scrolls
+independently of layer 1.
+
+Backward compatibility is preserved for the common single-modal case: the first
+layer still carries data-id="vModalStyles" on the overlay and id="newModal" on the
+content host, so consumer CSS or scripts written against the older DOM keep working.
+Layers above the first deliberately omit them, because duplicate ids are what broke
+nesting in the first place.
+
+Consequence to be aware of: no overlay exists in the DOM until the first modal is
+opened. Previously one sat in the document from initialize() onwards.
+
+================================================================================
+CHANGE 3 — Address DOM nodes by reference instead of by shared id
+================================================================================
+
+OLD_SECTION
+    this.close = function() {
+        if (modalOn == true) {
+            var modalParent = $$.ss(".vModal");
+            var OldModal = $$.ss("#vOld");
+            var currentModal = modalParent.querySelector("#newModal").childNodes[0];
+            currentForm = null;
+            id = null;
+            closeEffect[effectName](OldModal, currentModal);
+        }
+    };
+    function resetOldModalProperties(oldModal, currentModal) {
+        oldModal.setAttribute("id", currentModal.id);
+        oldModal.setAttribute("class", (currentModal.getAttribute("class")));
+        oldModal.style["display"] = "none";
+        oldModal.style["width"] = cssWidth;
+        oldModal.innerHTML = mainFormConInner;
+    }
+
+NEW_SECTION
+    this.close = function() {
+        closeTopLayer();
+    };
+
+function closeTopLayer() {
+    var layer = topLayer();
+    if (layer == null || layer.closing) return;
+    layer.closing = true;
+    closeEffects[layer.effect](layer);
+}
+
+function restoreSource(layer) {
+    var source = layer.source;
+    if (layer.sourceId != null) source.setAttribute("id", layer.sourceId);
+    if (layer.sourceClass != null) {
+        source.setAttribute("class", layer.sourceClass);
+    } else {
+        source.removeAttribute("class");
+    }
+    source.innerHTML = layer.sourceInner;
+    source.style["display"] = "none";
+    source.style["width"] = layer.sourceInlineWidth;
+}
+
+REASON
+The old code found everything by global id: $$.ss("#vOld") for the original element,
+"#newModal" for the displayed copy, "#effectsCon"/"#eleft"/"#eright"/"#flipper"/
+"#flpform"/"#fBG"/"#Boxform" for the animation boxes. With two modals open every one
+of those ids existed twice and querySelector returned whichever came first in
+document order — so close() restored the wrong element's id, class and innerHTML
+onto the wrong node, permanently destroying the first modal.
+
+Ids are no longer used for internal wiring at all. Each layer holds direct
+references (overlay, space, host, effectsCon, source) and the animation boxes are
+found by class, scoped to that layer's own effects container. Nothing is looked up
+globally, so nothing can collide.
+
+Two further details this enables. resetOldModalProperties() used to reconstruct the
+original element's identity from the *displayed copy*, which is what made the
+cross-contamination possible; restoreSource() now replays values captured from the
+source itself at open time. And the restored width is the source's original inline
+width rather than its computed width, so closing no longer bakes a pixel value onto
+an element that had none.
+
+Related: the copies placed in animation boxes now have their id stripped
+(fillEffectBox), leaving the id only on the single copy in the layer host. That
+keeps document.getElementById(<modal id>) resolving to the element the user can
+actually see, while removing the transient duplicate ids the split and flip effects
+used to create.
+
+================================================================================
+CHANGE 4 — Per-layer configuration snapshot
+================================================================================
+
+OLD_SECTION
+    function show(modal) {
+        if (!initialized) throw new Error("Please initialize using the 'initialize()' method, before triggering modal");
+        sY = scrollY;
+        currentForm = modal;
+        modal.id != null ? id = modal.id : null;
+        var modalDimension = getDimensionOfHidden(modal);
+        computedModalHeight = modalDimension["height"];
+        computedModalWidth = modalDimension["width"];
+        cssWidth = $$.sm(modal).cssStyle("width");
+
+        if (effectName == "split") {
+            modal.style["width"] = computedModalWidth + "px";
+        } else {
+            modal.style["width"] = "100%";
+        }
+
+        //effect call
+        effects[effectName](modal);
+        if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.add("vxKit");
+    };
+
+NEW_SECTION
+    function show(modal) {
+        if (!initialized) throw new Error("Please initialize using the 'initialize()' method, before triggering modal");
+        for (var x = 0; x < modalStack.length; x++) { //a modal cannot be stacked on itself
+            if (modalStack[x].source === modal) return;
+        }
+        openLayer({
+            owner: self,
+            effect: effectName,
+            widths: modalWidths,
+            brkpoints: brkpoints,
+            exitOnAway: exitOnAway,
+            closeButtonClass: closeButtonClass,
+            openProcessor: openProcessor,
+            closeProcessor: closeProcessor,
+            overlayBackgroundType: overlayBackgroundType,
+            overlayStyle: overlayStyle,
+            pageContainer: pageContainer
+        }, modal);
+    }
+
+REASON
+Effect, widths, callbacks and close behaviour were read from instance variables at
+the moment they were needed — which, for a close handler, could be long after the
+modal opened and after config had been changed for a different modal. With layers
+they must be fixed per layer, or closing modal A would use the settings that were
+current when modal B opened.
+
+show() therefore snapshots the instance's configuration into the layer. A layer
+closes with the same effect it opened with, fires the callbacks belonging to the
+instance that opened it, and honours that instance's exitOnAway and
+closeButtonClass, even while a modal from another instance sits on top of it.
+
+The self-stacking guard is new: opening a modal that is already on the stack would
+blank its source a second time and lose the content permanently, so it is refused.
+
+================================================================================
+CHANGE 5 — Page freeze and scroll capture moved to the stack boundary
+================================================================================
+
+OLD_SECTION
+        if (modalOn == true) {
+            bodyOldPosition = $$.sm("body").cssStyle("position");
+            document.body.style["position"] = "fixed";
+            document.body.style["top"] = "-" + sY + "px";
+        }
+
+NEW_SECTION
+function freezePage() {
+    if (pageState.frozen) return; //only the bottom layer freezes; nested opens must not re-capture
+    pageState.scrollY = window.scrollY;
+    pageState.bodyPosition = document.body.style["position"];
+    document.body.style["position"] = "fixed";
+    document.body.style["top"] = "-" + pageState.scrollY + "px";
+    pageState.frozen = true;
+}
+
+function releasePage() {
+    if (!pageState.frozen) return;
+    document.body.style["position"] = pageState.bodyPosition;
+    document.body.style["top"] = "";
+    pageState.frozen = false;
+
+    //jump back instantly, then leave the page's own scroll-behavior as it was
+    var htmlEle = $$.ss("html");
+    var previousScrollBehavior = htmlEle.style["scroll-behavior"];
+    htmlEle.style["scroll-behavior"] = "auto";
+    scrollTo(0, pageState.scrollY);
+    htmlEle.style["scroll-behavior"] = previousScrollBehavior;
+}
+
+REASON
+This block was the direct cause of the permanent page freeze reported when opening a
+modal from inside another. It captured bodyOldPosition from the *computed* body
+position every time a modal opened. On the first open the body was still static, so
+"static" was saved correctly. On a nested open the body was already "fixed", so
+"fixed" was saved — and closing then faithfully restored the page to frozen, leaving
+it unscrollable for the rest of its life.
+
+Freezing is now a property of the stack, not of a modal: freezePage() captures the
+scroll position and body position only when the stack is empty and is a no-op
+otherwise, and releasePage() runs only when the last layer closes. Nesting therefore
+cannot re-capture, and the scroll position recorded belongs to the moment the user
+was last actually looking at the page.
+
+Two smaller corrections included here. The captured value is now the *inline* style
+rather than the computed one, so a page with no inline position is restored to none
+instead of having position:static written onto it. And the top offset is cleared
+rather than set to "0", for the same reason.
+
+================================================================================
+CHANGE 6 — Global event handlers acting on the stack, bound once
+================================================================================
+
+OLD_SECTION
+    function addEventhandler() {
+        var mainModal = $$.ss(".modalSpace");
+        document.body.addEventListener("keydown", function(e) {
+            if (modalOn == true) {
+                if (keyboardEventHanler(e)["handled"] == true) {
+                    if (e.key == "Escape") {
+                        self.close();
+                    }
+                }
+            }
+        }, false);
+        document.body.addEventListener("transitionend", function(e) {
+            if (modalOn == true) {
+                if (e.target.parentNode.classList.contains("trans_in") && e.target.parentNode.classList.contains("split")) {
+                    ...
+        window.addEventListener("resize", function() {
+            if (modalOn == true) {
+                fixModalWidth(mainModal);
+            }
+        });
+        document.addEventListener("click", function(e) {
+            if(exitOnAway){
+                if (e.target.classList.contains("vModal")) {
+                self.close();
+                }
+            }
+            ...
+
+NEW_SECTION
+function attachGlobalHandlers() {
+    //Escape, away clicks, close buttons and transition tracking act on the shared
+    //stack, so they are bound once for the document rather than once per instance -
+    //otherwise every instance would pop a layer for a single Escape press.
+    if (globalHandlersAttached) return;
+    globalHandlersAttached = true;
+
+    document.body.addEventListener("keydown", function(e) {
+        if (topLayer() == null) return;
+        if (keyboardEventHanler(e)["handled"] == true && e.key == "Escape") closeTopLayer();
+    }, false);
+
+    document.body.addEventListener("transitionend", function(e) {
+        //only the library's own animation boxes count; a transition on consumer
+        //content inside the modal bubbles up here too and must be ignored
+        if (e.target.classList == undefined || !e.target.classList.contains("vEffectBox")) return;
+
+        var layer = layerOf(e.target);
+        if (layer == null || layer.effectsCon == null || !layer.effectsCon.contains(e.target)) return;
+
+        if (layer.effectsCon.classList.contains("trans_in")) {
+            if (layer.effect == "split") {
+                e.target.innerHTML = "";
+                if (!e.target.classList.contains("vRight")) return; //wait for the second half
+            }
+            completeOpen(layer);
+        } else if (layer.effectsCon.classList.contains("trans_out")) {
+            if (layer.effect == "split" && !e.target.classList.contains("vLeft")) return;
+            completeClose(layer);
+        }
+    }, false);
+
+    window.addEventListener("resize", function() {
+        for (var x = 0; x < modalStack.length; x++) applyWidths(modalStack[x]);
+    }, false);
+
+    document.addEventListener("click", function(e) {
+        var layer = topLayer();
+        if (layer == null) return;
+        if (layer.exitOnAway && e.target === layer.overlay) {
+            closeTopLayer();
+            return;
+        }
+        if (layer.closeButtonClass != "" && e.target.closest("." + layer.closeButtonClass) != null) {
+            closeTopLayer();
+        }
+    }, false);
+}
+
+REASON
+These four handlers were attached once per instance and each acted on that
+instance's own state. With a shared stack that is wrong in a specific way: two
+instances would both respond to one Escape press and pop two layers. They are
+therefore bound once for the document, guarded by globalHandlersAttached, and they
+resolve the affected layer from the stack rather than from a closure.
+
+Behaviour changes worth noting:
+- Escape, away clicks and close buttons now act on the topmost layer, and the layer's
+  own snapshotted exitOnAway / closeButtonClass decide the outcome.
+- The away-click test is an identity comparison against that layer's overlay instead
+  of a class check, which cannot be satisfied accidentally by consumer markup that
+  happens to carry the vModal class.
+- transitionend now requires the target to be one of the library's own animation
+  boxes (class vEffectBox) and to belong to the layer's current effects container.
+  Previously any transition on consumer content inside a modal bubbled up and was
+  matched on its parent's classes, so an animated element inside a modal could drive
+  the open/close state machine.
+- Resize re-applies widths to every open layer rather than to a single cached node.
+  The old code captured `$$.ss(".modalSpace")` once at initialize() time, which with
+  per-layer overlays would be a stale reference.
+
+Opening stays per instance, since each instance recognises its own trigger class and
+id attribute; see CHANGE 7.
+
+================================================================================
+CHANGE 7 — Trigger handling: ignore triggers pointing at a displayed modal
+================================================================================
+
+OLD_SECTION
+            var trigger = e.target.closest("." + className);
+            if (trigger != null) {
+                var formId = trigger.getAttribute(formIdAttribute);
+                var form = document.getElementById(formId);
+                if (form != null) {
+                    if(trigger.getAttribute(modalWidthsAttribute) != null){
+                        modalWidths = trigger.getAttribute(modalWidthsAttribute).split(",");
+                    }else{
+                        modalWidths = defaultModalWidths;
+                    }
+                    show(form);
+                }
+            }
+
+NEW_SECTION
+        document.addEventListener("click", function(e) {
+            var trigger = e.target.closest("." + className);
+            if (trigger == null) return;
+
+            var modal = document.getElementById(trigger.getAttribute(formIdAttribute));
+            if (modal == null) return;
+            if (layerOf(modal) != null) return; //resolved to the displayed copy of an already open modal
+
+            if (modalWidthsAttribute != "" && trigger.getAttribute(modalWidthsAttribute) != null) {
+                modalWidths = trigger.getAttribute(modalWidthsAttribute).split(",");
+            } else {
+                modalWidths = defaultModalWidths;
+            }
+            show(modal);
+        }, false);
+
+REASON
+Since the displayed copy carries the modal's id while the source gives it up,
+getElementById() during an open modal returns the copy inside an overlay. A trigger
+pointing at an already displayed modal would therefore hand that copy to show() and
+the module would try to open a node that is itself part of a layer. The layerOf()
+check rejects it.
+
+The modalWidthsAttribute guard is also new: when the property is unset,
+getAttribute("") was being called on every trigger click.
+
+================================================================================
+CHANGE 8 — Idempotent open/close completion (fixes duplicate openProcessor)
+================================================================================
+
+OLD_SECTION
+(no equivalent — the old transitionend handler ran its completion logic every time
+it matched, and relied on the modalOn flag being false to ignore repeats)
+
+NEW_SECTION
+function completeOpen(layer) {
+    if (layer.opened) return; //the box effect transitions two properties, so transitionend fires twice
+    layer.opened = true;
+
+    layer.host.innerHTML = layer.sourceOuter;
+    layer.host.style["height"] = layer.height + "px";
+
+    var content = layer.host.childNodes[0];
+    if (content != null) {
+        content.style["display"] = "block";
+        content.style["width"] = "100%";
+    }
+    //the animation boxes are kept, hidden, because the closing effect replays through them
+    if (layer.effectsCon != null) layer.effectsCon.style["display"] = "none";
+    layer.openProcessor();
+}
+
+function completeClose(layer) {
+    if (layer.destroyed) return;
+    layer.destroyed = true;
+    ...
+}
+
+REASON
+Measured against the previous build: the box effect fired openProcessor twice on
+every open (verified by counting callback invocations per effect — none/split/flip
+reported 1, box reported 2). Its animation box uses `transition: all`, which animates
+both width and height, so transitionend fires once per property and the completion
+logic ran twice. Consumers using openProcessor to focus a field or fetch data were
+doing it twice.
+
+The equivalent double fire on close was masked rather than fixed: releaseModal() ran,
+set modalOn = false, and the handler's `if (modalOn == true)` guard swallowed the
+second event. That guard disappears with the stack, so the idempotence has to be
+explicit. Both completion functions are now guarded by per-layer flags, and closing
+is additionally guarded at entry by layer.closing so a second Escape during a close
+animation cannot start the teardown twice.
+
+================================================================================
+CHANGE 9 — Effects rewritten against a layer; shared helpers extracted
+================================================================================
+
+OLD_SECTION
+        none: function(modal) {
+            var newModal = $$.ce("DIV");
+            newModal.setAttribute("id", "newModal");
+            modalOn = true;
+            var modayBody = $$.ss(".vModal");
+            var modalCon = modayBody.querySelector(".modalSpace");
+
+            //Create and set newmodal style
+            var newModalCSS = "width:" + cssWidth + "; height:" + computedModalHeight + "px;";
+            newModal.setAttribute("style", newModalCSS);
+
+            positionVertically(modalCon, computedModalHeight);
+            modalCon.appendChild(newModal);
+
+            //Call new modal
+            var newM = modalCon.querySelector("#newModal");
+
+            newM.innerHTML = modal.outerHTML;
+
+            //Store up main form content
+            mainFormConInner = modal.innerHTML;
+
+            var RecallOld = newM.querySelector("#" + modal.id);
+            RecallOld.style["display"] = "block";
+
+            //Tag old for resseting purpose
+            modal.classList.add("vOld");
+            modal.setAttribute("id", "vOld");
+            modal.innerHTML = "";
+
+            modayBody.classList.add("show");
+            openProcessor();
+        },
+
+NEW_SECTION
+    none: function(layer) {
+        layer.overlay.classList.add("show");
+        completeOpen(layer);
+    },
+
+//Copies the modal into an animation box. The copy drops its id so that only the
+//one finally handed to the user (in the layer host) carries it.
+function fillEffectBox(box, layer) {
+    box.innerHTML = layer.sourceOuter;
+    var copy = box.childNodes[0];
+    copy.removeAttribute("id");
+    copy.style["display"] = "block";
+    return copy;
+}
+
+function startCloseTransition(layer, boxSelector) {
+    layer.effectsCon.classList.remove("trans_in");
+    layer.effectsCon.classList.add("trans_out");
+    layer.effectsCon.style["display"] = "block";
+    layer.host.style["display"] = "none";
+    return layer.effectsCon.querySelector(boxSelector);
+}
+
+REASON
+All eight effect functions took the modal element and reached for module state and
+global ids; they now take a layer and touch only that layer's nodes. The bookkeeping
+each of them repeated — creating the host, tagging and blanking the source, storing
+the outerHTML, showing the overlay — moved into openLayer() and completeOpen(), so
+the effect functions contain only their animation.
+
+Three blocks that were duplicated four times each are extracted: fillEffectBox()
+(copy the modal into an animation box, strip the copy's id, reveal it) and
+startCloseTransition() (swap trans_in for trans_out, reveal the effects container,
+hide the host, return the box to animate). The internal ids eleft/eright/flipper/
+flpform/fBG/Boxform become classes vLeft/vRight/vFlipper/vFlipForm/vFlipBg/vBoxForm,
+all carrying the shared marker class vEffectBox that the transitionend handler keys
+on. They are transient nodes removed with their overlay, so nothing external
+referenced them.
+
+A typo is corrected in passing: the flipper's inline CSS declared
+"backface-visibilty" (missing an 'i'), which no browser applied. It now reads
+backface-visibility, so the flip effect hides its reverse face as intended.
+
+================================================================================
+CHANGE 10 — Responsive widths applied on open, for every effect
+================================================================================
+
+OLD_SECTION
+    function fixModalWidth(mainModal){
+        var sbpoint = new ScreenBreakPoint(brkpoints);
+        if (sbpoint.screen.mode == "large") {
+            mainModal.style["width"] = modalWidths[0];
+        } else if (sbpoint.screen.mode == "medium") {
+            mainModal.style["width"] = modalWidths[1];
+        } else if (sbpoint.screen.mode == "small") {
+            mainModal.style["width"] = modalWidths[2];
+        }
+    }
+
+NEW_SECTION
+function applyWidths(layer) {
+    var mode = new ScreenBreakPoint(layer.brkpoints).screen.mode;
+    if (mode == "large") {
+        layer.space.style["width"] = layer.widths[0];
+    } else if (mode == "medium") {
+        layer.space.style["width"] = layer.widths[1];
+    } else {
+        layer.space.style["width"] = layer.widths[2];
+    }
+}
+
+REASON
+Beyond taking a layer, this fixes a gap and carries one deliberate behaviour change.
+
+fixModalWidth() was only ever called from the transitionend handler and the resize
+handler. The "none" effect reaches neither, so with the default effect the responsive
+widths were never applied on open — config.modalWidths / modalWidthsAttribute /
+screenBreakPoints simply had no effect until the user happened to resize the window.
+The "none" effect compensated by sizing its host from the modal's own computed width.
+
+applyWidths() is now called from openLayer() for every effect, so the documented
+responsive width behaviour holds uniformly.
+
+BEHAVIOUR CHANGE, called out explicitly: a modal opened with effect "none" was
+previously sized to its own content width and is now sized by the breakpoint triple
+(default 500px / 500px / 86%). Consumers relying on content-width sizing with the
+default effect will see a different width and should set config.modalWidths, or the
+per-trigger widths attribute, to match their previous size. This was judged a fix
+rather than a regression because the widths configuration is documented as applying
+to the modal regardless of effect, and because the previous behaviour made three
+config properties silently inert for the default effect. The trailing branch is also
+changed from `else if (mode == "small")` to `else` so that no breakpoint mode can
+leave the width unset.
+
+================================================================================
+CHANGE 11 — Blur released by reference check rather than unconditionally
+================================================================================
+
+OLD_SECTION
+        if (overlayBackgroundType == "blur" && pageContainer != null) pageContainer.classList.remove("vxKit");
+
+NEW_SECTION
+function releaseBlur(layer) {
+    if (layer.overlayBackgroundType != "blur" || layer.pageContainer == null) return;
+    for (var x = 0; x < modalStack.length; x++) { //a layer still up may want the same container blurred
+        if (modalStack[x].overlayBackgroundType == "blur" && modalStack[x].pageContainer === layer.pageContainer) return;
+    }
+    layer.pageContainer.classList.remove("vxKit");
+}
+
+REASON
+With stacking, closing one layer must not unblur a page that a layer still on screen
+wants blurred. The removal is now conditional on no remaining layer targeting the
+same container, which makes the blur behave like a reference count without needing
+one. The single-modal case is unaffected: with an empty stack the loop finds nothing
+and the class is removed as before.
+
+================================================================================
+CHANGE 12 — New public members: closeAll() and depth
+================================================================================
+
+OLD_SECTION
+    Object.defineProperties(this, {
+        config: { writable: false },
+        show: { writable: false },
+        close: { writable: false },
+        initialize: { writable: false },
+
+NEW_SECTION
+    this.closeAll = function() {
+        while (modalStack.length > 0) { //unwound without animation, top down
+            var layer = topLayer();
+            layer.closing = true;
+            completeClose(layer);
+        }
+    };
+    ...
+    Object.defineProperties(this, {
+        config: { writable: false },
+        close: { writable: false },
+        closeAll: { writable: false },
+        initialize: { writable: false },
+        ...
+        depth: {
+            get: function() {
+                return modalStack.length;
+            }
+        }
+
+REASON
+Stacking creates two needs the old API could not express: dismissing an entire stack
+(for example on route change or logout) and asking how many modals are open.
+closeAll() unwinds top down without animation, since animating several layers out
+simultaneously has no coherent visual result. depth reports the shared stack size.
+
+The stale `show: { writable: false }` descriptor is dropped — there has never been a
+public show() method on the instance, so it was guarding a property that did not
+exist. mainForm and displayForm are unchanged in shape but now read from the topmost
+layer, which is identical behaviour when only one modal is open.

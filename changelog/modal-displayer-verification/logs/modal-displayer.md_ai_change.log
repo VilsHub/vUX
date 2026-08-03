@@ -1,0 +1,61 @@
+FILE: doc/modal-displayer.md
+FEATURE: modal-displayer-verification
+DATE: 2026-08-03
+
+================================================================================
+CHANGE 1 — New file
+================================================================================
+
+OLD_SECTION
+(file did not exist)
+
+NEW_SECTION
+(new usage guide — see doc/modal-displayer.md for the full text)
+
+Sections: How it works · Quick start · Configuration (full property table,
+responsive widths, blur overlay) · API (initialize, close, mainForm, displayForm) ·
+Effects · Tall modals · Requirements and gotchas · Complete example.
+
+REASON
+`ModalDisplayer` had no documentation. Its behaviour is not discoverable from the
+source: it is the only vUX module with no public `show()` method — modals are opened
+exclusively by delegated clicks on elements carrying `config.className`, which is
+impossible to guess from the constructor's surface. Every `config` property is also
+declared write-only via `Object.defineProperties`, so a consumer cannot read back
+what is configured and must rely on documentation for defaults and accepted values.
+
+The guide follows the structure of the existing `spa-engine.md` and `data-view.md`
+guides for consistency. It documents the trigger-driven model first, then a
+minimal working example, then the full configuration table with types and defaults,
+and finally the constraints that are easy to get wrong: content must start hidden
+with a unique id (the module measures it hidden and restores it by id), only one
+modal may be open at a time, `flip` needs an explicit background colour on the
+content, and node references into the modal content must not be held across
+open/close cycles because the element is cloned into the overlay and restored
+afterwards. The "Tall modals" section documents the pin-to-top plus overlay-scroll
+behaviour established by the fixes in this change.
+
+================================================================================
+FILES: examples/modal/index.html, examples/modal/main.js, examples/modal/README.md
+================================================================================
+
+OLD_SECTION
+(files did not exist)
+
+NEW_SECTION
+(new runnable example — a demo page, its wiring module, and a README)
+
+REASON
+Added to serve two purposes. As documentation it mirrors `examples/spa/`, giving a
+working page a consumer can copy from. As verification it is the fixture the
+automated browser suite drives: it exercises all four effects, per-trigger widths,
+a modal taller than the viewport, all three close routes (close button, Escape,
+overlay click) and the open/close callbacks, which is what allowed each defect in
+this change to be reproduced before fixing and confirmed after.
+
+Note on `#log { height: 80px; overflow: auto }` in index.html: the on-page log grows
+as callbacks fire, and a growing element above the fold triggers Chrome's scroll
+anchoring, which shifts the page's scroll offset. That shifted the restored scroll
+position by one line height and initially looked like a library bug. Fixing the
+log element's height isolates the demo page from the effect; the scroll-restore
+behaviour of the module itself was correct.

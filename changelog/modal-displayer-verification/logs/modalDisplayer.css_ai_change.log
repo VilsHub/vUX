@@ -1,0 +1,56 @@
+FILE: assets/css/modalDisplayer.css
+FEATURE: modal-displayer-verification
+DATE: 2026-08-03
+
+================================================================================
+CHANGE 1 — Define the .xScroll overlay rule
+================================================================================
+
+OLD_SECTION
+.vModal{
+  position:fixed;
+  top:0;
+  width:100%;
+  height:100vh;
+  z-index:999;
+  display:none;
+  min-width:320px;
+}
+
+NEW_SECTION
+.vModal{
+  position:fixed;
+  top:0;
+  width:100%;
+  height:100vh;
+  z-index:999;
+  display:none;
+  min-width:320px;
+}
+/* the page body is frozen while a modal is open, so a modal taller
+   than the viewport has to scroll inside the overlay itself */
+.vModal.xScroll{
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+REASON
+`createElements()` in vUX-modalDisplayer.js has always added the class `xScroll` to
+the overlay alongside `vModal`, but that class was defined in no stylesheet in the
+repository (grep across assets/css/*.css returned nothing), so it was inert.
+
+The consequence was a functional bug rather than a cosmetic one. While a modal is
+open the module sets `body { position: fixed }` to stop the page behind from
+scrolling. The overlay is `position: fixed; height: 100vh` with default
+`overflow: visible`. A modal taller than the viewport therefore overflowed the
+overlay with no scroll container anywhere: the body could not scroll because it was
+frozen, and the overlay would not scroll because it had no overflow rule. Everything
+past the first viewport-height of a tall modal was unreachable — the user could not
+scroll to a submit button at the bottom of a long form.
+
+Defining `.xScroll` with `overflow-y: auto` makes the overlay the scroll container,
+which is what the class name always implied and what the pinned-to-top positioning
+in `positionVertically()` (CHANGE 3 of the JS log) assumes. `overflow-x: hidden`
+prevents a stray horizontal scrollbar from the `translateX(-50%)` centring used on
+`.modalSpace`. Verified by the "tall modal is scrollable inside the overlay" and
+"tall modal bottom reachable" checks.

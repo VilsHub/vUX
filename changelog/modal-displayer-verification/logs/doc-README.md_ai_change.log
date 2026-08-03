@@ -1,0 +1,41 @@
+FILE: doc/README.md
+FEATURE: modal-displayer-verification
+DATE: 2026-08-03
+
+================================================================================
+CHANGE 1 — List the Modal Displayer guide; drop it from the "coming next" list
+================================================================================
+
+OLD_SECTION
+| [Data View](data-view.md) | `vUX-dataView.js` | Keyed data-to-DOM binding for tables/dashboards with frequent fine-grained updates |
+
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ModalDisplayer`, `ListScroller`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`, `FormComponents`) are coming next.
+
+NEW_SECTION
+| [Data View](data-view.md) | `vUX-dataView.js` | Keyed data-to-DOM binding for tables/dashboards with frequent fine-grained updates |
+| [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
+
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`, `FormComponents`) are coming next.
+
+REASON
+`doc/modal-displayer.md` was added by this change. The usage-guide table is the
+documentation index, so the new guide is registered there, and `ModalDisplayer` is
+removed from the list of modules still awaiting a guide so the two statements stay
+consistent.
+
+================================================================================
+CHANGE 2 — Link the runnable modal example
+================================================================================
+
+OLD_SECTION
+- [SPA example app](../examples/spa/README.md) — runnable example combining `SPAEngine` and `ProgressIndicator`, with a bundled dev server.
+
+NEW_SECTION
+- [SPA example app](../examples/spa/README.md) — runnable example combining `SPAEngine` and `ProgressIndicator`, with a bundled dev server.
+- [Modal example](../examples/modal/README.md) — runnable example exercising all four modal effects.
+
+REASON
+`examples/modal/` was added by this change, matching the existing `examples/spa/`
+pattern of a runnable demo per documented module. It is listed under "Other
+references" next to the SPA example so both examples are discoverable from the
+documentation index.
