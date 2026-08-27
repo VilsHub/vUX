@@ -1,0 +1,36 @@
+Feature: form-components-example
+Target module: FormComponents (vUX-formComponents.js)
+
+Added examples/form/ — a runnable demo exercising all six FormComponents builders
+(select, radio, checkbox, datePicker, slideSwitch, file), following the existing
+examples/modal/ convention. The demo was verified end-to-end in headless Chromium:
+18 scripted interaction checks covering option search/selection, optgroups, multiple
+select, refreshSelect(), radio/checkbox forwarding, the full date drill-down
+(including 29-day February 2024 and weekday tooltips), datetime-local time entry,
+switch toggling, slideSwitch.refresh() on injected markup, and file selection — all
+passing with zero console errors.
+
+Driving the example surfaced four more library defects, fixed here:
+1. Checkbox widgets collapsed to zero height (static .vCheckboxWrapper height:auto beat
+   the generated size; same line was already commented out for the radio wrapper).
+2. Radio widgets were invisible (the circle-drawing ::before rule had no content
+   property; the checkbox equivalent already had it).
+3. Opening a date picker with a decade-series view (any span > 11 years, including the
+   defaults) threw a ListScroller setup error — the picker configured a nonexistent
+   property name (inactiveButtonsClassName vs inactiveButtonClassName) plus two other
+   nonexistent properties, and its buttons lacked the vListBt classes the scroller's
+   click handler requires. The error also aborted the open picker's z-index raise.
+4. Configured style strings silently lost every CSS-cascade tie to the static
+   stylesheet defaults (the link loads after the generated styles), e.g. a configured
+   radio color rendered black and the checkbox check glyph never appeared. Generated
+   selectors are now anchored to the wrapper base class so configured styles override
+   defaults, per the documented contract.
+
+Docs updated: example linked from doc/form-components.md and doc/README.md; the
+style-override contract stated in the guide.
+
+Affected projects: any consumer of vUX-formComponents.js / formComponents.css. The
+specificity change means explicitly-configured style properties that previously lost
+ties to static defaults now apply (e.g. myinvitees.com's configured slide-switch
+wrapper border will now render as configured). Deployed library copies must be
+re-synced to pick up the fixes.

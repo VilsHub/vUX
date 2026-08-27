@@ -1,0 +1,51 @@
+Feature: form-components-fixes
+Target module: FormComponents (vUX-formComponents.js)
+
+Fixed all defects found during the form-components verification pass (see
+changelog/form-components-docs/ for the findings).
+
+Crashes fixed:
+- datePicker: static imports added for FormValidator and ListScroller (previously
+  unresolved globals — default-range pickers crashed on open, datetime-local pickers
+  crashed on build).
+- datePicker daysToolTip: tooTipHandler/toolTipHandler typo normalized; refresh guarded
+  until the dynamic ToolTip import resolves.
+- file: selection no longer crashes when fileToolTip is off; cancelling the dialog no
+  longer throws (empty FileList guard).
+- slideSwitch.refresh(): now uses slideSwitchClassName/runSlideSwitchBuild instead of
+  the radio builder's identifiers.
+- file.refreshFile(): now calls runFileBuild instead of runSelectBuild.
+- select config.optionGroupStyle: variable declared, and the value is now emitted into
+  the generated stylesheet (.sOptionGroup rows).
+- slideSwitch labels: missing label attribute falls back to "On"/"Off" instead of
+  throwing; single-value attributes no longer render literal "undefined".
+- radio: null-sibling inputs no longer crash (same guard the checkbox builder had).
+
+Wrong results fixed:
+- February now renders 29 days in leap years (wrong object key made the check always
+  NaN); leap rule upgraded to the full Gregorian rule.
+- select/datePicker sizeAttribute and wrapAttribute setters now actually validate their
+  value (they previously validated the error message).
+- Dropdown/panel placement now uses each widget's own rendered height instead of
+  builder-level shared dimensions (mixed-size widgets were positioned with the
+  last-built widget's height; the select's open-direction estimate also mixed up width
+  and height for the search box).
+- datePicker config.daysToolTipProperties validation now runs (loop compared against an
+  array; error paths referenced undefined variables).
+
+Cosmetic fixed:
+- checkbox size error message named config.radioButtonSize; slideSwitch and file setup
+  errors named nonexistent config keys; README's FormComponents import example pointed
+  at vUX-formValidator.js.
+
+Docs updated: doc/form-components.md rewritten where it documented the broken behavior
+(window-global workaround removed, caveats cleared, optionGroupStyle documented,
+"Known issues" replaced by "Remaining limitations").
+
+Affected projects: any consumer of vUX-formComponents.js. Behavior is unchanged for
+code on the previously working paths (verified against the myinvitees.com usage of
+slideSwitch and file: both-labels-supplied markup, fileToolTip enabled). Note that
+importing FormComponents now also loads vUX-formValidator.js and vUX-listScroller.js
+(no import-time side effects; their CSS still loads only on initialize()). Deployed
+copies of the library (e.g. myinvitees.com/lib/vUX) must be re-synced to pick up the
+fixes.

@@ -12,7 +12,9 @@ The component is **declarative and trigger-driven**. You do not call an "open" m
 - The trigger's `config.formIdAttribute` attribute holds the `id` of the element to display.
 - That element is your modal content. It lives anywhere in the page and must start hidden (`display: none`).
 
-On open, the component measures the hidden content, clones it into an overlay it appends to `<body>`, plays the configured effect, and freezes the page behind it (`body { position: fixed }`) so the background cannot scroll. On close it puts the original content back where it was, unfreezes the body, and restores the exact scroll position.
+On open, the component measures the hidden content, clones it into an overlay it appends to `<body>`, plays the configured effect, and holds the page still behind it (`body { overflow: hidden }`) so the background cannot be scrolled. On close it puts the original content back where it was and restores the body's own `overflow` value.
+
+The page is held with `overflow` rather than by taking the body out of flow, so the document never moves: the scroll position is preserved because nothing scrolled, not because it was saved and reapplied. Two consequences worth knowing — the page behind keeps its normal layout while a modal is up, and `overflow: hidden` blocks *user* scrolling (wheel, touch, keyboard) but not programmatic `scrollTo()`, so your own code can still move the page behind a modal if it chooses to.
 
 Because the content element is moved into the overlay and restored afterwards, **do not hold long-lived references to nodes inside the modal content across open/close cycles** — read them through `displayForm` while the modal is open instead.
 
@@ -32,7 +34,7 @@ Each layer gets its own overlay element with an increasing `z-index`, its own re
 
 **Layers close last-in-first-out, and that is the point of a modal stack rather than a restriction on it.** A modal takes exclusive control of interaction: while it is up, everything beneath it is unreachable by definition. So a covered layer has no way to be acted on, and closing one out of order would leave the dialog it spawned floating above nothing. `Escape`, an overlay click and a close button therefore all pop **only the topmost layer**, and there is deliberately no API that takes a specific layer. `closeAll()` unwinds the whole stack when you need to dismiss everything at once — on a route change or logout, for example.
 
-Page-level state is handled at the stack boundary rather than per modal. The body is frozen and the scroll position captured when the first layer opens, and released only when the last layer closes — so nesting never loses the page's scroll position. Similarly a blurred `pageContainer` stays blurred until no remaining layer wants it blurred.
+Page-level state is handled at the stack boundary rather than per modal. The body's `overflow` is locked when the first layer opens and restored only when the last layer closes, so nesting never double-locks it or releases it early. Similarly a blurred `pageContainer` stays blurred until no remaining layer wants it blurred.
 
 The stack is shared by **all** `ModalDisplayer` instances on the page, because the state it protects (the body freeze, the scroll position) belongs to the document. A modal opened by one instance therefore stacks correctly on a modal opened by another, and one `Escape` press pops exactly one layer no matter how many instances exist.
 
@@ -107,7 +109,16 @@ modal.config.overlayBackgroundType = "blur";
 modal.config.pageContainer = document.getElementById("page");
 ```
 
-The component adds the `vxKit` class (a CSS `blur` filter) to `pageContainer` while open and removes it on close. `pageContainer` must wrap your page content but **not** the modal content, or the modal blurs too.
+Instead of tinting the overlay, this blurs the page behind it. The component adds the `vxKit` class (a CSS `blur` filter) to `pageContainer` while a modal is open and removes it on close, and it leaves the overlay's own background unset so the blur is what you see.
+
+Two requirements:
+
+- **`pageContainer` must wrap your page content but not the modal content**, or the dialog blurs along with the page. Keep your modal markup outside it — the overlay itself is appended to `<body>`, so it is never affected.
+- **`config.overlayStyle` is ignored** in blur mode, since the overlay is deliberately left transparent.
+
+With stacking, the blur is held for as long as any open layer wants it and is lifted only when no remaining layer targets that container — so opening and closing a nested modal never flickers the blur off and on.
+
+Configuration is snapshotted when a modal opens, so switching `overlayBackgroundType` takes effect from the next open onwards rather than on the modal already displayed.
 
 ## API
 
@@ -174,7 +185,7 @@ For backward compatibility the **first** layer also carries the pre-stacking mar
 
 ## Complete example
 
-See [`examples/modal/`](../examples/modal/) — all four effects, stacked modals, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+See [`examples/modal/`](../examples/modal/) — seven modals covering all four effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
 
 ```bash
 python3 -m http.server 8000

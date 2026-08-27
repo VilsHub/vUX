@@ -1,0 +1,59 @@
+FILE: examples/spa/index.html, examples/spa/main.js, examples/spa/display/table.html,
+      examples/spa/server.py, examples/spa/README.md
+FEATURE: example-redesign
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'spa-example' / 'spa-route-exit-hook'
+
+OLD_SECTION
+index.html — 23 lines: an unstyled <nav>, a bare #contentBoundary and a <pre> log.
+main.js    — routing, progress, callbacks and the ?autorun harness.
+table.html — <table border="1" cellspacing="0" cellpadding="4">, unclassed buttons.
+server.py  — /lib/vUX/ mapped to the repo root.
+
+NEW_SECTION
+index.html — 161 lines: shared design system, a sticky top bar with the nav, a styled
+             #contentBoundary, two numbered sections (what to watch, bad input) and a
+             diagnostics panel.
+main.js    — the same routing and callbacks, plus markNav(), a log clear button,
+             five validation demos and window.demoSpa.
+table.html — button classes and a .table-scroll wrapper; presentational HTML attributes
+             replaced by CSS.
+server.py  — /shared/ additionally mapped to examples/shared/.
+
+REASON
+Brings the page up to the standard in CLAUDE.md. Routing, progress indication, the
+per-link data attributes, the DataView table island, the exit hook and the ?autorun
+harness are all unchanged in behaviour.
+
+The design had to respect something particular to this example: route fragments in
+display/ are fetched and injected at runtime, and they carry no classes of their own.
+They are therefore styled through #contentBoundary — the element they are loaded into —
+so a fragment stays portable content rather than becoming a styled component that only
+works on this page. Stated in a comment and in the README.
+
+server.py needed the /shared/ mapping because this example is served from its own root by
+its own dev server, not from the repository root like the other three, so a relative path
+to examples/shared/ does not resolve. Mapping it explicitly was chosen over reaching it
+through the existing /lib/vUX/ mapping, which would have implied the stylesheet is part
+of the library.
+
+The ProgressIndicator's colours were part of the retheme and are easy to miss, since they
+are config values rather than CSS: the bar kept trackColor "#eee" from the light design,
+which on a dark header draws a bright white line across the top of the viewport. Now
+"#5ccfe6" on "#1f2a3a", matching the page palette.
+
+markNav() is new and does more than decorate: it highlights by location.pathname, which
+makes the "User 8" opt-out visible — that link sets data-add-to-history="false", so its
+content loads while the URL, and therefore the highlight, stays where it was. The
+behaviour was already demonstrated; it was just invisible.
+
+The five validation demos each build a THROWAWAY engine, so the live one is untouched.
+Both initialize() guards were confirmed to run before boot() and startRouter(), i.e.
+before the failing instance can attach any global handler.
+
+VERIFICATION
+The five error demos were checked against the real helpers and the engine's own guard
+conditions: 5 assertions, all passing. The dev server was run and every URL the page
+needs was confirmed to return 200 — /, /shared/example.css, /main.js, /pages/table.js,
+the three display fragments, the library modules, and the two client-side routes /user/7
+and /table through the history fallback. server.py re-checked for syntax.

@@ -1,0 +1,9 @@
+Feature: doc-pages (RETROACTIVE — commits 3b78f40, c15c888, 2a8dc3c, b65702e, logged
+after the changelog/ convention was introduced in 478c817)
+Target module: documentation
+
+Established the doc/ usage-guide set: the documentation index (doc/README.md), the
+SPA engine guide (setup/routing, then a full constructor/methods/config reference,
+then the "Why no virtual DOM?" design rationale), and the progress indicator guide.
+
+Affected projects: documentation only.

@@ -1,0 +1,11 @@
+FEATURE: example-design-standard
+DATE: 2026-08-26
+
+Project instructions
+  Modified:
+    CLAUDE.md
+
+Notes:
+  No source, documentation or example file changed. This entry records a change to the
+  repository's working conventions only. The standard it introduces is already met by
+  examples/autowriter/, added under feature 'auto-writer-docs'.

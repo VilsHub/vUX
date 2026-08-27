@@ -1,0 +1,51 @@
+FILE: examples/resizer/index.html
+FEATURE: resizer-example
+DATE: 2026-08-27
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file — Resizer was the only repaired module with no page under examples/)
+
+NEW_SECTION
+A five-section page built on examples/shared/example.css: a hero whose headline box is
+itself the component, a playground with a live control for every config property, a
+split view driven by a consumer-supplied grip, a four-cell grid covering every edge, a
+teardown panel, and a validation grid of thirteen deliberately-bad calls.
+
+REASON
+CLAUDE.md requires a runnable example of every module, and Resizer had none. It was
+also the reason the resizer-fixes work could only be verified statically: with no page
+to load the module there was no way to confirm a real drag, or that resizer.css
+resolves at runtime under a live data-library-root.
+
+Section choices follow what the repair actually changed, so the page doubles as its
+demonstration:
+
+  - The hero uses direction:"both" with all four thresholds set, because the pre-fix
+    module could not do either — the drag arithmetic ignored the drag, and the module
+    threw before it set any state.
+  - Section 03 exists solely for the left/top edge inversion, which is new behaviour.
+    Before the fix those two position settings produced controls that shrank the
+    element when dragged outward.
+  - Section 02 exercises config.myResizeHandler, which was previously validated,
+    stored, and used for nothing. The grip is deliberately a sibling of the resized
+    panel rather than a child, and deliberately contains an icon, because those are
+    the two things the old $$.attachEventHandler binding could not handle.
+  - Section 04 exists because destroy() is new, and because initialize() used to
+    append a duplicate handle, listener set and stylesheet when called twice.
+  - Section 05 includes `resizeHandlerProperties = {}` and an unknown-key case
+    specifically: the first threw a bare TypeError before the fix, the second was
+    silently ignored.
+
+Three page-level CSS decisions are load-bearing and are commented in the file and
+explained in the README, because a consumer hits all three:
+
+  1. A 14px hit area with a 3px visible line inside it. The library's 2px handle is
+     structurally correct but hard to grab, and has no resting appearance at all.
+  2. Handle rules scoped to a page class (.rz) rather than written as bare
+     .resizeHandle. resizer.css is injected during initialize(), so it lands after
+     the page's own <style> block and would win every specificity tie.
+  3. Each box in section 03 anchored to the far side of its cell with flexbox. The
+     module writes a size and never a position, so without anchoring a left- or
+     top-handled box still resizes but visibly grows the wrong way — which would read
+     as the inversion fix not working.

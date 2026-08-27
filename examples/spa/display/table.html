@@ -2,16 +2,17 @@
 <p>500 rows managed by <code>vUX-dataView.js</code>: the JSON model lives in memory, every row is bound to its DOM node by key, and updates are targeted DOM operations — no rebuild, no diffing. Leaving this route fires the SPA engine's <code>exitCallback</code>, which stops the ticker and destroys the view.</p>
 
 <div id="tableControls">
-    <button type="button" id="btnSortPrice">Sort by price</button>
-    <button type="button" id="btnSortId">Sort by id</button>
-    <button type="button" id="btnFilter">Filter price &gt; 500</button>
-    <button type="button" id="btnClearFilter">Clear filter</button>
-    <button type="button" id="btnTicker">Start ticker (50 cells / 100ms)</button>
-    <button type="button" id="btnBench">Benchmark: 200 updates vs full rebuild</button>
+    <button type="button" class="tiny" id="btnSortPrice">Sort by price</button>
+    <button type="button" class="tiny" id="btnSortId">Sort by id</button>
+    <button type="button" class="tiny" id="btnFilter">Filter price &gt; 500</button>
+    <button type="button" class="tiny ghost" id="btnClearFilter">Clear filter</button>
+    <button type="button" class="tiny primary" id="btnTicker">Start ticker · 50 cells / 100ms</button>
+    <button type="button" class="tiny" id="btnBench">Benchmark · 200 updates vs full rebuild</button>
 </div>
 <p id="tableStatus">-</p>
 
-<table id="stockTable" border="1" cellspacing="0" cellpadding="4">
+<div class="table-scroll">
+<table id="stockTable">
     <thead>
         <tr><th>ID</th><th>Symbol</th><th>Price</th><th>Change</th></tr>
     </thead>
@@ -24,3 +25,4 @@
         </tr>
     </tbody>
 </table>
+</div>

@@ -1,0 +1,19 @@
+FEATURE: modal-example-expansion
+DATE: 2026-08-04
+
+Example
+  Modified:
+    examples/modal/index.html
+    examples/modal/main.js
+    examples/modal/README.md
+
+Documentation
+  Modified:
+    doc/modal-displayer.md
+
+ModalDisplayer
+  Modified:
+    assets/css/modalDisplayer.css
+
+Note: vUX-modalDisplayer.js is unchanged by this feature. No module behaviour was
+added or altered; the example exercises capabilities the module already had.

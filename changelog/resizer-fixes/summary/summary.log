@@ -1,0 +1,134 @@
+FEATURE: resizer-fixes
+DATE: 2026-08-27
+SCOPE: repair the Resizer module end to end and load its stylesheet
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected. No public API was
+removed or renamed, so no consumer change is required. Two additions
+(resizerObj.destroy(), and the left/top edge inversion) and one previously
+inert option (config.myResizeHandler) become usable.
+
+  - vUX-resizer.js   11 fixes; see logs/vUX-resizer.js_ai_change.log
+  - ChangeLog.md     four bullets under v4.0.0-beta Fixed, one under Added
+
+--------------------------------------------------------------------------------
+STARTING POSITION
+--------------------------------------------------------------------------------
+
+The module had not been touched since 2024-12-31 and did not work. It was not
+degraded or partially working — a mousedown on a handler threw before it set any
+state, so the component never responded to a drag at all. Three independent
+ReferenceErrors, a drag formula that cancelled to an identity, and a stylesheet
+that was never loaded meant nothing about the component functioned: not the
+resize, not the callback, not the highlight, not the appearance of the handlers.
+
+--------------------------------------------------------------------------------
+WHAT WAS WRONG
+--------------------------------------------------------------------------------
+
+Crashes (module code is strict mode, so these threw rather than creating globals):
+
+  1. `callBack` was read and assigned but never declared. Setting
+     config.callBack threw immediately; even leaving it unset, resize() threw on
+     every mousemove of every drag.
+  2. pinPoint() assigned to `targetElementleWidth`/`targetElementleHeight` —
+     misspellings of the module's own variables. This threw on the function's
+     first statement, so no direction was resolved and `pin` was never set. This
+     is the defect that made the component inert.
+  3. The resizeHandlerProperties setter read `targetConfig[0].length` (the length
+     of an entry pair, always 2) where it meant the key count, so its guard never
+     fired, and passing {} threw a bare TypeError instead of the intended error.
+
+Wrong behaviour:
+
+  4. `targetElementWidth + (e.clientX - targetElementWidth)` reduces to
+     `e.clientX`. The element was sized to the pointer's distance from the
+     viewport edge, so it snapped to the cursor, discarded the grab offset, and
+     was skewed by its own page offset. Identical defect on the Y axis.
+  5. Nothing inverted the delta for a handler on the left or top edge, so those
+     two position settings produced controls that shrank the element when
+     dragged outward.
+  6. unPin() cleared "on" from `$$.ss(".resizeHandle")` — the first handler in
+     the document, not the one dragged. Both ends used toggle() rather than
+     add/remove, so the class tracked drag-count parity rather than drag state.
+  7. `if(yhandler != "")` tested an element against a string where it meant
+     yStyle, and both axes emitted rules against the bare `.resizeHandle`
+     selector, so x and y styles overwrote each other and an empty y style could
+     blank a configured x style.
+  8. resizeHandlerProperties.styles.both was validated but read by nothing.
+  9. config.myResizeHandler was validated and stored but never used — binding was
+     hardcoded to "resizeHandle", so supplying a custom handler produced a
+     component with nothing listening to it.
+ 10. assets/css/resizer.css was never linked. Handlers had no position, no size
+     and no cursor: invisible and ungrabbable out of the box.
+ 11. Unknown or miscased resizeHandlerProperties keys were silently ignored
+     (no final else, and a discarded-result comparison where the code meant to
+     lowercase the key). The "styles" branch named `position` in every error it
+     raised, having been copied from that branch.
+ 12. Every listener was permanent and the injected handlers had no removal path,
+     so there was no way to tear a Resizer down.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+Resizing now uses the standard drag model: mousedown records the pointer position
+and the element's size, and each mousemove sets size = startSize + distance
+travelled. The grab offset cancels out of the subtraction, so where inside the
+handler the drag starts no longer matters and the element's page position no
+longer enters the arithmetic. A handler on the left or top edge inverts the
+distance, which is what makes position:{x:"left"} and position:{y:"top"} behave
+as their names suggest.
+
+Handler identification moved out of $$.attachEventHandler() into named listeners
+on document plus a closest()-based lookup. That does three things at once: it
+lets destroy() unregister what initialize() registered, it accepts a mousedown
+landing on a child of the handler (which matters for consumer handlers containing
+a grip or an icon), and it lets the axis fall back to the configured direction
+when the handler carries no marker class — which is what finally makes
+config.myResizeHandler usable.
+
+The stylesheet is linked through the same processAssetPath()/linkStyleSheet()
+shape used by ModalDisplayer and FormComponents, so it resolves against
+vModel.core.data.assetPath and honours the data-library-root contract.
+
+Generated handler CSS is scoped per axis, styles.both fills in for an axis with
+no style of its own, and initialize() is now idempotent — it previously appended
+a duplicate handler, listener set and <style> element on every extra call.
+
+--------------------------------------------------------------------------------
+NEW API
+--------------------------------------------------------------------------------
+
+  resizerObj.destroy()   removes the module's listeners and any handlers it
+                         injected, and releases a drag in progress. Additive;
+                         nothing existing calls it.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+There is no test runner in this repository and no example page for Resizer, so
+this is static verification plus an extracted-arithmetic check:
+
+  - The module parses as an ES module with the core import stubbed.
+  - The new delta arithmetic was lifted verbatim into a standalone script and run
+    over 8 cases — right-edge grow/shrink, left-edge grow/shrink, max clamp, min
+    clamp, the negative guard, and a zero-distance drag. All 8 pass. The old
+    expression returns the raw pointer coordinate in all 8.
+  - The fixed file was grepped for each original defect signature; none survives.
+
+Not verified: real drag behaviour in a browser, and that resizer.css resolves at
+runtime under a live data-library-root.
+
+--------------------------------------------------------------------------------
+FOLLOW-UP
+--------------------------------------------------------------------------------
+
+Resizer has no page under examples/ and no guide under doc/, both of which
+CLAUDE.md requires of every module. An examples/resizer/ page would also convert
+the two unverified items above into something demonstrable, and is the natural
+next piece of work on this module.

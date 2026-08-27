@@ -5,6 +5,7 @@ Run:  python3 server.py   then open http://localhost:8931/
 Provides the three things the example needs and a real deployment must provide too:
 - SPA history fallback: unknown non-file paths serve index.html
 - the vUX library exposed at /lib/vUX/ (mapped to the repo root, two levels up)
+- the shared example stylesheet at /shared/ (mapped to examples/shared/)
 - no-store cache headers, plus simulated latency on /display/ fragments so the
   progress indicator is visible
 """
@@ -13,12 +14,16 @@ import http.server, os, time
 ROOT = os.path.dirname(os.path.abspath(__file__))
 LIB_PREFIX = "/lib/vUX/"
 LIB_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))  # the vUX repo root
+SHARED_PREFIX = "/shared/"
+SHARED_ROOT = os.path.abspath(os.path.join(ROOT, "..", "shared"))  # examples/shared
 
 class SPAFallbackHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
         clean = path.split("?", 1)[0].split("#", 1)[0]
         if clean.startswith(LIB_PREFIX):
             return os.path.join(LIB_ROOT, *clean[len(LIB_PREFIX):].split("/"))
+        if clean.startswith(SHARED_PREFIX):
+            return os.path.join(SHARED_ROOT, *clean[len(SHARED_PREFIX):].split("/"))
         return super().translate_path(path)
 
     def end_headers(self):

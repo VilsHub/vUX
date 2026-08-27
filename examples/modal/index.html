@@ -1,72 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>vUX ModalDisplayer example</title>
-        <script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
-        <style>
-            body { font-family: sans-serif; margin: 0; }
-            #page { padding: 24px; }
-            .demo-modal { display: none; width: 420px; background: #fff; border-radius: 6px; padding: 24px; box-sizing: border-box; }
-            .demo-modal h2 { margin-top: 0; }
-            .demo-modal input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; }
-            /* fixed height so appended log lines don't change document height
-               (a growing element above the fold triggers browser scroll anchoring) */
-            #log { height: 80px; overflow: auto; margin: 0; background: #f0f0f0; padding: 6px; }
-            .filler { height: 1200px; background: linear-gradient(#f5f5f5, #ddd); }
-            #tallContent { height: 1100px; background: repeating-linear-gradient(#fafafa, #eee 80px); }
-            button { padding: 8px 14px; }
-        </style>
-    </head>
-    <body>
-        <div id="page">
-            <h1>ModalDisplayer demo</h1>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX ModalDisplayer example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- modal content ----------
+       These blocks start hidden and are moved into the component's overlay when
+       opened, so they are styled standalone rather than as children of #page. */
+    .demo-modal{
+        display:none;
+        background:var(--panel); border:1px solid var(--line); border-top:3px solid var(--dim);
+        border-radius:12px; padding:26px; box-sizing:border-box;
+        box-shadow:0 24px 70px rgba(0,0,0,.6);
+    }
+    .demo-modal h2{margin:0 0 6px; font-size:1.25rem; letter-spacing:-.02em}
+    .demo-modal .layer{
+        font-family:var(--mono); font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
+        color:var(--dim); display:block; margin-bottom:12px;
+    }
+    .demo-modal p{color:var(--muted); font-size:.9rem}
+    .demo-modal input{margin-bottom:12px}
+    .demo-modal .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+    .demo-modal hr{border:0; border-top:1px solid var(--line); margin:20px 0}
 
-            <label>
-                Effect:
-                <select id="effect">
-                    <option value="none">none</option>
-                    <option value="split">split</option>
-                    <option value="flip">flip</option>
-                    <option value="box">box</option>
-                </select>
-            </label>
+    /* one accent per modal, so stacked layers stay tellable apart */
+    #loginModal  {border-top-color:var(--cyan)}
+    #nestedModal {border-top-color:var(--amber)}
+    #termsModal  {border-top-color:var(--violet)}
+    #profileModal{border-top-color:var(--green)}
+    #confirmModal{border-top-color:var(--red)}
+    #helpModal   {border-top-color:#0f8b8d}
+    #tallModal   {border-top-color:var(--muted)}
 
-            <p>
-                <button class="open-modal" data-form="loginModal">Open login modal</button>
-                <button class="open-modal" data-form="loginModal" data-widths="300px,300px,90%">Open (custom widths)</button>
-                <button class="open-modal" data-form="tallModal">Open tall modal</button>
-            </p>
+    .grid2{display:grid; grid-template-columns:minmax(0,330px) minmax(0,1fr); gap:22px; align-items:start}
+    .depth-row{display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap}
+    .depth-n{
+        font-family:var(--mono); font-size:2rem; font-weight:700; color:var(--amber);
+        min-width:1.4em; text-align:center; line-height:1;
+    }
+    .swatch{display:flex; align-items:center; gap:8px}
+    .swatch i{width:12px; height:12px; border-radius:3px; display:block; flex:none}
 
-            <pre id="log"><!-- open/close diagnostics --></pre>
+    #tallContent{
+        height:1100px; border-radius:8px; margin:14px 0;
+        background:repeating-linear-gradient(var(--panel-2), var(--ink) 90px);
+    }
+    .filler{
+        height:900px; border-radius:12px; margin-top:18px; border:1px solid var(--line);
+        background:linear-gradient(var(--panel),var(--ink));
+        display:flex; align-items:center; justify-content:center; text-align:center;
+        color:var(--dim); padding:24px;
+    }
+    @media (max-width:860px){ .grid2{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
 
-            <div class="filler">Scroll me — the page position is preserved while a modal is open.</div>
+<!-- #page is config.pageContainer: it wraps the page but NOT the modal content,
+     so blurring it leaves the dialog itself sharp. -->
+<div id="page">
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> ModalDisplayer <b>/</b> v4.0.0-beta</p>
+        <h1>Dialogs that stack.</h1>
+        <p class="hero-sub">
+            Mark up a trigger, hide your content, and a single delegated listener does the rest.
+            A trigger <b>inside</b> an open dialog opens another on top of it.
+        </p>
+        <div class="hero-cta">
+            <button class="primary open-modal" data-form="loginModal">Sign in</button>
+            <button class="open-modal" data-form="profileModal">Profile settings</button>
+            <button class="ghost open-modal" data-form="tallModal">Tall modal</button>
+        </div>
+        <div class="hero-src">&lt;button class=<span class="d">"open-modal"</span> data-form=<span class="d">"loginModal"</span>&gt;Sign in&lt;/button&gt;</div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Effects &amp; overlay</h2>
+        <p class="lede">
+            Every setting below is a property on <code>.config</code>. Effect changes apply immediately;
+            the overlay settings are snapshotted when a modal opens, so they take effect from the next open.
+        </p>
+
+        <div class="grid2">
+            <div class="panel">
+                <div class="panel-h"><span>config</span></div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="effect">effect</label>
+                        <select id="effect">
+                            <option value="none">none</option>
+                            <option value="split">split</option>
+                            <option value="flip">flip</option>
+                            <option value="box" selected>box</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="overlayType">overlayBackgroundType</label>
+                        <select id="overlayType">
+                            <option value="color">color — tint the overlay</option>
+                            <option value="blur">blur — blur the page behind</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="overlayColor">overlayStyle</label>
+                        <div class="row">
+                            <input type="color" id="overlayColor" value="#0d1420">
+                            <label class="lbl" style="margin:0; flex:1" for="overlayAlpha">
+                                opacity <span class="val" id="overlayAlphaV">0.55</span>
+                            </label>
+                        </div>
+                        <input type="range" id="overlayAlpha" min="0" max="1" step="0.05" value="0.55" style="margin-top:8px">
+                    </div>
+                    <div class="field">
+                        <label class="switch"><input type="checkbox" id="exitOnAway" checked> exitOnAway</label>
+                        <p class="note" style="margin-top:6px">Off means a click on the overlay no longer closes it.</p>
+                    </div>
+                    <div class="field">
+                        <label class="lbl">screenBreakPoints <span class="val" id="bpV">1000 / 520</span></label>
+                        <div class="row">
+                            <input type="number" id="bpLarge" value="1000" style="flex:1">
+                            <input type="number" id="bpMedium" value="520" style="flex:1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span class="dots"><i></i><i></i><i></i></span><span>equivalent code</span></div>
+                    <pre class="snip" id="snippet"></pre>
+                </div>
+                <div class="row" style="margin-top:16px">
+                    <button class="primary open-modal" data-form="loginModal">Open with these settings</button>
+                    <span class="pill" id="applied">applies from next open</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Stacking</h2>
+        <p class="lede">
+            Sign in &rarr; Forgot password &rarr; Terms is three layers deep. Each layer gets its own overlay,
+            its own width and its own scroll container. <kbd class="kbd">Esc</kbd>, an overlay click and a
+            close button all pop <strong>only the topmost</strong> layer.
+        </p>
+
+        <div class="depth-row">
+            <span class="depth-n" id="depth">0</span>
+            <div>
+                <div style="font-weight:600">open layers</div>
+                <div class="note" style="margin:0">reads <code>modal.depth</code></div>
+            </div>
+            <div class="row" style="margin-left:auto">
+                <span class="swatch"><i style="background:var(--cyan)"></i>sign in</span>
+                <span class="swatch"><i style="background:var(--amber)"></i>reset</span>
+                <span class="swatch"><i style="background:var(--violet)"></i>terms</span>
+            </div>
         </div>
 
-        <!-- Modal content: hidden elements with unique ids -->
-        <div id="loginModal" class="demo-modal">
-            <h2>Sign in</h2>
-            <input type="text" placeholder="Username">
-            <input type="password" placeholder="Password">
-            <button type="button">Sign in</button>
-            <button type="button" class="modal-close">Cancel</button>
-            <hr>
-            <!-- triggers inside a displayed modal stack a new layer on top of it -->
-            <button type="button" class="open-modal open-nested" data-form="nestedModal">Forgot password?</button>
-            <button type="button" class="open-modal open-self" data-form="loginModal">Open myself (ignored)</button>
+        <div class="grid2">
+            <div>
+                <div class="row">
+                    <button class="primary open-modal" data-form="loginModal">Start the stack</button>
+                </div>
+                <p class="note">
+                    A page-level button cannot dismiss a stack — the overlay blocks the page, which is the
+                    whole point of a modal. So <code>closeAll()</code> lives <em>inside</em> the deeper
+                    dialogs, where it is actually reachable.
+                </p>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>openProcessor / closeProcessor</span><button class="tiny ghost" id="clearLog">clear</button></div>
+                <div class="panel-b"><pre class="log" id="log"></pre></div>
+            </div>
         </div>
+    </div>
+</section>
 
-        <div id="nestedModal" class="demo-modal">
-            <h2>Nested: reset password</h2>
-            <p>Opened from inside the sign-in modal — the modal underneath stays open.</p>
-            <input type="email" placeholder="Email">
-            <button type="button" class="modal-close">Back</button>
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Per-trigger widths, and one shared stack</h2>
+        <p class="lede">
+            <code>config.modalWidthsAttribute</code> lets a single trigger override the responsive widths
+            for the modal it opens, without leaking into the next one. And the stack is shared by
+            <strong>all</strong> instances, because the state it protects — the body freeze — belongs to the document.
+        </p>
+        <div class="cards">
+            <div class="card">
+                <div class="sym" style="color:var(--cyan)">↔</div>
+                <h3>Width per trigger</h3>
+                <p>Same modal, three triggers, three widths. A trigger without the attribute falls back to the defaults.</p>
+                <div class="row">
+                    <button class="tiny open-modal" data-form="loginModal" data-widths="300px,300px,90%">300px</button>
+                    <button class="tiny open-modal" data-form="loginModal" data-widths="900px,700px,94%">900px</button>
+                    <button class="tiny open-modal" data-form="loginModal">default</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:#0f8b8d">⧉</div>
+                <h3>A second instance</h3>
+                <p>“Help”, inside Profile settings, is opened by a different <code>ModalDisplayer</code> with its own trigger class and effect — yet it layers correctly and one Esc still pops exactly one layer.</p>
+                <button class="tiny open-modal" data-form="profileModal">Open profile, then Help</button>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--muted)">↕</div>
+                <h3>Taller than the viewport</h3>
+                <p>A tall modal scrolls inside its own overlay while the page behind stays exactly where it was.</p>
+                <button class="tiny open-modal" data-form="tallModal">Open tall modal</button>
+            </div>
         </div>
+    </div>
+</section>
 
-        <div id="tallModal" class="demo-modal">
-            <h2>Tall modal</h2>
-            <div id="tallContent">This modal is taller than the viewport.</div>
-            <button type="button" class="modal-close">Close</button>
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
+        <p class="lede">
+            Every <code>.config</code> setter validates, and <code>initialize()</code> refuses an incomplete
+            setup. Each button below performs the call and prints what was thrown.
+        </p>
+        <div class="row">
+            <button data-bad="noClass">initialize() with no className</button>
+            <button data-bad="noAttr">initialize() with no formIdAttribute</button>
+            <button data-bad="effect">effect = "fade"</button>
+            <button data-bad="overlay">overlayBackgroundType = "tint"</button>
+            <button data-bad="breakpoints">screenBreakPoints = [1000]</button>
+            <button data-bad="fraction">screenBreakPoints = [1000.5, 520]</button>
+            <button data-bad="exit">exitOnAway = "yes"</button>
+            <button data-bad="container">pageContainer = "#page"</button>
+            <button data-bad="processor">openProcessor = "log"</button>
+            <button data-bad="className">className = 42</button>
         </div>
-    </body>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>The page keeps its place</h2>
+        <p class="lede">
+            Scroll down, then open a modal. The page is held with <code>overflow:hidden</code> rather than by
+            taking the body out of flow, so it keeps both its scroll position and its layout.
+        </p>
+        <div class="filler">Scroll to here, then press Esc-able open below — the page will not jump.</div>
+        <div class="row" style="margin-top:18px">
+            <button class="primary open-modal" data-form="loginModal">Open from down here</button>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/modal-displayer.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            Both instances are on <span class="kbd">window</span> as <span class="kbd">demoModal</span> and
+            <span class="kbd">altModal</span> — try <span class="kbd">demoModal.depth</span> or
+            <span class="kbd">demoModal.closeAll()</span>.
+        </p>
+    </div>
+</footer>
+
+</div><!-- /#page -->
+
+<!-- ================= modal content: hidden, outside #page ================= -->
+
+<div id="loginModal" class="demo-modal">
+    <span class="layer">layer · sign in</span>
+    <h2>Sign in</h2>
+    <input type="text" placeholder="Username">
+    <input type="password" placeholder="Password">
+    <div class="actions">
+        <button type="button" class="primary">Sign in</button>
+        <button type="button" class="modal-close">Cancel</button>
+    </div>
+    <hr>
+    <p style="margin:0 0 12px">Triggers in here stack a new layer on top of this one.</p>
+    <div class="actions" style="margin:0">
+        <button type="button" class="open-modal" data-form="nestedModal">Forgot password?</button>
+        <button type="button" class="ghost open-modal" data-form="loginModal">Open myself (ignored)</button>
+    </div>
+</div>
+
+<div id="nestedModal" class="demo-modal">
+    <span class="layer">layer 2 · reset</span>
+    <h2>Reset password</h2>
+    <p>Opened from inside the sign-in modal — the one underneath stays open and intact.</p>
+    <input type="email" placeholder="Email">
+    <div class="actions">
+        <button type="button" class="modal-close">Back</button>
+        <button type="button" class="open-modal" data-form="termsModal">Terms &amp; conditions</button>
+    </div>
+</div>
+
+<div id="termsModal" class="demo-modal">
+    <span class="layer">layer 3 · terms</span>
+    <h2>Terms</h2>
+    <p>Three layers deep. Esc pops one at a time, in reverse order.</p>
+    <div class="actions">
+        <button type="button" class="modal-close">Back</button>
+        <button type="button" class="danger close-all">closeAll()</button>
+    </div>
+</div>
+
+<div id="profileModal" class="demo-modal">
+    <span class="layer">layer · profile</span>
+    <h2>Profile settings</h2>
+    <p>An independent modal, opened straight from the page.</p>
+    <input type="text" placeholder="Display name">
+    <div class="actions">
+        <button type="button" class="modal-close">Done</button>
+        <button type="button" class="danger open-modal" data-form="confirmModal">Delete account…</button>
+        <!-- opened by a SECOND ModalDisplayer instance, onto the same shared stack -->
+        <button type="button" class="alt-modal" data-form="helpModal">Help (other instance)</button>
+    </div>
+</div>
+
+<div id="confirmModal" class="demo-modal">
+    <span class="layer">layer 2 · confirm</span>
+    <h2>Are you sure?</h2>
+    <p>This confirm sits above the profile modal that opened it.</p>
+    <div class="actions">
+        <button type="button" class="danger modal-close">Yes, delete</button>
+        <button type="button" class="modal-close">Cancel</button>
+        <button type="button" class="ghost close-all">closeAll()</button>
+    </div>
+</div>
+
+<div id="helpModal" class="demo-modal">
+    <span class="layer">other instance</span>
+    <h2>Help</h2>
+    <p>
+        Opened by a different <code>ModalDisplayer</code> with its own effect, yet it stacks correctly
+        and one Esc still pops exactly one layer.
+    </p>
+    <div class="actions"><button type="button" class="modal-close">Close</button></div>
+</div>
+
+<div id="tallModal" class="demo-modal">
+    <span class="layer">scrolling</span>
+    <h2>Taller than the viewport</h2>
+    <p>This scrolls inside its own overlay. The page behind stays exactly where it was.</p>
+    <div id="tallContent"></div>
+    <div class="actions"><button type="button" class="modal-close">Close</button></div>
+</div>
+
+</body>
 </html>

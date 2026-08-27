@@ -1,0 +1,20 @@
+FEATURE: resizer-example
+DATE: 2026-08-27
+
+Resizer
+  Modified:
+    vUX-resizer.js
+
+Examples
+  Added:
+    examples/resizer/index.html
+    examples/resizer/main.js
+    examples/resizer/README.md
+
+  Depends on (unmodified):
+    examples/shared/example.css
+    assets/css/resizer.css
+
+Release record
+  Modified:
+    ChangeLog.md

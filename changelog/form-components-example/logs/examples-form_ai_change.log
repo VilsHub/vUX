@@ -1,0 +1,24 @@
+Files: examples/form/index.html, examples/form/main.js, examples/form/README.md (ALL NEW)
+
+OLD_SECTION
+(none — the examples/ directory had only modal/ and spa/)
+
+NEW_SECTION
+A runnable demo exercising all six FormComponents builders, following the structure of
+examples/modal/ (index.html + main.js + README.md, served from the repo root with
+data-library-root="../../"):
+- index.html — markup for two selects (optgroup/disabled/multiple), a 3-radio group
+  with axis classes, two checkboxes, date + datetime-local pickers with min/max and a
+  preset value, two slide switches with data-dim/data-labels, and a file input; plus a
+  "native change log" panel and live date-state lines.
+- main.js — configures and autoBuild()s each builder; wires "Add option +
+  refreshSelect()" and "Inject a new switch + refresh()" buttons; mirrors the date
+  pickers' value/data-complete attributes via MutationObserver; logs every native
+  change event through one delegated listener; exposes the builders on window.demoForm.
+- README.md — run instructions and a walkthrough of what each control demonstrates.
+
+REASON
+Requested runnable example coverage for all custom form components, matching the
+existing examples convention. The demo was driven end-to-end in headless Chromium
+(18 scripted interaction checks, all passing, zero console errors), which also
+uncovered the library defects fixed in this feature's other logs.

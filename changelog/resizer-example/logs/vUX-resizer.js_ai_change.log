@@ -1,0 +1,53 @@
+FILE: vUX-resizer.js
+FEATURE: resizer-example
+DATE: 2026-08-27
+PRIOR STATE: as left by feature 'resizer-fixes'
+
+================================================================================
+CHANGE 1 — Replace a generated handle stylesheet instead of appending another
+================================================================================
+
+OLD_SECTION
+        if(style != ""){
+            //Scoped to the axis, otherwise the x and y rules overwrite one another.
+            var selector = "."+handlerClass+"."+axis;
+            var css = selector+":hover{"+style+"}";
+            css += selector+".on{"+style+"}";
+            attachStyleSheet(axis+"Resizehandler", css);
+        }
+
+NEW_SECTION
+        if(style != ""){
+            //Scoped to the axis, otherwise the x and y rules overwrite one another.
+            var selector = "."+handlerClass+"."+axis;
+            var css = selector+":hover{"+style+"}";
+            css += selector+".on{"+style+"}";
+            //Replaced rather than appended: attachStyleSheet() appends unconditionally, so a
+            //Resizer torn down and rebuilt would leave a dead <style> behind on every cycle.
+            var previous = $$.ss("style[data-id='"+axis+"Resizehandler']");
+            if(previous != null && previous.parentNode != null) previous.parentNode.removeChild(previous);
+            attachStyleSheet(axis+"Resizehandler", css);
+        }
+
+REASON
+Found by building the example, not by reading the module — the playground rebuilds its
+Resizer on every control change, which made the accumulation obvious within a dozen
+clicks.
+
+attachStyleSheet() appends a <style data-id="..."> unconditionally; it does not check
+whether one with that data-id is already present. Under the pre-fix module this was
+invisible, because initialize() was effectively called once and never again. destroy()
+makes rebuild-in-place a normal thing to do, and every rebuild that configures a
+handle style left the previous <style> element in <head> for ever. A page with a
+control panel over a Resizer accumulates one dead node per axis per change.
+
+Removing the same-data-id element first keeps <head> at one stylesheet per axis. It
+does not alter the resolution order between two Resizers configured with different
+styles — that was already last-writer-wins, since both generate rules against the same
+global `.resizeHandle.x` / `.resizeHandle.y` selectors. The example's README states
+that limitation and gives the workaround (a distinct handle class per instance via
+config.myResizeHandler) rather than pretending it is solved.
+
+The fix is deliberately local to this module. attachStyleSheet() is a shared helper in
+src/helpers.js used by other components, and changing its append semantics for
+everyone is a much larger change than this one warrants.

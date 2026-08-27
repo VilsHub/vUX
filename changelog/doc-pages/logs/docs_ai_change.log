@@ -1,0 +1,29 @@
+RETROACTIVE LOG — commits 3b78f40, c15c888, 2a8dc3c and b65702e, recorded after the
+fact (the changelog/ convention was introduced in commit 478c817, between the last
+two of these).
+
+Files: doc/README.md (new), doc/spa-engine.md (new), doc/progress-indicator.md (new)
+
+OLD_SECTION
+(none — the doc/ directory did not exist)
+
+NEW_SECTION
+Commit 3b78f40 — doc/README.md (documentation index: library loading contract,
+lifecycle, guide table, references) and doc/spa-engine.md (SPA engine setup and
+routing guide).
+
+Commit c15c888 — doc/spa-engine.md expanded with the constructor, methods and config
+reference: reference structure merged from the hand-written draft and corrected
+against the current API; data attribute defaults and HTML-style boolean semantics
+documented; config.functions noted as reserved and preClickCallback cache-hit
+behavior noted.
+
+Commit 2a8dc3c — doc/progress-indicator.md added (linear/circular/grid indicators,
+pairing with SPA navigation) and registered in the index.
+
+Commit b65702e — doc/spa-engine.md gains the "Why no virtual DOM?" design rationale
+section.
+
+REASON
+Establish the doc/ usage-guide set for the library and keep the SPA guide accurate
+against the API changes made on this branch.

@@ -1,0 +1,35 @@
+Files: doc/form-components.md, doc/README.md
+
+=======================================================================
+Section 1 — doc/form-components.md header line
+OLD_SECTION
+Module: `vUX-formComponents.js` · Stylesheet: `assets/css/formComponents.css` (linked automatically)
+
+NEW_SECTION
+Module: `vUX-formComponents.js` · Stylesheet: `assets/css/formComponents.css` (linked automatically) · Runnable example: [`examples/form/`](../examples/form/)
+
+REASON
+Link the new runnable example, matching the modal guide's header format.
+
+=======================================================================
+Section 2 — doc/form-components.md "Generated styling" bullet
+OLD_SECTION
+... Style config values are raw CSS declaration strings, e.g. `"background:#fff; border:1px solid #ccc"`.
+
+NEW_SECTION
+... Style config values are raw CSS declaration strings, e.g. `"background:#fff; border:1px solid #ccc"`, and they override the static stylesheet's defaults for the same properties.
+
+REASON
+States the override contract now guaranteed by the generated-selector specificity fix.
+
+=======================================================================
+Section 3 — doc/README.md "Other references"
+OLD_SECTION
+- [Modal example](../examples/modal/README.md) — runnable example exercising all four modal effects.
+
+NEW_SECTION
+- [Modal example](../examples/modal/README.md) — runnable example exercising all four modal effects.
+- [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
+
+REASON
+Register the new example in the documentation index.

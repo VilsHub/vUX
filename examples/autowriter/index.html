@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX AutoWriter example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- the caret ----------
+       The library styles .vAutoWriterBlinker with only a left border. Making it an
+       inline-block with a height gives it a dependable size on any line, which is
+       worth doing in any consuming page. */
+    .vAutoWriterBlinker{ display:inline-block; height:1.02em; vertical-align:text-bottom; margin-left:3px; }
+
+    /* targets reserve a line so the page does not shift as text arrives */
+    h1{min-height:1.2em}
+    .hero-sub{min-height:1.6em}
+    .seq-line{min-height:1.7em}
+
+    .play{display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:22px; align-items:start}
+    .stage{background:var(--ink); border-radius:0 0 12px 12px; padding:22px; min-height:250px; display:flex; flex-direction:column}
+    .stage-out{font-family:var(--mono); font-size:1.02rem; line-height:1.75; white-space:pre-wrap; word-break:break-word; flex:1}
+
+    .card:nth-child(1) .sym{color:var(--cyan)}
+    .card:nth-child(2) .sym{color:var(--amber)}
+    .card:nth-child(3) .sym{color:var(--violet)}
+    .mini{
+        background:var(--ink); border:1px solid var(--line); border-radius:8px; padding:12px 14px;
+        font-family:var(--mono); font-size:.9rem; min-height:74px; white-space:pre-wrap; margin-bottom:14px;
+    }
+
+    .seq{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-bottom:22px}
+    .seq-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:22px; position:relative; overflow:hidden}
+    .seq-card::after{content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--line)}
+    .seq-card.on::after{background:var(--amber)}
+    .seq-n{font-family:var(--mono); font-size:.74rem; color:var(--dim); letter-spacing:.15em}
+    .seq-line{margin:8px 0 0; font-size:1.06rem; font-weight:600}
+
+    @media (max-width:860px){ .play{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> AutoWriter <b>/</b> v4.0.0-beta</p>
+        <h1 id="heroLine"></h1>
+        <p class="hero-sub">Built for <b id="heroSub"></b></p>
+        <div class="hero-src">writer.writeText(h1, <span class="d">"Type it. Pause it. Take it back.~1200~"</span>)</div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Edit the script, move the sliders, press Run. Everything below is one
+            <code>writeText()</code> call — the pauses and the backspacing are in the string, not in your code.
+        </p>
+
+        <div class="play">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>Script</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <textarea id="script" spellcheck="false"></textarea>
+                        </div>
+                        <div class="field row">
+                            <button class="tiny ghost" data-preset="basic">Basic</button>
+                            <button class="tiny ghost" data-preset="rewrite">Rewrite</button>
+                            <button class="tiny ghost" data-preset="poem">Multi-line</button>
+                            <button class="tiny ghost" data-preset="boot">Boot log</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Config</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="spdMin">Speed min <span class="val" id="spdMinV">30</span></label>
+                            <input type="range" id="spdMin" min="1" max="200" value="30">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="spdMax">Speed max <span class="val" id="spdMaxV">90</span></label>
+                            <input type="range" id="spdMax" min="1" max="400" value="90">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="blink">Blink delay <span class="val" id="blinkV">300</span></label>
+                            <input type="range" id="blink" min="60" max="900" step="20" value="300">
+                        </div>
+                        <div class="field row" style="justify-content:space-between">
+                            <label class="switch"><input type="checkbox" id="cursor" checked> Show cursor</label>
+                            <span class="row" style="gap:7px">
+                                <input type="color" id="cursorColor" value="#ffb454">
+                                <select id="cursorWidth">
+                                    <option>1px</option><option selected>2px</option><option>3px</option>
+                                </select>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h">
+                        <span class="dots"><i></i><i></i><i></i></span>
+                        <span>output</span>
+                    </div>
+                    <div class="stage"><div class="stage-out" id="playStage"></div></div>
+                    <div class="status" id="status"><span class="dot"></span><span id="statusText">idle</span></div>
+                </div>
+
+                <div class="row" style="margin-top:16px">
+                    <button class="primary" id="run">Run</button>
+                    <button id="stop">stop()</button>
+                    <button id="del">deleteText(5)</button>
+                    <button class="ghost" id="clear">Clear</button>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="snippet"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Directives</h2>
+        <p class="lede">
+            Three sequences are read as instructions instead of being typed. Everything else goes in literally.
+        </p>
+        <div class="cards">
+            <div class="card">
+                <div class="sym">|</div>
+                <h3>Line break</h3>
+                <p>Inserts a real <code>&lt;br&gt;</code>. It counts as one erasable unit, so backspacing through it removes the break whole.</p>
+                <div class="mini" data-mini="br"></div>
+                <button class="tiny" data-play="br">Run <code>Roses are red|violets are blue</code></button>
+            </div>
+            <div class="card">
+                <div class="sym">*n*</div>
+                <h3>Backspace</h3>
+                <p>Deletes <code>n</code> units at typing speed, then carries on with the rest of the string. Sequenced, never racing.</p>
+                <div class="mini" data-mini="del"></div>
+                <button class="tiny" data-play="del">Run <code>I am almost done*4*certain</code></button>
+            </div>
+            <div class="card">
+                <div class="sym">~n~</div>
+                <h3>Pause</h3>
+                <p>Waits <code>n</code> milliseconds. The caret blinks while it waits, which is the only time it blinks.</p>
+                <div class="mini" data-mini="wait"></div>
+                <button class="tiny" data-play="wait">Run <code>Thinking~1500~ done.</code></button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>One call, many elements</h2>
+        <p class="lede">
+            Hand <code>writeText()</code> a <code>NodeList</code> and a matching array of strings and they type
+            <strong>in sequence</strong> — each starts when the last finishes. The callback runs once, at the end.
+        </p>
+        <div class="seq">
+            <article class="seq-card"><span class="seq-n">01 / DECLARE</span><h4 class="seq-line"></h4></article>
+            <article class="seq-card"><span class="seq-n">02 / CONFIGURE</span><h4 class="seq-line"></h4></article>
+            <article class="seq-card"><span class="seq-n">03 / WRITE</span><h4 class="seq-line"></h4></article>
+        </div>
+        <div class="row">
+            <button class="primary" id="seqRun">Run sequence</button>
+            <span id="seqNote" style="color:var(--dim); font-family:var(--mono); font-size:.8rem"></span>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
+        <p class="lede">
+            Directives are checked when <code>writeText()</code> is called, not when they are reached — so a typo
+            throws to your code straight away instead of failing seconds later inside a timer.
+        </p>
+        <div class="row">
+            <button data-bad="unterminated">"wait~500"</button>
+            <button data-bad="nondigit">"a~xy~b"</button>
+            <button data-bad="mismatch">2 elements, 3 strings</button>
+            <button data-bad="fraction">deleteText(2.5)</button>
+            <button data-bad="type">writeText(el, 42)</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/auto-writer.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The writers are on <span class="kbd">window</span> as
+            <span class="kbd">playWriter</span>, <span class="kbd">heroWriter</span> and
+            <span class="kbd">seqWriter</span> — try <span class="kbd">playWriter.stop()</span> from the console.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

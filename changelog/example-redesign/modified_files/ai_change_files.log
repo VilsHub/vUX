@@ -1,0 +1,40 @@
+FEATURE: example-redesign
+DATE: 2026-08-26
+
+Examples — shared
+  Added:
+    examples/shared/example.css
+
+Examples — ModalDisplayer
+  Modified:
+    examples/modal/index.html
+    examples/modal/main.js
+    examples/modal/README.md
+
+Examples — FormComponents
+  Modified:
+    examples/form/index.html
+    examples/form/main.js
+    examples/form/README.md
+
+Examples — SPAEngine
+  Modified:
+    examples/spa/index.html
+    examples/spa/main.js
+    examples/spa/display/table.html
+    examples/spa/server.py
+    examples/spa/README.md
+
+Examples — AutoWriter
+  Modified:
+    examples/autowriter/index.html
+
+Project instructions
+  Modified:
+    CLAUDE.md
+
+Notes:
+  No library source changed. examples/spa/pages/table.js, display/home.html and
+  display/user.html were reviewed and needed no change — home.html and user.html carry
+  no classes and are styled through #contentBoundary, and table.js touches only the
+  DataView, not presentation.

@@ -1,0 +1,15 @@
+Feature: spa-route-exit-hook (RETROACTIVE — commit 3b8bb7b, logged after the
+changelog/ convention was introduced in 478c817)
+Target module: SPAEngine
+
+- exitCallback: routes.<name>.exitCallback (falling back to config.exitCallback)
+  fires just before a route's mounted content is replaced — on click navigation,
+  history transitions and boot — receiving (routeName, params) of the outgoing
+  route, so pages can release timers, observers and components.
+- Fixed dynamic pattern matching: a segment-count mismatch assigned an undeclared
+  'status' variable instead of state.status, so any route with a different segment
+  count was treated as matching a dynamic pattern with empty params (e.g. /table
+  matched /user/;id:[0-9]+ and served the user route's cached content).
+
+Affected projects: any consumer of vUX-spaEngine.js with dynamic routes; consumers
+can now adopt the exit hook for cleanup.

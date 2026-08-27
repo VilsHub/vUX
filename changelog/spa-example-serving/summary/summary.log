@@ -1,0 +1,52 @@
+FEATURE: spa-example-serving
+DATE: 2026-08-26
+SCOPE: make the SPA example legible and self-explaining when served the wrong way
+FOLLOWS: changelog/example-redesign
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — one example page and the docs index.
+
+  - examples/spa/index.html   relative stylesheet, boot notice, hero with a live URL bar
+  - examples/spa/main.js      notice removal, pathname display, document-load counter
+  - examples/spa/README.md    "Run" now leads with how this example differs
+  - doc/README.md             the SPA example entry says to use its own server
+
+--------------------------------------------------------------------------------
+WHAT WAS WRONG
+--------------------------------------------------------------------------------
+
+Served from the repository root — the command the other three examples use — every
+root-absolute path in the SPA page 404s, including main.js itself. The page rendered
+white, serif and empty, with only its inline <style> applying.
+
+The command was wrong, but the page was worse: it failed silently and looked broken
+rather than misconfigured.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+The stylesheet is now linked relatively, by a path that resolves correctly under both the
+repository-root server and the example's own dev server at every route depth, so the
+misconfigured page is at least legible.
+
+A notice sits in the markup by default and is removed by main.js. Since main.js can only
+run when the page was served correctly, its execution is the detection — the page explains
+itself exactly when it cannot work, and is silent when it can.
+
+Separately, the page gained the hero it was missing. A SPA's claim is that nothing is
+re-fetched, which is invisible by nature, so the hero makes it measurable: a mock address
+bar showing the live pathname beside a counter of real document loads. Navigate and the
+path changes while the counter does not.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Both servers run and every affected URL checked. Browser-equivalent resolution of the
+relative stylesheet path confirmed at five base URLs spanning both layouts and all route
+depths. Not opened in a browser — there is none in this environment — so the visual
+result remains unconfirmed.

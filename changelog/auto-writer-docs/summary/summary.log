@@ -1,0 +1,73 @@
+FEATURE: auto-writer-docs
+DATE: 2026-08-26
+SCOPE: guide and runnable example for AutoWriter, plus one API coherence fix
+FOLLOWS: changelog/auto-writer-fixes
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected.
+
+  - doc/auto-writer.md              new guide
+  - doc/README.md                   guide listed, example listed, pending list trimmed
+  - examples/autowriter/            new runnable example (index.html, main.js, README.md)
+  - vUX-autoWriter.js               deleteText() target resolution
+
+--------------------------------------------------------------------------------
+WHY
+--------------------------------------------------------------------------------
+
+AutoWriter was the last module carrying neither a guide nor an example, having been
+repaired under feature 'auto-writer-fixes' with nothing to show the repaired behaviour.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+The guide covers the mechanism, the directive syntax, collection mode, erasing, the
+cursor's three states, the write-only config table, cancellation, the validation errors,
+and three recipes. It leads with the two ways this component departs from the house
+pattern: there is no initialize(), and the component owns the inside of the element it
+is given.
+
+The example is designed rather than plain, which is a deliberate departure from the other
+example pages in this repository. Those are utilitarian because they demonstrate
+structural behaviour; this component's whole output is a visual effect, so the page is
+built to show it — a typed hero, a live playground over every config property, isolated
+directive demos, collection mode, and a section whose five buttons all throw.
+
+One code change came out of writing it. deleteText() erased from the element it was
+given, while writeText() types into a span INSIDE that element, so passing the same
+element to both — the obvious reading, and what the example does — removed the caret
+before it removed any text. deleteText() now resolves to the written span when there is
+one, and still erases arbitrary elements directly when there is not.
+
+--------------------------------------------------------------------------------
+PUBLIC API
+--------------------------------------------------------------------------------
+
+Unchanged. deleteText()'s signature and its behaviour on elements this component never
+wrote to are the same; only its behaviour on a target holding a '.vAutoWriter' span
+changes, and there it moves from wrong to right.
+
+--------------------------------------------------------------------------------
+STILL OUTSTANDING
+--------------------------------------------------------------------------------
+
+  - src/helpers.js validateInteger() returns a boolean instead of throwing, disabling
+    that check in this module and in $$.randomInteger. Carried over from
+    'auto-writer-fixes'; still wants its own feature entry.
+  - Nine modules remain undocumented: Carousel, FormValidator, ListScroller,
+    TouchHandler, ToolTip, Resizer, TimeLineList, CShapes, DOMDrawer.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Every string the example types was executed against the real module in the Node harness
+(30 assertions), which caught one cosmetic defect in a preset before it shipped. The
+module's own suite grew to 29 assertions with the deleteText target change. All example
+selectors were cross-checked against the markup, and every asset the page requests
+returns 200 when the repository root is served over HTTP. The page itself was not opened
+in a browser — there is none in this environment — so its visual result is unconfirmed.

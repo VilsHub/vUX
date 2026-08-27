@@ -1,0 +1,38 @@
+FEATURE: example-design-standard
+DATE: 2026-08-26
+SCOPE: require module example pages to be properly designed, not bare demos
+FOLLOWS: changelog/auto-writer-docs
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — conventions only.
+
+  - CLAUDE.md   new section "Example pages (required for every module)"
+
+No source, documentation or example file changed.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+CLAUDE.md now requires every module's example page to be designed work rather than a
+test harness with buttons: a committed visual treatment, the component leading the page
+at a size that cannot be missed, live controls for every config property, a section that
+demonstrates the validation errors, offline self-containment, responsiveness, and JS
+commented for a reader rather than for a maintainer.
+
+It names examples/autowriter/ as the reference implementation, and records that
+examples/modal/, examples/form/ and examples/spa/ predate the standard so they are not
+copied as the house pattern — with the reason they are plainer (structural behaviour
+rather than a visual effect) kept alongside, so the note is not read as a verdict on them.
+
+--------------------------------------------------------------------------------
+CONSEQUENCE
+--------------------------------------------------------------------------------
+
+The three older example pages are now out of step with the stated standard. They are
+left as they are rather than rewritten here, since that is a substantial piece of design
+work per page and belongs to its own feature entry; CLAUDE.md says to bring each up to
+standard when it is next touched.

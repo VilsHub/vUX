@@ -1,0 +1,23 @@
+FEATURE: auto-writer-docs
+DATE: 2026-08-26
+
+AutoWriter
+  Modified:
+    vUX-autoWriter.js
+
+Documentation
+  Added:
+    doc/auto-writer.md
+  Modified:
+    doc/README.md
+
+Examples
+  Added:
+    examples/autowriter/index.html
+    examples/autowriter/main.js
+    examples/autowriter/README.md
+
+Notes:
+  assets/css/autoWriter.css unchanged. The example adds its own rule for
+  .vAutoWriterBlinker (display + height) rather than changing the library sheet, since
+  the right caret size depends on the consuming page's typography.

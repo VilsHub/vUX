@@ -26,6 +26,7 @@ float:left;
 margin-right:5px;
 }
 .vRadioButtonWrapper .vRadioButton::before {
+content:''; /* without this the pseudo-element never renders and radios are invisible — the checkbox rule below already had it */
 position:absolute;
 border-radius:100%;
 transition:all .2s linear;
@@ -266,7 +267,7 @@ top:0;
 
 /* Checkbox */
 .vCheckboxWrapper {
-    height:auto;
+    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget — same fix as .vRadioButtonWrapper above */
     display:block;
     top:0px;
     position: relative;
@@ -573,6 +574,16 @@ top:0;
     border-left:15px solid #ccc;
   }
   .vDateBoxTool .vDateBoxControlCon .rinactive{
+    cursor:not-allowed;
+  }
+  /* shared inactive class managed by ListScroller (it toggles one class on both buttons) */
+  .vDateBoxTool .vDateBoxControlCon .vPrev.sInactive::before{
+    border-right:15px solid #ccc;
+  }
+  .vDateBoxTool .vDateBoxControlCon .vNext.sInactive::before{
+    border-left:15px solid #ccc;
+  }
+  .vDateBoxTool .vDateBoxControlCon .sInactive{
     cursor:not-allowed;
   }
   .vDateBoxTool .vYearsCon,.vDateBoxTool .vMonthsCon, .vDateBoxTool .vDaysCon{

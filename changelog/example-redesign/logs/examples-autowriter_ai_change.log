@@ -1,0 +1,38 @@
+FILE: examples/autowriter/index.html
+FEATURE: example-redesign
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'auto-writer-docs'
+
+================================================================================
+CHANGE 1 — Move the design system out to the shared stylesheet
+================================================================================
+
+OLD_SECTION
+<style>
+    :root{ --ink:#080b11; ... }
+    *{box-sizing:border-box}
+    body{ ... }
+    .wrap{...} .hero{...} .panel{...} .card{...} button{...} .status{...}
+    /* ...~170 lines of tokens and primitives, plus the page's own rules... */
+</style>
+
+NEW_SECTION
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* the caret, the reserved line-heights, .play, .stage, .mini, .seq* — page only */
+</style>
+
+REASON
+This page was written before the shared stylesheet existed, so it carried the whole design
+system inline. Extracting it leaves one source of truth: the file drops from 376 lines to
+218, and the remaining rules are only what is specific to this demo — the caret sizing,
+the min-heights that stop the page shifting as text arrives, the playground grid, the
+output stage, the directive mini-stages and the sequence cards.
+
+No visual change was intended and none is expected: the extracted rules are the same
+declarations, moved.
+
+VERIFICATION
+Every class the markup uses was accounted for against the two stylesheets. The module
+suite (29 assertions) and the example string suite (30 assertions) were re-run unchanged,
+and the page was served over HTTP.

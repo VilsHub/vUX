@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX Resizer example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- making a handle grabbable ----------
+       assets/css/resizer.css gives a handle everything structural — position:absolute,
+       a 2px cross-axis thickness, a 100% main-axis span, the four edge anchors and the
+       col-resize/row-resize cursors — but no resting appearance, and 2px is a hard
+       target for a mouse. Every demo box here widens the hit area and paints a thinner
+       line inside it, so the strip you can grab is bigger than the strip you can see.
+
+       Specificity matters: resizer.css is injected by the module at initialize(), so
+       it lands AFTER this block in source order. A rule written as `.resizeHandle`
+       would tie with it and lose. Scoping to `.rz` wins on specificity instead. */
+    .rz .resizeHandle{ background-color:transparent; }
+    .rz .resizeHandle.x{ width:14px; }
+    .rz .resizeHandle.y{ height:14px; }
+
+    /* The library's own default is a green highlight on :hover and .on. Neutralised
+       here at (0,3,0) so the pages's palette shows through — but a rule generated from
+       config.resizeHandlerProperties.styles is also (0,3,0) and is injected later
+       still, so setting a style through config beats this and stays in control. */
+    .rz .resizeHandle:hover, .rz .resizeHandle.on{ background-color:transparent; }
+
+    .rz-line .resizeHandle::after{
+        content:""; position:absolute; background:var(--line); border-radius:2px;
+        transition:background .15s;
+    }
+    .rz-line .resizeHandle.x::after{ top:10px; bottom:10px; width:3px; }
+    .rz-line .resizeHandle.y::after{ left:10px; right:10px; height:3px; }
+    .rz-line .resizeHandle.x.right::after{ right:5px }
+    .rz-line .resizeHandle.x.left::after{ left:5px }
+    .rz-line .resizeHandle.y.bottom::after{ bottom:5px }
+    .rz-line .resizeHandle.y.top::after{ top:5px }
+    .rz-line .resizeHandle:hover::after{ background:var(--dim) }
+    .rz-line .resizeHandle.on::after{ background:var(--amber) }
+
+    /* ---------- hero ---------- */
+    .hero-stage{ margin-top:38px }
+    .hero-box{
+        position:relative; width:min(760px,100%); height:280px;
+        background:linear-gradient(135deg,var(--panel-2),var(--panel));
+        border:1px solid var(--line); border-radius:14px; overflow:hidden;
+        display:flex; align-items:center; justify-content:center; text-align:center;
+        min-width:220px; min-height:120px;
+    }
+    .hero-box::before{
+        content:""; position:absolute; inset:0;
+        background:radial-gradient(closest-side,rgba(255,180,84,.16),transparent 72%);
+        pointer-events:none;
+    }
+    .hero-box-in{ position:relative; padding:0 46px }
+    .hero-box-in p{ margin:0; color:var(--muted); font-size:.95rem }
+    .hero-dim{
+        font-family:var(--mono); font-size:clamp(1.5rem,4.4vw,2.4rem); font-weight:700;
+        color:var(--amber); letter-spacing:-.02em; display:block; margin-bottom:6px;
+    }
+    .hero-hint{
+        position:absolute; right:22px; bottom:16px; font-family:var(--mono);
+        font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim);
+    }
+
+    /* ---------- playground ---------- */
+    .play{ display:grid; grid-template-columns:minmax(0,330px) minmax(0,1fr); gap:22px; align-items:start }
+    .stage{
+        background:var(--ink); border-radius:0 0 12px 12px; padding:26px;
+        min-height:380px; display:flex; align-items:flex-start; overflow:auto;
+    }
+    .play-box{
+        position:relative; width:300px; height:200px; flex:none;
+        background:var(--panel-2); border:1px solid var(--line); border-radius:10px;
+        display:flex; align-items:center; justify-content:center; overflow:hidden;
+    }
+    .play-box span{ font-family:var(--mono); font-size:.84rem; color:var(--dim) }
+    .readout{ display:flex; gap:26px; flex-wrap:wrap; font-family:var(--mono); font-size:.8rem }
+    .readout b{ color:var(--amber); font-weight:600 }
+    .thresholds{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+
+    /* ---------- custom handle ---------- */
+    .split{
+        display:flex; align-items:stretch; height:300px; overflow:hidden;
+        background:var(--ink); border-radius:0 0 12px 12px;
+    }
+    .split-side{ width:270px; flex:none; padding:20px 22px; overflow:hidden; min-width:150px }
+    .split-main{ flex:1; padding:20px 22px; border-left:0; min-width:0; overflow:hidden }
+    .split h3{ color:var(--cyan); font-family:var(--mono); font-size:.74rem;
+               letter-spacing:.16em; text-transform:uppercase; margin-bottom:12px }
+    .split p{ margin:0 0 12px; color:var(--muted); font-size:.88rem }
+    /* The consumer's own handle. It is a sibling of the resized element, not a child,
+       and it contains a child node — a mousedown landing on that child still counts. */
+    .grip{
+        flex:none; width:16px; cursor:col-resize; display:flex; align-items:center;
+        justify-content:center; background:var(--panel); border-left:1px solid var(--line);
+        border-right:1px solid var(--line); transition:background .15s;
+    }
+    .grip:hover{ background:var(--panel-2) }
+    .grip.on{ background:var(--panel-2) }
+    /* Deliberately NOT pointer-events:none — the icon is the real mousedown target,
+       which is the thing this section is demonstrating. */
+    .grip-dots{ font-size:.9rem; line-height:1; color:var(--dim); letter-spacing:-1px; }
+    .grip:hover .grip-dots, .grip.on .grip-dots{ color:var(--amber) }
+
+    /* ---------- edges ---------- */
+    .edges{ display:grid; grid-template-columns:repeat(auto-fit,minmax(232px,1fr)); gap:18px }
+    .edge-cell{
+        background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:18px; height:260px; display:flex;
+    }
+    /* The module sets a size, never a position. An element anchored at its default
+       top-left grows down and right whatever edge you drag, so a left or top handle
+       reads as if it were dragging the wrong way. Anchoring the box to the opposite
+       side of its cell is the page's job, and it is what makes the growth visible. */
+    .edge-cell{ flex-direction:column }
+    .edge-stage{ flex:1; display:flex; min-height:0 }
+    .edge-stage.a-l{ justify-content:flex-end }   /* box sits right, grows leftward */
+    .edge-stage.a-t{ align-items:flex-end }       /* box sits bottom, grows upward  */
+    .edge-box{
+        position:relative; background:var(--panel-2); border:1px solid var(--line);
+        border-radius:9px; display:flex; align-items:center; justify-content:center;
+        overflow:hidden; min-width:60px; min-height:52px;
+    }
+    .edge-stage.ax .edge-box{ width:130px; align-self:stretch }
+    .edge-stage.ay .edge-box{ height:110px; width:100% }
+    .edge-tag{
+        font-family:var(--mono); font-size:.72rem; color:var(--dim);
+        letter-spacing:.1em; text-align:center; padding:0 8px;
+    }
+    .edge-cell h3{ font-family:var(--mono); font-size:.73rem; letter-spacing:.14em;
+                   text-transform:uppercase; color:var(--muted) }
+    .edge-head{ margin-bottom:12px }
+
+    /* ---------- lifecycle ---------- */
+    .life{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,300px); gap:22px; align-items:start }
+    .life-box{
+        position:relative; width:100%; height:190px; background:var(--panel-2);
+        border:1px solid var(--line); border-radius:10px; overflow:hidden;
+        display:flex; align-items:center; justify-content:center;
+        font-family:var(--mono); font-size:.84rem; color:var(--dim); min-height:90px;
+    }
+    .count{ font-family:var(--mono); font-size:.8rem; color:var(--muted) }
+    .count b{ color:var(--amber) }
+
+    /* ---------- validation ---------- */
+    .errs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:10px }
+    .errs button{ text-align:left; font-family:var(--mono); font-size:.78rem; line-height:1.5 }
+
+    @media (max-width:900px){
+        .play{ grid-template-columns:1fr }
+        .life{ grid-template-columns:1fr }
+    }
+    @media (max-width:620px){
+        .split{ height:auto; flex-direction:column }
+        .split-side{ width:auto !important; height:150px }
+        .grip{ width:auto; height:16px; cursor:row-resize; border:0;
+               border-top:1px solid var(--line); border-bottom:1px solid var(--line) }
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> Resizer <b>/</b> v4.0.0-beta</p>
+        <h1>Grab an edge.<br>Drag it.</h1>
+        <p class="hero-sub">A drag handle on any element, on <b>either axis</b>, clamped to bounds you set.</p>
+
+        <div class="hero-stage">
+            <!-- .rz / .rz-line are this page's own classes, not the library's -->
+            <div class="hero-box rz rz-line" id="heroBox">
+                <div class="hero-box-in">
+                    <span class="hero-dim" id="heroDim">760 &times; 280</span>
+                    <p>Drag the right edge or the bottom edge.</p>
+                </div>
+                <div class="hero-hint">min 220&times;120 &middot; max 980&times;520</div>
+            </div>
+        </div>
+
+        <div class="hero-src">
+            resizer.config.resizeHandlerProperties = { parent: box, direction: <span class="d">"both"</span> }
+        </div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Every <code>config</code> property, wired to one box. Changing a setting tears the
+            Resizer down with <code>destroy()</code> and builds a new one — <code>config</code> is
+            read at <code>initialize()</code>, so a live instance cannot be reconfigured in place.
+        </p>
+
+        <div class="play">
+            <div class="panel">
+                <div class="panel-h"><span>config</span><button class="tiny ghost" id="playReset">Reset box</button></div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="cDirection">direction</label>
+                        <select id="cDirection">
+                            <option value="both" selected>both</option>
+                            <option value="x">x</option>
+                            <option value="y">y</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="cPosX">position.x</label>
+                        <select id="cPosX">
+                            <option value="right" selected>right</option>
+                            <option value="left">left</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="cPosY">position.y</label>
+                        <select id="cPosY">
+                            <option value="bottom" selected>bottom</option>
+                            <option value="top">top</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="cStyle">styles.both <span class="val" id="cStyleVal">#ffb454</span></label>
+                        <div class="row">
+                            <input type="color" id="cStyle" value="#ffb454">
+                            <label class="switch"><input type="checkbox" id="cStyleOn" checked> apply</label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">thresholdValues</label>
+                        <div class="thresholds">
+                            <div>
+                                <label class="lbl" for="cMinW">minWidth <span class="val" id="cMinWVal">160</span></label>
+                                <input type="range" id="cMinW" min="0" max="400" step="10" value="160">
+                            </div>
+                            <div>
+                                <label class="lbl" for="cMaxW">maxWidth <span class="val" id="cMaxWVal">560</span></label>
+                                <input type="range" id="cMaxW" min="0" max="900" step="10" value="560">
+                            </div>
+                            <div>
+                                <label class="lbl" for="cMinH">minHeight <span class="val" id="cMinHVal">120</span></label>
+                                <input type="range" id="cMinH" min="0" max="400" step="10" value="120">
+                            </div>
+                            <div>
+                                <label class="lbl" for="cMaxH">maxHeight <span class="val" id="cMaxHVal">420</span></label>
+                                <input type="range" id="cMaxH" min="0" max="700" step="10" value="420">
+                            </div>
+                        </div>
+                        <p class="note">0 means <em>unset</em>, not zero — it is the sentinel the module uses to skip a clamp.</p>
+                    </div>
+
+                    <div class="field">
+                        <label class="switch"><input type="checkbox" id="cCallback" checked> config.callBack</label>
+                    </div>
+                </div>
+                <div class="status" id="playStatus"><span class="dot"></span><span id="playStatusText">idle</span></div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h">
+                        <span>live</span>
+                        <span class="dots"><i></i><i></i><i></i></span>
+                    </div>
+                    <div class="stage">
+                        <div class="play-box rz rz-line" id="playBox"><span>drag an edge</span></div>
+                    </div>
+                    <div class="status">
+                        <span class="dot"></span>
+                        <div class="readout">
+                            <span>resizedWidth <b id="rW">300</b></span>
+                            <span>resizedHeight <b id="rH">200</b></span>
+                            <span>callBack &times;<b id="rC">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>equivalent code</span></div>
+                    <pre class="snip" id="playCode"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Your own handle</h2>
+        <p class="lede">
+            Set <code>config.myResizeHandler</code> to a class name and the module stops building
+            handles: it listens for a mousedown on <em>your</em> element instead. The grip below is a
+            sibling of the panel it resizes, not a child of it, and it holds an icon — a mousedown
+            landing on that icon still counts, because the module walks up from the event target.
+        </p>
+
+        <div class="panel">
+            <div class="panel-h">
+                <span>config.myResizeHandler = "grip"</span>
+                <span class="pill" id="splitPill">270px</span>
+            </div>
+            <div class="split">
+                <aside class="split-side" id="splitSide">
+                    <h3>Sidebar</h3>
+                    <p>This panel is the resized element.</p>
+                    <p>The Resizer never touches it beyond writing a width.</p>
+                </aside>
+                <div class="grip"><span class="grip-dots">&#9679;&#9679;&#9679;</span></div>
+                <main class="split-main">
+                    <h3>Content</h3>
+                    <p>Nothing here is managed by vUX. The sidebar has a width, this column is <code>flex:1</code>, and the browser does the rest.</p>
+                    <p class="note">The grip carries no <code>x</code> or <code>y</code> class. It does not need one: <code>direction</code> is <code>"x"</code>, which leaves the module only one axis to pick.</p>
+                </main>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>All four edges</h2>
+        <p class="lede">
+            A handle grows the element in the direction it faces. Drag the left handle left, or the
+            top handle up, and the box gets bigger — the travelled distance is inverted for those two
+            edges.
+        </p>
+
+        <div class="edges">
+            <div class="edge-cell">
+                <div class="edge-head"><h3>x &middot; right</h3></div>
+                <div class="edge-stage ax">
+                    <div class="edge-box rz rz-line" id="edgeR"><span class="edge-tag">drag&nbsp;&rarr;</span></div>
+                </div>
+            </div>
+            <div class="edge-cell">
+                <div class="edge-head"><h3>x &middot; left</h3></div>
+                <div class="edge-stage ax a-l">
+                    <div class="edge-box rz rz-line" id="edgeL"><span class="edge-tag">&larr;&nbsp;drag</span></div>
+                </div>
+            </div>
+            <div class="edge-cell">
+                <div class="edge-head"><h3>y &middot; bottom</h3></div>
+                <div class="edge-stage ay">
+                    <div class="edge-box rz rz-line" id="edgeB"><span class="edge-tag">drag&nbsp;&darr;</span></div>
+                </div>
+            </div>
+            <div class="edge-cell">
+                <div class="edge-head"><h3>y &middot; top</h3></div>
+                <div class="edge-stage ay a-t">
+                    <div class="edge-box rz rz-line" id="edgeT"><span class="edge-tag">&uarr;&nbsp;drag</span></div>
+                </div>
+            </div>
+        </div>
+        <p class="note">
+            The module writes a size, never a position. Growing <em>leftward</em> or <em>upward</em> is
+            this page anchoring each box to the far side of its cell with flexbox; without that the box
+            would still change size, but it would visibly grow the other way.
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Teardown</h2>
+        <p class="lede">
+            <code>destroy()</code> unregisters the module's listeners and removes the handles it
+            injected. Anything hosting a Resizer inside a view that comes and goes — an SPA route, a
+            modal — needs it.
+        </p>
+
+        <div class="life">
+            <div class="panel">
+                <div class="panel-h"><span>target</span><span class="count">handles in the DOM: <b id="hCount">0</b></span></div>
+                <div class="panel-b">
+                    <div class="life-box rz rz-line" id="lifeBox">drag the right edge</div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-b">
+                    <div class="row" style="margin-bottom:14px">
+                        <button class="primary" id="lifeInit">initialize()</button>
+                        <button class="danger" id="lifeDestroy">destroy()</button>
+                    </div>
+                    <p class="note" style="margin-top:0">
+                        Both methods are safe to call twice. <code>initialize()</code> on a live
+                        instance returns immediately rather than appending a second set of handles,
+                        listeners and stylesheets.
+                    </p>
+                    <pre class="log" id="lifeLog"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>Bad input fails immediately</h2>
+        <p class="lede">
+            Every setter validates and throws, naming the property and what it wanted. Press a button
+            to run the call and print the real <code>Error</code>.
+        </p>
+
+        <div class="errs">
+            <button data-err="ctor">new Resizer(42)</button>
+            <button data-err="missing">new Resizer("#nothing").initialize()</button>
+            <button data-err="emptyProps">config.resizeHandlerProperties = {}</button>
+            <button data-err="unknownProp">config.resizeHandlerProperties = {handle:1}</button>
+            <button data-err="direction">…resizeHandlerProperties = {direction:"z"}</button>
+            <button data-err="position">…position = {x:"middle"}</button>
+            <button data-err="parent">…{parent:"#playBox"}</button>
+            <button data-err="noParent">initialize() with no parent set</button>
+            <button data-err="thresholdType">config.thresholdValues = "200"</button>
+            <button data-err="thresholdKey">config.thresholdValues = {width:200}</button>
+            <button data-err="thresholdValue">config.thresholdValues = {minWidth:"200"}</button>
+            <button data-err="handlerType">config.myResizeHandler = 5</button>
+            <button data-err="callback">config.callBack = "nope"</button>
+        </div>
+        <pre class="err-out" id="errOut">No error yet.</pre>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+            <a href="../../ChangeLog.md">ChangeLog</a>
+        </p>
+        <p style="margin-top:20px">
+            The Resizer instances are on <code>window</code> as <code>heroResizer</code>,
+            <code>playResizer</code>, <code>splitResizer</code>, <code>lifeResizer</code>
+            and <code>edgeResizers</code>.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

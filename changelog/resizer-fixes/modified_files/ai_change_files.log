@@ -1,0 +1,13 @@
+FEATURE: resizer-fixes
+DATE: 2026-08-27
+
+Resizer
+  Modified:
+    vUX-resizer.js
+
+  Unmodified but newly reached:
+    assets/css/resizer.css   (existed since 2021, never linked by the module until now)
+
+Release record
+  Modified:
+    ChangeLog.md

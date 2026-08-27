@@ -1,0 +1,29 @@
+FILE: examples/shared/example.css
+FEATURE: example-redesign
+DATE: 2026-08-26
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(new file)
+
+NEW_SECTION
+166 lines: tokens (palette, mono/sans stacks) and primitives — .wrap, .hero (+ .eyebrow,
+.hero-sub, .hero-cta, .hero-src), section/h2/.num/.lede/.note, .panel (+ .panel-h,
+.panel-b, .dots), form controls (.field, label.lbl, textarea, select, range, color,
+.row, .switch), buttons (.primary, .ghost, .tiny, .danger), .cards/.card, .status,
+pre.snip, .log, .err-out, footer, .kbd, .pill.
+
+REASON
+The standard added under feature 'example-design-standard' applies to four pages. Without
+a shared file each page would carry its own copy of the same ~170 lines, and "the examples
+read as one set" would survive only as long as nobody edited one of them.
+
+The split is tokens and primitives here, demo-specific rules in each page's own <style>.
+That line is drawn at reusability, not at convenience: .panel and .card earn their place
+because all four pages use them; the autowriter playground grid, the modal content
+blocks, the SPA table and the form's axis-class layouts stay local because they mean
+nothing anywhere else.
+
+Linked directly by each page rather than through the library's asset loader
+(vModel.core.functions.linkStyleSheet), because it belongs to the demos, not to vUX —
+routing it through assetPath would imply the library ships it.

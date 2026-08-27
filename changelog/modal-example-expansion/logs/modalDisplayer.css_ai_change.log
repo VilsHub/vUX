@@ -1,0 +1,49 @@
+FILE: assets/css/modalDisplayer.css
+FEATURE: modal-example-expansion
+DATE: 2026-08-04
+PRIOR STATE: as left by feature 'modal-stacking'
+
+================================================================================
+CHANGE 1 — Anchor the overlay horizontally
+================================================================================
+
+OLD_SECTION
+.vModal{
+  position:fixed;
+  top:0;
+  width:100%;
+  height:100vh;
+  z-index:999;
+  display:none;
+  min-width:320px;
+}
+
+NEW_SECTION
+.vModal{
+  position:fixed;
+  top:0;
+  width:100%;
+  height:100vh;
+  z-index:999;
+  display:none;
+  min-width:320px;
+  left:0;
+
+}
+
+REASON
+Contributed during this round rather than authored as part of the example work, and
+kept because it is correct.
+
+The overlay is position:fixed with top:0 and width:100% but had no horizontal anchor.
+A fixed element with `left: auto` is placed at its static position - where it would
+have fallen in normal flow - rather than at the viewport's left edge. The overlay is
+appended to <body>, so on most pages the static position happens to be the left edge
+and the omission is invisible; but it stops being harmless as soon as the body has a
+left margin or padding, or a writing direction that changes the static position, in
+which case every overlay would sit offset with its right edge overflowing by the same
+amount.
+
+Setting left:0 pins it to the viewport regardless of what the consumer's body layout
+does. It matters more now than before: since the stacking work each open modal
+creates its own overlay, so any such offset would be reproduced on every layer.

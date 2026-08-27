@@ -1,0 +1,40 @@
+FILE: examples/resizer/main.js
+FEATURE: resizer-example
+DATE: 2026-08-27
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file)
+
+NEW_SECTION
+Six commented blocks: hero, playground (with a rebuild function and a generated
+equivalent-code panel), the consumer-handle split view, an edgeResizer() helper
+instantiated four times, the teardown panel, and a table of thirteen throwing cases.
+
+REASON
+The file is written as documentation, per CLAUDE.md, so the comments carry the sharp
+edges rather than restating the calls.
+
+The playground is the structural decision worth recording. config is read once, by
+initialize(), and there is no live reconfiguration — so a control panel is only
+possible by destroying the instance and building a new one on every change. That is
+why buildPlayResizer() opens with `if (playResizer != null) playResizer.destroy()`,
+and it is the clearest demonstration of why destroy() had to be added: without it
+each control change would stack another live Resizer, with its own listeners, on the
+same element.
+
+Controls are bound on "change" rather than "input" for the same reason. A slider or a
+colour picker firing on "input" would tear down and rebuild the instance on every
+pixel of travel. The numeric readouts beside the sliders are bound separately on
+"input" so they still track continuously.
+
+The idle-status timer is parked on the instance the callback is handed (r._idle)
+rather than on the outer playResizer variable, which is reassigned on every rebuild.
+
+Each validation case constructs a throwaway Resizer over a real element rather than
+reusing one of the page's working instances, so a rejected setter cannot leave a live
+component half-configured.
+
+edgeResizer() takes the axis and the edge and varies nothing else, which keeps the
+four instances in section 03 obviously identical apart from the one property the
+section is about.

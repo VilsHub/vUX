@@ -1,0 +1,37 @@
+FILE: CLAUDE.md
+FEATURE: example-redesign
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'changelog-requirement'
+
+================================================================================
+CHANGE 1 — Document the shared stylesheet
+================================================================================
+
+OLD_SECTION
+Every module gets a runnable example under `examples/<module>/` — `index.html`, `main.js`, `README.md` — served from the repository root with `data-id="vUX"` and `data-library-root="../../"`.
+
+NEW_SECTION
+Every module gets a runnable example under `examples/<module>/` — [...unchanged...]
+
+The shared design system lives in `examples/shared/example.css`: tokens (palette, type, spacing) and primitives (`.wrap`, `.hero`, `.panel`, `.card`, `.status`, `.log`, `.err-out`, buttons, form controls). **Link it and build on it** — a page's own `<style>` block is for what is specific to that demo, not for restating the palette. Extend the shared file when a primitive is genuinely reusable; a page that needs a different look than the others needs a good reason.
+
+REASON
+The standard now has an implementation. Without this paragraph the next example would
+reasonably start from a blank <style> block and re-derive a palette, which is how a set of
+pages stops looking like a set.
+
+================================================================================
+CHANGE 2 — Retire the note about older, plainer pages
+================================================================================
+
+OLD_SECTION
+Existing pages vary: `examples/autowriter/` is the reference for this standard. The older `examples/modal/`, `examples/form/` and `examples/spa/` are deliberately plainer, because they demonstrate structural behaviour rather than a visual effect — bring them up to this standard when next touched, but do not treat their current state as the pattern to copy.
+
+NEW_SECTION
+All four existing pages meet this standard and are worth reading before writing a new one: `examples/autowriter/` for a live playground over every config property, `examples/modal/` for a component whose demo content lives outside the styled page wrapper, `examples/form/` for driving widget colours from the page's own palette through builder config, and `examples/spa/` for a page whose content is swapped at runtime and whose fragments must stay unstyled and portable.
+
+REASON
+The paragraph existed to stop the three unconverted pages being copied as the house
+pattern. They are converted, so the warning is stale and would now mislead. Replaced with
+what each page is worth reading FOR, since the four now demonstrate four genuinely
+different styling problems — which is more useful to the next author than a ranking.

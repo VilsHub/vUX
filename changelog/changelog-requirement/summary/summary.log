@@ -1,0 +1,51 @@
+FEATURE: changelog-requirement
+DATE: 2026-08-26
+SCOPE: require ChangeLog.md to be updated for every change, and backfill what was missed
+FOLLOWS: changelog/example-design-standard
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — conventions and release notes only.
+
+  - CLAUDE.md      change-logging section now names four places, not three
+  - ChangeLog.md   thirteen entries backfilled across Added, Fixed and Changed
+
+No source, documentation or example file changed.
+
+--------------------------------------------------------------------------------
+WHY
+--------------------------------------------------------------------------------
+
+The user observed that ChangeLog.md was not being updated. It was not: the three features
+completed before this one wrote their per-feature logs under changelog/<feature>/ and left
+the root file untouched.
+
+The instruction allowed it. The change-logging section scoped the whole obligation to
+"./changelog/<feature-Name>/", and ChangeLog.md was named only under "## Reference", as a
+file to consult before assuming an old API name — never as one to write. Following the
+section literally produced exactly the omission that was reported.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+CLAUDE.md's change-logging section now counts four places instead of three and names
+ChangeLog.md as the fourth, distinguishing the two records by audience: ChangeLog.md is
+release-facing and read by consumers, the per-feature logs are the internal working
+record, and neither substitutes for the other. It carries the style rules the file's
+existing entries follow — consumer's point of view, present tense, no dates or file paths
+except where a file is the deliverable, new bullets rather than edits to old ones — and
+ends with the completion criterion stated outright, since the heading's "required for
+every change" had not been sufficient on its own.
+
+ChangeLog.md gains three Added bullets, eight Fixed bullets covering the fifteen AutoWriter
+defects, and two Changed bullets, all under the existing v4.0.0-beta headings.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+ChangeLog.md's structure is unchanged — the same version heading and the same four
+category headings, with bullets appended to three of them and no existing line rewritten.

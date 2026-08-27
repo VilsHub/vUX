@@ -1,0 +1,50 @@
+FILE: CLAUDE.md
+FEATURE: changelog-requirement
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'example-design-standard'
+
+================================================================================
+CHANGE 1 — Require the root ChangeLog.md to be updated for every change
+================================================================================
+
+OLD_SECTION
+Every change must be recorded under `./changelog/<feature-Name>/`, in three places:
+
+1. **Per-file diffs** — [...]
+2. **Modified file list** — [...]
+3. **Summary** — write a summary of the affected projects to `./changelog/<feature-Name>/summary/summary.log`.
+
+NEW_SECTION
+Every change must be recorded in **four** places — the three per-feature logs under `./changelog/<feature-Name>/`, plus the release changelog at the repository root:
+
+1. **Per-file diffs** — [...]
+2. **Modified file list** — [...]
+3. **Summary** — write a summary of the affected projects to `./changelog/<feature-Name>/summary/summary.log`.
+4. **`ChangeLog.md`** — always update the root `ChangeLog.md` as well. This is the release-facing record and the one a consumer reads; the `changelog/<feature-Name>/` logs are the internal working record and do **not** substitute for it. Add a bullet under the current version's `## Added`, `## Fixed`, `## Removed` or `## Changed` heading (adding the heading if that version lacks it), written from the consumer's point of view: what they can now do, or what used to be wrong and is no longer. Keep the existing style — one bullet per distinct change, present tense, no dates and no file paths except where the file *is* the deliverable (a new guide or example). Append new bullets rather than rewriting existing ones; a separate bullet is correct even when an earlier one covers the same area, which is how the SPA and modal entries already read.
+
+Do not treat a change as finished until `ChangeLog.md` reflects it.
+
+REASON
+Requested by the user, who observed that ChangeLog.md was not being updated. It was not:
+features 'auto-writer-fixes', 'auto-writer-docs' and 'example-design-standard' all wrote
+their three logs under changelog/<feature>/ and left the root file untouched.
+
+The instruction was ambiguous enough to permit that. The old heading and opening sentence
+scoped the whole obligation to "./changelog/<feature-Name>/", and ChangeLog.md appeared
+only under "## Reference", described as the record of API renames between releases — i.e.
+as something to CONSULT before assuming an old API name, not something to WRITE. A reader
+following the section literally would do exactly what was done here.
+
+So the fix is not merely a reminder: the count in the opening sentence moves from three
+places to four, the root file is named in the section that carries the obligation, and
+the two records are distinguished by audience — ChangeLog.md is consumer-facing and the
+per-feature logs are internal — so neither is mistaken for a substitute for the other.
+The closing line states the completion criterion outright, since "required for every
+change" in the heading had not been enough on its own.
+
+The style guidance is included because ChangeLog.md's existing entries follow a
+consistent shape that is not self-evident from the format alone: consumer's point of
+view, present tense, no dates, no file paths except where a file is itself the
+deliverable, and separate bullets rather than edits to existing ones. That last point is
+drawn from the file as it stands — the SPA and modal areas already carry several
+independent bullets each, which is the pattern to continue.

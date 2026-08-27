@@ -1,0 +1,47 @@
+FILE: examples/form/index.html, examples/form/main.js, examples/form/README.md
+FEATURE: example-redesign
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'form-components-example'
+
+OLD_SECTION
+index.html — 156 lines: <fieldset> groups in two .row flex rows, light palette.
+main.js    — 146 lines: six builders configured with light-theme colour literals
+             (#fff, #2f6fd0, #eef2ff, #999, #ccc) scattered through the config strings.
+
+NEW_SECTION
+index.html — 269 lines: shared design system plus a hero containing three live widgets,
+             four numbered sections, and panels in place of fieldsets.
+main.js    — 205 lines: the same six builders, their colours interpolated from a single
+             T token object matching the page palette, plus eight validation demos.
+
+REASON
+Brings the page up to the standard in CLAUDE.md. Every widget and every demonstration is
+kept: optgroup, disabled option, search box, multiple-select tooltip, refreshSelect()
+after adding an option, the radio axis class, the content-supplied checkbox glyph, both
+date pickers with their MutationObserver state lines, leap years, the switches with
+data-dim/data-labels, refresh() on an injected switch, the file input, and the delegated
+native change log.
+
+The colour rework is the substantial part. This component generates its widgets'
+stylesheets from config strings, so re-theming the page means re-theming those strings —
+there is no CSS file to override. Rather than swapping one set of hex literals for
+another, main.js now keeps the palette in one T object and interpolates it, so the widget
+colours and the page stylesheet cannot drift apart. The README calls this out as the
+pattern to copy: the component ships structure, the consuming page supplies the look.
+
+Additions the standard asks for:
+  - Lead with the component: a select, a slide switch and a radio group sit in the hero,
+    built by the same autoBuild() calls as the rest of the page — not a screenshot.
+  - Section 02 gives the two attribute conventions (full attribute name vs dataset name)
+    their own cards, since that is the single most common misconfiguration.
+  - Section 04 performs eight bad calls and prints what was thrown.
+
+Field widths moved from a fixed 230px to 100% so the widgets fill their panels
+responsively; '100%' was confirmed to pass the library's dimension validator first.
+
+VERIFICATION
+All eight error demos and all the accepted config values were checked against the real
+helpers from src/helpers.js with the exact values the page passes — 15 assertions, all
+passing, including that "100%" and "40px" are valid dimensions and that the three-member
+labelProperties array is accepted. Selectors cross-checked against the markup; page
+served over HTTP.

@@ -1,0 +1,41 @@
+FILE: doc/auto-writer.md
+FEATURE: auto-writer-docs
+DATE: 2026-08-26
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(new file)
+
+NEW_SECTION
+(203 lines — see the file)
+
+Sections: How it works · Quick start · Directives · Typing into several elements ·
+Erasing · Cursor · Configuration · Controlling a run · Errors · Recipes · Notes and limits
+
+REASON
+AutoWriter was the only module in the repository with neither a guide nor an example;
+doc/README.md listed its guide as pending. Written to the pattern of the existing guides
+(mechanism first, then quick start, then a configuration table, then the parts that
+surprise people).
+
+Three things are documented that a reader could not infer from the other guides, because
+AutoWriter departs from the house pattern:
+
+  - There is NO initialize(). Every other guide's lifecycle is construct → configure →
+    initialize; this component is driven by method calls and has nothing to activate.
+    Stated at the top, where a reader following doc/README.md's four-step lifecycle will
+    hit it before trying to call a method that does not exist.
+  - The component owns the inside of its target, appending and clearing a
+    '.vAutoWriter' span, so the target must be an empty container.
+  - The caret is steady while typing, blinks ONLY during a '~n~' pause, and hides when
+    the run ends. That is not the usual typewriter convention, so the guide states the
+    three states plainly and gives the trick for leaving a caret blinking on screen
+    (end the string with a long pause).
+
+Also documented: the '*n*' / '~n~' / '|' directive syntax and its lack of an escape
+sequence; that directives are validated when writeText() is called rather than when they
+are reached; that a "unit" is a character or a line break, which is what makes erasing
+back through multi-line text behave; that collections are copied at the start of a run;
+that deleteText() resolves to the written span; that config is write-only and cannot be
+read back; and that stop() is the only way to cancel a run, needed on teardown because a
+run whose target has left the document keeps typing into a detached node.

@@ -1,0 +1,191 @@
+FILE: examples/spa/index.html, examples/spa/main.js, examples/spa/README.md
+FEATURE: spa-example-serving
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'example-redesign'
+
+Reported by the user with a screenshot: the SPA page rendered as an unstyled white page
+with serif text, default buttons and an empty content area, while the other three example
+pages looked as intended.
+
+DIAGNOSIS
+The page had been served from the repository root with `python3 -m http.server 8000` — the
+command the other three examples use, and the one printed in their READMEs — and opened at
+/examples/spa/. Under that server every root-absolute path in the page 404s. Confirmed by
+request:
+
+    /examples/spa/                200
+    /shared/example.css           404
+    /main.js                      404
+    /lib/vUX/vUX-spaEngine.js     404
+
+So main.js never ran (hence the empty #contentBoundary and no progress bar) and
+example.css never loaded (hence serif text and unstyled buttons). Only the page's own
+inline <style> block applied, which is why the top bar alone looked dark.
+
+This is a defect in the example, not merely a wrong command: the page gave no indication
+of what was wrong. It rendered as a broken page rather than as a page that could say why.
+
+================================================================================
+CHANGE 1 — Link the stylesheet by a path that resolves under both servers
+================================================================================
+
+OLD_SECTION
+<link rel="stylesheet" href="/shared/example.css">
+
+NEW_SECTION
+<!-- relative on purpose: resolves to /examples/shared/ under a repo-root static
+     server, and to /shared/ under this example's own dev server (any route depth) -->
+<link rel="stylesheet" href="../shared/example.css">
+
+REASON
+So the misconfigured case is legible rather than raw. Checked against the URL resolution a
+browser actually performs, at every route depth:
+
+    /examples/spa/   -> /examples/shared/example.css   (200 under a repo-root server)
+    /examples/spa/index.html -> /examples/shared/example.css
+    /            -> /shared/example.css                (200 under the dev server)
+    /user/7      -> /shared/example.css
+    /table       -> /shared/example.css
+
+'..' cannot climb above the document root, which is what makes the same relative path
+correct in both layouts. The script tag and data-library-root stay absolute: no single
+path can serve both, because '/user/7' must resolve main.js from a different depth than
+'/', which is exactly what root-absolute paths are for.
+
+================================================================================
+CHANGE 2 — Say so when the engine cannot load
+================================================================================
+
+OLD_SECTION
+(nothing — the page failed silently)
+
+NEW_SECTION
+<div id="bootNotice" class="boot-notice"> [...] This example needs its own dev server.
+[...] cd examples/spa / python3 server.py [...] This notice disappears once the engine
+boots. </div>
+
+and in main.js, at the top of run():
+
+    // main.js is running, so the engine can load: the served-wrong notice is not for us
+    var notice = document.querySelector("#bootNotice");
+    if (notice != null) notice.remove();
+
+REASON
+The notice is in the markup and therefore visible by default; it is removed by the only
+code that can only run when the page was served correctly. That inverts the failure: the
+page now explains itself precisely when it cannot work, and says nothing when it can. It
+needs no detection logic, because main.js executing IS the detection.
+
+================================================================================
+CHANGE 3 — Give the page a hero that demonstrates the component
+================================================================================
+
+OLD_SECTION
+<!-- SPA content is swapped in here -->
+<section id="contentBoundary"></section>
+
+NEW_SECTION
+<header class="hero">
+    [...] <h1>Routing without the reload.</h1> [...]
+    <div class="urlbar">
+        <span class="urlbar-dot"></span>
+        <span class="urlbar-path" id="urlPath">/</span>
+        <span class="urlbar-meta">document loads: <b id="loadCount">–</b></span>
+    </div>
+</header>
+
+<!-- SPA content is swapped in here -->
+<section id="contentBoundary"></section>
+
+REASON
+Independent of the serving bug, this page was the one that least met "lead with the
+component": it opened with a nav bar and an empty content area, where the other three open
+with the component visibly working.
+
+A SPA's claim is invisible by nature — the interesting thing is what does NOT happen. The
+mock address bar makes it visible: the pathname updates live from markNav(), beside a
+counter of real document loads held in sessionStorage. Navigating changes the path while
+the counter stays put, which is the claim, demonstrated rather than asserted. Reloading
+bumps it, on purpose, so the counter is legible as a measure rather than a decoration.
+sessionStorage access is wrapped, since it throws outright in some privacy modes; the
+counter then reads "n/a" and nothing else is affected.
+
+================================================================================
+CHANGE 4 — README leads with how this example differs
+================================================================================
+
+REASON
+The "Run" section now opens with a blockquote stating that this example, unlike the other
+three, does not run under a repository-root static server, and explains the two things a
+plain static server cannot provide (a history fallback, and the library at the declared
+root-absolute path). Previously the correct command was present but unremarkable, and a
+reader moving between examples had no reason to expect a different one.
+
+================================================================================
+CHANGE 5 — Route fragments were not aligned with the rest of the page
+================================================================================
+
+Reported by the user with a screenshot: injected route content sat flush against the
+left edge of the viewport while every other block was inset.
+
+OLD_SECTION
+<!-- SPA content is swapped in here -->
+<section id="contentBoundary"></section>
+
+    #contentBoundary{min-height:340px; padding:44px 0 12px}
+
+NEW_SECTION
+<section class="route">
+    <div class="wrap">
+        <!-- SPA content is swapped in here -->
+        <div id="contentBoundary"></div>
+    </div>
+</section>
+
+    .route{padding:44px 0 16px}
+    #contentBoundary{min-height:180px}
+
+REASON
+#contentBoundary was the only layout block on the page whose content did not pass through
+.wrap, the class that carries the 1080px max-width and the 24px gutter. Every other block
+nests its content in one; this one was itself the section, and fragments are injected
+directly as its children, so nothing constrained them.
+
+Fixed structurally rather than by giving #contentBoundary its own max-width and auto
+margins: the section must stay full-width so its bottom rule spans the viewport like the
+others, so the section and the constrained box have to be different elements. The engine
+only ever replaces #contentBoundary's children, so adding ancestors above it changes
+nothing for the component.
+
+min-height drops from 340px to 180px at the same time. Its purpose is to stop the shell
+collapsing between routes; 340px was enough to leave a visible void under a two-line
+fragment, which is what made the misalignment so conspicuous in the first place.
+
+An audit of the other three example pages found no equivalent case — every section,
+header and footer in them routes its content through .wrap.
+
+================================================================================
+CHANGE 6 — Table header stuck 62px down inside its own scroll box
+================================================================================
+
+OLD_SECTION
+    #stockTable th{ [...] position:sticky; top:62px; z-index:2; }
+
+NEW_SECTION
+    #stockTable th{ [...]
+        /* sticky resolves against .table-scroll, the scrolling ancestor — not the
+           viewport — so this is 0, not the height of the top bar */
+        position:sticky; top:0; z-index:2; }
+
+REASON
+top:62px was chosen to clear the sticky top bar, which would be right if the header stuck
+to the viewport. It does not: .table-scroll is an overflow:auto ancestor, so it is the
+scrolling box the sticky header resolves against, and the offset was pushing the header
+62px down inside that box instead of pinning it to the top of the table.
+
+VERIFICATION
+Both servers run. Under the repo-root server /examples/shared/example.css returns 200;
+under the dev server /shared/example.css returns 200 and the boot notice is present in the
+served HTML. Browser-equivalent URL resolution of the relative stylesheet path checked at
+five base URLs covering both layouts and all route depths. main.js re-checked for syntax.
+The page itself was not opened in a browser — there is none in this environment.

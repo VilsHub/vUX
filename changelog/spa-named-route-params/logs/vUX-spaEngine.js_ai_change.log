@@ -1,0 +1,71 @@
+RETROACTIVE LOG — commit e19f2cd, recorded after the fact (the changelog/ convention
+was introduced later, in commit 478c817).
+
+File: vUX-spaEngine.js
+
+=======================================================================
+Section 1 — getDynamicData(): pattern segment capture
+OLD_SECTION
+if (segmentIsData(patternSegments[x])){
+    state.data[x+1] = routeSegments[x];
+}else if (routeSegments[x] != patternSegments[x]) {
+    state.status = false;
+    break;
+}
+
+NEW_SECTION
+if (segmentIsData(patternSegments[x])){
+    // ";name" captures the segment, ";name:regex" validates it against the regex first
+    let spec            = patternSegments[x].slice(1);
+    let separatorIndex  = spec.indexOf(":");
+    let name            = separatorIndex == -1 ? spec : spec.slice(0, separatorIndex);
+    let segmentPattern  = separatorIndex == -1 ? null : spec.slice(separatorIndex + 1);
+
+    if (segmentPattern != null && !(new RegExp(segmentPattern)).test(routeSegments[x])){
+        state.status = false;
+        break;
+    }
+
+    state.data[name != "" ? name : x+1] = routeSegments[x];
+}else if (routeSegments[x] != patternSegments[x]) {
+    state.status = false;
+    break;
+}
+
+REASON
+Route params were only captured positionally (data[2] = "7"). ";name" and
+";name:regex" segments now capture params by name and optionally validate them, with
+the legacy ":regex" form staying positional for compatibility.
+
+=======================================================================
+Section 2 — callbacks receive route data
+OLD_SECTION
+usedHistoryCallback(element, routeName, callbackKey)
+usedloadCallBack(element, routeName, callbackKey)          (three call sites)
+bootCallback(routeProperties.name)
+
+NEW_SECTION
+usedHistoryCallback(element, routeName, callbackKey, routeProperties.data)
+usedloadCallBack(element, routeName, callbackKey, routeProperties.data)
+bootCallback(routeProperties.name, routeProperties.data)
+
+REASON
+The captured route params were never handed to consumer code; they are now passed as
+the last argument to bootCallback, clickLoadCallbacks, historyCallbacks and the
+clickLoadCallback fallback.
+
+=======================================================================
+Section 3 — saveState(): history URL
+OLD_SECTION
+let path = routeConfigs.routes[routeName].path;
+
+NEW_SECTION
+//push the actual requested route so dynamic URLs (e.g "/user/7") survive in the address bar
+let path = routeProperties.route != undefined ? routeProperties.route : routeConfigs.routes[routeName].path;
+
+(routeProperties gains a `route` field at both construction sites, holding the
+actual requested route, e.g "/user/7" for the pattern "/user/;id".)
+
+REASON
+history.pushState stored the configured path literal (e.g "/user/;id"), so refreshing
+or bookmarking a dynamic route broke; the real requested URL is now preserved.

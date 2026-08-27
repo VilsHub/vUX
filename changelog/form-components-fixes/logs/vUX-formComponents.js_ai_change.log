@@ -1,0 +1,318 @@
+File: vUX-formComponents.js
+
+=======================================================================
+Section 1 — module imports
+OLD_SECTION
+import { validateArray, validateObjectLiteral, validateString } from "./src/helpers.js";
+import "./src/vUX-core-4.0.0-beta.js";
+
+NEW_SECTION
+import { validateArray, validateObjectLiteral, validateString } from "./src/helpers.js";
+import "./src/vUX-core-4.0.0-beta.js";
+import { FormValidator } from "./vUX-formValidator.js";
+import { ListScroller } from "./vUX-listScroller.js";
+
+REASON
+datePicker calls FormValidator.format.integerField() (datetime-local hour/minute
+formatting) and new ListScroller() (decade-series scroller), but neither constructor was
+imported and neither module attaches itself to window, so both calls threw
+ReferenceError — opening any default-range (1900–2050) date picker crashed, as did
+building any datetime-local picker. Both modules were verified to have no import-time
+side effects (their CSS is linked inside initialize()) and no circular imports.
+
+=======================================================================
+Section 2 — select: builder state
+OLD_SECTION
+var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", selectClassName = "", ...
+
+NEW_SECTION
+var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", optionGroupStyle = "", selectClassName = "", ...
+
+REASON
+The config.optionGroupStyle setter assigned to optionGroupStyle, which was never
+declared in the select closure; in strict module scope the assignment threw a
+ReferenceError. Declared it alongside the other style strings.
+
+=======================================================================
+Section 3 — select: autoPlace()
+OLD_SECTION
+(three placement lines using) (parseInt(selectDim[1]) + 1) + "px"
+
+NEW_SECTION
+var wrapperHeight = optionsCon.parentNode.offsetHeight; //this widget's own rendered height, not the last-built widget's config
+(three placement lines using) (wrapperHeight + 1) + "px"
+
+REASON
+selectDim is builder-level state overwritten on every build, so the dropdown of every
+select was offset by the height of the LAST-built select. Placement now measures the
+widget's own rendered wrapper height.
+
+=======================================================================
+Section 4 — select: getOptionsConHeight()
+OLD_SECTION
+return height = includeSearchField ? height + (parseInt(selectDim[0]) + 5) : height + 5;
+
+NEW_SECTION
+return height = includeSearchField ? height + (optionsCon.parentNode.offsetHeight + 5) : height + 5; //search box is one field-height tall
+
+REASON
+Same shared-state problem as Section 3, compounded by a width/height mixup:
+selectDim[0] is the widget WIDTH, while the search box's height is the field height
+(the generated CSS sets .sSearchBox::before height to selectDim[1]). The estimate that
+decides whether the list opens upward or downward was inflated by the widget's width.
+
+=======================================================================
+Section 5 — select: selectStyleSheet()
+OLD_SECTION
+if (optionStyle != "") css += ".v" + selectClassName + " .sOptionCon .sOption{" + optionStyle + "}";
+
+NEW_SECTION
+if (optionStyle != "") css += ".v" + selectClassName + " .sOptionCon .sOption{" + optionStyle + "}";
+if (optionGroupStyle != "") css += ".v" + selectClassName + " .sOptionCon .sOptionGroup{" + optionGroupStyle + "}"; //optgroup label rows
+
+REASON
+config.optionGroupStyle was accepted (see Section 2) but its value was never emitted
+into the generated stylesheet; it now styles the .sOptionGroup rows.
+
+=======================================================================
+Section 6 — select + datePicker: config.sizeAttribute / config.wrapAttribute setters
+OLD_SECTION
+validateString("'config.sizeAttribute' property value must be a string");
+validateString("'config.wrapAttribute' property value must be a string");
+
+NEW_SECTION
+validateString(value, "'config.sizeAttribute' property value must be a string");
+validateString(value, "'config.wrapAttribute' property value must be a string");
+
+REASON
+All four setters (two in select, two in datePicker) passed the error message as the
+value to validate, so the validation was a no-op and any type was accepted.
+
+=======================================================================
+Section 7 — radio: runRadioBuild()
+OLD_SECTION
+if (hasLabel["status"]) {
+    hasLabel["label"].style["min-height"] = radioDim[1];
+    hasLabel["label"].classList.add("vRadioButtonLabel");
+}
+
+NEW_SECTION
+if (hasLabel != null) {
+    if (hasLabel["status"]) {
+        hasLabel["label"].style["min-height"] = radioDim[1];
+        hasLabel["label"].classList.add("vRadioButtonLabel");
+    }
+}
+
+REASON
+withLabel() returns null for an input with no sibling; the radio builder dereferenced
+it unguarded (TypeError), while the checkbox builder already had this null check.
+
+=======================================================================
+Section 8 — checkbox: config.checkboxSize setter message
+OLD_SECTION
+var temp = "'config.radioButtonSize' property value must be an array";
+
+NEW_SECTION
+var temp = "'config.checkboxSize' property value must be an array";
+
+REASON
+Copy-paste from the radio builder — the error named the wrong property.
+
+=======================================================================
+Section 9 — datePicker: builder state
+OLD_SECTION
+var tooTipHandler = null,dateInputIconStyle = [],daysToolTip = false, ...
+
+NEW_SECTION
+var toolTipHandler = null,dateInputIconStyle = [],daysToolTip = false, ...
+
+REASON
+The variable was declared with a typo (tooTipHandler) while autoBuild assigned
+toolTipHandler — an undeclared identifier, which throws in strict module scope, so the
+daysToolTip feature never initialized. Normalized to toolTipHandler everywhere
+(see Sections 11 and 12).
+
+=======================================================================
+Section 10 — datePicker: autoPlace()
+OLD_SECTION
+(three placement lines using) (parseInt(datePickerDim[1]) + 1) + "px"
+
+NEW_SECTION
+var wrapperHeight = wrapper.offsetHeight; //this widget's own rendered height, not the last-built widget's config
+(three placement lines using) (wrapperHeight + 1) + "px"
+
+REASON
+Same shared-dimension bug as the select (Section 3): with mixed-size pickers the panel
+was offset by the last-built picker's height. datePicker sets per-widget inline sizes,
+so measuring the wrapper is exact.
+
+=======================================================================
+Section 11 — datePicker: month click handler, February day count
+OLD_SECTION
+} else if (month == "2") {
+    var leapYear = parseInt(dateComponents[0]) % 4;
+    if (leapYear == 0) {
+        stopDay = 28;
+    } else {
+        stopDay = 27;
+    }
+}
+
+NEW_SECTION
+} else if (month == "2") {
+    var year = parseInt(dateComponents["dateParts"][0]);
+    var leapYear = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+    if (leapYear) {
+        stopDay = 28;
+    } else {
+        stopDay = 27;
+    }
+}
+
+REASON
+dateComponents[0] is undefined (the year lives at dateComponents["dateParts"][0]), so
+the modulo was NaN and February always rendered 28 days, never 29, in every year. Also
+upgraded the %4-only rule to the full Gregorian leap-year rule (century years).
+
+=======================================================================
+Section 12 — datePicker: createToolTip() + autoBuild tooltip block
+OLD_SECTION
+tooTipHandler.refresh();
+...
+toolTipHandler = new module.ToolTip();
+tooTipHandler.config.tipBoxStyles = daysToolTipProperties;
+tooTipHandler.config.className = "datePickerToolTip-"+datePickerClassName;
+tooTipHandler.initialize();
+
+NEW_SECTION
+toolTipHandler != null ? toolTipHandler.refresh() : null; //null until the dynamic ToolTip import resolves
+...
+toolTipHandler = new module.ToolTip();
+toolTipHandler.config.tipBoxStyles = daysToolTipProperties;
+toolTipHandler.config.className = "datePickerToolTip-"+datePickerClassName;
+toolTipHandler.initialize();
+
+REASON
+Completes the Section 9 rename, and guards refresh() against being called before the
+dynamic import of vUX-toolTip.js resolves.
+
+=======================================================================
+Section 13 — datePicker: config.daysToolTipProperties setter
+OLD_SECTION
+var sourceKeys = Object.keys(value);
+validateObject(value, ...);
+if (sourceKeys.length > 2) { throw new Error(temp + " cannot be more than 2 properties"); }
+for (let x = 0; x < sourceKeys; x++) {
+    ... throw new Error ("... any of the keys: "+keys.join(", ") ...);
+
+NEW_SECTION
+validateObject(value, ...);
+var sourceKeys = Object.keys(value);
+if (sourceKeys.length > 2) { throw new Error("datePicker.config.daysToolTipProperties object value cannot have more than 2 properties"); }
+for (let x = 0; x < sourceKeys.length; x++) {
+    ... throw new Error ("... any of the keys: "+validKeys.join(", ") ...);
+
+REASON
+The loop compared x against the array itself (never ran, so key/type validation was
+skipped); the over-limit branch threw on undefined `temp`; the invalid-key message
+referenced undefined `keys` (should be validKeys). Also moved validateObject before
+Object.keys(value) so a non-object input gets the intended error.
+
+=======================================================================
+Section 14 — slideSwitch: label rendering
+OLD_SECTION
+var labels = nativeCheckbox.dataset[hyphenatedToCamel(dataAttributes.label)].split(",");
+labels[0] == undefined?"On":labels[0];
+labels[1] == undefined?"Off":labels[1];
+
+NEW_SECTION
+var labelData = dataAttributes.label != "" ? nativeCheckbox.dataset[hyphenatedToCamel(dataAttributes.label)] : undefined;
+var labels = labelData != undefined ? labelData.split(",") : [];
+labels[0] == undefined ? labels[0] = "On" : null;
+labels[1] == undefined ? labels[1] = "Off" : null;
+
+REASON
+With showLabel on (the default) and no label attribute configured or present, .split()
+on undefined threw. The default expressions also computed "On"/"Off" and discarded the
+result, so a missing second value rendered the literal text "undefined". Defaults are
+now actually assigned, and a missing attribute falls back to "On"/"Off".
+
+=======================================================================
+Section 15 — slideSwitch: autoBuild() setup error message
+OLD_SECTION
+... must be specified using the 'config.sizeAttribute' property");
+
+NEW_SECTION
+... must be specified using the 'config.dataAttributeNames.size' property");
+
+REASON
+slideSwitch has no config.sizeAttribute; the size attribute is configured via
+config.dataAttributeNames.size.
+
+=======================================================================
+Section 16 — slideSwitch: refresh()
+OLD_SECTION
+allCheckboxes[x].classList.contains(radioClassName) ? runRadioBuild(allCheckboxes[x]) : null;
+
+NEW_SECTION
+allCheckboxes[x].classList.contains(slideSwitchClassName) ? runSlideSwitchBuild(allCheckboxes[x]) : null;
+
+REASON
+Copy-paste from the radio builder: radioClassName and runRadioBuild do not exist in the
+slideSwitch closure, so any refresh() call that found a new checkbox threw
+ReferenceError.
+
+=======================================================================
+Section 17 — file: inputLabeler()
+OLD_SECTION
+function inputLabeler(native){
+    var label = native.previousElementSibling.querySelector(".fLabel");
+    label.innerText = native.files[0]["name"];
+    label.title = native.files[0]["name"];
+    toolTipHandler.refresh();
+}
+
+NEW_SECTION
+function inputLabeler(native){
+    if (native.files.length == 0) return; //dialog cancelled, keep current label
+    var label = native.previousElementSibling.querySelector(".fLabel");
+    label.innerText = native.files[0]["name"];
+    label.title = native.files[0]["name"];
+    toolTipHandler != null ? toolTipHandler.refresh() : null; //null when fileToolTip is off or the ToolTip import has not resolved yet
+}
+
+REASON
+Two crashes: cancelling the file dialog left files empty, so files[0]["name"] threw;
+and toolTipHandler.refresh() was called unconditionally although the handler is null
+whenever config.fileToolTip is false (the default) or the dynamic ToolTip import has
+not resolved yet.
+
+=======================================================================
+Section 18 — file: autoBuild() setup error message
+OLD_SECTION
+... specified using the 'config.dataAttributeNames.sizeAttribute' property");
+
+NEW_SECTION
+... specified using the 'config.dataAttributeNames.size' property");
+
+REASON
+The supported key is dataAttributeNames.size, not dataAttributeNames.sizeAttribute.
+
+=======================================================================
+Section 19 — file: refreshFile()
+OLD_SECTION
+refreshFile: function(nativeFile) { //Refreshes a particular select element to update custom content
+    validateElement(nativeFile, "fileObj.refreshFile() method expects a valid DOM element as argument 1");
+    nativeFile.classList.contains(fileClassName) ? runSelectBuild(nativeFile) : null;
+},
+
+NEW_SECTION
+refreshFile: function(nativeFile) { //Refreshes a particular file element to update custom content
+    validateElement(nativeFile, "fileObj.refreshFile() method expects a valid DOM element as argument 1");
+    nativeFile.classList.contains(fileClassName) ? runFileBuild(nativeFile) : null;
+},
+
+REASON
+Copy-paste from the select builder: runSelectBuild does not exist in the file closure,
+so refreshFile() always threw ReferenceError.

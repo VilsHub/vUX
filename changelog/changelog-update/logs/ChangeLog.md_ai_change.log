@@ -1,0 +1,39 @@
+File: ChangeLog.md
+
+OLD_SECTION
+## v4.0.0-beta "Added" ended at:
+- $$.getURLParams()
+"Fixed" contained only:
+- modal multiple display bug
+- draw() call on backward compatibility (> ver 2.0)
+- datepicker auto place issue
+- 404 on loading core.css error
+"Changed" began at:
+- modalDisplayerObj overlayType property changed to overlayBackgroundType
+
+NEW_SECTION
+The v4.0.0-beta section now also records everything on this branch after commit
+98d8799 ("optimized SPAEngine module 010"):
+
+"Added" gains 10 bullets: DataView module; modal stacking; SPAEngine named route
+params and route exit hook; the doc/ documentation set; the three runnable examples
+(spa, modal, form); the SPA example's DataView table page; CLAUDE.md and the
+changelog/<feature>/ logging convention; the FormComponents guide and example.
+
+"Fixed" gains 27 bullets: SPAEngine (boolean link attributes/addToHistory/flag
+leaks; history storing the path literal; dynamic pattern segment-count matching),
+ProgressIndicator (default space resolution; timer leak and style 3 re-show),
+ModalDisplayer (nesting state destruction; the seven crash/leak fixes from the
+stacking work; body reflow on open/close; overlay left anchor), the module registry
+cleanup, and the 16 FormComponents bullets (module, CSS and cosmetic fixes).
+
+"Changed" gains 1 bullet: the modal scroll lock mechanism moving from
+position:fixed to body overflow:hidden.
+
+REASON
+Requested roll-up of all changes after commit 98d8799 into the release-level
+ChangeLog.md, following its existing v4.0.0-beta Added/Fixed/Changed bullet
+pattern. Sources: the 14 commit messages 98d8799..HEAD and the per-feature logs
+under changelog/ (modal-stacking follow-ups modal-scroll-lock and
+modal-example-expansion, form-components-docs, form-components-fixes,
+form-components-example) for the uncommitted work.

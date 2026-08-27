@@ -1,0 +1,11 @@
+File: README.md
+
+OLD_SECTION
+    `import {FormComponents} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-formValidator.js"`
+
+NEW_SECTION
+    `import {FormComponents} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-formComponents.js"`
+
+REASON
+The FormComponents import example pointed at the FormValidator module file; the
+constructor is exported from vUX-formComponents.js.

@@ -1,0 +1,63 @@
+FILE: CLAUDE.md
+FEATURE: example-design-standard
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'project-instructions'
+
+================================================================================
+CHANGE 1 — Add a required standard for module example pages
+================================================================================
+
+OLD_SECTION
+## Versioning
+
+The version is baked into filenames (`vUX-core-4.0.0-beta.js`) and into the absolute CDN import URLs shown in the README (`http://library.vilshub.com/lib/vUX/<version>/vUX-*.js`). Bumping a version touches filenames, the import in `vUX-core.js`, and the module registry list in `vModel.core.data.modules` (`src/helpers.js`).
+
+## Change logging (required for every change)
+
+NEW_SECTION
+## Versioning
+
+The version is baked into filenames (`vUX-core-4.0.0-beta.js`) and into the absolute CDN import URLs shown in the README (`http://library.vilshub.com/lib/vUX/<version>/vUX-*.js`). Bumping a version touches filenames, the import in `vUX-core.js`, and the module registry list in `vModel.core.data.modules` (`src/helpers.js`).
+
+## Example pages (required for every module)
+
+Every module gets a runnable example under `examples/<module>/` — `index.html`, `main.js`, `README.md` — served from the repository root with `data-id="vUX"` and `data-library-root="../../"`.
+
+**Design the page properly. Do not ship a bare-bones demo.** [...]
+
+  - Commit to a look
+  - Lead with the component
+  - Make it interactive
+  - Show the failure modes too
+  - Self-contained and offline
+  - Responsive
+  - Comment the JS for the reader
+
+[...] `examples/autowriter/` is the reference for this standard. [...]
+
+(19 lines added — see the file for the full text)
+
+## Change logging (required for every change)
+
+REASON
+Requested by the user after reviewing the AutoWriter example: module examples are to use
+a real, catchy design rather than a bare demo, from now on and by default.
+
+Placed as its own section between Versioning and Change logging, i.e. among the
+conventions rather than the architecture, and titled "(required for every module)" to
+match the existing "(required for every change)" so both read as obligations rather than
+suggestions.
+
+Written as a standard rather than a preference, with the reasoning included ("a component
+whose demo looks unfinished reads as a component that is unfinished"), because the
+instruction has to hold up in sessions that never see this conversation. The seven
+bullets are the concrete, checkable parts — a look, a lead, interactivity, failure modes,
+offline, responsive, commented JS — so the rule is actionable rather than a matter of
+taste.
+
+The closing paragraph names examples/autowriter/ as the reference implementation and
+records explicitly that examples/modal/, examples/form/ and examples/spa/ predate the
+standard. Without that, the older and plainer pages are the majority and would be copied
+as the house pattern, which is exactly what this change is meant to stop. It also states
+why they are plainer — they demonstrate structural behaviour, not a visual effect — so
+the note is not read as a blanket condemnation of them.

@@ -1,0 +1,59 @@
+RETROACTIVE LOG — commit 3b8bb7b, recorded after the fact (the changelog/ convention
+was introduced later, in commit 478c817).
+
+File: vUX-spaEngine.js
+
+=======================================================================
+Section 1 — route exit hook
+OLD_SECTION
+(no exit notification existed; content was replaced directly, e.g.)
+container.innerHTML = content;
+...
+defaultContentNode.innerHTML = data.content;
+
+NEW_SECTION
+var exitCallback=null, activeRoute=null;
+...
+function fireExitCallback(){
+    // Notify the outgoing route before its content is replaced, so pages can release timers/listeners
+    if (activeRoute == null) return;
+
+    let usedExitCallback    = null;
+    let outgoingRoute       = routeConfigs.routes[activeRoute.name];
+
+    if (outgoingRoute != undefined && outgoingRoute.exitCallback != undefined){
+        usedExitCallback = outgoingRoute.exitCallback;
+    }else if (exitCallback != null){
+        usedExitCallback = exitCallback;
+    }
+
+    if (usedExitCallback != null) usedExitCallback(activeRoute.name, activeRoute.data);
+}
+(fireExitCallback() + activeRoute bookkeeping added at every content-replacement
+site: insertContent() both branches, the history-transition path, and boot — which
+now routes through insertContent(defaultContentNode, data.content, null).)
+
+REASON
+Pages had no way to release timers, observers or components when their content was
+about to be replaced. routes.<name>.exitCallback (falling back to config.exitCallback)
+now fires just before replacement — on click navigation, history transitions and boot
+— receiving (routeName, params) of the outgoing route.
+
+=======================================================================
+Section 2 — getDynamicData(): segment-count mismatch
+OLD_SECTION
+}else{
+    status = false;
+}
+
+NEW_SECTION
+}else{
+    state.status = false;
+}
+
+REASON
+The branch handling a segment-count mismatch assigned the undeclared identifier
+'status' (silently landing on window.status in a browser) instead of state.status,
+so any requested route whose segment count differed from a dynamic pattern was
+treated as MATCHING it with empty params — e.g. /table matched /user/;id:[0-9]+ and
+served the user route's cached content.

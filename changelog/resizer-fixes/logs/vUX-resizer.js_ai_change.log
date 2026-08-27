@@ -1,0 +1,607 @@
+FILE: vUX-resizer.js
+FEATURE: resizer-fixes
+DATE: 2026-08-27
+PRIOR STATE: as committed 2024-12-31, untouched since the v4.0.0-beta line began
+
+The module was non-functional end to end. Three separate ReferenceErrors fired on
+the first mousedown or the first config assignment, the drag arithmetic reduced to
+an identity that ignored the drag entirely, and the component's own stylesheet was
+never loaded so the handlers it creates had no size, no position and no cursor.
+Every change below is a fix; no public API was removed.
+
+================================================================================
+CHANGE 1 — Declare callBack
+================================================================================
+
+OLD_SECTION
+    var pin=false, self=this, myResizeHandler=null, targetDirection=null, targetElementWidth=0,targetElementHeight=0,targetElement=$$.ss(elementSelector);
+
+NEW_SECTION
+    var pin=false, self=this, initialized=false, myResizeHandler=null, callBack=null, handlerClass="resizeHandle";
+    var targetDirection=null, targetEdge=null, activeHandle=null, createdHandlers=[];
+    var targetElementWidth=0, targetElementHeight=0, targetElement=null;
+    //Drag origin: the pointer position and the element size at the moment the handle was grabbed.
+    //Every mousemove is measured against these, so the box grows by how far the pointer travelled
+    //rather than jumping to wherever the pointer happens to be.
+    var startPointerX=0, startPointerY=0, startWidth=0, startHeight=0;
+
+REASON
+`callBack` was read in resize() and assigned in the config.callBack setter but never
+declared anywhere. An ES module body is strict-mode code, so the setter's bare
+assignment threw a ReferenceError the moment a consumer set config.callBack, and
+resize()'s read threw one on every mousemove of every drag even when they did not.
+The callback feature could therefore never fire, and its mere presence broke resizing.
+
+The same declaration line picks up the state the rest of this feature needs: the
+drag-origin quartet (change 3), the handler element actually grabbed (change 6), the
+resolved handler class name (change 11), the list of handlers to remove on destroy
+(change 9) and an initialized flag to make initialize() idempotent.
+
+targetElement no longer resolves here — see change 9.
+
+================================================================================
+CHANGE 2 — Load the module's stylesheet
+================================================================================
+
+OLD_SECTION
+    (no equivalent — the module never linked a stylesheet)
+
+NEW_SECTION
+    async function addVitalStyles() {
+        try {
+            var path = await processAssetPath();
+
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/resizer.css", "resizer");
+            }else{
+                throw new Error(path)
+            }
+
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+REASON
+assets/css/resizer.css has existed since 2021 and carries everything that makes a
+handler a handler: position:absolute, the 2px cross-axis thickness, the 100%
+main-axis span, the four edge anchors (.x.left/.x.right/.y.top/.y.bottom), the
+col-resize/row-resize cursors and the default :hover/.on highlight. Nothing linked
+it. A consumer following the documented usage got zero-size static DIVs appended to
+their container — an invisible, ungrabbable component — unless they happened to
+supply a complete style string through config.resizeHandlerProperties.styles.
+
+Loading follows the established pattern rather than inventing one: the same
+processAssetPath()/linkStyleSheet() shape used by vUX-modalDisplayer.js and
+vUX-formComponents.js, so the file resolves through vModel.core.data.assetPath and
+honours the data-library-root contract instead of a hardcoded relative path.
+
+================================================================================
+CHANGE 3 — Resize against the drag origin instead of the raw pointer coordinate
+================================================================================
+
+OLD_SECTION
+    function resize(e){
+        if(pin){
+            if(targetDirection == "x"){
+                var newWidth = targetElementWidth + (e.clientX - targetElementWidth);
+                var maxWidth = thresholdValues.maxWidth;
+                var minWidth = thresholdValues.minWidth;
+                if(maxWidth != 0){
+                    newWidth = newWidth > maxWidth? maxWidth:newWidth;
+                }
+                if(minWidth != 0){
+                    newWidth = newWidth < minWidth? minWidth:newWidth;
+                }
+                
+                targetElement.style["width"] = newWidth+"px";
+                targetElementWidth = newWidth;
+            }else{
+                var newHeight = targetElementHeight + (e.clientY - targetElementHeight);
+
+NEW_SECTION
+    function resize(e){
+        if(pin){
+            if(targetDirection == "x"){
+                //A handle sitting on the left edge grows the element when the pointer moves left,
+                //so the travelled distance is inverted for that edge.
+                var delta = (targetEdge == "left")? (startPointerX - e.clientX) : (e.clientX - startPointerX);
+                var newWidth = startWidth + delta;
+                var maxWidth = thresholdValues.maxWidth;
+                var minWidth = thresholdValues.minWidth;
+                if(maxWidth != 0){
+                    newWidth = newWidth > maxWidth? maxWidth:newWidth;
+                }
+                if(minWidth != 0){
+                    newWidth = newWidth < minWidth? minWidth:newWidth;
+                }
+                if(newWidth < 0) newWidth = 0;
+
+                targetElement.style["width"] = newWidth+"px";
+                targetElementWidth = newWidth;
+            }else{
+                var delta = (targetEdge == "top")? (startPointerY - e.clientY) : (e.clientY - startPointerY);
+                var newHeight = startHeight + delta;
+
+REASON
+`targetElementWidth + (e.clientX - targetElementWidth)` cancels algebraically to
+`e.clientX`. The element's new width was therefore the pointer's distance from the
+left edge of the *viewport*, which is not a width of anything. Three consequences,
+all reported as the component "jumping": the element snapped to the cursor on the
+first mousemove instead of following it; the grab offset within the handler was
+discarded, so grabbing a handler anywhere but its exact left edge shifted the box;
+and any element not flush against the viewport's left edge was resized by its own
+page offset plus its width. The Y branch had the identical defect against clientY,
+which additionally meant an element part-way down a page could never be made short.
+
+The replacement is the standard drag model: record the pointer position and the
+element's size at mousedown (change 5), then set size = startSize + how far the
+pointer has travelled since. The grab offset cancels out of the subtraction, so
+where inside the handler the drag begins no longer matters, and the element's
+position on the page no longer enters the arithmetic at all.
+
+The edge inversion is new behaviour that the old code had no way to express. A
+handler anchored to the left or top edge moves toward the element's origin as the
+pointer moves in the negative direction, which should make the element bigger, not
+smaller. Without the inversion, position:{x:"left"} produced a control that shrank
+the element when dragged outward — backwards, and the reason the left/right and
+top/bottom position options were only ever usable in one of their two settings.
+
+`if(newWidth < 0) newWidth = 0` guards the case the threshold clamps do not cover.
+minWidth of 0 is the documented "unset" sentinel, so a configuration with no minimum
+had nothing stopping a fast drag past the far edge from writing a negative width,
+which the browser rejects, leaving the element stuck at its last valid size mid-drag.
+
+================================================================================
+CHANGE 4 — Bind removable listeners that tolerate a child as the event target
+================================================================================
+
+OLD_SECTION
+        $$.attachEventHandler("mousedown", "resizeHandle", pinPoint);
+        addEventListener("mouseup", unPin);
+        addEventListener("mousemove", resize);
+
+NEW_SECTION
+        //Bound as named listeners rather than through $$.attachEventHandler() so that destroy()
+        //can detach them again, and so that a mousedown landing on a child of the handle still counts.
+        document.addEventListener("mousedown", pinPoint);
+        document.addEventListener("mouseup", unPin);
+        document.addEventListener("mousemove", resize);
+
+REASON
+$$.attachEventHandler() registers an anonymous wrapper function against window, so
+there is no reference with which to unregister it — a component using it can never
+be torn down, which is what blocked destroy() (change 9) from existing. It also
+matches on e.target's own class list only, so a mousedown landing on any child of a
+handler was ignored; that is invisible for the empty DIVs this module builds itself,
+but it silently broke config.myResizeHandler for any consumer whose handler contains
+a grip glyph or an icon.
+
+Binding pinPoint by name keeps both problems out. The class match it used to perform
+moves into resolveHandler() (change 5), which walks up from e.target via closest()
+and so accepts a descendant. Listening on document rather than window is what makes
+that walk possible, since window is not a node.
+
+The two window-level listeners move to document alongside it purely for symmetry of
+removal; mouseup and mousemove bubble to both.
+
+================================================================================
+CHANGE 5 — Capture the drag origin; resolve axis and edge from the handler
+================================================================================
+
+OLD_SECTION
+    function pinPoint(e){
+        if(!pin){
+            targetElementleWidth = parseInt($$.sm(targetElement).cssStyle("width"));
+            targetElementleHeight = parseInt($$.sm(targetElement).cssStyle("height"));
+            e.target.classList.toggle("on");
+            if(e.target.classList.contains("x")){
+                targetDirection = "x";
+            }else{
+                targetDirection = "y";
+            }
+            targetDirection
+            pin=true;
+        }
+    }
+
+NEW_SECTION
+    function resolveHandler(node){
+        if(node == null || node.classList == null) return null;
+        if(node.classList.contains(handlerClass)) return node;
+        return (typeof node.closest == "function")? node.closest("."+handlerClass) : null;
+    }
+    function resolveDirection(handler){
+        if(handler.classList.contains("x")) return "x";
+        if(handler.classList.contains("y")) return "y";
+        //A consumer-supplied handler need not carry the axis marker class as long as the
+        //configured direction leaves only one possibility.
+        if(resizeHandlerProperties.direction != "both") return resizeHandlerProperties.direction;
+        throw new Error("Resizer cannot tell which axis the handler resizes, give the handler element an 'x' or a 'y' class, or set 'resizerObj.config.resizeHandlerProperties.direction' to 'x' or 'y'");
+    }
+    function resolveEdge(handler, direction){
+        var edges = (direction == "x")? ["left", "right"] : ["top", "bottom"];
+        if(handler.classList.contains(edges[0])) return edges[0];
+        if(handler.classList.contains(edges[1])) return edges[1];
+        return resizeHandlerProperties.position[direction];
+    }
+    function pinPoint(e){
+        if(!pin){
+            var handler = resolveHandler(e.target);
+            if(handler == null) return;
+            e.preventDefault(); //keeps the drag from turning into a text selection
+            targetDirection = resolveDirection(handler);
+            targetEdge = resolveEdge(handler, targetDirection);
+            startWidth = parseInt($$.sm(targetElement).cssStyle("width"));
+            startHeight = parseInt($$.sm(targetElement).cssStyle("height"));
+            //A computed size of "auto" parses to NaN, fall back to the rendered box.
+            if(isNaN(startWidth)) startWidth = targetElement.offsetWidth;
+            if(isNaN(startHeight)) startHeight = targetElement.offsetHeight;
+            targetElementWidth = startWidth;
+            targetElementHeight = startHeight;
+            startPointerX = e.clientX;
+            startPointerY = e.clientY;
+            activeHandle = handler;
+            handler.classList.add("on");
+            pin=true;
+        }
+    }
+
+REASON
+`targetElementleWidth` and `targetElementleHeight` are misspellings ("le" for the
+final "l") of the module's own variables. Being undeclared in strict-mode module
+code, both assignments threw a ReferenceError, so pinPoint() aborted on its very
+first statement. Nothing after it ran: no direction was chosen, `pin` was never set,
+and the component did not respond to a mousedown at all. This is the defect that
+made the module inert rather than merely wrong. The measured sizes now land in the
+drag-origin variables change 3 reads, and are mirrored into targetElementWidth/Height
+so the resizedWidth/resizedHeight getters report the true size from mousedown onward
+instead of 0 until the first mousemove.
+
+Measuring with parseInt on a computed style yields NaN when the element has no
+explicit size and the computed value comes back "auto"; startWidth of NaN propagates
+through the arithmetic and writes "NaNpx", which the browser discards. The offsetWidth
+fallback covers the common case of a container that has never been sized.
+
+Direction detection used to read `e.target.classList` and treat "not x" as y. Because
+$$.attachEventHandler had already narrowed e.target to something carrying the handler
+class this was survivable for built-in handlers, but a consumer handler with neither
+marker class silently resized on the Y axis rather than reporting the ambiguity.
+resolveDirection() now falls back to the configured direction when it is unambiguous,
+which is what actually makes config.myResizeHandler usable (change 10), and throws a
+descriptive error naming both remedies when direction is "both" and the handler is
+unmarked — a case with no correct guess available.
+
+resolveEdge() is new, supplying change 3's inversion. It prefers the edge class on
+the handler so a hand-written handler is self-describing, and falls back to the
+configured position for handlers that carry no edge class.
+
+preventDefault() stops the browser beginning a text selection at mousedown. Without
+it a drag across the page painted every element it crossed in selection highlight,
+and released over text, left that text selected.
+
+The bare `targetDirection` expression statement is deleted; it evaluated a variable
+and discarded the result.
+
+classList.toggle("on") is replaced by add("on") — see change 6.
+
+================================================================================
+CHANGE 6 — Release the handler that was actually grabbed
+================================================================================
+
+OLD_SECTION
+    function unPin(){
+        if(pin){
+            pin=false;
+            $$.ss(".resizeHandle").classList.toggle("on");
+        }
+    }
+
+NEW_SECTION
+    function unPin(){
+        if(pin){
+            pin=false;
+            //Clear the handler that was actually grabbed, not simply the first one in the document.
+            if(activeHandle != null) activeHandle.classList.remove("on");
+            activeHandle=null;
+        }
+    }
+
+REASON
+$$.ss() is document.querySelector, so this cleared the "on" class from the first
+.resizeHandle in document order regardless of which one the user had dragged. With
+direction:"both", or with two Resizer instances on one page, releasing the Y handler
+un-highlighted the X handler instead: the released handler stayed lit permanently
+while an untouched one lost a class it never had.
+
+The toggle/toggle pairing made that worse than a cosmetic slip. Because both ends
+toggled rather than set, the class tracked the parity of the drag count rather than
+the drag state, so highlighting drifted further out of step with reality on every
+drag. add() on grab and remove() on release makes the state absolute, and remembering
+the grabbed element in activeHandle makes it the right element.
+
+================================================================================
+CHANGE 7 — Build handlers with axis-scoped styles, honouring styles.both
+================================================================================
+
+OLD_SECTION
+        if(direction == "both"){
+            xhandler = $$.ce("DIV", {class: "resizeHandle x "+xPosition});
+            yhandler = $$.ce("DIV", {class: "resizeHandle y "+yPosition});
+        }else{
+            if(direction == "x"){
+                xhandler = $$.ce("DIV", {class: "resizeHandle x "+xPosition});
+            }else{
+                yhandler = $$.ce("DIV", {class: "resizeHandle y "+yPosition});
+            }
+        }
+
+        if(xhandler != null){
+            var css = ".resizeHandle:hover{"+xStyle+"}";
+            css += ".resizeHandle.on{"+xStyle+"}";
+            if(xStyle != "") attachStyleSheet("xResizehandler", css);
+            parent.appendChild(xhandler);
+        }
+
+        if(yhandler != null){
+            var css = ".resizeHandle:hover{"+yStyle+"}";
+            css += ".resizeHandle.on{"+yStyle+"}";
+            if(yhandler != "") attachStyleSheet("yResizehandler", css);
+            parent.appendChild(yhandler);
+        }
+
+NEW_SECTION
+    function buildHandler(parent, axis, position, style){
+        var handler = $$.ce("DIV", {class: handlerClass+" "+axis+" "+position});
+        if(style != ""){
+            //Scoped to the axis, otherwise the x and y rules overwrite one another.
+            var selector = "."+handlerClass+"."+axis;
+            var css = selector+":hover{"+style+"}";
+            css += selector+".on{"+style+"}";
+            attachStyleSheet(axis+"Resizehandler", css);
+        }
+        parent.appendChild(handler);
+        createdHandlers.push(handler);
+    }
+    function createResizeHandler(parent){
+        if (!$$.sm(parent).isPositioned()) parent.style["position"] = "relative";
+        var direction = resizeHandlerProperties.direction;
+        var styles    = resizeHandlerProperties.styles;
+
+        if(direction == "x" || direction == "both"){
+            buildHandler(parent, "x", resizeHandlerProperties.position.x, (styles.x != "")? styles.x : styles.both);
+        }
+        if(direction == "y" || direction == "both"){
+            buildHandler(parent, "y", resizeHandlerProperties.position.y, (styles.y != "")? styles.y : styles.both);
+        }
+    }
+
+REASON
+Four defects in one block.
+
+`if(yhandler != "")` tests the Y handler *element* against an empty string where it
+meant to test yStyle, as the X branch correctly does one block above. An element is
+never equal to "", so the guard was permanently true and an empty yStyle emitted
+`.resizeHandle:hover{}` — harmless in itself, but it is the rule that then collided
+with the X rule below.
+
+Both branches generated their rules against the bare `.resizeHandle` selector rather
+than `.resizeHandle.x` / `.resizeHandle.y`. With direction:"both" the two stylesheets
+had identical specificity and both applied to both handlers, so whichever was
+appended second won and the styles.x/styles.y distinction did nothing. Combined with
+the always-true guard above, configuring only styles.x and leaving styles.y empty
+produced an empty Y rule that landed last and blanked the X styling. Scoping each
+rule to its axis makes the two independent.
+
+resizeHandlerProperties.styles.both was accepted and validated by the config setter
+but read by nothing — a documented key with no effect. It now supplies the style for
+either axis that has no style of its own, which is the only reading under which the
+key means anything.
+
+The branching is flattened to two independent conditions. The old shape had "both"
+duplicate the two element-creation lines verbatim, and the else-branch treat any
+non-"x" direction as "y"; expressing each axis as its own test removes the
+duplication and the implicit fallthrough.
+
+Handlers are recorded in createdHandlers so destroy() can remove them (change 9),
+and are built with handlerClass rather than the literal so a custom class name
+(change 11) is honoured.
+
+================================================================================
+CHANGE 8 — (folded into change 7)
+================================================================================
+
+The xhandler/yhandler/xStyle/yStyle locals and the xPosition/yPosition locals
+disappear with the rewrite above; each is now a buildHandler() argument.
+
+================================================================================
+CHANGE 9 — Resolve the target in initialize(); add destroy()
+================================================================================
+
+OLD_SECTION
+    this.initialize = function(){
+        addEventHanler();
+    }
+
+NEW_SECTION
+    this.initialize = function(){
+        if(initialized) return;
+        //Resolved here rather than in the constructor so a target added to the DOM after
+        //construction still works, and so a missing target reports itself instead of failing later.
+        targetElement = $$.ss(elementSelector);
+        validateElement(targetElement, "Resizer() found no element matching the selector '"+elementSelector+"'");
+        addVitalStyles();
+        addEventHanler();
+        initialized = true;
+    }
+    this.destroy = function(){
+        if(!initialized) return;
+        unPin();
+        document.removeEventListener("mousedown", pinPoint);
+        document.removeEventListener("mouseup", unPin);
+        document.removeEventListener("mousemove", resize);
+        for(var i=0; i<createdHandlers.length; i++){
+            if(createdHandlers[i].parentNode != null) createdHandlers[i].parentNode.removeChild(createdHandlers[i]);
+        }
+        createdHandlers = [];
+        initialized = false;
+    }
+
+REASON
+targetElement was resolved in the constructor, and never checked. A selector matching
+nothing stored null and reported nothing; the failure surfaced much later as a
+TypeError inside $$.sm() on the first mousedown, pointing at the library rather than
+at the consumer's selector. Resolving in initialize() also means a target created
+after the Resizer is constructed now works, which matches how the other modules in
+this library defer their DOM lookups, and validateElement() names the offending
+selector in the error the way the module's other validators name their arguments.
+
+The initialized guard makes initialize() idempotent. Calling it twice previously
+appended a second set of handlers, registered a second set of listeners and appended
+a duplicate <style> element for each axis — attachStyleSheet() appends unconditionally.
+
+destroy() is new. Every listener this module registers was previously permanent, and
+the handlers it injects into the consumer's container had no removal path, so a
+Resizer over an element belonging to a view — an SPA route, a modal — leaked its
+listeners and left orphaned handler DIVs behind on every teardown. It could not be
+written while binding went through $$.attachEventHandler (change 4). unPin() runs
+first so a destroy mid-drag does not leave a handler stuck in its "on" state.
+
+================================================================================
+CHANGE 10 — Fix the resizeHandlerProperties key count and unknown-key handling
+================================================================================
+
+OLD_SECTION
+                var totalTargetKeys = targetConfig[0].length;
+...
+                targetConfig.forEach(function (config){
+                    config[0] != config[0].toLowerCase();
+                    if(config[0] == "styles"){
+                        validateObjectLiteral(config[1], "resizerObj.config.resizeHandlerProperties.position property must be an object literal");
+                        var target = Object.entries(config[1]);
+                        var totalPositionKeys = target.length;
+                        if(totalPositionKeys > 3 ) throw new Error ("resizerObj.config.resizeHandlerProperties.position keys must not be more than 3");
+
+                        target.forEach(function (element){
+                            element[0] = element[0].toLowerCase();
+                            if (element[0] != "x" && element[0] != "y" && element[0] != "both") throw new Error ("resizerObj.config.resizeHandlerProperties.position keys can either be 'x', 'y' or 'both'");
+                            validateString(element[1], "resizerObj.config.resizeHandlerProperties.position."+element[0]+" property value must be a string");
+...
+                    }else if(config[0] == "direction"){
+                        ...
+                        resizeHandlerProperties[config[0]] = config[1];
+                    }
+                });
+
+NEW_SECTION
+                var totalTargetKeys = targetConfig.length;
+...
+                targetConfig.forEach(function (config){
+                    config[0] = config[0].toLowerCase();
+                    if(config[0] == "styles"){
+                        validateObjectLiteral(config[1], "resizerObj.config.resizeHandlerProperties.styles property must be an object literal");
+                        var target = Object.entries(config[1]);
+                        var totalStyleKeys = target.length;
+                        if(totalStyleKeys > 3 ) throw new Error ("resizerObj.config.resizeHandlerProperties.styles keys must not be more than 3");
+
+                        target.forEach(function (element){
+                            element[0] = element[0].toLowerCase();
+                            if (element[0] != "x" && element[0] != "y" && element[0] != "both") throw new Error ("resizerObj.config.resizeHandlerProperties.styles keys can either be 'x', 'y' or 'both'");
+                            validateString(element[1], "resizerObj.config.resizeHandlerProperties.styles."+element[0]+" property value must be a string");
+...
+                    }else if(config[0] == "direction"){
+                        ...
+                        resizeHandlerProperties[config[0]] = config[1];
+                    }else{
+                        throw new Error("resizerObj.config.resizeHandlerProperties keys must be one of the followings: "+ validKeys.join(", ") + " '"+config[0] + "' is not one of them");
+                    }
+                });
+
+REASON
+`targetConfig[0].length` is the length of the first [key, value] pair produced by
+Object.entries, which is always 2 — not the number of keys supplied. The guard
+below it therefore compared 2 against 4 and 0 on every call: it never rejected an
+over-long object, and it could never see the empty object it was written to catch.
+Passing {} instead made `targetConfig[0]` undefined and threw a bare TypeError on
+the property read, one line before the descriptive error meant to handle exactly
+that case.
+
+`config[0] != config[0].toLowerCase();` is a comparison whose result is discarded,
+where the surrounding code (and the inner loops) use assignment to normalise a key.
+Key matching was thus case-sensitive against lowercase literals, so {Direction:"y"}
+matched no branch.
+
+Matching no branch was silent: the if/else-if chain had no final else. A misspelled
+or miscased key was accepted, ignored, and the component ran on with its defaults —
+the single hardest failure mode to diagnose from the consumer's side, and contrary
+to the strict-validation contract every other setter in this file follows. The added
+else throws in the same form as the thresholdValues setter's unknown-key error.
+
+The "styles" branch was a copy of the "position" branch with its error strings left
+unchanged, so every diagnostic it raised named `position` while validating `styles`,
+including the key list, which is the wrong list ('x', 'y', 'both' are not position
+keys). Its local was named totalPositionKeys for the same reason. Strings and local
+corrected to say styles; no logic change in this part.
+
+================================================================================
+CHANGE 11 — Make config.myResizeHandler actually take effect
+================================================================================
+
+OLD_SECTION
+        myResizeHandler:{
+            set: function(value) {
+                validateString(value, "resizerObj.config.myResizeHandler property value must be a string");
+                myResizeHandler = value;
+            }
+        },
+
+NEW_SECTION
+        myResizeHandler:{
+            set: function(value) {
+                validateString(value, "resizerObj.config.myResizeHandler property value must be a string");
+                myResizeHandler = value;
+                //The consumer names their own handler class, drop a leading dot so both
+                //"handle" and ".handle" are accepted.
+                handlerClass = value.replace(/^\./, "");
+            }
+        },
+
+REASON
+myResizeHandler was validated and stored, and read in exactly one place — the
+`myResizeHandler == null` test that decides whether to build handlers. Its value was
+never used for anything. Binding was hardcoded to the literal class "resizeHandle",
+so a consumer who supplied their own handler got the intended half of the behaviour
+(no handlers injected) and not the other half (nothing listening to theirs): the
+config option's entire purpose was to produce a component that did nothing.
+
+Recording the value into handlerClass, which resolveHandler() matches against and
+buildHandler() writes, closes the loop. Accepting a leading dot is a small tolerance
+for the natural reading of "class name" as a CSS selector; the value is concatenated
+into a selector in resolveHandler() and into a class attribute in buildHandler(), and
+those two want it written differently.
+
+With change 5's direction fallback, a consumer handler now needs no vUX marker
+classes at all when direction is "x" or "y".
+
+================================================================================
+VERIFICATION
+================================================================================
+
+There is no test runner in this repository and no Resizer example page to drive, so
+verification was static plus an extracted-arithmetic check.
+
+  - Module parses as an ES module (node --input-type=module, core import stubbed).
+  - The delta arithmetic from change 3 was lifted verbatim into a standalone script
+    and exercised over 8 cases: right-edge grow and shrink, left-edge grow and
+    shrink (the inversion), clamping at maxWidth, clamping at minWidth, the negative
+    guard, and a zero-distance drag leaving the size untouched. All 8 pass. The same
+    cases against the old expression return the pointer coordinate in every one.
+  - Grepped the fixed file for each original defect signature to confirm none
+    survives: targetElementleWidth, targetElementleHeight,
+    "e.clientX - targetElementWidth", 'yhandler != ""', "targetConfig[0].length",
+    '$$.ss(".resizeHandle")' and 'classList.toggle("on")' are all absent.
+
+Not verified: real mouse-drag behaviour in a browser, and that resizer.css resolves
+at runtime under a live data-library-root. Both need a page to load the module, and
+the Resizer module has no example under examples/ — writing one is the obvious next
+piece of work and would turn every check above into something demonstrable.

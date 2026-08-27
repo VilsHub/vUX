@@ -1,0 +1,18 @@
+RETROACTIVE LOG — commit 65fdc2f, recorded after the fact (the changelog/ convention
+was introduced later, in commit 478c817).
+
+File: vUX-dataView.js (NEW FILE)
+
+OLD_SECTION
+(none — file did not exist)
+
+NEW_SECTION
+New DataView module: keyed data-to-DOM binding for hot-update views. DataView keeps a
+JSON model in memory and binds each row to its DOM node by key, so updates are
+targeted operations instead of rebuilds or diffs: updateRow writes only changed
+cells, sort/setData reorder by moving existing nodes (preserving focus/input state),
+filter toggles visibility. Includes the data-v-row / data-v-field template contract.
+
+REASON
+Adds a component for tables/dashboards with frequent fine-grained updates, where
+innerHTML rebuilds destroy focus/selection state and are wastefully slow.

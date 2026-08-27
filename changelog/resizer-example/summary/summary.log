@@ -1,0 +1,127 @@
+FEATURE: resizer-example
+DATE: 2026-08-27
+SCOPE: runnable example page for the Resizer module
+FOLLOWS: changelog/resizer-fixes
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected.
+
+  - examples/resizer/index.html   new, five sections on the shared design system
+  - examples/resizer/main.js      new, commented as documentation
+  - examples/resizer/README.md    new
+  - vUX-resizer.js                one fix surfaced by building the page
+  - ChangeLog.md                  two bullets under v4.0.0-beta
+
+--------------------------------------------------------------------------------
+WHY
+--------------------------------------------------------------------------------
+
+CLAUDE.md requires a runnable example of every module. Resizer had none — it was one
+of two repaired modules in that state, and the omission had a direct cost: the
+preceding resizer-fixes work could only be verified statically, because there was no
+page from which to drive a real drag or to confirm that resizer.css resolves at
+runtime under a live data-library-root.
+
+--------------------------------------------------------------------------------
+THE PAGE
+--------------------------------------------------------------------------------
+
+  Hero              one box resizable on both axes, clamped 220x120 to 980x520,
+                    live size readout driven by config.callBack
+  01 Playground     every config property as a live control, an equivalent-code
+                    panel, and resizedWidth/resizedHeight/callback-count as they move
+  02 Your own       config.myResizeHandler driving a split view from a grip that is a
+     handle         sibling of the resized panel and contains an icon
+  03 All four       position.x left/right and position.y top/bottom, each growing in
+     edges          the direction the handle faces
+  04 Teardown       destroy() / initialize(), with a live count of handles in the DOM
+  05 Bad input      thirteen deliberately-bad calls, printing the real thrown Error
+
+Section choices track what resizer-fixes changed, so the page doubles as that work's
+demonstration. Section 03 exists for the left/top inversion, which is new behaviour.
+Section 02 exercises an option that was previously stored and used for nothing, with
+a handle shaped to exercise both of the binding defects (a sibling rather than a
+child; an icon inside it). Section 04 exists because destroy() is new. Two of the
+validation cases — an empty resizeHandlerProperties object and an unknown key — cover
+a bare TypeError and a silent no-op respectively.
+
+--------------------------------------------------------------------------------
+ONE FIX FOUND WHILE BUILDING IT
+--------------------------------------------------------------------------------
+
+The playground rebuilds its Resizer on every control change, which made a leak
+obvious within a dozen clicks: attachStyleSheet() appends a <style> unconditionally,
+so every rebuild that configured a handle style left the previous one in <head> for
+ever. Invisible before destroy() existed, because initialize() was called once and
+never again. buildHandler() now removes the element carrying the same data-id before
+attaching. See logs/vUX-resizer.js_ai_change.log.
+
+--------------------------------------------------------------------------------
+CONSUMER-SIDE TECHNIQUES THE PAGE DOCUMENTS
+--------------------------------------------------------------------------------
+
+Three things the library deliberately does not do, each of which a consumer will
+otherwise hit and misread as the component being broken. All three are commented in
+the page and explained in its README.
+
+  1. Hit area. resizer.css gives a handle everything structural but no resting
+     appearance, and 2px is a hard target for a mouse. The page separates the strip
+     you can grab (14px) from the strip you can see (3px).
+  2. Specificity and source order. resizer.css is injected during initialize(), so it
+     lands after the page's own <style> block; a rule written as bare .resizeHandle
+     ties and loses. Page rules are scoped to a .rz class. A rule generated from
+     config styles is later still, so config keeps the last word — which is what the
+     playground's colour picker relies on.
+  3. Anchoring. The module writes a size, never a position. Without anchoring the box
+     to the far side of its container, a left- or top-handled element still resizes
+     but visibly grows the opposite way, which reads as the inversion being broken.
+
+--------------------------------------------------------------------------------
+LIMITATION RECORDED RATHER THAN SOLVED
+--------------------------------------------------------------------------------
+
+Handles are matched by class name globally, so a style pushed through
+config.resizeHandlerProperties.styles generates rules against .resizeHandle.x /
+.resizeHandle.y and reaches every Resizer on the page. The example therefore styles
+most of its boxes from its own CSS and uses the config route only in the playground.
+The README states this and gives the workaround: a distinct handle class per instance
+via config.myResizeHandler.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+No browser is available in this environment — no chromium, no playwright, no
+puppeteer — so the page has NOT been opened, and no drag has been performed. What was
+checked:
+
+  - index.html tag balance: section, style, script, pre, aside, main, footer, header
+    and div all balanced (72 open / 72 close on div).
+  - Every id referenced by main.js exists in index.html, and every id in index.html is
+    either used by main.js or is a documented markup hook.
+  - All 13 data-err buttons have a matching case, and all 13 cases have a button.
+  - main.js parses as an ES module (it reaches a runtime `document is not defined`,
+    which is exactly as far as it can get without a DOM).
+  - vUX-resizer.js still parses after the stylesheet fix.
+
+STILL UNVERIFIED, and the reason to open the page before trusting it:
+
+  - real mouse-drag behaviour on any of the eight Resizer instances
+  - that resizer.css resolves at runtime under data-library-root="../../"
+  - the specificity claims in the README, which depend on injection order at runtime
+  - responsive behaviour at the two breakpoints (900px, 620px)
+
+Run `python3 -m http.server 8000` from the repository root and open
+/examples/resizer/index.html to close all four.
+
+--------------------------------------------------------------------------------
+FOLLOW-UP
+--------------------------------------------------------------------------------
+
+Resizer still has no guide under doc/. doc/README.md lists it among the modules whose
+guides are "coming next", and it is now the module with the most recently changed
+behaviour — the left/top inversion and destroy() are both undocumented outside these
+logs and the example's README.

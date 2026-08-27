@@ -1,0 +1,70 @@
+FILE: ChangeLog.md
+FEATURE: changelog-requirement
+DATE: 2026-08-26
+PRIOR STATE: last touched before feature 'auto-writer-fixes'; no AutoWriter entries
+
+Backfill. Three features had landed without reaching this file: 'auto-writer-fixes',
+'auto-writer-docs' and 'example-design-standard'. All three are recorded here now, under
+the existing v4.0.0-beta headings.
+
+================================================================================
+CHANGE 1 — Added
+================================================================================
+
+OLD_SECTION
+- CLAUDE.md project instructions and the per-change logging convention under changelog/<feature>/
+
+NEW_SECTION
+- CLAUDE.md project instructions and the per-change logging convention under changelog/<feature>/
+- AutoWriter.stop() — cancels a run in progress and clears its timers
+- Auto writer guide (doc/auto-writer.md) and runnable example (examples/autowriter/) with a live playground over every config property
+- Example page design standard in CLAUDE.md — module examples are designed pages, not bare demos — and the requirement to record every change in ChangeLog.md
+
+REASON
+stop() is the one genuinely new method. The guide and example are listed as their own
+bullet rather than folded into the existing "Documentation set" and "Runnable examples"
+lines, following the precedent already in the file (the SPA example's live table page is
+a separate bullet from the "Runnable examples" line). The third bullet records the two
+convention changes, which affect anyone working in the repository even though they change
+no shipped code.
+
+================================================================================
+CHANGE 2 — Fixed
+================================================================================
+
+OLD_SECTION
+- checkbox size error message naming the radio property; README FormComponents import example pointing at vUX-formValidator.js
+
+NEW_SECTION
+- checkbox size error message naming the radio property; README FormComponents import example pointing at vUX-formValidator.js
+- AutoWriter '~n~' delay directive throwing and halting typing under the default configuration (it dereferenced a caret node that only exists when showCursor is on)
+- AutoWriter freezing and then crashing the tab on an unterminated '~' or '*' directive (unbounded scanners); directives are now validated when writeText() is called, not when they are reached
+- AutoWriter instances unusable twice — a second writeText() ignored its arguments, wrote the literal string "undefined" and retyped the previous string into the previous element
+- AutoWriter collection mode unreachable — writeText() validated argument 1 as an element before consulting the type test, so every NodeList was rejected and the whole "multiple" path had never run
+- AutoWriter deleteText() erasing n+1 units, accepting a non-integer count and then erasing for ever, and (on a cursor-enabled target) removing the caret instead of the text
+- AutoWriter erasing by popping innerHTML characters, which shredded tags a byte at a time; typing and erasing now work on DOM nodes
+- AutoWriter inline '*n*' racing its own erasing, a trailing directive writing the literal string "undefined", and '~n~' miscounting a delay written with leading zeros
+- AutoWriter partial config.cursorStyle blanking the members it did not name; callback-less runs relying on setTimeout(null); blink and erase timers leaking on teardown
+
+REASON
+Fifteen defects grouped into eight bullets, at the granularity the file already uses for
+the ModalDisplayer and datePicker repairs: one bullet per symptom a consumer could have
+hit, with related minor faults gathered into the last one. Each is written as the
+observable failure rather than as the internal cause, so a reader can recognise a bug
+they had rather than having to follow the implementation.
+
+================================================================================
+CHANGE 3 — Changed
+================================================================================
+
+OLD_SECTION
+- Modal scroll lock mechanism from position:fixed to body overflow:hidden — [...]
+
+NEW_SECTION
+- AutoWriter '|' now inserts a real <br> element, erasable as a single unit, instead of a parsed "<br/>" string
+- AutoWriter deleteText() now erases from the '.vAutoWriter' span when the target holds one, so the same element can be given to writeText() and deleteText()
+- Modal scroll lock mechanism from position:fixed to body overflow:hidden — [...]
+
+REASON
+Two behavioural differences that are corrections but could still surprise someone
+depending on the old behaviour, so they belong under Changed rather than Fixed.

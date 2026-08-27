@@ -1,0 +1,61 @@
+FILE: examples/autowriter/index.html, examples/autowriter/main.js, examples/autowriter/README.md
+FEATURE: auto-writer-docs
+DATE: 2026-08-26
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(new files)
+
+NEW_SECTION
+examples/autowriter/index.html   376 lines — page and its stylesheet
+examples/autowriter/main.js      ~250 lines — six writers driving the page
+examples/autowriter/README.md    how to run it, and what each section demonstrates
+
+REASON
+AutoWriter had no example. Unlike the other example pages in this repository, which are
+deliberately plain because they demonstrate structural behaviour (modal stacking, form
+control wiring), this component's entire output is a visual effect — a demo that does not
+look good does not demonstrate it. The page is therefore designed rather than merely
+functional: a dark editorial/terminal treatment, a hero whose headline types itself, and
+one accent colour per demo so several writers running at once stay legible.
+
+Structure, each section demonstrating something the guide states:
+
+  Hero          headline typed on load, ending in '~1200~' so the caret is left blinking;
+                a subject line that cycles words through one recursive writeText() call,
+                each cycle being "word + hold + backspace exactly the word's length" —
+                the pattern the guide recommends over looping in code, because the erase
+                stays in step with the typing.
+  Playground    the script in an editable textarea against live controls for every config
+                property, plus Run / stop() / deleteText(5) / Clear, a status line, and a
+                generated code snippet. Four presets: Basic, Rewrite (type, pause,
+                backspace 14, finish differently), Multi-line, Boot log.
+  Directives    '|', '*n*' and '~n~' in three cards, each with its OWN writer and target,
+                since two writers must never share an element.
+  Sequence      one NodeList and one array through a single writeText() call, typed in
+                order with the callback firing once at the end.
+  Bad input     five buttons whose calls all throw synchronously, printing the real Error
+                message. This is the section that shows validation happens at the call,
+                not inside a timer.
+
+Two consumer-side techniques the README calls out because the library cannot do them for
+you: giving '.vAutoWriterBlinker' a display and height (the library styles it with a left
+border only, leaving its size at the mercy of the surrounding line), and reserving a
+min-height on every target so the page does not shift as text arrives.
+
+The page uses system font stacks and no external assets, so it works offline behind
+`python3 -m http.server` like the other examples. It follows the loading contract:
+data-id="vUX" and data-library-root="../../", which processAssetPath() strips to
+"../../assets/".
+
+VERIFICATION
+Every string the page types was run through the real module in the harness: the four
+presets, the hero line, the five cycling words, the three directive demos and the
+collection-mode call all produce their intended output, and all five "bad input" calls
+throw. 30 assertions, all passing. One defect was found this way and fixed before
+shipping: the Boot log preset read "autoWriter.css~500~ok", which renders as
+"autoWriter.cssok" — corrected to "autoWriter.css...~500~ok".
+Every id and data-attribute selector in main.js was cross-checked against index.html (23
+ids, 4 presets, 5 error buttons, 3 directive demos — no misses), and every asset the page
+requests was confirmed to return 200 over `python3 -m http.server` from the repository
+root.

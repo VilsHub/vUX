@@ -1,0 +1,9 @@
+Feature: project-instructions (RETROACTIVE — commit 981450f, logged after the
+changelog/ convention was introduced in 478c817)
+Target module: project meta
+
+Added CLAUDE.md (repository working instructions: loading contract, architecture,
+component conventions, styling, versioning) and normalized line endings (CRLF -> LF)
+in LICENSE and the assets/css stylesheets — no CSS rule content changed.
+
+Affected projects: repository meta only; no runtime behavior change.

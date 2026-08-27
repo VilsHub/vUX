@@ -1,0 +1,17 @@
+Feature: progress-indicator-fixes (RETROACTIVE — commit d489425, logged after the
+changelog/ convention was introduced in 478c817)
+Target module: ProgressIndicator
+
+- The constructor's default progress space was never usable: getProgressSpaceElement
+  returned undefined whenever defaultProgressSpace was set; resolution order is now
+  progressSpaceId attribute -> passed element -> default space, and the constructor
+  argument is validated.
+- showProgress/hideProgress callable without an element when a default space exists,
+  with a clear error otherwise.
+- hideProgress clears the actual crawl interval (smallIncrement) instead of the
+  no-op clearInterval(tinyIncrement), which leaked the timer on slow requests.
+- Re-showing a finished style 3 bar resets it to 0% instead of animating backwards
+  from 100%.
+
+Affected projects: any consumer of vUX-progressIndicator.js, notably the SPA example
+which relies on the default-space constructor form.

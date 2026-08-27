@@ -1,0 +1,106 @@
+FEATURE: modal-scroll-lock
+DATE: 2026-08-03
+SCOPE: hold the page with overflow:hidden instead of position:fixed
+FOLLOWS: changelog/modal-stacking
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected. No public API changed;
+this is an internal change of mechanism with one observable behavioural difference
+(see below). Consumer code needs no modification.
+
+  - vUX-modalDisplayer.js   freezePage()/releasePage() rewritten; scroll capture removed
+  - doc/modal-displayer.md  mechanism and its consequences documented
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+The page behind an open modal was previously held still by taking the body out of
+flow (`position: fixed` plus a negative `top` offset equal to the scroll position).
+It is now held with `body { overflow: hidden }`.
+
+Because the document no longer moves, everything that existed to compensate for it
+disappears: capturing window.scrollY on open, the negative top offset, the
+scrollTo() on close, and the suppress-and-restore of `scroll-behavior` on <html>
+that stopped that scrollTo from animating on pages using smooth scrolling.
+releasePage() no longer touches <html> at all, and pageState shrank from three
+fields to two. The scroll position is now preserved because nothing scrolled,
+rather than because it was saved and reapplied.
+
+What is captured and restored is the body's own inline overflow value, so a page
+that already set `body { overflow: scroll }` gets that value back rather than having
+the property cleared.
+
+--------------------------------------------------------------------------------
+LAYOUT DEFECT FIXED
+--------------------------------------------------------------------------------
+
+Measured on the example page at a 1280px viewport, opening a modal:
+
+  position:fixed   content width 1217px -> 528.5px   (688px reflow)
+  overflow:hidden  content width 1217px -> 1232px    (15px shift)
+
+A body taken out of flow has no containing block width and collapses to
+shrink-to-fit, so the entire page behind the modal reflowed dramatically on every
+open and back again on every close. This was recorded as a known limitation of the
+previous approach and is now fixed.
+
+The remaining 15px is the width of the scrollbar being removed. It is unavoidable
+for any scroll lock that hides the scrollbar, and the old mechanism removed the
+scrollbar too — so this is not a regression, it is what is left after removing the
+much larger one.
+
+--------------------------------------------------------------------------------
+BEHAVIOUR CHANGE
+--------------------------------------------------------------------------------
+
+`overflow: hidden` blocks user scrolling — wheel, touch, keyboard — but does not
+block programmatic scrolling. Consumer code calling scrollTo() can still move the
+page behind an open modal. The previous mechanism blocked that too, as a side
+effect of the document collapsing to viewport height.
+
+This is documented rather than worked around, on the grounds that suppressing
+programmatic scrolling would mean fighting the consumer's own deliberate calls.
+
+Worth noting for anyone reading the tests: this is also why "is scrolling blocked"
+has to be verified with a real wheel event rather than with scrollTo(). A scrollTo()
+based check fails against a correctly locked page, which is exactly what happened on
+the first run of this change before the test was corrected.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Driven in headless Chromium against examples/modal served over HTTP.
+
+  Main suite               71 passed, 0 failed
+  Stacking edge suite      16 passed, 0 failed
+  Scroll-lock suite         9 passed, 0 failed
+
+The main suite's freeze assertions were switched from body position to body
+overflow, and two checks were added that dispatch real wheel events to confirm user
+scrolling is genuinely blocked — with one modal open, and with two layers stacked.
+
+The scroll-lock suite covers what this change put most at risk: a tall modal still
+scrolls inside its own overlay on a real wheel event while the page behind stays
+put; the scroll position is unchanged during and after a modal cycle; a consumer's
+own body overflow value is restored rather than cleared; and no inline position or
+top residue is left on the body by the old mechanism.
+
+Scrollbar shift was measured separately with Chromium's --hide-scrollbars flag
+disabled, since Playwright suppresses scrollbars by default and would have hidden
+the artifact being measured — the first measurement reported a 0.0px shift for
+exactly that reason and was not trustworthy.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATION
+--------------------------------------------------------------------------------
+
+iOS Safari ignores `overflow: hidden` on body for scroll locking, where the
+position:fixed technique does work. Mobile Safari is the one environment in which
+the previous mechanism was the better of the two. If iOS support becomes a
+requirement, the fix is to apply the position:fixed technique on that platform only,
+rather than reverting this change for every browser.

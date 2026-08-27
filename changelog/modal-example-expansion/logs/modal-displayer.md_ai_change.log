@@ -1,0 +1,59 @@
+FILE: doc/modal-displayer.md
+FEATURE: modal-example-expansion
+DATE: 2026-08-04
+PRIOR STATE: as left by feature 'modal-scroll-lock'
+
+================================================================================
+CHANGE 1 — Expand the blur overlay section
+================================================================================
+
+OLD_SECTION
+The component adds the `vxKit` class (a CSS `blur` filter) to `pageContainer` while open and removes it on close. `pageContainer` must wrap your page content but **not** the modal content, or the modal blurs too.
+
+NEW_SECTION
+Instead of tinting the overlay, this blurs the page behind it. The component adds the `vxKit` class (a CSS `blur` filter) to `pageContainer` while a modal is open and removes it on close, and it leaves the overlay's own background unset so the blur is what you see.
+
+Two requirements:
+
+- **`pageContainer` must wrap your page content but not the modal content**, or the dialog blurs along with the page. Keep your modal markup outside it — the overlay itself is appended to `<body>`, so it is never affected.
+- **`config.overlayStyle` is ignored** in blur mode, since the overlay is deliberately left transparent.
+
+With stacking, the blur is held for as long as any open layer wants it and is lifted only when no remaining layer targets that container — so opening and closing a nested modal never flickers the blur off and on.
+
+Configuration is snapshotted when a modal opens, so switching `overlayBackgroundType` takes effect from the next open onwards rather than on the modal already displayed.
+
+REASON
+Blur is now exercised by the example, so the guide has to answer the questions a
+reader will have once they try it. Three facts were missing and are not deducible
+from the API surface, since every config property is write-only:
+
+- overlayStyle is silently ignored in blur mode. The module only applies a background
+  to the overlay when overlayBackgroundType is "color", so a consumer who sets both
+  would see their overlayStyle have no effect and have no way to discover why.
+- The blur is reference-checked against the whole stack rather than removed by the
+  closing layer, so a nested open and close does not flicker it. This is behaviour
+  introduced by the stacking work and was only recorded in that changelog.
+- Config is snapshotted per layer, so switching the mode does not affect a modal
+  already on screen. Without this, the control in the example reads as broken.
+
+The note that the overlay itself is appended to <body> is added because it is the
+reason the "must not wrap modal content" rule is satisfiable at all - a reader might
+otherwise assume the overlay is inside their container and conclude the two
+requirements conflict.
+
+================================================================================
+CHANGE 2 — Update the example pointer
+================================================================================
+
+OLD_SECTION
+See [`examples/modal/`](../examples/modal/) — all four effects, stacked modals, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+
+NEW_SECTION
+See [`examples/modal/`](../examples/modal/) — seven modals covering all four effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+
+REASON
+The example gained four modals, a second instance and the overlay mode control. The
+pointer is the guide's only description of what the demo contains, so it is updated
+to match; naming the three-deep stack and the shared stack in particular tells a
+reader that the two hardest behaviours to reason about are demonstrable rather than
+theoretical.

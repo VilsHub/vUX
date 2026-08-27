@@ -1,0 +1,23 @@
+RETROACTIVE LOG — commit 981450f, recorded after the fact (the changelog/ convention
+was introduced later, in commit 478c817).
+
+Files: CLAUDE.md (new), LICENSE, assets/css/carousel.css, assets/css/formValidator.css,
+assets/css/listScroller.css, assets/css/modalDisplayer.css, assets/css/notes.md,
+assets/css/progressIndicator.css, assets/css/resizer.css, assets/css/timeLineList.css,
+assets/css/toolTip.css, assets/css/touchHandler.css
+
+OLD_SECTION
+- CLAUDE.md did not exist.
+- LICENSE and the listed assets/css/* files used CRLF line endings.
+
+NEW_SECTION
+- CLAUDE.md — project instructions for Claude Code: what the library is (no build
+  step), the data-id/data-library-root loading contract, the three-layer
+  architecture, component usage convention, styling patterns, versioning, and
+  reference pointers.
+- LICENSE and assets/css/* — line-ending normalization (CRLF -> LF); no rule or
+  content changes (the large insert/delete counts are whole-file reformatting).
+
+REASON
+Add the repository's AI-assistant working instructions and normalize line endings
+across the stylesheet set.

@@ -1,0 +1,28 @@
+File: doc/form-components.md
+
+OLD_SECTION
+- "Module prerequisites" told consumers to import ListScroller and FormValidator
+  themselves and attach them to window as a workaround for the missing imports.
+- Caveat markers "(see Known issues)" on datePicker daysToolTip, file fileToolTip,
+  slideSwitch.refresh() and file.refreshFile().
+- Slide switch label attribute documented as required whenever showLabel is true.
+- select config table had no optionGroupStyle row (the property threw before the fix).
+- A "Known issues (4.0.0-beta)" section enumerating all verified defects with line
+  references.
+
+NEW_SECTION
+- "Module prerequisites" now states both modules are imported by vUX-formComponents.js
+  itself (noting the extra module load as the only consequence).
+- Caveat markers removed; slideSwitch.refresh()/file.refreshFile() documented as
+  working; fileToolTip documented without the "leave this on" warning.
+- Slide switch label attribute documented as defaulting to "On,Off" when absent.
+- optionGroupStyle row added to the select config table.
+- "Known issues" replaced by "Remaining limitations (4.0.0-beta)": one visual size per
+  select className (generated stylesheet is per-class), the slide-switch
+  checkbox-last-child markup constraint, and the file label showing only the first
+  selected file.
+
+REASON
+The documented defects were fixed in vUX-formComponents.js (see the module's change log
+in this feature); the guide now describes the fixed behavior and keeps only the
+limitations that genuinely remain.

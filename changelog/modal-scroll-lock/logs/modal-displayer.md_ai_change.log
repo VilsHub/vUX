@@ -1,0 +1,45 @@
+FILE: doc/modal-displayer.md
+FEATURE: modal-scroll-lock
+DATE: 2026-08-03
+PRIOR STATE: as left by feature 'modal-stacking'
+
+================================================================================
+CHANGE 1 — Describe the overflow-based lock in "How it works"
+================================================================================
+
+OLD_SECTION
+On open, the component measures the hidden content, clones it into an overlay it appends to `<body>`, plays the configured effect, and freezes the page behind it (`body { position: fixed }`) so the background cannot scroll. On close it puts the original content back where it was, unfreezes the body, and restores the exact scroll position.
+
+NEW_SECTION
+On open, the component measures the hidden content, clones it into an overlay it appends to `<body>`, plays the configured effect, and holds the page still behind it (`body { overflow: hidden }`) so the background cannot be scrolled. On close it puts the original content back where it was and restores the body's own `overflow` value.
+
+The page is held with `overflow` rather than by taking the body out of flow, so the document never moves: the scroll position is preserved because nothing scrolled, not because it was saved and reapplied. Two consequences worth knowing — the page behind keeps its normal layout while a modal is up, and `overflow: hidden` blocks *user* scrolling (wheel, touch, keyboard) but not programmatic `scrollTo()`, so your own code can still move the page behind a modal if it chooses to.
+
+REASON
+The guide named the old mechanism explicitly, so it had to change with it. The added
+paragraph documents the two things a consumer can actually observe and might
+otherwise be surprised by: that the page behind no longer reflows when a modal opens
+(the previous mechanism collapsed it by hundreds of pixels), and that programmatic
+scrolling is still possible while a modal is open, which is a genuine behavioural
+difference from the old approach rather than an oversight.
+
+The claim that the scroll position is "restored" is also dropped, because it is no
+longer accurate — nothing is restored, because nothing moves.
+
+================================================================================
+CHANGE 2 — Restate page-level state in the Stacking section
+================================================================================
+
+OLD_SECTION
+Page-level state is handled at the stack boundary rather than per modal. The body is frozen and the scroll position captured when the first layer opens, and released only when the last layer closes — so nesting never loses the page's scroll position. Similarly a blurred `pageContainer` stays blurred until no remaining layer wants it blurred.
+
+NEW_SECTION
+Page-level state is handled at the stack boundary rather than per modal. The body's `overflow` is locked when the first layer opens and restored only when the last layer closes, so nesting never double-locks it or releases it early. Similarly a blurred `pageContainer` stays blurred until no remaining layer wants it blurred.
+
+REASON
+The stack-boundary rule still holds, but its justification changed. It used to exist
+partly to stop a nested open from re-capturing an already-clobbered scroll position;
+with no scroll capture at all, what it now prevents is a nested open re-reading an
+already-locked overflow value (which would make it restore "hidden" on close) and a
+nested close releasing the lock while a layer is still up. The wording is updated to
+say what the boundary actually protects now.

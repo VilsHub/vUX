@@ -1,0 +1,51 @@
+FILE: examples/modal/index.html, examples/modal/main.js, examples/modal/README.md
+FEATURE: example-redesign
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'modal-example-expansion'
+
+OLD_SECTION
+index.html — 158 lines: sans-serif body, <fieldset>/<legend> groups, grey #f0f0f0 log,
+             light modal blocks with coloured top borders, a gradient .filler.
+main.js    — 74 lines: two instances, an effect <select>, an overlay-type <select>,
+             a delegated .close-all handler.
+
+NEW_SECTION
+index.html — 362 lines: shared design system plus a hero, five numbered sections
+             (effects & overlay, stacking, widths & instances, bad input, scroll),
+             a depth readout with a colour key, and dark modal blocks.
+main.js    — 176 lines: the same two instances, plus live config for effect,
+             overlayBackgroundType, overlayStyle (colour + alpha), exitOnAway and
+             screenBreakPoints; a generated code panel; and ten validation demos.
+
+REASON
+Brings the page up to the standard in CLAUDE.md. Every demonstration the old page made is
+kept — the three-layer stack, the second instance sharing one stack, closeAll() from
+inside a modal, self-stacking being ignored, per-trigger widths, the tall modal, the
+open/close processors, the depth counter and the scroll-position proof — and the gaps the
+standard names are filled:
+
+  - Lead with the component: the hero opens a real dialog rather than describing one.
+  - Interactive: five config properties were previously fixed in code; all are now live
+    controls, with a code panel showing the equivalent configuration.
+  - Failure modes: a new section performs ten bad calls and prints what was thrown.
+
+Two structural points the redesign had to respect, both now stated in comments and in the
+README rather than left to be rediscovered:
+
+  - Modal content is MOVED into the component's overlay, which is appended to <body>.
+    Those blocks are therefore styled standalone, not as descendants of the page wrapper.
+  - #page (config.pageContainer for the blur mode) deliberately does not wrap the modal
+    content, or the dialog would blur along with the page behind it.
+
+One demo was dropped rather than restyled: an "open before initialize()" button. The
+guard it would have shown lives in a private show() function reachable only through a
+trigger click, and an uninitialised instance has no click listener attached — so the
+error cannot be produced from outside the component, and a button claiming to produce it
+would have been a lie. Replaced with 'className = 42', which genuinely throws.
+
+VERIFICATION
+All ten error demos were checked against the real helpers from src/helpers.js with the
+exact values the page passes, together with the values the page actually uses, to confirm
+the live configuration is not itself invalid: 14 assertions, all passing. Every id and
+data-attribute selector in main.js was cross-checked against the markup (15 ids, 10 error
+buttons, 7 modal ids, all trigger/close classes), and the page was served over HTTP.

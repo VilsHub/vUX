@@ -1,0 +1,115 @@
+FEATURE: modal-example-expansion
+DATE: 2026-08-04
+SCOPE: multiple modals in the example, expose the blur overlay option, update the guide
+FOLLOWS: changelog/modal-scroll-lock
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected.
+
+No module behaviour changed. vUX-modalDisplayer.js is untouched: the example now
+exercises capabilities the module already had but that nothing demonstrated. The one
+library file modified is assets/css/modalDisplayer.css, for a one line overlay
+positioning fix contributed during this round.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+The example went from three modals to seven, each chosen to show something the
+others do not:
+
+  loginModal    page trigger; nested triggers for reset and self-open
+  nestedModal   opened from loginModal
+  termsModal    opened from nestedModal, making the chain three layers deep
+  profileModal  a second, independent page entry point
+  confirmModal  a confirm stacked over a form
+  helpModal     opened by a SECOND ModalDisplayer instance, onto the same stack
+  tallModal     taller than the viewport
+
+Added alongside them:
+
+- An overlay background selector exposing config.overlayBackgroundType. Blur has
+  existed since v4 and is listed in ChangeLog.md, but nothing in the repository
+  showed it working.
+- A second ModalDisplayer instance with its own trigger class, effect and tint. This
+  is the only way to observe, in a browser, that the stack is shared across instances
+  and that one Escape pops exactly one layer — behaviour the guide asserts and
+  nothing demonstrated.
+- A live "Open layers" counter bound to `depth`, so stacking is displayed rather
+  than inferred.
+- Distinct accent colours per modal, so stacked layers are distinguishable at a
+  glance.
+
+Existing ids, classes and structure were preserved deliberately, since the automated
+suites drive this page as their fixture.
+
+--------------------------------------------------------------------------------
+FINDING: closeAll() was demonstrated in a place it could never work
+--------------------------------------------------------------------------------
+
+The first version of this change put a closeAll() button on the page. The automated
+run failed on it: Playwright timed out clicking it, reporting that the overlay
+intercepted pointer events.
+
+That is correct behaviour, not a defect — a modal blocks the page beneath it — but it
+made the control useless exactly when it had a purpose, since closeAll() only matters
+while a stack is open. The button moved inside the two deepest modals, where the top
+layer makes it reachable, and the page text now explains why. A dead control became a
+demonstration of modality, and the suite asserts both halves: that the page behind is
+not hit-testable, and that closeAll() from inside the top layer unwinds the stack.
+
+The listener is delegated from document rather than bound to the button, because the
+component copies modal content into the overlay and a listener on the original node
+would not exist on the copy the user clicks. The example now follows the advice its
+own guide gives consumers.
+
+--------------------------------------------------------------------------------
+GUIDE UPDATES
+--------------------------------------------------------------------------------
+
+The blur section gained three facts that are not deducible from the API, since every
+config property is write-only:
+
+- config.overlayStyle is silently ignored in blur mode, because the module only
+  applies an overlay background when the type is "color".
+- The blur is reference-checked against the whole stack, so a nested open and close
+  does not flicker it off and on.
+- Config is snapshotted per layer, so switching the mode applies from the next open
+  rather than to the modal already displayed. Without this the example's control
+  reads as broken.
+
+--------------------------------------------------------------------------------
+CSS FIX
+--------------------------------------------------------------------------------
+
+.vModal is position:fixed with top:0 and width:100% but had no horizontal anchor. A
+fixed element with `left: auto` sits at its static position rather than the viewport
+edge, which is invisible on a plain body but breaks as soon as the body has a left
+margin or padding. `left:0` was added. It matters more since stacking, because every
+open modal now creates its own overlay and would reproduce any offset on every layer.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+  Example demo suite (new)   31 passed, 0 failed
+  Main suite                 71 passed, 0 failed
+  Stacking edge suite        16 passed, 0 failed
+  Scroll-lock suite           9 passed, 0 failed
+
+The new suite drives the demo the way a user would: opening each modal from the page,
+building the three-deep chain by clicking through it, checking the depth readout,
+confirming the page behind is not clickable, running closeAll() from inside the top
+layer, stacking across the two instances, and exercising both overlay modes —
+including that the modal itself is not blurred, that the overlay is left untinted in
+blur mode, and that the blur is held across a nested open and lifted only when the
+stack empties.
+
+Testing note: an Escape pressed while a close animation is still running is correctly
+ignored rather than queued. The first version of the new suite used fixed delays and
+tripped over this against the alt instance's `flip` effect (~600ms), leaving a layer
+open and timing out later. The suite now waits on stack depth rather than on elapsed
+time, which is both correct and faster.

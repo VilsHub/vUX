@@ -1,0 +1,13 @@
+Feature: spa-named-route-params (RETROACTIVE — commit e19f2cd, logged after the
+changelog/ convention was introduced in 478c817)
+Target module: SPAEngine
+
+- ;name and ;name:regex pattern segments capture route params by name (legacy :regex
+  stays positional), with regex validation per segment.
+- routeProperties.data now passed as the last argument to bootCallback,
+  clickLoadCallbacks, historyCallbacks and the clickLoadCallback fallback.
+- history.pushState uses the actual requested route (e.g /user/7) instead of the
+  configured path literal, so dynamic URLs survive refresh/bookmark.
+
+Affected projects: any consumer of vUX-spaEngine.js using dynamic routes; existing
+positional :regex patterns keep working unchanged.

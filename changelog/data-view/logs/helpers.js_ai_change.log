@@ -1,0 +1,42 @@
+RETROACTIVE LOG — commit 65fdc2f, recorded after the fact.
+
+File: src/helpers.js
+
+OLD_SECTION
+modules:[
+    "spaEngine.js",
+    "autoWriter.js",
+    "carousel.js",
+    "cShapes.js",
+    "formComponents.js",
+    "listScroller.js",
+    "modalDisplayer.js",
+    "resizer.js",
+    "spaEngine.js",
+    "timeLineList.js",
+    "touchHandler.js"
+]
+
+NEW_SECTION
+modules:[
+    "autoWriter.js",
+    "carousel.js",
+    "cShapes.js",
+    "dataView.js",
+    "domDrawer.js",
+    "formComponents.js",
+    "formValidator.js",
+    "listScroller.js",
+    "modalDisplayer.js",
+    "progressIndicator.js",
+    "resizer.js",
+    "spaEngine.js",
+    "timeLineList.js",
+    "toolTip.js",
+    "touchHandler.js"
+]
+
+REASON
+Register dataView.js in the module registry (window.vUxModules), dedupe the
+spaEngine.js entry that appeared twice, and add the missing formValidator,
+progressIndicator, toolTip and domDrawer entries.

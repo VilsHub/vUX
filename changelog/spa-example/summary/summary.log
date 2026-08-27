@@ -1,0 +1,12 @@
+Feature: spa-example (RETROACTIVE — commits ae28575 and 9dcbc8b, logged after the
+changelog/ convention was introduced in 478c817)
+Target module: SPAEngine + ProgressIndicator + DataView (example)
+
+Added examples/spa/ — a runnable SPA example app with a bundled dev server (history
+fallback + /lib/vUX/ mapping): static and dynamic named-param routes, per-link
+cache/history opt-outs, ProgressIndicator wired to navigation, and a live /table
+page mounting a 500-row DataView (sort, filter, 50-cells/100ms ticker, targeted-
+updates-vs-rebuild benchmark) whose route exitCallback stops the ticker and destroys
+the view. Registered in doc/README.md's references.
+
+Affected projects: documentation/examples only.

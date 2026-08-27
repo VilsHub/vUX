@@ -1,0 +1,73 @@
+File: vUX-formComponents.js
+
+=======================================================================
+Section 1 — datePicker: scroll button creation
+OLD_SECTION
+var previousButtonElement = $$.ce("BUTTON", {class:"linactive vPrev", id:"vPrev", type:"button"});
+...
+var nextButtonElement = $$.ce("BUTTON", {class:"rinactive vNext", id:"vNext", type:"button"});
+
+NEW_SECTION
+var previousButtonElement = $$.ce("BUTTON", {class:"vPrev vListBt vListBt-Left sInactive", id:"vPrev", type:"button"});
+...
+var nextButtonElement = $$.ce("BUTTON", {class:"vNext vListBt vListBt-Right sInactive", id:"vNext", type:"button"});
+
+REASON
+ListScroller's delegated click handler only responds to elements carrying
+vListBt + vListBt-Left/vListBt-Right; the buttons never had those classes, so the
+decade-series prev/next buttons were dead. The initial inactive look now uses the
+shared sInactive class that ListScroller actually toggles (see Section 2).
+
+=======================================================================
+Section 2 — datePicker: toggleListScroller() configuration
+OLD_SECTION
+listControllerObj.config.buttons = [LeftBt, RightBt];
+listControllerObj.config.inactiveButtonsClassName = ["off"];
+listControllerObj.config.effects = [0.4, "cubic-bezier(0,.99,0,1)"];
+listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
+listControllerObj.config.scrollSize = 300
+listControllerObj.config.paddingRight = 0;
+listControllerObj.config.spaceError = 2;
+
+NEW_SECTION
+listControllerObj.config.buttons = [LeftBt, RightBt];
+listControllerObj.config.inactiveButtonClassName = "sInactive"; //one shared class; the arrows' CSS keys off .vPrev/.vNext
+listControllerObj.config.scrollSize = 300
+listControllerObj.config.paddingRight = 0;
+
+REASON
+Discovered by driving the new example: opening any date picker with a decade-series
+view threw "Setup error: Buttons class for inactive state not specified" — which also
+aborted showDateBox before setSuperActive, breaking the open picker's z-index raise.
+ListScroller's property is inactiveButtonClassName (singular, string); the plural
+array assignments silently did nothing, and config.effects / config.spaceError do not
+exist on ListScroller at all (removed).
+
+=======================================================================
+Section 3 — all six builders: generated stylesheet selector specificity
+OLD_SECTION
+Generated rules were emitted as ".v<className> ..." (select/radio/checkbox/
+slideSwitch/file) and ".vDateIcon..." / ".vDatePicker .vSelected" (datePicker), e.g.:
+css += ".v" + radioClassName + " .selected::before {" + selectedStyle + "}";
+css += ".vDatePicker .vSelected{" + selectionStyle + "}";
+
+NEW_SECTION
+Generated rules are now anchored to the wrapper base class the widget already carries,
+e.g.:
+css += ".vRadioButtonWrapper.v" + radioClassName + " .selected::before {" + selectedStyle + "}";
+css += ".vDatePicker .vDateBoxTool .vSelected{" + selectionStyle + "}";
+(select → .vSelect.v<name>, radio → .vRadioButtonWrapper.v<name>, checkbox →
+.vCheckboxWrapper.v<name>, slideSwitch → .vSlideSwitchWrapper.v<name>, file →
+.vFile.v<name>, datePicker → .vDatePicker .dFieldCon .vDateIcon... /
+.vDatePicker .vDateBoxTool .vSelected)
+
+REASON
+The static formComponents.css <link> is appended after the generated <style> elements
+(the asset-path bootstrap is async), so at equal specificity the static defaults win
+every tie and configured styles silently fail for any property the static sheet also
+declares. Confirmed live in the example: selectedRadioStyle's blue rendered black
+(static .selected::before background-color won), the checkbox checkedCheckboxStyle
+content glyph never appeared (static content:'' won), and the file inputButton
+background lost to the static gradient. Raising the generated selectors' specificity
+by one class makes explicitly-configured styles override defaults — the documented
+contract — without reordering any stylesheets.

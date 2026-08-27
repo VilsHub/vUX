@@ -1,0 +1,37 @@
+FILE: doc/README.md
+FEATURE: auto-writer-docs
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'doc-pages'
+
+================================================================================
+CHANGE 1 — List the new guide, and stop listing it as pending
+================================================================================
+
+OLD_SECTION
+| [Form Components](form-components.md) | `vUX-formComponents.js` | Custom select, radio, checkbox, date picker, slide switch and file input built over the hidden native controls |
+
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+
+NEW_SECTION
+| [Form Components](form-components.md) | `vUX-formComponents.js` | Custom select, radio, checkbox, date picker, slide switch and file input built over the hidden native controls |
+| [Auto Writer](auto-writer.md) | `vUX-autoWriter.js` | Typewriter text effect with an embedded directive syntax for line breaks, pauses and backspacing |
+
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+
+REASON
+The guide exists now, so it joins the table and drops out of the pending list. Nine
+modules remain undocumented.
+
+================================================================================
+CHANGE 2 — List the new example
+================================================================================
+
+OLD_SECTION
+- [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
+
+NEW_SECTION
+- [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
+- [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
+
+REASON
+Matches how the SPA, modal and form examples are surfaced under "Other references".

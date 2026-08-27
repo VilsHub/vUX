@@ -13,6 +13,8 @@
 // Import vUX core
 import { validateArray, validateObjectLiteral, validateString } from "./src/helpers.js";
 import "./src/vUX-core-4.0.0-beta.js";
+import { FormValidator } from "./vUX-formValidator.js";
+import { ListScroller } from "./vUX-listScroller.js";
 
 /********************Custom form component***********************/
 export function FormComponents() {
@@ -97,25 +99,26 @@ export function FormComponents() {
 
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.select = function() {
-        var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", selectClassName = "",searchIconStyle = "",wrapAttribute = "",includeSearchField = true, optionsWrapperStyle = "",optionsConWrapperStyle="",familyID = "vSelect",inputButtonStyle = "",sizeAttribute = "",optionStateStyle = [];
+        var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", optionGroupStyle = "", selectClassName = "",searchIconStyle = "",wrapAttribute = "",includeSearchField = true, optionsWrapperStyle = "",optionsConWrapperStyle="",familyID = "vSelect",inputButtonStyle = "",sizeAttribute = "",optionStateStyle = [];
 
         function autoPlace(optionsCon) {
             var sField = optionsCon.previousElementSibling.querySelector(".sField");
             var sFieldBottomOffset = sField.getBoundingClientRect()["bottom"];
             var diff = innerHeight - sFieldBottomOffset;
             var optionsConHeight = getOptionsConHeight(optionsCon);
+            var wrapperHeight = optionsCon.parentNode.offsetHeight; //this widget's own rendered height, not the last-built widget's config
 
             //Display in approriate space
             if (sFieldBottomOffset >= diff) {
                 if (optionsConHeight <= diff) {
-                    optionsCon.style["top"] = (parseInt(selectDim[1]) + 1) + "px";
+                    optionsCon.style["top"] = (wrapperHeight + 1) + "px";
                     optionsCon.style["bottom"] = "auto";
                 } else {
-                    optionsCon.style["bottom"] = (parseInt(selectDim[1]) + 1) + "px";
+                    optionsCon.style["bottom"] = (wrapperHeight + 1) + "px";
                     optionsCon.style["top"] = "auto";
                 }
             } else {
-                optionsCon.style["top"] = (parseInt(selectDim[1]) + 1) + "px";
+                optionsCon.style["top"] = (wrapperHeight + 1) + "px";
                 optionsCon.style["bottom"] = "auto";
             }
         }
@@ -358,7 +361,7 @@ export function FormComponents() {
         function getOptionsConHeight(optionsCon) {
             var children = optionsCon.querySelectorAll(".sOption:not(.sHide)");
             var height = children.length > 0 ? parseInt($$.sm(children[0]).cssStyle("height")) * children.length : 0;
-            return height = includeSearchField ? height + (parseInt(selectDim[0]) + 5) : height + 5;
+            return height = includeSearchField ? height + (optionsCon.parentNode.offsetHeight + 5) : height + 5; //search box is one field-height tall
         }
 
         function closeAnyOpen(ele) {
@@ -378,30 +381,32 @@ export function FormComponents() {
             if ($$.ss("style[data-id='v" + selectClassName + "']") == null) {
 
                 var css = "";
-                css += ".v" + selectClassName + "{width:" + selectDim[0] + "; height:" + selectDim[1] + "; z-index: 60;"+"}";
-                css += ".v" + selectClassName + " .sField {line-height:" + selectDim[1] + ";}";
-                css += ".v" + selectClassName + " .sIcon::before {line-height:" + selectDim[1] + ";}";
-                css += ".v" + selectClassName + " .sSearchBox::before {line-height:" + selectDim[1] + ";height:" + selectDim[1] + "}";
+                css += ".vSelect.v" + selectClassName + "{width:" + selectDim[0] + "; height:" + selectDim[1] + "; z-index: 60;"+"}";
+                css += ".vSelect.v" + selectClassName + " .sField {line-height:" + selectDim[1] + ";}";
+                css += ".vSelect.v" + selectClassName + " .sIcon::before {line-height:" + selectDim[1] + ";}";
+                css += ".vSelect.v" + selectClassName + " .sSearchBox::before {line-height:" + selectDim[1] + ";height:" + selectDim[1] + "}";
                 
-                if (wrapperStyle != "") css += ".v" + selectClassName + "{"+wrapperStyle+"}";
+                if (wrapperStyle != "") css += ".vSelect.v" + selectClassName + "{"+wrapperStyle+"}";
                 
-                if (selectFieldStyle != "") css += ".v" + selectClassName + " .sField {"+selectFieldStyle+"}";
+                if (selectFieldStyle != "") css += ".vSelect.v" + selectClassName + " .sField {"+selectFieldStyle+"}";
                 
-                if (selectIcon != "") css += ".v" + selectClassName + " .sIcon::before {" + selectIcon + "}";
+                if (selectIcon != "") css += ".vSelect.v" + selectClassName + " .sIcon::before {" + selectIcon + "}";
 
-                if (searchIconStyle != "") css += ".v" + selectClassName + " .sSearchBox::before{" + searchIconStyle + "}";
+                if (searchIconStyle != "") css += ".vSelect.v" + selectClassName + " .sSearchBox::before{" + searchIconStyle + "}";
                 
-                if (optionsConWrapperStyle != "") css += ".v" + selectClassName + " .optionsCon{" + optionsConWrapperStyle + "}";//the wrapper of select options parent
+                if (optionsConWrapperStyle != "") css += ".vSelect.v" + selectClassName + " .optionsCon{" + optionsConWrapperStyle + "}";//the wrapper of select options parent
                     
-                if (optionsWrapperStyle != "") css += ".v" + selectClassName + " .optionsCon .sOptionCon{" + optionsWrapperStyle + "}";//the wrapper of select options
+                if (optionsWrapperStyle != "") css += ".vSelect.v" + selectClassName + " .optionsCon .sOptionCon{" + optionsWrapperStyle + "}";//the wrapper of select options
                     
-                if (optionStyle != "") css += ".v" + selectClassName + " .sOptionCon .sOption{" + optionStyle + "}"; //The option it self, in which optionsWrapper is the parent
-                    
-                if (inputButtonStyle != "") css += ".v" + selectClassName + " .sIcon{" + inputButtonStyle + "}";
+                if (optionStyle != "") css += ".vSelect.v" + selectClassName + " .sOptionCon .sOption{" + optionStyle + "}"; //The option it self, in which optionsWrapper is the parent
 
-                if (optionStateStyle[0] != undefined) css += ".v" + selectClassName + " .optionsCon .hovered {" + optionStateStyle[0] + "}";//hover state
+                if (optionGroupStyle != "") css += ".vSelect.v" + selectClassName + " .sOptionCon .sOptionGroup{" + optionGroupStyle + "}"; //optgroup label rows
+
+                if (inputButtonStyle != "") css += ".vSelect.v" + selectClassName + " .sIcon{" + inputButtonStyle + "}";
+
+                if (optionStateStyle[0] != undefined) css += ".vSelect.v" + selectClassName + " .optionsCon .hovered {" + optionStateStyle[0] + "}";//hover state
                     
-                if (optionStateStyle[1] != undefined) css += ".v" + selectClassName + " .optionsCon .vSselected {" + optionStateStyle[1] + "}";//selected state
+                if (optionStateStyle[1] != undefined) css += ".vSelect.v" + selectClassName + " .optionsCon .vSselected {" + optionStateStyle[1] + "}";//selected state
                     
                 attachStyleSheet("v" + selectClassName, css);
             }
@@ -723,13 +728,13 @@ export function FormComponents() {
         Object.defineProperties(body.config, {
             sizeAttribute: {
                 set: function(value) {
-                    validateString("'config.sizeAttribute' property value must be a string");
+                    validateString(value, "'config.sizeAttribute' property value must be a string");
                     sizeAttribute = value;
                 }
             },
             wrapAttribute: {
                 set: function(value) {
-                    validateString("'config.wrapAttribute' property value must be a string");
+                    validateString(value, "'config.wrapAttribute' property value must be a string");
                     wrapAttribute = value;
                 }
             },
@@ -842,17 +847,17 @@ export function FormComponents() {
         function radioStyleSheet() {
             if ($$.ss("style[data-id='v" + radioClassName + "']") == null) {
                 var css = "";
-                css += ".v" + radioClassName + " {width:" + radioDim[0] + "; height:" + radioDim[1] + "}";
-                css += ".v" + radioClassName + " .deselected:hover::before{" + mouseEffect[0] + ";}";
-                css += ".v" + radioClassName + " .deselected:active::before{" + mouseEffect[1] + ";}";
-                css += ".v" + radioClassName + " .selected::before{font-size:" + radioDim[0] + ";}";
-                css += ".v" + radioClassName + " .deselected::before{font-size:" + radioDim[0] + ";}";
+                css += ".vRadioButtonWrapper.v" + radioClassName + " {width:" + radioDim[0] + "; height:" + radioDim[1] + "}";
+                css += ".vRadioButtonWrapper.v" + radioClassName + " .deselected:hover::before{" + mouseEffect[0] + ";}";
+                css += ".vRadioButtonWrapper.v" + radioClassName + " .deselected:active::before{" + mouseEffect[1] + ";}";
+                css += ".vRadioButtonWrapper.v" + radioClassName + " .selected::before{font-size:" + radioDim[0] + ";}";
+                css += ".vRadioButtonWrapper.v" + radioClassName + " .deselected::before{font-size:" + radioDim[0] + ";}";
 
                 if (selectedStyle != "") {
-                    css += ".v" + radioClassName + " .selected::before {" + selectedStyle + "}";
+                    css += ".vRadioButtonWrapper.v" + radioClassName + " .selected::before {" + selectedStyle + "}";
                 }
                 if (deselectedStyle != "") {
-                    css += ".v" + radioClassName + " .deselected::before{" + deselectedStyle + "}";
+                    css += ".vRadioButtonWrapper.v" + radioClassName + " .deselected::before{" + deselectedStyle + "}";
                 }
                 attachStyleSheet("v" + radioClassName, css);
             }
@@ -875,9 +880,11 @@ export function FormComponents() {
             nativeRadioButton.setAttribute("tabindex", "-1");
             radioParentPosition == "static" ? parent.style.position = "relative" : null;
 
-            if (hasLabel["status"]) {
-                hasLabel["label"].style["min-height"] = radioDim[1];
-                hasLabel["label"].classList.add("vRadioButtonLabel");
+            if (hasLabel != null) {
+                if (hasLabel["status"]) {
+                    hasLabel["label"].style["min-height"] = radioDim[1];
+                    hasLabel["label"].classList.add("vRadioButtonLabel");
+                }
             }
 
             //check existing custom element
@@ -1118,17 +1125,17 @@ export function FormComponents() {
         function checkboxStyleSheet() {
             if ($$.ss("style[data-id='v" + checkboxClassName + "']") == null) {
                 var css = "";
-                css += ".v" + checkboxClassName + " {width:" + checkboxDim[0] + "; height:" + checkboxDim[1] + "}";
-                mouseEffect[0] != undefined ? css += ".v" + checkboxClassName + " .unchecked:hover::before{" + mouseEffect[0] + ";}" : null;
-                mouseEffect[1] != undefined ? css += ".v" + checkboxClassName + " .unchecked:active::before{" + mouseEffect[1] + ";}" : null;
-                css += ".v" + checkboxClassName + " .checked::before{font-size:" + checkboxDim[0] + ";}";
-                css += ".v" + checkboxClassName + " .unchecked::before{font-size:" + checkboxDim[0] + ";}";
+                css += ".vCheckboxWrapper.v" + checkboxClassName + " {width:" + checkboxDim[0] + "; height:" + checkboxDim[1] + "}";
+                mouseEffect[0] != undefined ? css += ".vCheckboxWrapper.v" + checkboxClassName + " .unchecked:hover::before{" + mouseEffect[0] + ";}" : null;
+                mouseEffect[1] != undefined ? css += ".vCheckboxWrapper.v" + checkboxClassName + " .unchecked:active::before{" + mouseEffect[1] + ";}" : null;
+                css += ".vCheckboxWrapper.v" + checkboxClassName + " .checked::before{font-size:" + checkboxDim[0] + ";}";
+                css += ".vCheckboxWrapper.v" + checkboxClassName + " .unchecked::before{font-size:" + checkboxDim[0] + ";}";
 
                 if (checkedStyle != "") {
-                    css += ".v" + checkboxClassName + " .checked::before {" + checkedStyle + "}";
+                    css += ".vCheckboxWrapper.v" + checkboxClassName + " .checked::before {" + checkedStyle + "}";
                 }
                 if (uncheckedStyle != "") {
-                    css += ".v" + checkboxClassName + " .unchecked::before{" + uncheckedStyle + "}";
+                    css += ".vCheckboxWrapper.v" + checkboxClassName + " .unchecked::before{" + uncheckedStyle + "}";
                 }
                 attachStyleSheet("v" + checkboxClassName, css);
             }
@@ -1291,7 +1298,7 @@ export function FormComponents() {
         Object.defineProperties(body.config, {
             checkboxSize: {
                 set: function(value) {
-                    var temp = "'config.radioButtonSize' property value must be an array";
+                    var temp = "'config.checkboxSize' property value must be an array";
                     validateArray(value, temp);
                     validateArrayLength(value, 2, temp + " of 2 Elements");
                     validateArrayMembers(value, "dimension", temp + " of strings CSS dimensions");
@@ -1342,7 +1349,7 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Date Picker^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.datePicker = function() {
         var falseState = "cX.1zwAP",trueState = "mp.3Cy._Xa";
-        var tooTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
+        var toolTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
         var vBoxWidth = 300, initX = 10, wrapAttribute = "", paddingRight = 10, maxX = null, arrowXpos = 0, boxXpos = null, sizeAttribute = "";
 
         function autoPlace(dateBox) {
@@ -1366,19 +1373,21 @@ export function FormComponents() {
             // if(innerWidth <= ){
 
             // }
+            var wrapperHeight = wrapper.offsetHeight; //this widget's own rendered height, not the last-built widget's config
+
             //Display in approriate space
             if (dFieldBottomOffset >= diff) {
                 if (dateBoxHeight <= diff) { //to bottom
-                    dateBox.style["top"] = (parseInt(datePickerDim[1]) + 1) + "px";
+                    dateBox.style["top"] = (wrapperHeight + 1) + "px";
                     dateBox.style["bottom"] = "auto";
                     hideArrow(wrapper, "bottom");
                 } else { //to top
-                    dateBox.style["bottom"] = (parseInt(datePickerDim[1]) + 1) + "px";
+                    dateBox.style["bottom"] = (wrapperHeight + 1) + "px";
                     dateBox.style["top"] = "auto";
                     hideArrow(wrapper, "top");
                 }
             } else { //to bottom
-                dateBox.style["top"] = (parseInt(datePickerDim[1]) + 1) + "px";
+                dateBox.style["top"] = (wrapperHeight + 1) + "px";
                 dateBox.style["bottom"] = "auto";
                 hideArrow(wrapper, "bottom");
             }
@@ -1399,22 +1408,24 @@ export function FormComponents() {
 
         function createStyles() {
             if ($$.ss("style[data-id='" + datePickerClassName + "']") == null) {
+                //selectors are anchored deep enough to override the static stylesheet's
+                //defaults, which loads after these generated rules
                 var css = "";
-                css += ".vDateIcon::before {line-height:inherit}";
+                css += ".vDatePicker .dFieldCon .vDateIcon::before {line-height:inherit}";
                 if (dateInputIconStyle[0] != undefined) {
-                    css += ".vDateIcon::before {" + dateInputIconStyle[0] + "}";
+                    css += ".vDatePicker .dFieldCon .vDateIcon::before {" + dateInputIconStyle[0] + "}";
                 }
                 if (dateInputIconStyle[1] != undefined) {
-                    css += ".vDateIcon:hover::before {" + dateInputIconStyle[1] + "}";
+                    css += ".vDatePicker .dFieldCon .vDateIcon:hover::before {" + dateInputIconStyle[1] + "}";
                 }
                 if (dateInputIconStyle[2] != undefined) {
-                    css += ".vDateIcon:active::before {" + dateInputIconStyle[2] + "}";
+                    css += ".vDatePicker .dFieldCon .vDateIcon:active::before {" + dateInputIconStyle[2] + "}";
                 }
                 if (selectionStyle != "") {
-                    css += ".vDatePicker .vSelected{" + selectionStyle + "}";
+                    css += ".vDatePicker .vDateBoxTool .vSelected{" + selectionStyle + "}";
                 }
                 if (inputButtonStyle != "") {
-                    css += ".vDateIcon{" + inputButtonStyle + "}";
+                    css += ".vDatePicker .dFieldCon .vDateIcon{" + inputButtonStyle + "}";
                 }
                 attachStyleSheet(datePickerClassName, css);
             }
@@ -1527,8 +1538,9 @@ export function FormComponents() {
                     if (month == "4" || month == "6" || month == "9" || month == "11") {
                         stopDay = 29;
                     } else if (month == "2") {
-                        var leapYear = parseInt(dateComponents[0]) % 4;
-                        if (leapYear == 0) {
+                        var year = parseInt(dateComponents["dateParts"][0]);
+                        var leapYear = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+                        if (leapYear) {
                             stopDay = 28;
                         } else {
                             stopDay = 27;
@@ -1982,8 +1994,8 @@ export function FormComponents() {
             //DateBox controlCon
             var dateBoxControlConElement = $$.ce("DIV", {class:"vDateBoxControlCon"});
 
-            // previous button
-            var previousButtonElement = $$.ce("BUTTON", {class:"linactive vPrev", id:"vPrev", type:"button"});
+            // previous button (vListBt classes are what ListScroller's click handler targets)
+            var previousButtonElement = $$.ce("BUTTON", {class:"vPrev vListBt vListBt-Left sInactive", id:"vPrev", type:"button"});
 
             // back button
             var backButtonElement = $$.ce("BUTTON", {class:"vBack vbInactive", type:"button"});
@@ -1995,7 +2007,7 @@ export function FormComponents() {
             closeButtonElement.appendChild(document.createTextNode("Close"));
             
             // next button
-            var nextButtonElement = $$.ce("BUTTON", {class:"rinactive vNext", id:"vNext", type:"button"});
+            var nextButtonElement = $$.ce("BUTTON", {class:"vNext vListBt vListBt-Right sInactive", id:"vNext", type:"button"});
 
             //____________Append______________
             //Append dateBox header to dateBox Element
@@ -2147,7 +2159,7 @@ export function FormComponents() {
                 allDays[x].setAttribute("title", dayName);
                 allDays[x].classList.add("datePickerToolTip-"+datePickerClassName);
             }
-            tooTipHandler.refresh();
+            toolTipHandler != null ? toolTipHandler.refresh() : null; //null until the dynamic ToolTip import resolves
         }
 
         function generateDays(x, daysCon) {
@@ -2173,16 +2185,13 @@ export function FormComponents() {
             var RightBt = wrapper.querySelector("#vNext");
             if (listControllerObj == null) {
                 listControllerObj = new ListScroller(listConParent, listCon);
-       
+
                 listControllerObj.config.buttons = [LeftBt, RightBt];
-                listControllerObj.config.inactiveButtonsClassName = ["off"];
-                listControllerObj.config.effects = [0.4, "cubic-bezier(0,.99,0,1)"];
-                listControllerObj.config.inactiveButtonsClassName = ["linactive", "rinactive"];
+                listControllerObj.config.inactiveButtonClassName = "sInactive"; //one shared class; the arrows' CSS keys off .vPrev/.vNext
                 listControllerObj.config.scrollSize = 300
-                listControllerObj.config.paddingRight = 0; 
-                listControllerObj.config.spaceError = 2;
+                listControllerObj.config.paddingRight = 0;
                 listControllerObj.initialize();
-                
+
             }
             if (list.length > 1 && $$.sm(listCon).cssStyle("display") != "none") {
                 listControllerObj.onScroller();
@@ -2577,9 +2586,9 @@ export function FormComponents() {
                     import("./vUX-toolTip.js")
                     .then(function(module){
                         toolTipHandler = new module.ToolTip();
-                        tooTipHandler.config.tipBoxStyles = daysToolTipProperties;
-                        tooTipHandler.config.className = "datePickerToolTip-"+datePickerClassName;
-                        tooTipHandler.initialize();
+                        toolTipHandler.config.tipBoxStyles = daysToolTipProperties;
+                        toolTipHandler.config.className = "datePickerToolTip-"+datePickerClassName;
+                        toolTipHandler.initialize();
                     })
                 };
                 if (wrapAttribute != "") wrap("datePicker", wrapAttribute);
@@ -2652,15 +2661,15 @@ export function FormComponents() {
             daysToolTipProperties: {
                 set: function(value) {
                     var validKeys = Object.keys(daysToolTipProperties);
-                    var sourceKeys = Object.keys(value);
                     validateObject(value, "datePicker.config.daysToolTipProperties property expects an object");
+                    var sourceKeys = Object.keys(value);
                     if (sourceKeys.length > 2) {
-                        throw new Error(temp + " cannot be more than 2 properties");
+                        throw new Error("datePicker.config.daysToolTipProperties object value cannot have more than 2 properties");
                     }
 
-                    for (let x = 0; x < sourceKeys; x++) {
+                    for (let x = 0; x < sourceKeys.length; x++) {
                         if(validKeys.indexOf(sourceKeys[x]) == -1){
-                            throw new Error ("datePicker.config.daysToolTipProperties property can only accept these any of the keys: "+keys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
+                            throw new Error ("datePicker.config.daysToolTipProperties property can only accept any of the keys: "+validKeys.join(", ") +". The key: '"+sourceKeys[x]+"' is not one of them");
                         }else{
                             validateString(value[sourceKeys[x]], "datePicker.config.daysToolTipProperties object key: "+sourceKeys[x]+" expects a string as value");
                         }
@@ -2700,13 +2709,13 @@ export function FormComponents() {
             },
             sizeAttribute: {
                 set: function(value) {
-                    validateString("'config.sizeAttribute' property value must be a string");
+                    validateString(value, "'config.sizeAttribute' property value must be a string");
                     sizeAttribute = value;
                 }
             },
             wrapAttribute: {
                 set: function(value) {
-                    validateString("'config.wrapAttribute' property value must be a string");
+                    validateString(value, "'config.wrapAttribute' property value must be a string");
                     wrapAttribute = value;
                 }
             },
@@ -2737,18 +2746,18 @@ export function FormComponents() {
                 var handleMainStyle2 = "";
 
                 //Default
-                css += ".v" + slideSwitchClassName + "::before{"+handleMainStyle+"}"; //normal style
-                css += ".v" + slideSwitchClassName + ".sOn::before {left:CALC(100% - "+wrapperHeight+")}"; //Slide distance
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + "::before{"+handleMainStyle+"}"; //normal style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOn::before {left:CALC(100% - "+wrapperHeight+")}"; //Slide distance
                
                 //user defined handle styles
-                css += ".v" + slideSwitchClassName + "::before {"+styles.handle[0]+"}"; //normal style
-                css += ".v" + slideSwitchClassName + ".sOn::before {"+styles.handle[1]+"}"; //On style
-                css += ".v" + slideSwitchClassName + ".sOff::before {"+styles.handle[2]+"}"; //Off style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + "::before {"+styles.handle[0]+"}"; //normal style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOn::before {"+styles.handle[1]+"}"; //On style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOff::before {"+styles.handle[2]+"}"; //Off style
 
                 //user defined wrapper styles
-                css += ".v" + slideSwitchClassName + "{"+styles.wrapper[0]+"}"; //normal style
-                css += ".v" + slideSwitchClassName + ".sOn{"+styles.wrapper[1]+"}"; //on style
-                css += ".v" + slideSwitchClassName + ".sOff{"+styles.wrapper[2]+"}"; //off style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + "{"+styles.wrapper[0]+"}"; //normal style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOn{"+styles.wrapper[1]+"}"; //on style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOff{"+styles.wrapper[2]+"}"; //off style
 
 
                 attachStyleSheet("v" + slideSwitchClassName, css);
@@ -2756,11 +2765,11 @@ export function FormComponents() {
                 var wrapperHeight = $$.sm(wrapper).cssStyle("height", ":before");
                 var top = parseInt(wrapperHeight)/2;
                 handleMainStyle2 = "top:50%; margin-top:-"+top+"px;";
-                css += ".v" + slideSwitchClassName + "::before {"+handleMainStyle2+"}"; //normal style
-                css += ".v" + slideSwitchClassName + ".sOn::before {left:CALC(100% - "+wrapperHeight+")}";
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + "::before {"+handleMainStyle2+"}"; //normal style
+                css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOn::before {left:CALC(100% - "+wrapperHeight+")}";
                 if (slideDistance != ""){
-                    if (slideDistance[1] != undefined) css += ".v" + slideSwitchClassName + ".sOff::before {left:"+slideDistance[1]+"!important;}"; //off
-                    if (slideDistance[0] != undefined) css += ".v" + slideSwitchClassName + ".sOn::before {left:"+slideDistance[0]+"!important;}"; //on
+                    if (slideDistance[1] != undefined) css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOff::before {left:"+slideDistance[1]+"!important;}"; //off
+                    if (slideDistance[0] != undefined) css += ".vSlideSwitchWrapper.v" + slideSwitchClassName + ".sOn::before {left:"+slideDistance[0]+"!important;}"; //on
                 }  
                 attachStyleSheet("vSecondary", css);
             }
@@ -2857,11 +2866,12 @@ export function FormComponents() {
 
             //Add labels if enable
             if(showLabel){
-                var labels = nativeCheckbox.dataset[hyphenatedToCamel(dataAttributes.label)].split(",");
-                labels[0] == undefined?"On":labels[0];
-                labels[1] == undefined?"Off":labels[1];
-                sliderBgON.appendChild(document.createTextNode(labels[0])); 
-                sliderBgOFF.appendChild(document.createTextNode(labels[1])); 
+                var labelData = dataAttributes.label != "" ? nativeCheckbox.dataset[hyphenatedToCamel(dataAttributes.label)] : undefined;
+                var labels = labelData != undefined ? labelData.split(",") : [];
+                labels[0] == undefined ? labels[0] = "On" : null;
+                labels[1] == undefined ? labels[1] = "Off" : null;
+                sliderBgON.appendChild(document.createTextNode(labels[0]));
+                sliderBgOFF.appendChild(document.createTextNode(labels[1]));
 
             }
             sliderBgOFF.setAttribute("style", styles.label[1]); //off labelbg style
@@ -2884,7 +2894,7 @@ export function FormComponents() {
         var body = {
             autoBuild: function() {
                 if (slideSwitchClassName == "") throw new Error("Setup imcomplete: sliderSwitch class name must be supllied, specify using the 'config.className' property");
-                if (dataAttributes.size == "") throw new Error("Setup imcomplete: sliderSwitch size attribute to be used has not been specified, the attribute to be used must be specified using the 'config.sizeAttribute' property");
+                if (dataAttributes.size == "") throw new Error("Setup imcomplete: sliderSwitch size attribute to be used has not been specified, the attribute to be used must be specified using the 'config.dataAttributeNames.size' property");
                 var existingSheet = $$.ss("#v" + slideSwitchClassName);
                 convertCheckboxTosliderSwitch();
                 existingSheet == null ? sliderSwitchStyleSheet() : null;
@@ -2896,7 +2906,7 @@ export function FormComponents() {
                 var totalNewCheckBoxes = allCheckboxes.length;
                 if (totalNewCheckBoxes > 0) {
                     for (var x = 0; x < totalNewCheckBoxes; x++) {
-                        allCheckboxes[x].classList.contains(radioClassName) ? runRadioBuild(allCheckboxes[x]) : null;
+                        allCheckboxes[x].classList.contains(slideSwitchClassName) ? runSlideSwitchBuild(allCheckboxes[x]) : null;
                     }
                 }
             },
@@ -3007,20 +3017,20 @@ export function FormComponents() {
             if ($$.ss("style[data-id='v" + fileClassName + "']") == null) {
       
                 var css = "";
-                css += ".v" + fileClassName + "{width:" + fileDim[0] + "; height:" + fileDim[1] + "; z-index: 60;"+"}";
-                css += ".v" + fileClassName + " .fLabel {line-height:" + fileDim[1] + ";}";
-                css += ".v" + fileClassName + " .fButton {height:" + fileDim[1] + ";}";
+                css += ".vFile.v" + fileClassName + "{width:" + fileDim[0] + "; height:" + fileDim[1] + "; z-index: 60;"+"}";
+                css += ".vFile.v" + fileClassName + " .fLabel {line-height:" + fileDim[1] + ";}";
+                css += ".vFile.v" + fileClassName + " .fButton {height:" + fileDim[1] + ";}";
                 
-                if (styles.wrapper != "") css += ".v" + fileClassName + "{"+styles.wrapper+"}";
+                if (styles.wrapper != "") css += ".vFile.v" + fileClassName + "{"+styles.wrapper+"}";
                 
-                if (styles.fileLabel != "") css += ".v" + fileClassName + " .fLabel {"+styles.fileLabel+"}";
+                if (styles.fileLabel != "") css += ".vFile.v" + fileClassName + " .fLabel {"+styles.fileLabel+"}";
                     
-                if (styles.inputButton != "") css += ".v" + fileClassName + " .fButton{" + styles.inputButton + "}";
+                if (styles.inputButton != "") css += ".vFile.v" + fileClassName + " .fButton{" + styles.inputButton + "}";
 
                 if (enableButtonIcon == true){
-                    css += ".v" + fileClassName + " .fButton{position:relative; padding-left:"+fileDim[1]+"; }";
-                    css += ".v" + fileClassName + " .fButton::before {line-height:" + fileDim[1] + "; height:"+fileDim[1]+"; content:'-'; width: "+fileDim[1]+"; position:absolute; left:0; top:0; text-align:center;}";
-                    css += ".v" + fileClassName + " .fButton::before {"+styles.buttonIcon+"}";
+                    css += ".vFile.v" + fileClassName + " .fButton{position:relative; padding-left:"+fileDim[1]+"; }";
+                    css += ".vFile.v" + fileClassName + " .fButton::before {line-height:" + fileDim[1] + "; height:"+fileDim[1]+"; content:'-'; width: "+fileDim[1]+"; position:absolute; left:0; top:0; text-align:center;}";
+                    css += ".vFile.v" + fileClassName + " .fButton::before {"+styles.buttonIcon+"}";
                 } 
 
                 attachStyleSheet("v" + fileClassName, css);
@@ -3116,10 +3126,11 @@ export function FormComponents() {
         }
 
         function inputLabeler(native){
+            if (native.files.length == 0) return; //dialog cancelled, keep current label
             var label = native.previousElementSibling.querySelector(".fLabel");
             label.innerText = native.files[0]["name"];
             label.title = native.files[0]["name"];
-            toolTipHandler.refresh();
+            toolTipHandler != null ? toolTipHandler.refresh() : null; //null when fileToolTip is off or the ToolTip import has not resolved yet
         }
 
         function assignFileEventHandler() {
@@ -3138,7 +3149,7 @@ export function FormComponents() {
                     throw new Error("Setup imcomplete: file input class name must be supllied, specify using the 'config.className' property");
                 }
                 if (dataAttributes.size == "") {
-                    throw new Error("Setup imcomplete: file input size attribute to be used has not been specified, this attribute must be specified using the 'config.dataAttributeNames.sizeAttribute' property");
+                    throw new Error("Setup imcomplete: file input size attribute to be used has not been specified, this attribute must be specified using the 'config.dataAttributeNames.size' property");
                 }
                 var existingSheet = $$.ss("#v" + fileClassName);
 
@@ -3146,9 +3157,9 @@ export function FormComponents() {
                 existingSheet == null ? fileStyleSheet() : null;
                 assignFileEventHandler();
             },
-            refreshFile: function(nativeFile) { //Refreshes a particular select element to update custom content
+            refreshFile: function(nativeFile) { //Refreshes a particular file element to update custom content
                 validateElement(nativeFile, "fileObj.refreshFile() method expects a valid DOM element as argument 1");
-                nativeFile.classList.contains(fileClassName) ? runSelectBuild(nativeFile) : null;
+                nativeFile.classList.contains(fileClassName) ? runFileBuild(nativeFile) : null;
             },
             refresh: function(parent) {
                 validateElement(parent, "fileObj.refresh() method expects a valid DOM element as argument 1");

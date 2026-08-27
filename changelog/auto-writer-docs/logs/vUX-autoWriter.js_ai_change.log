@@ -1,0 +1,52 @@
+FILE: vUX-autoWriter.js
+FEATURE: auto-writer-docs
+DATE: 2026-08-26
+PRIOR STATE: as left by feature 'auto-writer-fixes'
+
+One code change, found while writing the example: the two public methods disagreed
+about what the target element means.
+
+================================================================================
+CHANGE 1 — deleteText() erases the text writeText() typed
+================================================================================
+
+OLD_SECTION
+        if (fn != null) validateFunction(fn, "writeTextObj.deleteText(..x) method argument 3 must be a function");
+
+        erase(n, textBox, "erase", function (){
+            runCallBack(fn);
+        });
+
+NEW_SECTION
+        if (fn != null) validateFunction(fn, "writeTextObj.deleteText(..x) method argument 3 must be a function");
+
+        //writeText() types into a '.vAutoWriter' span inside the target, so erase from that span
+        //when it is there: the caller names the same element for both methods, and the trailing
+        //node of the target itself is the blinker, not text.
+        var written = textBox.querySelector(".vAutoWriter");
+
+        erase(n, written == null? textBox: written, "erase", function (){
+            runCallBack(fn);
+        });
+
+REASON
+writeText(box, ...) types into a '.vAutoWriter' span it appends INSIDE box, and when
+config.showCursor is on it appends a '.vAutoWriterBlinker' span after that. deleteText(n,
+box) erased from box itself, so the last node it found was the blinker: the first call
+removed the caret, and only then did it start on the text — through the span wrapper.
+A caller naming the same element in both methods, which is the obvious reading of the
+API and what the example does, got the caret eaten instead of a character.
+
+The target is now resolved to the written span when one is present. An element this
+component never wrote to is unaffected and is still erased directly, so deleteText()
+remains usable on arbitrary markup.
+
+This was latent before feature 'auto-writer-fixes' as well, and worse: the old erase()
+popped characters off innerHTML, so on a container the first pops chewed through the
+"</span>" that closes the writer's own span.
+
+VERIFICATION
+Two assertions added to the module's harness suite (29 total, all passing): erasing from
+a cursor-enabled element that was typed into removes typed characters and leaves the
+blinker in place, and erasing from a plain element with no writer span still works
+directly on that element.

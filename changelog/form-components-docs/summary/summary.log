@@ -1,0 +1,27 @@
+Feature: form-components-docs
+Target module: FormComponents (vUX-formComponents.js)
+
+Verified the FormComponents module source (all six builders: select, radio, checkbox,
+datePicker, slideSwitch, file) and documented it.
+
+Changes:
+1. doc/form-components.md (new) — full usage guide for all custom form components:
+   shared builder model, markup contracts, configuration tables, methods, date-picker
+   module prerequisites, and a Known issues section from the verification pass.
+2. doc/README.md — added the guide to the usage-guides table and removed FormComponents
+   from the "coming next" list.
+
+No source code was modified. Verification findings (documented in the guide's Known
+issues section, with line references into vUX-formComponents.js) include:
+- datePicker references ListScroller and FormValidator globals that are never imported
+  or attached to window (crashes on open / on datetime-local build);
+- datePicker daysToolTip broken by a tooTipHandler/toolTipHandler variable typo;
+- file input crashes on selection when fileToolTip is off, and on dialog cancel;
+- slideSwitch.refresh() and file.refreshFile() reference functions from other builders;
+- select config.optionGroupStyle setter assigns to an undeclared variable;
+- leap-year check in datePicker reads the wrong object key, so February never has 29 days;
+- sizeAttribute/wrapAttribute setters validate the message instead of the value;
+- per-builder dimension state means mixed-size widgets get wrong dropdown placement.
+
+Affected projects: documentation only (doc/). Consumers of the date picker should note
+the documented window-global workaround until the missing imports are fixed in source.

@@ -1,0 +1,15 @@
+FEATURE: changelog-requirement
+DATE: 2026-08-26
+
+Project instructions
+  Modified:
+    CLAUDE.md
+
+Release changelog
+  Modified:
+    ChangeLog.md
+
+Notes:
+  No source, documentation or example file changed. ChangeLog.md's new entries are
+  backfill for features 'auto-writer-fixes', 'auto-writer-docs' and
+  'example-design-standard', which landed without updating it.

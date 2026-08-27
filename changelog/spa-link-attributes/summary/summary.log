@@ -1,0 +1,14 @@
+Feature: spa-link-attributes (RETROACTIVE — commit 07bb39d, logged after the
+changelog/ convention was introduced in 478c817)
+Target module: SPAEngine
+
+- data-* boolean attributes ("cache", "addToHistory", "loadIntoNode") now treat
+  "false"/"0" as false instead of Boolean(string), which was always true for
+  non-empty values.
+- saveState skips history.pushState when the link opted out via the addToHistory
+  attribute (previously read but never enforced).
+- Per-link flags reset to their defaults on every navigation so one link's
+  attributes no longer leak into subsequent clicks.
+
+Affected projects: any consumer of vUX-spaEngine.js using per-link data attribute
+opt-outs — they now behave as documented.

@@ -1,0 +1,25 @@
+FILE: examples/resizer/README.md
+FEATURE: resizer-example
+DATE: 2026-08-27
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file)
+
+NEW_SECTION
+How to run, a section table, a "what it demonstrates" list, three consumer-side
+techniques with the CSS for each, one caveat, and console notes.
+
+REASON
+Follows the structure CLAUDE.md asks for and that examples/autowriter/README.md
+established. The "consumer-side techniques" section is the part that earns its place:
+all three are things the library deliberately does not do, that a consumer will
+otherwise hit and misread as the component being broken — a 2px handle that is hard
+to grab and invisible at rest, a page stylesheet silently losing to resizer.css
+because the module injects it later, and a left-handled box that resizes correctly
+but appears to grow the wrong way because nothing anchored it.
+
+The caveat records a real limitation rather than glossing it: handles are matched by
+class name globally, so a style pushed through config.resizeHandlerProperties.styles
+reaches every Resizer on the page. The workaround (a distinct class per instance via
+config.myResizeHandler) is stated rather than left for the consumer to discover.

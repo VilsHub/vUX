@@ -22,7 +22,7 @@ import "./src/vUX-core-4.0.0-beta.js";
 //document, not to an instance: it is captured when the stack becomes non empty and
 //released only when it empties again.
 var modalStack = [];
-var pageState = { scrollY: 0, bodyPosition: "", frozen: false };
+var pageState = { bodyOverflow: "", frozen: false };
 var globalHandlersAttached = false;
 
 function topLayer() {
@@ -36,27 +36,20 @@ function layerOf(node) {
     return null;
 }
 
+//The page is held still with overflow rather than by taking the body out of flow:
+//the document never moves, so the scroll position needs no capturing and no
+//restoring, and the body keeps its own layout while a modal is up.
 function freezePage() {
-    if (pageState.frozen) return; //only the bottom layer freezes; nested opens must not re-capture
-    pageState.scrollY = window.scrollY;
-    pageState.bodyPosition = document.body.style["position"];
-    document.body.style["position"] = "fixed";
-    document.body.style["top"] = "-" + pageState.scrollY + "px";
+    if (pageState.frozen) return; //only the bottom layer freezes; nested opens must not re-freeze
+    pageState.bodyOverflow = document.body.style["overflow"];
+    document.body.style["overflow"] = "hidden";
     pageState.frozen = true;
 }
 
 function releasePage() {
     if (!pageState.frozen) return;
-    document.body.style["position"] = pageState.bodyPosition;
-    document.body.style["top"] = "";
+    document.body.style["overflow"] = pageState.bodyOverflow;
     pageState.frozen = false;
-
-    //jump back instantly, then leave the page's own scroll-behavior as it was
-    var htmlEle = $$.ss("html");
-    var previousScrollBehavior = htmlEle.style["scroll-behavior"];
-    htmlEle.style["scroll-behavior"] = "auto";
-    scrollTo(0, pageState.scrollY);
-    htmlEle.style["scroll-behavior"] = previousScrollBehavior;
 }
 
 function applyWidths(layer) {
@@ -323,7 +316,7 @@ function openLayer(settings, source) {
     layer.height = dimension["height"];
     layer.width = dimension["width"];
 
-    freezePage(); //must run before the overlay goes up, while the page scroll is still readable
+    freezePage(); //no-op for every layer after the first
 
     var overlay = $$.ce("DIV");
     overlay.classList.add("vModal", "xScroll");

@@ -1,0 +1,27 @@
+File: doc/form-components.md (NEW FILE)
+
+OLD_SECTION
+(none — file did not exist)
+
+NEW_SECTION
+Full usage guide for the FormComponents module (vUX-formComponents.js), covering all six
+builders: select(), radio(), checkbox(), datePicker(), slideSwitch() and file().
+Contents:
+- Shared model: factory builders, autoBuild() lifecycle (instead of initialize()),
+  discovery by className, hidden-native-as-source-of-truth, state forwarding,
+  generated per-className stylesheets, refresh(parent) for dynamic content.
+- Per-builder sections with markup requirements, a runnable JS snippet, a full
+  configuration table (property, type, default, purpose) and a methods list.
+- "Module prerequisites" section for the date picker documenting that ListScroller and
+  FormValidator must currently be provided as window globals by the consuming page.
+- "Known issues (4.0.0-beta)" section listing the defects found while verifying the
+  module source (crashers, wrong-result bugs, cosmetic issues) with line references.
+
+REASON
+The doc/ usage-guide set (doc/README.md) listed FormComponents among the modules whose
+guides were "coming next"; no documentation existed for any of the custom form
+components. This file adds that guide, following the structure and tone of the existing
+guides (e.g. doc/modal-displayer.md). Known issues are documented rather than silently
+omitted because the module was verified as part of this change and several documented
+features (daysToolTip, slideSwitch.refresh, file.refreshFile, datetime-local pickers)
+do not currently work as their config surface implies.

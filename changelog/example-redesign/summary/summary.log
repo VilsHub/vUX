@@ -1,0 +1,82 @@
+FEATURE: example-redesign
+DATE: 2026-08-26
+SCOPE: bring the three older example pages up to the design standard, on a shared system
+FOLLOWS: changelog/changelog-requirement
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — examples and conventions only. No library source changed.
+
+  - examples/shared/example.css   new — tokens and primitives for all example pages
+  - examples/modal/               redesigned; five sections, live config, error demos
+  - examples/form/                redesigned; widget palette driven from page tokens
+  - examples/spa/                 redesigned; sticky nav, styled route content, /shared/ mapping
+  - examples/autowriter/          retrofitted onto the shared stylesheet
+  - CLAUDE.md                     documents the shared stylesheet; stale note retired
+
+--------------------------------------------------------------------------------
+WHY
+--------------------------------------------------------------------------------
+
+Feature 'example-design-standard' set a standard that only one of the four example pages
+met, and recorded the other three as out of step. This closes that gap.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+A shared design system was extracted first, so the four pages share one palette and one
+set of primitives instead of four diverging copies. Each page then keeps only what is
+specific to its own demo.
+
+Every demonstration the three pages already made is preserved. What was added is what the
+standard names and they lacked: a hero that leads with the component working, live
+controls for config properties that had been fixed in code, and a section that performs
+bad calls and prints what was thrown.
+
+Each page also had one structural problem the redesign had to solve, and each is now
+documented rather than left to be rediscovered:
+
+  - modal — content is moved into an overlay outside the page wrapper, so it is styled
+    standalone; and #page must not wrap it, or the blur mode blurs the dialog too.
+  - form — the component generates the widgets' stylesheets from config strings, so
+    re-theming means re-theming those strings. main.js now interpolates one palette
+    object into them, so widget colours and page CSS cannot drift apart.
+  - spa — route fragments are injected at runtime and carry no classes, so they are
+    styled through the boundary element and stay portable content.
+
+--------------------------------------------------------------------------------
+PUBLIC API
+--------------------------------------------------------------------------------
+
+Unchanged. No library file was touched.
+
+--------------------------------------------------------------------------------
+NOT DONE
+--------------------------------------------------------------------------------
+
+  - The pages were not opened in a browser — there is none in this environment — so
+    every visual result across all four is unconfirmed. Everything verifiable without
+    rendering was verified.
+  - src/helpers.js validateInteger() still returns a boolean instead of throwing.
+    Outstanding since 'auto-writer-fixes'.
+  - Nine modules still have neither a guide nor an example: Carousel, FormValidator,
+    ListScroller, TouchHandler, ToolTip, Resizer, TimeLineList, CShapes, DOMDrawer.
+    They are now the only thing standing between the library and full coverage.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Every error demo on all three pages was checked against the real validators from
+src/helpers.js using the exact values each button passes — 14 for modal, 15 for form
+(including the values the pages themselves use, to confirm the live configuration is
+valid), 5 for spa. All passing.
+
+Selectors were cross-checked between each main.js and its markup. Both servers were run:
+the static server for modal/form/autowriter, and the SPA dev server, where every URL the
+page needs returned 200 including the new /shared/ mapping and the two client-side routes
+through the history fallback. The AutoWriter suites (29 module + 30 example assertions)
+were re-run unchanged after the stylesheet extraction. server.py re-checked for syntax.

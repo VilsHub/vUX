@@ -1,0 +1,24 @@
+RETROACTIVE LOG — commits ae28575 and 9dcbc8b, recorded after the fact (the
+changelog/ convention was introduced later, in commit 478c817).
+
+Files: examples/spa/index.html, examples/spa/main.js, examples/spa/server.py,
+examples/spa/README.md, examples/spa/display/home.html, examples/spa/display/user.html,
+examples/spa/display/table.html, examples/spa/pages/table.js (ALL NEW)
+
+OLD_SECTION
+(none — the examples/ directory did not exist)
+
+NEW_SECTION
+Commit ae28575 — runnable SPA example app combining SPAEngine (static + dynamic
+named-param routes, per-link cache/history opt-outs) and ProgressIndicator, with a
+bundled dev server (server.py) providing history fallback and the /lib/vUX/ mapping.
+
+Commit 9dcbc8b — /table page added: mounts a 500-row DataView with sort, filter, a
+50-cells/100ms ticker and a targeted-updates-vs-full-rebuild benchmark; leaving the
+route fires its exitCallback, which stops the ticker and destroys the view
+(examples/spa/main.js gained the route config and exit hook wiring).
+
+REASON
+Provide a runnable, servable demonstration of the SPA engine features added on this
+branch (named route params, per-link attribute opt-outs, the route exit hook) and of
+DataView under live update load.

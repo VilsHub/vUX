@@ -1,0 +1,64 @@
+RETROACTIVE LOG — commit 07bb39d, recorded after the fact (the changelog/ convention
+was introduced later, in commit 478c817).
+
+File: vUX-spaEngine.js
+
+=======================================================================
+Section 1 — boolean data attribute parsing
+OLD_SECTION
+loadIntoNode = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
+addToHistory = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
+cache = Boolean(cache == null?true:cache);
+
+NEW_SECTION
+function parseBooleanAttribute(value){
+    //HTML-friendly boolean: "false" and "0" disable, any other value (including bare presence) enables
+    return !(value === "false" || value === "0");
+}
+loadIntoNode = parseBooleanAttribute(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
+addToHistory = parseBooleanAttribute(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
+cache = cache == null ? true : parseBooleanAttribute(cache);
+
+REASON
+Boolean(string) is true for every non-empty string, so data-*="false" and "0" were
+read as true — the cache/addToHistory/loadIntoNode attributes could never be turned
+off from markup.
+
+=======================================================================
+Section 2 — saveState(): honor the opt-out
+OLD_SECTION
+function saveState(contents, elementId){
+
+    var routeName   = routeProperties.name;
+
+NEW_SECTION
+function saveState(contents, elementId){
+
+    if (!addToHistory) return; //link opted out of history via the addToHistory data attribute
+
+    var routeName   = routeProperties.name;
+
+REASON
+The addToHistory flag was read but never enforced — every navigation pushed history
+regardless of the attribute.
+
+=======================================================================
+Section 3 — getLinkContent(): per-link flag reset
+OLD_SECTION
+async function getLinkContent(element){
+
+    if (element.dataset[...loadIntoNode] != undefined){
+
+NEW_SECTION
+async function getLinkContent(element){
+
+    //reset per-link flags so one link's attributes don't leak into the next navigation
+    loadIntoNode = true;
+    addToHistory = true;
+
+    if (element.dataset[...loadIntoNode] != undefined){
+
+REASON
+The flags are engine-level variables only overwritten when a link declares the
+attribute, so one link's opt-out leaked into every subsequent click; they now reset
+to their defaults on every navigation.

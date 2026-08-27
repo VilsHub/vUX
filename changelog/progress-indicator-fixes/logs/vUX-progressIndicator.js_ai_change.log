@@ -1,0 +1,101 @@
+RETROACTIVE LOG — commit d489425, recorded after the fact (the changelog/ convention
+was introduced later, in commit 478c817).
+
+File: vUX-progressIndicator.js
+
+=======================================================================
+Section 1 — constructor validation
+OLD_SECTION
+export function ProgressIndicator(defaultProgressSpace=null) {
+    let progressSpeed=1.8, ...
+
+NEW_SECTION
+export function ProgressIndicator(defaultProgressSpace=null) {
+    if (defaultProgressSpace != null) validateElement(defaultProgressSpace, "ProgressIndicator(x) constructor argument 1 must either be null or an element (the default progress space)");
+    let progressSpeed=1.8, ...
+
+REASON
+The constructor argument was never validated.
+
+=======================================================================
+Section 2 — getProgressSpaceElement(): default space resolution
+OLD_SECTION
+function getProgressSpaceElement(element){
+    let targetSpace;
+    if(defaultProgressSpace == null){
+        let id = element.dataset[...progressSpaceId...];
+        if(id == "self"){ targetSpace = element; }
+        else if(id != undefined){ ... }
+        else{ targetSpace = element; }
+        return targetSpace;
+    }
+}
+
+NEW_SECTION
+function getProgressSpaceElement(element){
+    let targetSpace;
+    // the element's progressSpaceId data attribute takes priority over the default progress space
+    let id = element != null ? element.dataset[...progressSpaceId...] : undefined;
+    if(id == "self"){ targetSpace = element; }
+    else if(id != undefined){ ... }
+    else if(defaultProgressSpace != null){ targetSpace = defaultProgressSpace; }
+    else{ targetSpace = element; }
+    return targetSpace;
+}
+
+REASON
+The function only returned a value when defaultProgressSpace was null — with a
+default space configured it fell through and returned undefined, so the
+constructor's default-space feature was never usable.
+
+=======================================================================
+Section 3 — showProgress()/hideProgress() signatures
+OLD_SECTION
+this.showProgress = function (element){ ... validateElement(element, ...); showLoader(element); }
+this.hideProgress = function (element){ let targetSpace = getProgressSpaceElement(element)... }
+
+NEW_SECTION
+this.showProgress = function (element=null){ ... element optional; throws a clear
+error when omitted with no default space configured ... }
+this.hideProgress = function (element=null){ ... same contract ... }
+
+REASON
+With a default progress space configured, both methods should be callable without an
+element; previously showProgress hard-required one and hideProgress crashed.
+
+=======================================================================
+Section 4 — hideProgress(): style 3 timer
+OLD_SECTION
+clearInterval(tinyIncrement);
+
+NEW_SECTION
+clearInterval(smallIncrement);
+
+REASON
+tinyIncrement is not the interval handle — the crawl timer variable is
+smallIncrement, so the clear was a no-op and the timer leaked on slow requests.
+
+=======================================================================
+Section 5 — buildProgress(): style 3 re-show
+OLD_SECTION
+}else{
+    exist.classList.remove("done");
+}
+
+NEW_SECTION
+}else{
+    exist.classList.remove("done");
+
+    //reset a finished style 3 bar so it restarts from 0% instead of animating backwards from 100%
+    let progress = exist.querySelector(".progress");
+    if (progress != null && progress.classList.contains("style3")){
+        progress.classList.remove("completed", "halted", "slow", "tiny");
+        progress.style.transitionDuration = ".8s";
+        progress.style.width = "0%";
+        void exist.offsetWidth; //flush styles so the upcoming width change animates from 0%
+    }
+}
+
+REASON
+Re-showing a finished style 3 bar animated backwards from 100%; it now resets to 0%
+before restarting.

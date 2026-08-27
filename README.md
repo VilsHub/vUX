@@ -26,7 +26,7 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
   
     **main.js**
 
-    `import {FormComponents} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-formValidator.js"`
+    `import {FormComponents} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-formComponents.js"`
 
     `import {ListScroller} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-listScroller.js"`
 

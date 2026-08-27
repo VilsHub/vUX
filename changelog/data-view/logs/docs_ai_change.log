@@ -1,0 +1,17 @@
+RETROACTIVE LOG — commit 65fdc2f, recorded after the fact.
+
+Files: doc/data-view.md (new), doc/README.md, doc/spa-engine.md
+
+OLD_SECTION
+- doc/data-view.md did not exist.
+- doc/README.md guide table had no Data View row.
+- doc/spa-engine.md did not document exitCallback.
+
+NEW_SECTION
+- doc/data-view.md — usage guide for the DataView module (keyed binding, the
+  data-v-row / data-v-field template contract, update/sort/filter API).
+- doc/README.md — Data View row added to the usage-guides table.
+- doc/spa-engine.md — exitCallback documented (added in commit 3b8bb7b).
+
+REASON
+Document the new module and the recently added SPA exit hook.

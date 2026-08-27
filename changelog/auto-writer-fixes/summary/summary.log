@@ -1,0 +1,104 @@
+FEATURE: auto-writer-fixes
+DATE: 2026-08-26
+SCOPE: repair the AutoWriter module; every directive and every path off the happy path
+ORIGIN: verification of vUX-autoWriter.js, which had not been revised since 2021-07-19
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected.
+
+  - vUX-autoWriter.js   the AutoWriter constructor, rewritten internally
+
+No other module imports AutoWriter, the repository contains no example page for it, and
+doc/README.md still lists its guide as "coming next", so nothing in the repository
+depended on the behaviour that changed.
+
+--------------------------------------------------------------------------------
+WHAT WAS WRONG
+--------------------------------------------------------------------------------
+
+Plain typing and the '|' line-break directive worked. Almost everything else did not.
+Fourteen defects were confirmed by executing the module, four of them severe enough to
+break ordinary use:
+
+  1. The '~n~' delay directive threw and stopped typing dead under the DEFAULT
+     configuration, because resumeWriting() dereferenced a blinker node that only
+     exists when config.showCursor is true.
+  2. An unterminated '~' or '*' directive froze the browser tab and then crashed it:
+     both scanners looped past the end of the string with no bounds test.
+  3. An instance could not be used twice. A second writeText() ignored its arguments,
+     wrote the literal string "undefined", and retyped the first string into the first
+     element.
+  4. The collection ("multiple") mode had never run. writeText() validated argument 1
+     as an Element before consulting the type test, rejecting every collection.
+
+The rest: deleteText() erased n+1 units and accepted a non-integer count that left an
+interval erasing for ever; erasing popped characters off innerHTML and so shredded tags
+("A<br/>B" became "A<br"); the inline '*n*' directive raced its own erasing; a trailing
+directive emitted "undefined"; a partial config.cursorStyle blanked the members it did
+not name; omitting the optional callback relied on the browser eval'ing the string
+"null"; timers leaked; and there was no way to cancel a run.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+Internals, in ten changes recorded in logs/vUX-autoWriter.js_ai_change.log:
+
+  - one bounded directive reader replaces the two unbounded scanners, and the whole
+    string is verified by writeText() up front, so a malformed directive throws to its
+    caller like any other argument fault instead of failing inside a timer
+  - typing and erasing work on DOM nodes instead of innerHTML strings, so a line break
+    is one erasable unit and markup is never re-parsed or truncated mid-tag
+  - one step machine drives all four paths (character, '|', '*n*', '~n~') and returns
+    through the same bounds test every tick; the erase directive resumes typing from a
+    completion callback rather than racing it
+  - per-run state is built at the start and cleared at the end, which makes an instance
+    reusable and collapses the single/group split into one list of boxes and texts
+  - the type test runs first and owns argument validation, which makes collection mode
+    reachable and lets it accept an HTMLCollection or a plain array, not only a NodeList
+  - all four timers are tracked and cleared together
+
+--------------------------------------------------------------------------------
+PUBLIC API
+--------------------------------------------------------------------------------
+
+Unchanged, and one addition:
+
+  writeText(textBox, text, fn)    same signature; now also accepts a collection of
+                                  elements with an array of strings, as the module
+                                  always intended but never permitted
+  deleteText(n, textBox, fn)      same signature; now erases exactly n
+  config.*                        same five properties, same meanings
+  stop()                          NEW — cancels a run in progress and clears its timers
+
+Behavioural differences a consumer could notice, all of them corrections:
+
+  - a malformed '*n*' or '~n~' directive now throws from writeText() instead of hanging
+  - deleteText(n) removes n units, not n+1
+  - a second writeText() on the same instance clears the target span and types the text
+    it was given, rather than appending to the previous run
+  - a line break is a real <br> element rather than the parsed remains of a "<br/>"
+    string; visually identical, and now erasable as one unit
+
+--------------------------------------------------------------------------------
+NOT DONE
+--------------------------------------------------------------------------------
+
+  - src/helpers.js validateInteger() still returns a boolean rather than throwing,
+    which silently disables its use here and in $$.randomInteger. Worked around locally
+    in this module; the shared fix wants its own feature entry.
+  - AutoWriter remains undocumented (no doc/auto-writer.md) and has no example page.
+    doc/README.md line 33 still lists its guide as pending. Out of scope for a repair.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+The repository has no test runner, no build step and no dev server, so the module was
+exercised directly against a stubbed core ($$, the validateX family, processAssetPath,
+vModel) and a minimal DOM. Every defect was measured on the old file and re-measured on
+the new one. 26 assertions pass, covering all ten changes and the behaviour that already
+worked. The harness is scratch, not committed.

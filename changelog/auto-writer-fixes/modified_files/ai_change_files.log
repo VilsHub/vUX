@@ -1,0 +1,18 @@
+FEATURE: auto-writer-fixes
+DATE: 2026-08-26
+
+AutoWriter
+  Modified:
+    vUX-autoWriter.js
+
+Notes:
+  assets/css/autoWriter.css was reviewed and left unchanged — the class names it
+  defines (.vAutoWriter, .vAutoWriterBlinker, .vAutoWriterBlinker.hide) are exactly
+  those the rewritten module emits, and the blinker's border-left is still set inline
+  from config.cursorStyle over the stylesheet's default.
+
+  src/helpers.js and src/vUX-core-4.0.0-beta.js were NOT modified. The verification
+  found that validateInteger() (helpers.js:721) returns a boolean instead of throwing,
+  which makes its use in this module and in $$.randomInteger (core:1124) a no-op.
+  vUX-autoWriter.js now works around it locally; correcting the shared signature is a
+  core change and belongs to its own feature entry.

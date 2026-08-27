@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX FormComponents example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- markup rules the builders require ----------
+       radio & checkbox: each input sits in its own wrapper DIV beside a LABEL,
+       and the group container carries the configured axis class. */
+    .h-group{display:flex; gap:22px; flex-wrap:wrap}
+    .h-group > div,.v-group > div{display:flex; align-items:center; gap:8px}
+    .v-group > div{margin-bottom:10px}
+    .h-group label,.v-group label{cursor:pointer; font-size:.92rem}
+
+    /* the switch checkbox must be the LAST element child of its own wrapper,
+       so the text label lives outside that wrapper */
+    .switch-row{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:12px}
+    .switch-row > label{font-size:.92rem}
+
+    .f-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px}
+    .f-block{margin-bottom:22px}
+    .f-block:last-child{margin-bottom:0}
+    .f-block > p{margin:0 0 10px; font-size:.86rem; color:var(--muted)}
+    .state{
+        font-family:var(--mono); font-size:.78rem; color:var(--cyan);
+        background:var(--ink); border:1px solid var(--line); border-radius:6px;
+        padding:7px 10px; margin:10px 0 0;
+    }
+    .hero-widgets{
+        display:flex; gap:26px; flex-wrap:wrap; align-items:center; margin-top:34px;
+        background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:22px 24px;
+    }
+    .hero-widgets .switch-row{margin:0}
+    @media (max-width:560px){ .hero-widgets{flex-direction:column; align-items:stretch} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> FormComponents <b>/</b> v4.0.0-beta</p>
+        <h1>Native inputs, better dressed.</h1>
+        <p class="hero-sub">
+            Six builders that hide a real <code>&lt;input&gt;</code> and draw a widget in front of it.
+            The native element stays the <b>source of truth</b> — your form, your validation, your submit.
+        </p>
+
+        <!-- real widgets, built by the same autoBuild() call as the rest of the page -->
+        <div class="hero-widgets">
+            <select class="demo-select" name="heroFruit" data-size="220px,40px">
+                <option>Apple</option>
+                <option selected>Banana</option>
+                <optgroup label="Citrus"><option>Orange</option><option>Lime</option></optgroup>
+            </select>
+            <div class="switch-row">
+                <label>Live</label>
+                <div><input type="checkbox" name="heroLive" class="demo-switch" data-dim="70px,30px" data-labels="On,Off" checked></div>
+            </div>
+            <div class="h-group">
+                <div><input type="radio" name="heroPlan" value="a" class="demo-radio" checked> <label>Monthly</label></div>
+                <div><input type="radio" name="heroPlan" value="b" class="demo-radio"> <label>Yearly</label></div>
+            </div>
+        </div>
+        <div class="hero-src">fc.select().autoBuild();  <span class="d">// every .demo-select on the page</span></div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>All six builders</h2>
+        <p class="lede">
+            Each widget below is driven by a hidden native input. Interact with any of them and watch the
+            change log in section 03 — every line there was fired by the <em>native</em> element.
+        </p>
+
+        <div class="f-grid">
+            <div class="panel">
+                <div class="panel-h"><span>select</span></div>
+                <div class="panel-b">
+                    <div class="f-block">
+                        <p>Single, with <code>&lt;optgroup&gt;</code>, a disabled option and a search box:</p>
+                        <select class="demo-select" name="fruit" data-size="100%,40px">
+                            <option>Apple</option>
+                            <option selected>Banana</option>
+                            <option disabled>Durian (sold out)</option>
+                            <optgroup label="Citrus">
+                                <option>Orange</option>
+                                <option>Lime</option>
+                            </optgroup>
+                        </select>
+                        <button type="button" class="tiny" id="addOption" style="margin-top:12px">Add option + refreshSelect()</button>
+                    </div>
+                    <div class="f-block">
+                        <p><code>multiple</code> — click to toggle, full list as a tooltip:</p>
+                        <select class="demo-select" name="toppings" multiple data-size="100%,40px">
+                            <option selected>Cheese</option>
+                            <option>Mushroom</option>
+                            <option selected>Olives</option>
+                            <option>Pepperoni</option>
+                        </select>
+                    </div>
+                    <p class="note">Focus a widget, then ArrowUp/ArrowDown to move, Enter to pick.</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-h"><span>radio &amp; checkbox</span></div>
+                <div class="panel-b">
+                    <div class="f-block">
+                        <p>Radio group on the horizontal axis (<code>axisClass</code>):</p>
+                        <div class="h-group">
+                            <div><input type="radio" name="plan" value="basic" class="demo-radio" checked> <label>Basic</label></div>
+                            <div><input type="radio" name="plan" value="pro" class="demo-radio"> <label>Pro</label></div>
+                            <div><input type="radio" name="plan" value="team" class="demo-radio"> <label>Team</label></div>
+                        </div>
+                    </div>
+                    <div class="f-block">
+                        <p>Checkboxes — the tick is supplied by config <code>content</code>, not an icon font:</p>
+                        <div class="v-group">
+                            <div><input type="checkbox" name="updates" class="demo-check" checked> <label>Email me updates</label></div>
+                            <div><input type="checkbox" name="terms" class="demo-check"> <label>Accept the terms</label></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-h"><span>datePicker</span></div>
+                <div class="panel-b">
+                    <div class="f-block">
+                        <p><code>type="date"</code> with <code>min</code>/<code>max</code> and a preset value:</p>
+                        <input type="date" class="demo-date" name="dob" data-size="100%,40px"
+                               min="1990-01-01" max="2030-12-31" value="2000-06-15">
+                        <p class="state" id="dateState">value: — | complete: —</p>
+                    </div>
+                    <div class="f-block">
+                        <p><code>type="datetime-local"</code> — day selection continues into time entry:</p>
+                        <input type="datetime-local" class="demo-date" name="meeting" data-size="100%,40px"
+                               min="2020-01-01" max="2030-12-31">
+                        <p class="state" id="dtState">value: — | complete: —</p>
+                    </div>
+                    <p class="note">
+                        Pick February of a leap year (2024) — it has 29 days. Day cells carry their
+                        weekday as a tooltip (<code>daysToolTip</code>).
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-h"><span>slideSwitch &amp; file</span></div>
+                <div class="panel-b">
+                    <div class="f-block" id="switches">
+                        <p>Labels come from <code>data-labels</code>, size from <code>data-dim</code>:</p>
+                        <div class="switch-row">
+                            <label>Notifications</label>
+                            <div><input type="checkbox" name="notify" class="demo-switch" data-dim="70px,30px" data-labels="On,Off" checked></div>
+                        </div>
+                        <div class="switch-row">
+                            <label>Dark mode</label>
+                            <div><input type="checkbox" name="dark" class="demo-switch" data-dim="70px,30px" data-labels="Yes,No"></div>
+                        </div>
+                        <button type="button" class="tiny" id="injectSwitch">Inject a new switch + refresh()</button>
+                    </div>
+                    <div class="f-block">
+                        <p>File input — label, browse button, and the file name as a tooltip:</p>
+                        <input type="file" class="demo-file" name="attachment" data-dim="100%,36px">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Two attribute conventions</h2>
+        <p class="lede">
+            This trips people up, so the example uses both deliberately. <code>select</code> and
+            <code>datePicker</code> take the <strong>full attribute name</strong>; <code>slideSwitch</code>
+            and <code>file</code> take <strong>dataset names without the <code>data-</code> prefix</strong>.
+        </p>
+        <div class="cards">
+            <div class="card">
+                <div class="sym" style="color:var(--cyan)">1</div>
+                <h3>Full attribute name</h3>
+                <p>The value is the attribute exactly as written in the markup.</p>
+                <pre class="snip" style="border-radius:8px"><span class="p">select</span>.config.sizeAttribute = <span class="s">"data-size"</span>;
+<span class="c">// &lt;select data-size="230px,40px"&gt;</span></pre>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--amber)">2</div>
+                <h3>Dataset name</h3>
+                <p>The prefix is implied; give the key as it appears on <code>element.dataset</code>.</p>
+                <pre class="snip" style="border-radius:8px"><span class="p">slideSwitch</span>.config.dataAttributeNames = { size: <span class="s">"dim"</span> };
+<span class="c">// &lt;input data-dim="70px,30px"&gt;</span></pre>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--violet)">↻</div>
+                <h3>Content added later</h3>
+                <p>New markup is not converted automatically. <code>refreshSelect(native)</code> rebuilds one widget; <code>refresh(container)</code> converts whatever is new inside a container.</p>
+                <p class="note" style="margin:0">Both buttons in section 01 do exactly this.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>The native input stays the source of truth</h2>
+        <p class="lede">
+            One delegated <code>change</code> listener, bound to <code>document</code> and reading the
+            <em>native</em> element. Every line below proves a widget wrote its state through to the real
+            form control — which is what your <code>submit</code> will send.
+        </p>
+        <div class="panel">
+            <div class="panel-h">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span>native change log</span>
+                <button class="tiny ghost" id="clearLog">clear</button>
+            </div>
+            <div class="panel-b"><pre class="log" id="log"></pre></div>
+        </div>
+        <p class="note">
+            The date picker is the exception: it writes the ISO value and the completeness flag onto the
+            native input's <em>attributes</em> without firing <code>change</code>, so the two state lines in
+            section 01 are driven by a <code>MutationObserver</code> instead.
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
+        <p class="lede">
+            Every builder validates its config, and <code>autoBuild()</code> refuses an incomplete setup.
+        </p>
+        <div class="row">
+            <button data-bad="className">select className = 42</button>
+            <button data-bad="radioSize">radioButtonSize = ["18px"]</button>
+            <button data-bad="radioDim">radioButtonSize = ["18px","tall"]</button>
+            <button data-bad="checkSize">checkboxSize = "18px"</button>
+            <button data-bad="labelProps">labelProperties of 4</button>
+            <button data-bad="switchStyle">styles = { wrapper: "x" }</button>
+            <button data-bad="unknownStyle">styles = { glow: [] }</button>
+            <button data-bad="incomplete">radio autoBuild() with no size</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/form-components.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            All six builders are on <span class="kbd">window.demoForm</span> — try
+            <span class="kbd">demoForm.select.refresh()</span>.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

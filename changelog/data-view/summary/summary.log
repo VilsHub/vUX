@@ -1,0 +1,14 @@
+Feature: data-view (RETROACTIVE — commit 65fdc2f, logged after the changelog/
+convention was introduced in 478c817)
+Target module: DataView (new)
+
+Added vUX-dataView.js: keyed data-to-DOM binding for hot-update views — updateRow
+writes only changed cells, sort/setData move existing nodes (preserving focus/input
+state), filter toggles visibility; data-v-row / data-v-field template contract.
+Also registered dataView.js in the module registry (deduping the doubled
+spaEngine.js entry and adding the missing formValidator/progressIndicator/toolTip/
+domDrawer entries), added doc/data-view.md, and documented the SPA engine's new
+exitCallback in its guide.
+
+Affected projects: consumers gain a new module; window.vUxModules now lists the
+full, correct module set.

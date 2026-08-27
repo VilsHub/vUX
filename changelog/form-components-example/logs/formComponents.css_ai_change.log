@@ -1,0 +1,65 @@
+File: assets/css/formComponents.css
+
+=======================================================================
+Section 1 — .vCheckboxWrapper
+OLD_SECTION
+.vCheckboxWrapper {
+    height:auto;
+    display:block;
+
+NEW_SECTION
+.vCheckboxWrapper {
+    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget — same fix as .vRadioButtonWrapper above */
+    display:block;
+
+REASON
+The static sheet always loads after the generated per-class styles, so height:auto beat
+the generated .v<className>{height:...} and every checkbox widget collapsed to
+<width>x0 — invisible and unclickable. The radio wrapper had the identical line already
+commented out; this applies the same fix to the checkbox.
+
+=======================================================================
+Section 2 — .vRadioButtonWrapper .vRadioButton::before
+OLD_SECTION
+.vRadioButtonWrapper .vRadioButton::before {
+position:absolute;
+border-radius:100%;
+
+NEW_SECTION
+.vRadioButtonWrapper .vRadioButton::before {
+content:''; /* without this the pseudo-element never renders and radios are invisible — the checkbox rule below already had it */
+position:absolute;
+border-radius:100%;
+
+REASON
+The pseudo-element that draws the radio circle had no content property, so it never
+generated and radios were invisible out of the box (labels only). The equivalent
+checkbox rule already had content:''.
+
+=======================================================================
+Section 3 — date picker control buttons (after the .rinactive rules)
+OLD_SECTION
+  .vDateBoxTool .vDateBoxControlCon .rinactive{
+    cursor:not-allowed;
+  }
+
+NEW_SECTION
+  .vDateBoxTool .vDateBoxControlCon .rinactive{
+    cursor:not-allowed;
+  }
+  /* shared inactive class managed by ListScroller (it toggles one class on both buttons) */
+  .vDateBoxTool .vDateBoxControlCon .vPrev.sInactive::before{
+    border-right:15px solid #ccc;
+  }
+  .vDateBoxTool .vDateBoxControlCon .vNext.sInactive::before{
+    border-left:15px solid #ccc;
+  }
+  .vDateBoxTool .vDateBoxControlCon .sInactive{
+    cursor:not-allowed;
+  }
+
+REASON
+ListScroller toggles ONE configured inactive class on both scroll buttons, but the CSS
+only had per-side classes (linactive/rinactive) that nothing ever toggled. These rules
+give the shared sInactive class (now configured by the date picker) the same greyed
+appearance per side. The legacy linactive/rinactive rules are kept for compatibility.

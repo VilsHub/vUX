@@ -1,0 +1,195 @@
+FILE: examples/modal/index.html, examples/modal/main.js, examples/modal/README.md
+FEATURE: modal-example-expansion
+DATE: 2026-08-04
+PRIOR STATE: as left by feature 'modal-stacking'
+
+================================================================================
+CHANGE 1 — index.html: from three modals to seven
+================================================================================
+
+OLD_SECTION
+(three modals: loginModal, nestedModal, tallModal; loginModal carried the only
+nested triggers, and the deepest reachable stack was two layers)
+
+NEW_SECTION
+(seven modals)
+  loginModal    - page trigger; nested triggers for reset and self-open
+  nestedModal   - opened from loginModal; nested trigger for terms
+  termsModal    - opened from nestedModal, giving a three layer chain
+  profileModal  - independent page trigger
+  confirmModal  - opened from profileModal (a confirm over a form)
+  helpModal     - opened from profileModal by a SECOND ModalDisplayer instance
+  tallModal     - page trigger; taller than the viewport
+
+REASON
+Requested: the example should show multiple modals. Three modals could only ever
+demonstrate a two layer stack from a single entry point, which does not exercise the
+behaviour the module now has.
+
+The additions are chosen so each one shows something the others do not, rather than
+being more of the same. termsModal makes the chain three deep, which is where
+last-in-first-out ordering becomes visible rather than merely stated. profileModal is
+a second independent entry point, so the stack is not always rooted in the same
+modal. confirmModal is the realistic "confirm over a form" shape. helpModal is opened
+by a separate instance and is the only way to see, in the browser, that the stack is
+shared across instances and that one Escape still pops exactly one layer - documented
+behaviour that previously had no demonstration.
+
+Existing ids, classes and structure were deliberately preserved (loginModal keeps
+exactly two inputs, nestedModal keeps its "Nested" heading text and an input, the
+open-nested / open-self / modal-close / data-widths hooks are unchanged) so that the
+automated suites, which drive this page as their fixture, continue to address the
+same elements.
+
+Each modal carries a distinct accent colour, so that when layers stack it is
+immediately obvious which is which rather than requiring the reader to count.
+
+================================================================================
+CHANGE 2 — index.html: overlay background selector
+================================================================================
+
+OLD_SECTION
+(no control; the demo only ever ran in the default "color" mode, and
+config.overlayBackgroundType = "blur" was undemonstrated)
+
+NEW_SECTION
+            <fieldset>
+                <legend>Overlay background</legend>
+                <label>
+                    <select id="overlayType">
+                        <option value="color">color — tint the overlay</option>
+                        <option value="blur">blur — blur the page behind instead</option>
+                    </select>
+                </label>
+                <p class="hint" ...>
+                    Blur applies the <code>vxKit</code> class to <code>config.pageContainer</code>
+                    (here <code>#page</code>). The container must wrap the page but not the modal
+                    content, or the modal blurs with it. Takes effect on the next open.
+                </p>
+            </fieldset>
+
+REASON
+Requested: add the blur option. Blur has existed in the module since v4 and is listed
+in ChangeLog.md, but nothing in the repository showed it working, and it carries two
+constraints that are easy to get wrong and invisible from the API alone: the
+container must exclude the modal markup, and the setting is snapshotted per layer so
+it applies from the next open rather than to the modal already on screen. Both are
+stated inline next to the control, where someone experimenting will actually read
+them.
+
+The demo page suits this without restructuring, because its modal markup already
+sits outside #page - so #page is a valid pageContainer as-is.
+
+================================================================================
+CHANGE 3 — main.js: second instance, depth readout, blur wiring
+================================================================================
+
+OLD_SECTION
+const modal = new ModalDisplayer();
+...
+modal.config.openProcessor = () => log("opened: " + (modal.mainForm ? modal.mainForm.id : "?"));
+modal.config.closeProcessor = () => log("closed");
+modal.initialize();
+
+document.getElementById("effect").addEventListener("change", e => {
+    modal.config.effect = e.target.value;
+});
+
+window.demoModal = modal;
+
+NEW_SECTION
+(main instance, plus)
+
+const altModal = new ModalDisplayer();
+altModal.config.className = "alt-modal";
+altModal.config.formIdAttribute = "data-form";
+altModal.config.closeButtonClass = "modal-close";
+altModal.config.effect = "flip";
+altModal.config.overlayStyle = "hsla(180, 40%, 10%, 0.55)";
+...
+altModal.initialize();
+
+document.getElementById("overlayType").addEventListener("change", e => {
+    [modal, altModal].forEach(instance => {
+        instance.config.overlayBackgroundType = e.target.value;
+        if (e.target.value === "blur") instance.config.pageContainer = document.getElementById("page");
+    });
+    log("overlay background: " + e.target.value);
+});
+
+window.demoModal = modal;
+window.altModal = altModal;
+
+REASON
+The second instance is given a different trigger class, effect and overlay tint
+precisely so that its layer is visibly distinct: it demonstrates that two instances
+with unrelated configuration still cooperate on one stack. Both are exposed on
+window so the shared depth can be compared from the console.
+
+The callbacks now report depth alongside the modal id, and update an on-page counter,
+which turns stacking from something the reader has to infer into something displayed.
+
+================================================================================
+CHANGE 4 — closeAll() moved from the page into the modals
+================================================================================
+
+OLD_SECTION
+                <p>Open layers: <span id="depth">0</span>
+                   <button type="button" id="closeAllBtn">closeAll()</button></p>
+...
+document.getElementById("closeAllBtn").addEventListener("click", () => {
+    modal.closeAll();
+    showDepth();
+});
+
+NEW_SECTION
+                <p>Open layers: <span id="depth">0</span></p>
+                <p class="hint" ...>
+                    A page button cannot dismiss a stack — the overlay blocks the page, which is
+                    the whole point of a modal. So the <code>closeAll()</code> button lives
+                    <em>inside</em> the deeper modals, where it is actually reachable.
+                </p>
+...
+(a `.close-all` button inside termsModal and confirmModal, wired by delegation)
+document.addEventListener("click", e => {
+    if (e.target.closest(".close-all") != null) {
+        modal.closeAll();
+        showDepth();
+    }
+});
+
+REASON
+The page level button was unusable and the automated run proved it: Playwright timed
+out trying to click it, reporting that the overlay intercepted pointer events. That
+is correct modal behaviour, not a defect - a modal blocks the page beneath it - but
+it made the control pointless exactly when it was needed, since closeAll() only has
+a purpose while a stack is open.
+
+The button therefore moved inside the two deepest modals, where the top layer makes
+it reachable. The page text now explains why, which turns a dead control into a
+demonstration of modality.
+
+The listener is delegated from document rather than bound to the button, because the
+component copies modal content into the overlay: a listener attached to the original
+node would not be present on the copy the user actually clicks. This is the same
+constraint the guide documents for consumer event handling, so the example now
+follows its own advice.
+
+================================================================================
+CHANGE 5 — README.md rewritten around the expanded demo
+================================================================================
+
+OLD_SECTION
+(a flat bullet list describing three modals)
+
+NEW_SECTION
+(a table mapping each of the seven modals to where it is opened from and what it
+shows, followed by a feature list covering both overlay modes, stacking depth, the
+shared stack across instances, and why closeAll() sits inside a modal)
+
+REASON
+With seven modals and two instances, a flat list no longer tells a reader where to
+click. The table answers "what should I open, and why" directly. The feature list
+gained the blur mode, the cross-instance stack and the closeAll placement rationale,
+and now mentions that the page keeps its layout as well as its scroll position, which
+is true only since the scroll lock changed to overflow (see changelog/modal-scroll-lock).

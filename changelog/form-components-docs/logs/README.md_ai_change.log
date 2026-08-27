@@ -1,0 +1,16 @@
+File: doc/README.md
+
+OLD_SECTION
+| [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
+
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`, `FormComponents`) are coming next.
+
+NEW_SECTION
+| [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
+| [Form Components](form-components.md) | `vUX-formComponents.js` | Custom select, radio, checkbox, date picker, slide switch and file input built over the hidden native controls |
+
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+
+REASON
+Register the new Form Components guide in the usage-guides table and remove
+FormComponents from the "coming next" list, since its guide now exists.

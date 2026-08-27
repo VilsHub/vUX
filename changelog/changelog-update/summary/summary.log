@@ -1,0 +1,20 @@
+Feature: changelog-update
+Target module: release notes (ChangeLog.md)
+
+Rolled up every change on this branch after commit 98d8799 into ChangeLog.md's
+v4.0.0-beta section, following the file's existing Added/Fixed/Changed bullet
+pattern:
+- Added: DataView module, modal stacking, SPAEngine named route params + exit hook,
+  the doc/ guide set, the spa/modal/form runnable examples, the DataView table page,
+  CLAUDE.md + the changelog/<feature>/ convention, and the FormComponents guide and
+  example.
+- Fixed: SPAEngine link-attribute/history/pattern-matching fixes, ProgressIndicator
+  space-resolution and lifecycle fixes, the ModalDisplayer stacking-rewrite fixes
+  plus the body-reflow and overlay-anchor fixes, the module registry cleanup, and
+  the 16 FormComponents fixes.
+- Changed: modal scroll lock mechanism (position:fixed → body overflow:hidden).
+
+Sources: commit messages 98d8799..HEAD and the per-feature logs under changelog/
+for the uncommitted modal and form components work.
+
+Affected projects: documentation only.

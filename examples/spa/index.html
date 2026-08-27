@@ -1,23 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>vUX SPA example</title>
-        <script type="module" src="/main.js" data-id="vUX" data-library-root="/lib/vUX/"></script>
-    </head>
-    <body>
-        <div id="progressSpace" style="position:fixed; top:0; left:0; width:100%; height:3px; z-index:200;"></div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX SPA example</title>
+<script type="module" src="/main.js" data-id="vUX" data-library-root="/lib/vUX/"></script>
+<!-- relative on purpose: resolves to /examples/shared/ under a repo-root static
+     server, and to /shared/ under this example's own dev server (any route depth) -->
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* the progress bar sits above everything, across the top of the viewport */
+    #progressSpace{position:fixed; top:0; left:0; width:100%; height:3px; z-index:200}
+
+    .topbar{
+        position:sticky; top:0; z-index:120; background:rgba(8,11,17,.86);
+        backdrop-filter:blur(10px); border-bottom:1px solid var(--line);
+    }
+    .topbar .wrap{display:flex; align-items:center; gap:22px; height:62px}
+    .brand{font-family:var(--mono); font-size:.78rem; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); white-space:nowrap}
+    .brand b{color:var(--amber)}
+    nav{display:flex; gap:6px; flex-wrap:wrap; margin-left:auto}
+    nav a{
+        color:var(--muted); text-decoration:none; font-size:.87rem; font-weight:550;
+        padding:7px 13px; border-radius:7px; border:1px solid transparent; white-space:nowrap;
+    }
+    nav a:hover{color:var(--fg); background:var(--panel-2); border-color:var(--line)}
+    nav a.here{color:var(--amber); border-color:#3a2f1c; background:#191307}
+
+    /* ---------- route content ----------
+       Fragments in display/ are plain HTML with no classes of their own, so they are
+       styled through the boundary element they are loaded into. */
+    .route{padding:44px 0 16px}
+    /* enough to keep the shell from collapsing between routes, without leaving a void
+       under a short fragment */
+    #contentBoundary{min-height:180px}
+    #contentBoundary h1{font-size:1.9rem; letter-spacing:-.025em; margin:0 0 14px}
+    #contentBoundary p{color:var(--muted); max-width:70ch}
+    #contentBoundary code{color:var(--cyan)}
+    #contentBoundary #uid{
+        font-family:var(--mono); color:var(--amber); background:var(--panel);
+        border:1px solid var(--line); border-radius:6px; padding:2px 9px;
+    }
+
+    #tableControls{display:flex; gap:9px; flex-wrap:wrap; margin:22px 0 14px}
+    #tableStatus{
+        font-family:var(--mono); font-size:.79rem; color:var(--cyan);
+        background:var(--ink); border:1px solid var(--line); border-radius:6px; padding:8px 11px; max-width:none;
+    }
+    #stockTable{
+        width:100%; border-collapse:collapse; font-family:var(--mono); font-size:.83rem;
+        border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-top:6px;
+    }
+    #stockTable th{
+        text-align:left; padding:10px 12px; background:var(--panel-2); color:var(--muted);
+        font-weight:600; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase;
+        /* sticky resolves against .table-scroll, the scrolling ancestor — not the
+           viewport — so this is 0, not the height of the top bar */
+        position:sticky; top:0; z-index:2;
+    }
+    #stockTable td{padding:7px 12px; border-top:1px solid var(--line); color:var(--fg)}
+    #stockTable tbody tr:nth-child(even) td{background:rgba(20,28,42,.42)}
+    .table-scroll{max-height:460px; overflow:auto; border-radius:10px}
+
+    /* shown by default; main.js removes it once the engine boots, so it is only
+       ever visible when the page was served in a way that cannot load the engine */
+    .boot-notice{background:#1c1408; border-bottom:1px solid #3a2f1c; padding:22px 0}
+    .boot-notice strong{color:var(--amber); display:block; margin-bottom:8px; font-size:1rem}
+    .boot-notice p{color:var(--muted); margin:0 0 10px; max-width:74ch; font-size:.9rem}
+    .boot-notice pre{
+        background:var(--ink); border:1px solid var(--line); border-radius:8px;
+        padding:12px 14px; margin:0 0 10px; font-family:var(--mono); font-size:.82rem; color:var(--fg);
+    }
+
+    /* a mock address bar: the live pathname beside a counter of real document loads */
+    .urlbar{
+        display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:34px;
+        background:var(--panel); border:1px solid var(--line); border-radius:999px;
+        padding:11px 20px; font-family:var(--mono); font-size:.88rem; max-width:100%;
+    }
+    .urlbar-dot{width:9px; height:9px; border-radius:50%; background:var(--green); flex:none; box-shadow:0 0 8px var(--green)}
+    .urlbar-path{color:var(--amber); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .urlbar-meta{margin-left:auto; color:var(--dim); font-size:.78rem; white-space:nowrap}
+    .urlbar-meta b{color:var(--cyan)}
+
+    .diag{border-top:1px solid var(--line); padding:40px 0 64px}
+    .diag .log{height:220px}
+    @media (max-width:720px){ .topbar .wrap{height:auto; padding-top:12px; padding-bottom:12px; flex-wrap:wrap} nav{margin-left:0} }
+</style>
+</head>
+<body>
+
+<div id="progressSpace"></div>
+
+<div class="topbar">
+    <div class="wrap">
+        <span class="brand">vUX <b>/</b> SPAEngine</span>
         <nav>
             <a href="/" id="homeLink" class="spa-link">Home</a>
             <a href="/user/7" id="userLink" class="spa-link" data-click-callback="showUser">User 7</a>
-            <a href="/user/8" id="user8Link" class="spa-link" data-click-callback="showUser" data-cache="false" data-add-to-history="false">User 8 (no history, no cache)</a>
+            <a href="/user/8" id="user8Link" class="spa-link" data-click-callback="showUser"
+               data-cache="false" data-add-to-history="false">User 8 · no history, no cache</a>
             <a href="/table" id="tableLink" class="spa-link" data-click-callback="showTable">Live table</a>
         </nav>
+    </div>
+</div>
 
-        <section id="contentBoundary">
-            <!-- SPA content here -->
-        </section>
+<div id="bootNotice" class="boot-notice">
+    <div class="wrap">
+        <strong>This example needs its own dev server.</strong>
+        <p>
+            It is a real single-page app: it uses root-absolute paths and needs a history fallback, so
+            that a deep link like <code>/user/7</code> serves <code>index.html</code> instead of 404ing.
+            A plain static server at the repository root cannot do either — which is why this page is
+            currently showing no routed content. Run:
+        </p>
+        <pre>cd examples/spa
+python3 server.py</pre>
+        <p>then open <a href="http://localhost:8931/">http://localhost:8931/</a>. This notice disappears once the engine boots.</p>
+    </div>
+</div>
 
-        <pre id="log"><!-- diagnostics --></pre>
-    </body>
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> SPAEngine <b>/</b> v4.0.0-beta</p>
+        <h1>Routing without the reload.</h1>
+        <p class="hero-sub">
+            Click a link: the URL changes, the page title changes, history and the back button work —
+            and the document is <b>never re-fetched</b>. Only <code>#contentBoundary</code> is swapped.
+        </p>
+        <div class="urlbar">
+            <span class="urlbar-dot"></span>
+            <span class="urlbar-path" id="urlPath">/</span>
+            <span class="urlbar-meta">document loads: <b id="loadCount">–</b></span>
+        </div>
+    </div>
+</header>
+
+<!-- The route section spans the viewport so its rule matches the others, while the
+     boundary itself sits inside .wrap so injected fragments line up with the page.
+     The engine only ever replaces #contentBoundary's children, so wrapping it is safe. -->
+<section class="route">
+    <div class="wrap">
+        <!-- SPA content is swapped in here -->
+        <div id="contentBoundary"></div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>What to watch</h2>
+        <p class="lede">
+            Client-side routing with no rebuild of the shell: only <code>#contentBoundary</code> changes.
+            The diagnostics panel below prints every argument each callback receives.
+        </p>
+        <div class="cards">
+            <div class="card">
+                <div class="sym" style="color:var(--cyan)">/;id</div>
+                <h3>Named route params</h3>
+                <p><code>/user/;id:[0-9]+</code> validates the segment by regex and delivers it as <code>params.id</code> to the boot, click and history callbacks.</p>
+                <p class="note" style="margin:0">User 7 renders its id from <code>params</code>, not from the URL.</p>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--amber)">▁▁</div>
+                <h3>Progress on fetch only</h3>
+                <p><code>preClickCallback</code> shows the bar, the load callbacks complete it. A cached route never fetches, so it never shows one.</p>
+                <p class="note" style="margin:0">Click User 7 twice — the bar appears only the first time.</p>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--violet)">⤫</div>
+                <h3>Route teardown</h3>
+                <p>Leaving <code>/table</code> fires that route's <code>exitCallback</code>, which stops the ticker and destroys the DataView. Other routes fall back to the global one.</p>
+                <p class="note" style="margin:0">Watch for <code>[exit]</code> in the log.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Bad input fails immediately</h2>
+        <p class="lede">
+            <code>initialize()</code> refuses an incomplete setup, and the two object-valued config
+            properties reject unknown keys rather than ignoring them. Each button builds a throwaway
+            engine so the live one is untouched.
+        </p>
+        <div class="row">
+            <button data-bad="noLink">initialize() with no classes.spaLink</button>
+            <button data-bad="noRoutes">initialize() with no routeConfigs</button>
+            <button data-bad="badAttr">dataAttributeNames = { nope: "x" }</button>
+            <button data-bad="badClass">classes = { nope: "x" }</button>
+            <button data-bad="badNode">new SPAEngine("#contentBoundary")</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+</section>
+
+<div class="diag">
+    <div class="wrap">
+        <div class="panel">
+            <div class="panel-h">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span>callback diagnostics</span>
+                <button class="tiny ghost" id="clearLog">clear</button>
+            </div>
+            <div class="panel-b"><pre class="log" id="log"></pre></div>
+        </div>
+        <p class="note">
+            Add <code>?autorun</code> to the URL to have the links clicked automatically — used for
+            headless testing.
+        </p>
+    </div>
+</div>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="/lib/vUX/doc/spa-engine.md">SPA guide</a>
+            <a href="/lib/vUX/doc/progress-indicator.md">Progress guide</a>
+            <a href="/lib/vUX/doc/data-view.md">DataView guide</a>
+        </p>
+        <p>The engine is on <span class="kbd">window</span> as <span class="kbd">demoSpa</span>.</p>
+    </div>
+</footer>
+
+</body>
 </html>

@@ -6,6 +6,8 @@
   z-index:999;
   display:none;
   min-width:320px;
+  left:0;
+  right:0;
 }
 /* the page body is frozen while a modal is open, so a modal taller
    than the viewport has to scroll inside the overlay itself */

@@ -1,0 +1,166 @@
+/* ============================================================================
+   vUX example pages — shared design system.
+   Tokens and primitives only. Anything specific to one demo stays in that
+   page's own <style> block.
+   Linked directly by each example, not through the library's asset loader:
+   it belongs to the demos, not to vUX.
+   ========================================================================== */
+
+:root{
+    --ink:#080b11; --panel:#0f1520; --panel-2:#141c2a; --line:#1f2a3a;
+    --fg:#d7e0ec; --muted:#7b8ba3; --dim:#4d5b71;
+    --amber:#ffb454; --cyan:#5ccfe6; --green:#a7e05f; --red:#ff6b7f; --violet:#c8a2ff;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+    margin:0; background:var(--ink); color:var(--fg);
+    font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+a{color:var(--cyan)}
+code{font-family:var(--mono); font-size:.92em}
+.wrap{max-width:1080px; margin:0 auto; padding:0 24px}
+
+/* ---------- hero ---------- */
+.hero{
+    position:relative; overflow:hidden; border-bottom:1px solid var(--line);
+    padding:clamp(64px,12vh,132px) 0 clamp(48px,9vh,88px);
+}
+.hero::before{
+    content:""; position:absolute; inset:-40% 20% auto -20%; height:120%;
+    background:radial-gradient(closest-side,rgba(92,207,230,.13),transparent 70%); pointer-events:none;
+}
+.hero::after{
+    content:""; position:absolute; inset:-30% -20% auto 40%; height:110%;
+    background:radial-gradient(closest-side,rgba(255,180,84,.11),transparent 70%); pointer-events:none;
+}
+.hero .wrap{position:relative}
+.eyebrow{
+    font-family:var(--mono); font-size:.74rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 22px;
+}
+.eyebrow b{color:var(--amber); font-weight:600}
+h1{font-size:clamp(2rem,5.6vw,3.7rem); line-height:1.1; letter-spacing:-.03em; font-weight:700; margin:0}
+.hero-sub{font-size:clamp(1.02rem,2.2vw,1.35rem); color:var(--muted); margin:20px 0 0; max-width:60ch}
+.hero-sub b{color:var(--cyan); font-weight:600}
+.hero-cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:34px}
+.hero-src{
+    margin-top:30px; display:inline-block; max-width:100%;
+    font-family:var(--mono); font-size:.82rem; color:var(--dim);
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:9px 14px; overflow-x:auto; white-space:nowrap;
+}
+.hero-src .d{color:var(--amber)}
+
+/* ---------- sections ---------- */
+section{padding:68px 0; border-bottom:1px solid var(--line)}
+h2{font-size:1.5rem; letter-spacing:-.02em; margin:0 0 8px; font-weight:650}
+h2 .num{font-family:var(--mono); font-size:.8rem; color:var(--amber); margin-right:12px; vertical-align:3px}
+h3{margin:0 0 6px; font-size:1rem; font-weight:600}
+.lede{color:var(--muted); margin:0 0 32px; max-width:66ch}
+.note{color:var(--dim); font-size:.88rem; margin:14px 0 0; max-width:66ch}
+
+/* ---------- panels ---------- */
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:12px}
+.panel-h{
+    padding:12px 16px; border-bottom:1px solid var(--line);
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim);
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+}
+.panel-b{padding:16px}
+.dots{display:flex; gap:6px}
+.dots i{width:10px; height:10px; border-radius:50%; display:block}
+.dots i:nth-child(1){background:#3a2b33} .dots i:nth-child(2){background:#3a3529} .dots i:nth-child(3){background:#25352c}
+
+/* ---------- form controls ---------- */
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+label.lbl{
+    display:block; font-size:.76rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:7px;
+}
+label.lbl .val{float:right; font-family:var(--mono); color:var(--amber); text-transform:none; letter-spacing:0}
+textarea,input[type=text],input[type=email],input[type=password],input[type=number]{
+    width:100%; background:var(--ink); color:var(--fg);
+    border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+    font-family:var(--mono); font-size:.86rem; line-height:1.6;
+}
+textarea{min-height:104px; resize:vertical}
+textarea:focus,select:focus,input:focus{outline:2px solid rgba(92,207,230,.45); outline-offset:1px}
+input[type=range]{width:100%; accent-color:var(--amber); margin:0}
+input[type=color]{
+    width:40px; height:28px; padding:0; background:none; border:1px solid var(--line);
+    border-radius:6px; cursor:pointer; vertical-align:middle;
+}
+select{
+    background:var(--ink); color:var(--fg); border:1px solid var(--line);
+    border-radius:6px; padding:6px 9px; font-family:var(--mono); font-size:.82rem;
+}
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.switch{display:flex; align-items:center; gap:9px; cursor:pointer; user-select:none; font-size:.9rem}
+.switch input{accent-color:var(--amber); width:16px; height:16px; cursor:pointer}
+
+/* ---------- buttons ---------- */
+button{
+    font-family:inherit; font-size:.87rem; font-weight:550; cursor:pointer;
+    background:var(--panel-2); color:var(--fg); border:1px solid var(--line);
+    border-radius:7px; padding:8px 15px; transition:border-color .15s,background .15s,color .15s;
+}
+button:hover{border-color:var(--dim); background:#1a2434}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--amber); border-color:var(--amber); color:#20160a}
+button.primary:hover{background:#ffc272; border-color:#ffc272}
+button.ghost{background:transparent}
+button.tiny{padding:5px 11px; font-size:.79rem}
+button.danger{color:var(--red); border-color:#3a2530}
+button.danger:hover{background:#2a1a22; border-color:var(--red)}
+
+/* ---------- cards ---------- */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(276px,1fr)); gap:18px}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; display:flex; flex-direction:column}
+.card p{margin:0 0 16px; color:var(--muted); font-size:.9rem; flex:1}
+.card .sym{font-family:var(--mono); font-size:1.5rem; font-weight:700; margin-bottom:6px}
+
+/* ---------- status line ---------- */
+.status{
+    font-family:var(--mono); font-size:.76rem; color:var(--dim);
+    border-top:1px solid var(--line); padding:10px 16px; display:flex; gap:8px; align-items:center;
+}
+.status .dot{width:7px; height:7px; border-radius:50%; background:var(--dim); flex:none}
+.status.run .dot{background:var(--green); box-shadow:0 0 8px var(--green)}
+.status.run{color:var(--green)}
+.status.err .dot{background:var(--red)} .status.err{color:var(--red)}
+
+/* ---------- code ---------- */
+pre.snip{
+    margin:0; padding:16px; background:var(--ink); border-radius:0 0 12px 12px;
+    font-family:var(--mono); font-size:.81rem; line-height:1.7; color:var(--muted); overflow-x:auto;
+}
+.snip .k{color:var(--violet)} .snip .s{color:var(--green)} .snip .p{color:var(--cyan)} .snip .c{color:var(--dim)}
+
+/* ---------- log / error output ---------- */
+.log{
+    background:var(--ink); border:1px solid var(--line); border-radius:8px;
+    padding:12px 14px; font-family:var(--mono); font-size:.78rem; line-height:1.75;
+    color:var(--muted); height:132px; overflow:auto; margin:0; white-space:pre-wrap;
+}
+.err-out{
+    background:var(--ink); border:1px solid var(--line); border-left:3px solid var(--red);
+    border-radius:8px; padding:14px 16px; font-family:var(--mono); font-size:.83rem;
+    color:var(--muted); min-height:64px; white-space:pre-wrap; word-break:break-word; margin-top:16px;
+}
+
+/* ---------- misc ---------- */
+footer{padding:52px 0 68px; color:var(--dim); font-size:.9rem}
+footer a{margin-right:20px}
+.kbd{
+    font-family:var(--mono); font-size:.8em; background:var(--panel-2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+}
+.pill{
+    display:inline-block; font-family:var(--mono); font-size:.72rem; letter-spacing:.06em;
+    border:1px solid var(--line); border-radius:999px; padding:3px 10px; color:var(--muted);
+}
+.pill.on{border-color:var(--amber); color:var(--amber)}

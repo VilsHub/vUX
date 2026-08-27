@@ -1,0 +1,10 @@
+FEATURE: modal-scroll-lock
+DATE: 2026-08-03
+
+ModalDisplayer
+  Modified:
+    vUX-modalDisplayer.js
+
+Documentation
+  Modified:
+    doc/modal-displayer.md
