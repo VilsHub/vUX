@@ -1,0 +1,91 @@
+FEATURE: resizer-docs
+DATE: 2026-08-27
+SCOPE: usage guide for the Resizer module
+FOLLOWS: changelog/resizer-fixes, changelog/resizer-example
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected. Documentation only; no
+code changed and no consumer action is required.
+
+  - doc/resizer.md   new, 315 lines
+  - doc/README.md    guides table, "coming next" list, other references
+  - ChangeLog.md     one bullet under v4.0.0-beta Added
+
+--------------------------------------------------------------------------------
+WHY
+--------------------------------------------------------------------------------
+
+Resizer had the most recently changed behaviour in the library and no guide at all.
+Two pieces of its API existed only in changelog entries and an example README:
+destroy(), and the rule that a handle grows the element in the direction it faces.
+doc/README.md listed Resizer among the modules whose guides were "coming next".
+
+--------------------------------------------------------------------------------
+THE GUIDE
+--------------------------------------------------------------------------------
+
+Follows the structure doc/auto-writer.md established: How it works, Quick start, The
+handle, Direction and edges, Bounds, Reading the size, Styling the handle,
+Configuration table, Lifecycle, Errors, Recipes, Notes and limits.
+
+Four sections exist because the module has a sharp edge a consumer will otherwise hit
+and misread as a bug:
+
+  Direction and edges  States the growth rule, then separates it from position. The
+                       module writes a size and never a position, so a left- or
+                       top-handled element in normal flow resizes correctly but
+                       visibly expands the opposite way. The two flexbox lines that
+                       fix it are given rather than left to be worked out.
+
+  Bounds               Leads with 0 meaning *unset* rather than a bound of zero, so a
+                       reader writing maxWidth:0 expecting a collapsed element learns
+                       otherwise. Also states that these bounds do not know about CSS
+                       min-width/max-width on the same element, which the browser
+                       applies on top.
+
+  Styling the handle   What resizer.css does and does not provide, the
+                       hit-area-versus-visible-line split, and the specificity trap:
+                       resizer.css is injected during initialize(), so a bare
+                       .resizeHandle rule in the page's own stylesheet ties with it
+                       and loses on source order. Both limits of the config `styles`
+                       route are stated — it reaches every Resizer on the page, and
+                       it does nothing at all when myResizeHandler is set.
+
+  Lifecycle            destroy(), the idempotence of both methods, and what destroy()
+                       deliberately does not undo: the inline width/height it wrote,
+                       and a position:relative added to a parent that had none.
+
+--------------------------------------------------------------------------------
+CAPABILITY GAPS RECORDED
+--------------------------------------------------------------------------------
+
+"Notes and limits" states two gaps plainly rather than omitting them:
+
+  - The module listens for mousedown/mousemove/mouseup only. There is no touch or
+    pointer-event support, so handles do not work on a touchscreen.
+  - A handle is a plain div with no tabindex and no key handling, so there is no
+    keyboard path to resizing. A workaround is suggested — offer another control that
+    writes style.width directly — rather than leaving it implicit.
+
+Both are honest descriptions of the module as it stands, not planned work. If either
+is to be closed, it is a code change and belongs in its own feature.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+  - Every claim in the guide was checked against vUX-resizer.js as it now stands,
+    including the defaults table, the full list of thrown errors, and the two
+    fallback chains (axis from class then direction; edge from class then position).
+  - The one relative link (../examples/resizer/) resolves.
+  - The in-page anchor (#direction-and-edges) matches its heading.
+  - doc/README.md no longer names Resizer in both the guides table and the
+    "coming next" list.
+
+Not verified: the CSS snippets in "Styling the handle" have not been run in a
+browser, for the same reason the example has not — no browser is available in this
+environment. They are drawn from examples/resizer/index.html, which is itself
+unopened.

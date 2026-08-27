@@ -30,8 +30,9 @@ A consuming page declares a single module script and tells vUX where the library
 | [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
 | [Form Components](form-components.md) | `vUX-formComponents.js` | Custom select, radio, checkbox, date picker, slide switch and file input built over the hidden native controls |
 | [Auto Writer](auto-writer.md) | `vUX-autoWriter.js` | Typewriter text effect with an embedded directive syntax for line breaks, pauses and backspacing |
+| [Resizer](resizer.md) | `vUX-resizer.js` | Drag-to-resize handles on any element, on either axis, clamped to bounds you set |
 
-Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `Resizer`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
 
 ## Other references
 
@@ -39,6 +40,7 @@ Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `
 - [Modal example](../examples/modal/README.md) — runnable example exercising all four modal effects.
 - [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
 - [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md) — runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
 - [README](../README.md) — installation and the public feature list per release.
 - [ChangeLog](../ChangeLog.md) — API renames and changes between releases.
 - `window.vUxModules` — type this in the browser console to print the importable module list at runtime.

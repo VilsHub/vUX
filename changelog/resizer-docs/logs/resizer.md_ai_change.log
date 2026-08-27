@@ -1,0 +1,51 @@
+FILE: doc/resizer.md
+FEATURE: resizer-docs
+DATE: 2026-08-27
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file — doc/README.md listed Resizer among the modules whose guides were "coming next")
+
+NEW_SECTION
+A full guide following the structure doc/auto-writer.md established: How it works,
+Quick start, The handle (built / your own), Direction and edges, Bounds, Reading the
+size, Styling the handle, Configuration table, Lifecycle, Errors, Recipes, Notes and
+limits.
+
+REASON
+Resizer was the module with the most recently changed behaviour and the least
+documentation. After resizer-fixes and resizer-example, two pieces of its API existed
+only in changelog entries and an example README: destroy(), and the rule that a handle
+grows the element in the direction it faces.
+
+Four sections exist because the module has a sharp edge that a consumer will otherwise
+hit and misread as a bug:
+
+  - "Direction and edges" states the growth rule and then immediately separates it
+    from position. The module writes a size and never a position, so a left- or
+    top-handled element in normal flow resizes correctly but visibly expands the
+    opposite way. The guide gives the two flexbox lines that fix it rather than
+    leaving the reader to conclude the inversion is broken.
+  - "Bounds" leads with 0 meaning *unset*. It is a sentinel, not a bound of zero, and
+    a reader who assumes otherwise will write maxWidth:0 expecting a collapsed element
+    and get an unbounded one. The interaction with CSS min-width/max-width on the same
+    element is stated too, because the browser applies its own on top and the element
+    then stops before the module thinks it has.
+  - "Styling the handle" covers what resizer.css does and does not provide, the
+    hit-area-versus-visible-line split, and the specificity trap: resizer.css is
+    injected during initialize(), so it lands after the page's own stylesheet and a
+    bare .resizeHandle rule ties and loses. Both limits of the config `styles` route
+    are stated — it is global across every Resizer on the page, and it does nothing at
+    all when myResizeHandler is set, since nothing is built.
+  - "Lifecycle" documents destroy() and what it deliberately does not undo: the inline
+    width/height it wrote, and a position:relative added to a parent that had none.
+
+"Notes and limits" records the two capability gaps honestly rather than omitting them:
+the module is mouse-only, with no touch or pointer-event support, so handles do not
+work on a touchscreen; and a handle is a plain div with no tabindex and no key
+handling, so there is no keyboard path to resizing. A workaround is suggested for the
+second rather than left implicit.
+
+The default-driven brevity of the sidebar recipe is deliberate: direction defaults to
+"x" and position.x to "right", so a right-edge horizontal resizer over a custom handle
+is genuinely one config line, and the guide shows that rather than restating defaults.

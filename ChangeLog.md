@@ -28,6 +28,7 @@
 - Live config controls, a hero that leads with the working component, and a validation section printing real thrown errors, on the modal, form and SPA example pages
 - Resizer.destroy() — removes the module's listeners and any resize handlers it injected, and releases a drag in progress
 - Runnable Resizer example (examples/resizer/) — both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
+- Resizer guide (doc/resizer.md) — the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
 
 ## Fixed
 - modal multiple display bug

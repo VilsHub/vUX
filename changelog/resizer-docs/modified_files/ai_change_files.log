@@ -1,0 +1,13 @@
+FEATURE: resizer-docs
+DATE: 2026-08-27
+
+Documentation
+  Added:
+    doc/resizer.md
+
+  Modified:
+    doc/README.md
+
+Release record
+  Modified:
+    ChangeLog.md
