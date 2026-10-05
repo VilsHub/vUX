@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX Component example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- the demo component's own look ----------
+       Everything here styles the consumer's markup, not the library's. A component
+       built with vUX-component.js is your markup cloned: it carries your classes and
+       is styled by your stylesheet exactly like anything else on the page. There is
+       no shadow root and nothing scoped away from you. */
+    .u-card{
+        background:var(--panel); border:1px solid var(--line); border-radius:12px;
+        padding:18px; display:flex; flex-direction:column; gap:10px; position:relative;
+        transition:border-color .18s, opacity .18s;
+    }
+    .u-card.muted{opacity:.5}
+    .u-card.pinned{border-color:var(--amber)}
+    .u-top{display:flex; align-items:center; gap:12px}
+    .u-avatar{
+        width:42px; height:42px; border-radius:50%; flex:none;
+        display:grid; place-items:center; font-family:var(--mono); font-weight:700;
+        font-size:1rem; color:#20160a; background:var(--amber);
+    }
+    .u-id{min-width:0}
+    .u-name{font-weight:650; font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .u-role{font-family:var(--mono); font-size:.74rem; color:var(--dim); letter-spacing:.08em}
+    .u-badge{
+        position:absolute; top:14px; right:14px; font-family:var(--mono); font-size:.66rem;
+        letter-spacing:.1em; color:var(--green); border:1px solid #2a3b2a; border-radius:999px; padding:2px 9px;
+    }
+    .u-bio{margin:0; color:var(--muted); font-size:.88rem; min-height:2.6em}
+    .u-actions{display:flex; gap:8px; margin-top:2px}
+
+    .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(248px,1fr)); gap:16px}
+    .grid:empty::after{
+        content:"no instances — mount one"; color:var(--dim); font-family:var(--mono); font-size:.82rem;
+    }
+
+    /* ---------- playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,330px) minmax(0,1fr); gap:22px; align-items:start}
+    .stage{background:var(--ink); border-radius:0 0 12px 12px; padding:22px; min-height:230px}
+    .stage-one{max-width:320px; margin:0 auto}
+    @media (max-width:880px){ .play{grid-template-columns:1fr} }
+
+    /* ---------- template source display ---------- */
+    .tpl-src{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; align-items:start}
+
+    /* ---------- keyed list ---------- */
+    .rows{list-style:none; margin:0; padding:0; border:1px solid var(--line); border-radius:10px; overflow:hidden}
+    .rows li{
+        display:grid; grid-template-columns:44px minmax(0,1fr) 92px 132px; gap:12px; align-items:center;
+        padding:9px 14px; border-bottom:1px solid var(--line); background:var(--panel);
+    }
+    .rows li:last-child{border-bottom:none}
+    .rows li.hot{background:#1a2030}
+    .r-key{font-family:var(--mono); font-size:.76rem; color:var(--dim)}
+    .r-name{font-weight:550; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .r-score{font-family:var(--mono); color:var(--amber); text-align:right}
+    .rows input[type=text]{padding:5px 8px; font-size:.78rem}
+    @media (max-width:720px){
+        .rows li{grid-template-columns:36px minmax(0,1fr) 62px; }
+        .rows li .r-note{grid-column:2 / -1}
+    }
+
+    /* ---------- nesting ---------- */
+    .board{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px}
+    .board-h{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px}
+    .board-title{font-weight:650}
+    .chips{display:flex; flex-wrap:wrap; gap:8px; min-height:30px}
+    .chip{
+        font-family:var(--mono); font-size:.74rem; border:1px solid var(--line);
+        border-radius:999px; padding:4px 11px; color:var(--muted); background:var(--panel-2); cursor:help;
+    }
+    .chips:empty::after{content:"(no children)"; color:var(--dim); font-size:.8rem}
+
+    .two{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px}
+    .tall{height:186px}
+</style>
+</head>
+<body>
+
+<!-- ==========================================================================
+     TEMPLATES
+     These are the component definitions. A <template> is inert: the browser
+     parses it but never renders it, and vUX clones out of it. They are placed
+     here, next to nothing in particular, because a template's position in the
+     document is irrelevant - only the element handed to Component() matters.
+     ========================================================================== -->
+
+<template id="userCardTpl">
+    <article class="u-card" data-v-class="muted:inactive, pinned:pinned">
+        <span class="u-badge" data-v-show="verified">VERIFIED</span>
+        <div class="u-top">
+            <div class="u-avatar" data-v-field="initial"></div>
+            <div class="u-id">
+                <div class="u-name" data-v-field="name"></div>
+                <div class="u-role" data-v-field="role"></div>
+            </div>
+        </div>
+        <p class="u-bio" data-v-field="bio"></p>
+        <div class="u-actions">
+            <button class="tiny" data-v-ref="pinBtn" data-v-on="click:pin">Pin</button>
+            <button class="tiny danger" data-v-on="click:remove">Remove</button>
+        </div>
+    </article>
+</template>
+
+<template id="rowTpl">
+    <li data-v-class="hot:hot">
+        <span class="r-key" data-v-field="id"></span>
+        <span class="r-name" data-v-field="name"></span>
+        <span class="r-score" data-v-field="score"></span>
+        <input class="r-note" type="text" placeholder="type here, then sort">
+    </li>
+</template>
+
+<template id="boardTpl">
+    <div class="board">
+        <div class="board-h">
+            <span class="board-title" data-v-field="title"></span>
+            <button class="tiny danger" data-v-on="click:close">Destroy board</button>
+        </div>
+        <div class="chips" data-v-ref="slot"></div>
+    </div>
+</template>
+
+<template id="chipTpl">
+    <span class="chip" data-v-field="label" data-v-bind="title:hint"></span>
+</template>
+
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX · <b>Component</b> · bring your own component</p>
+        <h1>One template.<br>As many live instances as you like.</h1>
+        <p class="hero-sub">
+            Write the markup once, mark it up with <b>data-v-*</b> bindings, and hand it to
+            <b>Component</b>. You get cloning, field binding, event wiring and teardown —
+            over your own HTML, styled by your own stylesheet.
+        </p>
+        <div class="hero-cta">
+            <button class="primary" id="heroAdd">Mount an instance</button>
+            <button class="ghost" id="heroPatch">Patch them all</button>
+            <button class="ghost danger" id="heroClear">Destroy all</button>
+        </div>
+        <div class="hero-src">
+            <span class="d">const</span> card = <span class="d">new</span> Component($$.ss(<span class="d">"#userCardTpl"</span>));
+            &nbsp;·&nbsp; card.mount(container, data)
+        </div>
+    </div>
+</header>
+
+
+<!-- ============================ 1 · instances ============================ -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Instances of one template</h2>
+        <p class="lede">
+            Every card below is a clone of the same <code>&lt;template&gt;</code>. Mounting returns an
+            <b>Instance</b> — an object with its own node, its own data, and its own
+            <code>update()</code> and <code>destroy()</code>. The template itself is never touched.
+        </p>
+
+        <div class="panel">
+            <div class="panel-h">
+                <span>live instances</span>
+                <span class="pill" id="countPill">0 mounted</span>
+            </div>
+            <div class="panel-b">
+                <div class="row" style="margin-bottom:18px">
+                    <button class="primary" id="addOne">mount()</button>
+                    <button id="patchRandom">update() a random one</button>
+                    <button id="toggleVerified">toggle verified</button>
+                    <button class="danger" id="destroyLast">destroy() the last</button>
+                    <button class="ghost danger" id="destroyAll">destroyAll()</button>
+                </div>
+                <div class="grid" id="cardGrid"></div>
+            </div>
+            <div class="status" id="status1"><span class="dot"></span><span>ready</span></div>
+        </div>
+
+        <p class="note">
+            The <b>Pin</b> and <b>Remove</b> buttons are wired through <code>data-v-on</code>, not
+            through any listener this page attached. Their handlers live in
+            <code>config.handlers</code> and are handed the instance's current data.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================ 2 · bindings ============================ -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Every binding, live</h2>
+        <p class="lede">
+            Each control writes one field through <code>instance.update()</code>. Only the bindings whose
+            value actually moved are written to the DOM — the rest are left alone.
+        </p>
+
+        <div class="play">
+            <div class="panel">
+                <div class="panel-h"><span>fields</span><span class="dots"><i></i><i></i><i></i></span></div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="fName">name <span class="val">data-v-field</span></label>
+                        <input type="text" id="fName" value="Ada Lovelace">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="fRole">role <span class="val">formatter → upper</span></label>
+                        <input type="text" id="fRole" value="analyst">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="fBio">bio <span class="val">formatter → clamp 90</span></label>
+                        <textarea id="fBio">Wrote the first algorithm intended for a machine, and the first note on what a machine could not do.</textarea>
+                    </div>
+                    <div class="field">
+                        <label class="switch"><input type="checkbox" id="fVerified" checked> verified <code>data-v-show</code></label>
+                    </div>
+                    <div class="field">
+                        <label class="switch"><input type="checkbox" id="fInactive"> inactive <code>data-v-class</code></label>
+                    </div>
+                    <div class="field">
+                        <label class="switch"><input type="checkbox" id="fPinned"> pinned <code>data-v-class</code></label>
+                    </div>
+                    <div class="row">
+                        <button class="tiny" id="refFocus">instance.ref("pinBtn").focus()</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-h">
+                    <span>rendered</span>
+                    <span class="pill" id="patchPill">—</span>
+                </div>
+                <div class="stage"><div class="stage-one" id="oneStage"></div></div>
+                <pre class="snip" id="codePanel"></pre>
+            </div>
+        </div>
+
+        <p class="note">
+            The pill above the card reports what <code>update()</code> returned: the list of field names
+            that changed. Edit a field to a value it already holds and it reports nothing — no DOM write happens.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================ 3 · keyed list =========================== -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Keyed lists keep their nodes</h2>
+        <p class="lede">
+            <code>sync()</code> matches data to instances by <code>config.key</code>. Rows that survive are
+            <b>moved</b>, not rebuilt — so anything the browser owns inside them survives too.
+        </p>
+
+        <div class="panel">
+            <div class="panel-h"><span>componentObj.sync(container, rows)</span><span class="pill" id="syncPill">4 rows</span></div>
+            <div class="panel-b">
+                <p class="note" style="margin:0 0 14px">
+                    <b>Try this:</b> type into a row's text box, then press <b>sort by score</b>. The row moves
+                    and your text moves with it. Then press <b>rebuild</b>, which throws the instances away and
+                    mounts fresh ones — and the text is gone. That difference is the whole point of keying.
+                </p>
+                <div class="row" style="margin-bottom:16px">
+                    <button id="sortScore">sort by score</button>
+                    <button id="sortName">sort by name</button>
+                    <button id="bumpScores">patch scores</button>
+                    <button id="addRow">add a row</button>
+                    <button class="danger" id="dropRow">drop first row</button>
+                    <button class="ghost danger" id="rebuildRows">rebuild (unkeyed)</button>
+                </div>
+                <ul class="rows" id="rowList"></ul>
+            </div>
+            <div class="status" id="status3"><span class="dot"></span><span>ready</span></div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================ 4 · nesting ============================== -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Nesting, and letting go cleanly</h2>
+        <p class="lede">
+            A child mounted through <code>instance.mount()</code> is <b>owned</b> by its parent. Destroy the
+            parent and the children go with it — including the vUX components attached in
+            <code>onMount</code>.
+        </p>
+
+        <div class="two">
+            <div>
+                <div class="row" style="margin-bottom:16px">
+                    <button class="primary" id="addBoard">mount a board</button>
+                    <button id="addChip">add a child to the last board</button>
+                </div>
+                <div id="boards" style="display:grid; gap:16px"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-h"><span>lifecycle log</span><span class="pill" id="livePill">0 live</span></div>
+                <div class="panel-b"><pre class="log tall" id="lifeLog"></pre></div>
+            </div>
+        </div>
+
+        <p class="note">
+            Each board attaches a <b>ToolTip</b> in <code>onMount</code> and calls its
+            <code>destroy()</code> in <code>onDestroy</code> — hover a chip to see it. Before v4.0.0-beta
+            most vUX components had no <code>destroy()</code> to call, which is why this module waited on
+            that work. The log records every mount, update and destroy as it happens.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================ 5 · failure modes ======================== -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>What it refuses to do</h2>
+        <p class="lede">
+            Every button below deliberately misuses the API. The real thrown <code>Error</code> is printed
+            verbatim — nothing here is a canned string.
+        </p>
+
+        <div class="cards">
+            <div class="card">
+                <div class="sym" style="color:var(--cyan)">arg</div>
+                <h3>Bad constructor argument</h3>
+                <p>The constructor takes an element, not a selector or an id.</p>
+                <div class="row">
+                    <button class="tiny" data-err="ctorString">new Component("#tpl")</button>
+                    <button class="tiny" data-err="ctorEmpty">empty &lt;template&gt;</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--amber)">order</div>
+                <h3>Used before initialize()</h3>
+                <p>The template is resolved by <code>initialize()</code>; nothing works before it.</p>
+                <div class="row">
+                    <button class="tiny" data-err="notInit">mount() first</button>
+                    <button class="tiny" data-err="destroyedUse">mount() after destroy()</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--violet)">bind</div>
+                <h3>Template the page cannot honour</h3>
+                <p>A binding naming a handler that was never supplied, or a malformed pair.</p>
+                <div class="row">
+                    <button class="tiny" data-err="noHandler">missing handler</button>
+                    <button class="tiny" data-err="badPair">malformed data-v-bind</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--green)">ref</div>
+                <h3>Unknown ref</h3>
+                <p>Asking for a <code>data-v-ref</code> the template does not carry lists the ones it does.</p>
+                <div class="row"><button class="tiny" data-err="badRef">ref("nope")</button></div>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--red)">key</div>
+                <h3>Keying mistakes</h3>
+                <p>A list needs a key, and the key has to be unique and present.</p>
+                <div class="row">
+                    <button class="tiny" data-err="noKey">sync() with no key</button>
+                    <button class="tiny" data-err="dupKey">duplicate keys</button>
+                    <button class="tiny" data-err="missingKey">key field absent</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="sym" style="color:var(--muted)">life</div>
+                <h3>Destroyed instances</h3>
+                <p>An instance that has been destroyed refuses to be updated again.</p>
+                <div class="row"><button class="tiny" data-err="updateDestroyed">update() after destroy()</button></div>
+            </div>
+        </div>
+
+        <div class="err-out" id="errOut">No error raised yet — press one of the buttons above.</div>
+    </div>
+</section>
+
+
+<footer>
+    <div class="wrap">
+        <a href="../../doc/component.md">Component guide</a>
+        <a href="../../doc/data-view.md">DataView guide</a>
+        <a href="../autowriter/">AutoWriter example</a>
+        <a href="../form/">Form example</a>
+        <a href="../spa/">SPA example</a>
+        <p style="margin-top:18px">
+            vUX v4.0.0-beta · this page loads the library from
+            <code>data-library-root="../../"</code> and runs offline.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

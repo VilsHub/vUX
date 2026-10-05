@@ -1,0 +1,30 @@
+FILE: examples-component
+FEATURE: component-module
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'component-teardown'
+
+REASON
+NEW FILES: examples/component/index.html, main.js, README.md
+
+The example page for the module, built to the standard CLAUDE.md sets: it leads
+with the component doing the most striking thing it can (one template, many live
+instances), gives every config property and every binding a live control, and ends
+with a section that deliberately misuses the API and prints the real thrown Error.
+
+Two sections exist to demonstrate things prose cannot:
+
+  - Section 03 asks the reader to type into a row, then sort. The text moves with
+    the row, because sync() re-appends the surviving node instead of rebuilding it.
+    A 'rebuild (unkeyed)' button then does the same sort the other way and loses
+    the typing. That contrast is the argument for config.key, made in two clicks.
+
+  - Section 04 attaches a ToolTip in onMount and releases it in onDestroy, which is
+    only possible because of the component-teardown feature that preceded this one.
+
+One bug in the page's own code was found by driving it: onMount fires from inside
+mount(), before the caller has stored what mount() returns, so a count taken from
+the page's own array was always one behind. It now reads componentObj.instances(),
+and the README records the trap.
+
+
+(new files)

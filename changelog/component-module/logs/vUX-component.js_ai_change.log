@@ -1,0 +1,43 @@
+FILE: vUX-component.js
+FEATURE: component-module
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'component-teardown'
+
+REASON
+NEW FILE: vUX-component.js
+
+The public surface: Component (the definition) and Instance (one mounted node).
+
+Shape decisions:
+
+  - The constructor takes an ELEMENT, not a name. An earlier draft took a name and
+    looked up 'template[data-v-component=...]'. Taking the element deletes the
+    registry outright, and with it name collisions, module-level global state and
+    three error cases. It also makes instance.mount(childComponent, ...) type-check
+    instead of failing at runtime on a mistyped name.
+
+  - Either a <template> or ordinary in-place markup is accepted. The second form
+    renders as a visible placeholder until initialize() lifts it, and is what makes
+    the DataView refactor fit: DataView's row template is a plain element.
+
+  - The template is resolved in initialize(), not in the constructor, so markup
+    added to the DOM after construction still works and an in-place template is not
+    torn out of the page before the consumer asks for it.
+
+  - instance.data returns a COPY. Handing back the live object invites a consumer
+    to mutate it, which would put the bindings out of step with the data they were
+    last rendered from, with no way for the instance to notice.
+
+  - update() merges rather than replaces, and returns the list of fields that
+    actually moved, so a caller can tell a real change from a no-op write.
+
+  - A child mounted through instance.mount() is owned by the parent and destroyed
+    with it. Children are destroyed BEFORE the parent's onDestroy fires, so a
+    child's own onDestroy still sees its parent's node in place.
+
+  - sync() refuses a second container. The reconcile owns every child of the
+    container it manages; two components sharing one container would each treat the
+    other's nodes as rows that had disappeared, and would silently delete them.
+
+
+(new file - see the source, which is commented for this purpose)

@@ -28,6 +28,7 @@ export function ListScroller(container, listParent) {
     validateElement(listParent, "List parent is not a valid HTML element");
     var paddingRight = 0, paddingLeft = 0, ready = 0, listening = 0, hasButtons = true;
     var buttons = [], scrollSize = 175,scrollSpeed = 290,inactiveButtonClassName = "",wrapperStyle = "width:100%";
+    var destroyed = false, clickHandle = null;   //clickHandle is the detach handle for the delegated button listener
 
     var animationOptions = {
         duration:200,
@@ -61,16 +62,19 @@ export function ListScroller(container, listParent) {
     }
 
     function assignHandlers() {
-        //Buttons
-        $$.attachEventHandler("click", "vListBt", clickHandler);
+        //Buttons. The handle returned by attachEventHandler() is kept so destroy() can detach the
+        //delegated listener; the resize handler is named for the same reason.
+        clickHandle = $$.attachEventHandler("click", "vListBt", clickHandler);
 
-        window.addEventListener("resize", function() {
-            if (listening == 1 && hasButtons) {
-                scrollStatus(container);
-            }
-        }, false);
+        window.addEventListener("resize", handleResize, false);
 
         container.addEventListener("scroll", updateLastValue)
+    }
+
+    function handleResize() {
+        if (listening == 1 && hasButtons) {
+            scrollStatus(container);
+        }
     }
 
     function updateLastValue(e){
@@ -169,6 +173,7 @@ export function ListScroller(container, listParent) {
 
     this.initialize = function() {
         if (ready == 0) { //Not initialized
+            if (destroyed) throw new Error("This ListScroller has been destroyed, create a new instance instead of re-initializing");
             var listItems = listParent.children;
             var children = listItems.length;
             
@@ -206,6 +211,29 @@ export function ListScroller(container, listParent) {
             toggleClass("a", 0);
             toggleClass("a", 1);
         }
+    };
+    this.destroy = function(){
+        //Detaches the delegated button listener, the window resize listener and the container's own
+        //scroll listener, then strips the layout classes and inline sizing this instance applied.
+        if (destroyed) return;
+
+        if (clickHandle != null){
+            clickHandle.detach();
+            clickHandle = null;
+        }
+        window.removeEventListener("resize", handleResize, false);
+        container.removeEventListener("scroll", updateLastValue);
+
+        container.classList.remove("vlistParentXContainer");
+        listParent.classList.remove("vlistParentX", "vlistCon", "noWrap");
+        listParent.style.removeProperty("width");
+        listParent.style.removeProperty("left");
+
+        for (var list of listParent.children) list.classList.remove("vlist");
+
+        listening = 0;
+        ready = 0;
+        destroyed = true;
     };
     Object.defineProperties(this.config, {
         buttons: {
@@ -281,7 +309,8 @@ export function ListScroller(container, listParent) {
         config: { writable: false },
         initialize: { writable: false },
         onScroller: { writable: false },
-        offScroller: { writable: false }
+        offScroller: { writable: false },
+        destroy: { writable: false }
     });
 }
 /****************************************************************/

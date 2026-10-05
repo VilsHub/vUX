@@ -2,6 +2,12 @@
     cursor: grab;
     cursor: -moz-grab;
     cursor: -webkit-grab;
+    /* Hand horizontal drags to the handler and keep vertical page scrolling; without this a phone
+       treats a sideways drag as a page gesture and cancels the pointer stream mid-swipe */
+    touch-action: pan-y;
+}
+.vTouchHandler.vPanY{
+    touch-action: pan-x;
 }
 .vTouchHandler.grab{
     cursor: grabbing;

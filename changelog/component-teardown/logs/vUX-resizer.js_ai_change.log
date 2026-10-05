@@ -1,0 +1,33 @@
+FILE: vUX-resizer.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+Resizer already had a working destroy(); only the freeze convention was missing. Its
+public members are now non-writable like every other component's. Note that Resizer's
+destroy() guards on 'initialized' rather than a 'destroyed' flag, and so deliberately
+permits initialize() again afterwards — the other components follow DataView and refuse.
+That difference is intentional and left as it was.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+                return targetElementHeight;
+            }
+        }
+    })
+    Object.defineProperties(this.config, {
+
+NEW_SECTION
+                return targetElementHeight;
+            }
+        },
+        initialize: { writable: false },
+        destroy: { writable: false },
+        config: { writable: false }
+    })
+    Object.defineProperties(this.config, {
+

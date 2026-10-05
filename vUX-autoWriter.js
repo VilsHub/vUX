@@ -18,7 +18,8 @@ export function AutoWriter() {
     var callBackDelay = 0, typingSpeed = [10, 20], cursorBlinkDelay = 300,
     cursorStyle = {style:"solid", width:"1px", color:"green"}, showCursor = false,
     timers = {write:null, blink:null, erase:null, directive:null},
-    boxes = null, texts = null, boxIndex = 0, conE = null, currentText = "", cursorIndex = 0;
+    boxes = null, texts = null, boxIndex = 0, conE = null, currentText = "", cursorIndex = 0,
+    destroyed = false, managedBoxes = [];   //every element written into, so destroy() can clear the spans it added
 
     // |    => line break
     // *n*  => backspace n times
@@ -150,6 +151,7 @@ export function AutoWriter() {
         }, speed());
     }
     function addSpan(con){
+        if (managedBoxes.indexOf(con) == -1) managedBoxes.push(con);
         var spanE = con.querySelector(".vAutoWriter");
         if(spanE == null){
             spanE = $$.ce("span", {class:"vAutoWriter"});
@@ -267,6 +269,7 @@ export function AutoWriter() {
         }, speed());
     }
     this.writeText = function(textBox, text, fn=null) {
+        if (destroyed) throw new Error("writeTextObj.writeText() called on a destroyed AutoWriter");
 
         var type = writeType(textBox, text);
         if (fn != null) validateFunction(fn, "writeTextObj.writeText(..x) method argument 3 must be a function");
@@ -284,6 +287,7 @@ export function AutoWriter() {
         step(fn);
     }
     this.deleteText = function(n, textBox, fn=null) {
+        if (destroyed) throw new Error("writeTextObj.deleteText() called on a destroyed AutoWriter");
 
         var temp = "writeTextObj.deleteText(x..) method argument 1 must be an integer";
         validateNumber(n, temp);
@@ -304,6 +308,25 @@ export function AutoWriter() {
     }
     this.stop = function() {
         reset();
+    }
+    this.destroy = function(){
+        //stop() already clears the timers; destroy() additionally removes the '.vAutoWriter' text span
+        //and the blinker span from every element this writer typed into, so the markup is handed back
+        //as it was found. The instance cannot be reused afterwards.
+        if (destroyed) return;
+
+        reset();
+
+        for (var x = 0; x < managedBoxes.length; x++){
+            var con = managedBoxes[x];
+            var spanE = con.querySelector(".vAutoWriter");
+            if (spanE != null) spanE.remove();
+            var blinker = con.querySelector(".vAutoWriterBlinker");
+            if (blinker != null) blinker.remove();
+        }
+        managedBoxes = [];
+
+        destroyed = true;
     }
     this.config = {}
     Object.defineProperties(this.config, {
@@ -359,7 +382,8 @@ export function AutoWriter() {
         writeText: { writable: false },
         config: { writable: false },
         deleteText: { writable: false },
-        stop: { writable: false }
+        stop: { writable: false },
+        destroy: { writable: false }
     })
 }
 /****************************************************************/

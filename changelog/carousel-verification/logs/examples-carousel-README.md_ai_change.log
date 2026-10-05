@@ -1,0 +1,22 @@
+FILE: examples/carousel/README.md
+FEATURE: carousel-verification
+DATE: 2026-10-02
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+    (file did not exist)
+
+NEW_SECTION
+    how to run it, a table of the sections, and the consumer-side techniques the page relies on.
+
+REASON
+CLAUDE.md requires a runnable example for every module; Carousel had none. Built to the example
+design standard on examples/shared/example.css. Verified in headless Chromium: 30 checks (no
+page errors, autoplay, every live control, teardown/rebuild, independent twins, hover pause,
+swipe, all 8 validation buttons, no horizontal overflow at 375px). An earlier draft set
+touch-action:pan-y and the grab cursor in the page's own CSS; those were removed once
+TouchHandler started linking touchHandler.css, and the README and swipe note now say the
+library provides them.

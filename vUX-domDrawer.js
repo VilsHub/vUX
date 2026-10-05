@@ -17,6 +17,7 @@ import "./src/vUX-core-4.0.0-beta.js";
 /***************************Touch handler*****************************/
 export function DOMDrawer() {
     let drawOrigin = {x:0,y:0, xBar:0, yBar:0}, mousePointOrigin = {x:0,y:0}, className="", canvas=null, clicked=false;
+    let destroyed = false, initialized = false, eventHandles = [];   //detach handles for the delegated listeners
 
     var styles = {
         dom:""
@@ -33,10 +34,42 @@ export function DOMDrawer() {
     }
 
     this.initialize = function(){
+        if (destroyed) throw new Error("This DOMDrawer has been destroyed, create a new instance instead of re-initializing");
         if (className == "" ) throw new Error("DOMDrawerObj.config.className property must be set");
 
         addStyleSheet();
         addEventHanler();
+        initialized = true;
+    }
+
+    this.destroy = function(){
+        //Detaches the two delegated listeners and the document mouseup listener, removes the
+        //generated stylesheet and clears every shape drawn so far along with the marker classes
+        //the drawing surfaces picked up.
+        if (destroyed) return;
+
+        for (let x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+        eventHandles = [];
+        document.removeEventListener("mouseup", release, false);
+
+        let styleEle = $$.ss("style[data-id='v" + className + "']");
+        if (styleEle != null) styleEle.remove();
+
+        //Drawn items carry both 'dItem' and the instance's own 'v<className>' marker, so only this
+        //instance's shapes are cleared even when several drawers share a page.
+        let drawn = $$.sa(".dItem.v" + className);
+        drawn.forEach(function(item){
+            let surface = item.parentNode;
+            item.remove();
+            if (surface != null) surface.classList.remove("dItem-Area", "draw-mode", "d-mode", "drw-mode");
+        });
+
+        states.enabled = false;
+        states.drawing = false;
+        states.clicked = false;
+        canvas = null;
+        initialized = false;
+        destroyed = true;
     }
 
     this.config = {}
@@ -116,13 +149,15 @@ export function DOMDrawer() {
 
                 states.enabled = value;
             }
-        }
+        },
+        destroy: { writable: false }
     })
 
     function addEventHanler(){
-   
-        $$.attachEventHandler("mousedown", className, pinPoint);
-        $$.attachEventHandler("mousemove", [className, "dItem"], draw);
+        //The handles returned by attachEventHandler() are kept so that destroy() can detach the
+        //delegated window listeners again; without them they would outlive the drawer.
+        eventHandles.push($$.attachEventHandler("mousedown", className, pinPoint));
+        eventHandles.push($$.attachEventHandler("mousemove", [className, "dItem"], draw));
         document.addEventListener("mouseup", release, false);
 
     }

@@ -1,0 +1,64 @@
+FEATURE: carousel-verification
+DATE: 2026-10-02
+SCOPE: verify the Carousel module, fix what is broken, and document it
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository). Consumers in the workspace (Apps/vGet, Apps/myinvitees/
+app.myinvitees.com) mount vUX through a symlink and pick the changes up on the next page load;
+neither currently imports vUX-carousel.js or vUX-touchHandler.js, so nothing in them changes.
+
+Consumer-visible surface:
+  - vUX-carousel.js        internals rewritten around a single slide index; public API unchanged.
+                           start() before initialize() now throws; dot buttons lose their
+                           id="b1".. attributes; config now applies live.
+  - vUX-touchHandler.js    swipe crash fixed; touchHandler.css now linked.
+  - assets/css/touchHandler.css  adds touch-action.
+  - assets/css/carousel.css      unchanged, but now actually loaded.
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+No test runner exists, so the module was driven in headless Chromium (Playwright) over a test
+page served from the repository root, asserting slide/dot/position agreement, computed styles,
+listener behaviour and thrown messages. The same suite was run against the original files.
+
+Baseline (original code):   13 passed, 14 failed
+After the fixes:            28 passed, 0 failed  (one touch-CSS check added after the baseline)
+Example page suite:         30 passed, 0 failed  (desktop and 375px phone)
+
+The harnesses live in the session scratchpad, not the repository. Not verified: real touch input
+on a physical device; the touch-action fix follows from the Pointer Events spec.
+
+--------------------------------------------------------------------------------
+DEFECTS FOUND AND FIXED
+--------------------------------------------------------------------------------
+
+ 1. Dots invisible and unclickable by default: carousel.css never linked (0px tall).
+ 2. Autoplay desync after a dot click or swipe: the screen, active slide and active dot drifted apart.
+ 3. Two carousels on a page moved each other's active dot (document-wide lookups).
+ 4. Viewport without an id: no slides found, no dots built ("#null> div").
+ 5. Swipe/drag threw on every gesture: TouchHandler wrote to an undeclared `viewport`
+    (window.viewport, a non-element, in Chrome).
+ 6. speed = 0 stopped autoplay after one move (no transitionend for 0ms).
+ 7. Carousel hidden mid-slide stopped autoplay for good (transitioncancel not handled).
+ 8. Hover/press over a moving slide marked it finished early (mouseenter forced completed = 1).
+ 9. buttonStyle: only the first carousel's applied, it restyled every carousel, and carousel.css
+    overrode it; errors were message fragments; an empty array was accepted.
+10. container.onclick/onmouseenter/onmouseleave clobbered the consumer's handlers.
+11. Config changes after initialize()/start() had no effect.
+12. start() before initialize() threw on every tick.
+13. No touch-action on the swipe area, so phones would hijack swipes as page pans; grab cursor never shown.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS (documented, not changed)
+--------------------------------------------------------------------------------
+
+ - Layout CSS (positioned container/viewport/slides) is the consumer's; see doc/carousel.md.
+ - TouchHandler drags container.children[0], so the viewport must be the container's first child.
+ - touchResponse decides at initialize() whether a TouchHandler exists; turning it on later is a no-op.
+ - No slide-change callback; the example watches data-activeDisplay with a MutationObserver.
+ - Dots are <div>s with no keyboard or ARIA support.

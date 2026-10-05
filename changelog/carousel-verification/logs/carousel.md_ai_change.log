@@ -1,0 +1,21 @@
+FILE: doc/carousel.md
+FEATURE: carousel-verification
+DATE: 2026-10-02
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+    (file did not exist)
+
+NEW_SECTION
+    doc/carousel.md, the full Carousel guide (see the file).
+
+REASON
+doc/README.md listed Carousel among the modules whose guides were "coming next". Verifying the
+module showed the consumer has to supply layout CSS the library never sets (positioned container,
+viewport and slides, viewport as the container's first child), which no existing document said.
+The guide covers that, every config property including which ones apply live and the touchResponse
+initialize-time caveat, the methods, behaviour (hover pause, dots, swipe threshold, hidden
+carousels), the generated markup, and the error messages as they now read.

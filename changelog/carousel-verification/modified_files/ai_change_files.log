@@ -1,0 +1,22 @@
+FEATURE: carousel-verification
+DATE: 2026-10-02
+
+<Carousel>
+  vUX-carousel.js
+  examples/carousel/index.html        (new)
+  examples/carousel/main.js           (new)
+  examples/carousel/README.md         (new)
+  doc/carousel.md                     (new)
+
+  Unmodified but newly reached:
+    assets/css/carousel.css           (existed, never linked by the module until now)
+
+<TouchHandler>
+  vUX-touchHandler.js
+  assets/css/touchHandler.css
+
+<Documentation>
+  doc/README.md
+
+<Release record>
+  ChangeLog.md

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX Carousel example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- the markup contract (the library sets none of this) ----------
+       Carousel moves the viewport by setting style.left in percent, and places each slide at
+       left = index * 100%. That only works if:
+         - the container clips and is the positioning context, with a real height;
+         - the viewport is absolutely positioned and fills the container;
+         - every slide is absolutely positioned and fills the viewport.
+       The viewport must also be the container's FIRST child: the nested TouchHandler takes
+       frame.children[0] as the thing it drags. The dot strip is appended after it. */
+    .carousel{position:relative; overflow:hidden; user-select:none}
+    .carousel > .viewport{position:absolute; top:0; left:0; width:100%; height:100%}
+    .carousel > .viewport > div{position:absolute; top:0; width:100%; height:100%}
+
+    /* the dot strip: centred instead of the library's bottom-left default. One class more
+       specific than carousel.css, which is linked after this block and would otherwise win. */
+    .carousel .vControlArea .vControlButtonsCon{display:flex; justify-content:center; align-items:center; gap:2px; width:100%}
+    .carousel .vControlArea .vControlButtonsShell{float:none; height:auto; margin:0; width:auto; padding:6px}
+    .carousel .vControlArea .vButton{transition:width .3s, background .3s, box-shadow .3s}
+
+    /* ---------- slide art: gradients and type only ---------- */
+    .slide{display:flex; flex-direction:column; justify-content:center; padding:clamp(28px,6vw,72px); overflow:hidden}
+    .slide::after{content:""; position:absolute; inset:0; pointer-events:none;
+        background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 64px)}
+    .slide .k{font-family:var(--mono); font-size:.74rem; letter-spacing:.22em; text-transform:uppercase; opacity:.75; margin:0 0 14px}
+    .slide .t{font-size:clamp(1.9rem,6.4vw,4.4rem); line-height:1.02; letter-spacing:-.04em; font-weight:800; margin:0; max-width:14ch}
+    .slide .d{margin:16px 0 0; max-width:44ch; font-size:clamp(.92rem,1.8vw,1.08rem); opacity:.82}
+    .slide .big{position:absolute; right:-.06em; bottom:-.24em; font-size:clamp(9rem,30vw,22rem); font-weight:900;
+        letter-spacing:-.08em; line-height:1; opacity:.13; pointer-events:none}
+    .s1{background:radial-gradient(120% 140% at 85% 10%,#ffb454 0,#d9573b 38%,#3a1426 78%); color:#fff6ea}
+    .s2{background:radial-gradient(120% 140% at 15% 90%,#5ccfe6 0,#1f6fb5 40%,#0c1938 80%); color:#eafaff}
+    .s3{background:conic-gradient(from 210deg at 70% 40%,#c8a2ff,#6b3fd6,#1c1240,#c8a2ff); color:#f5efff}
+    .s4{background:linear-gradient(135deg,#a7e05f 0,#2f9d6a 45%,#0d2a26 100%); color:#f3ffe9}
+
+    .hero .carousel{height:clamp(320px,52vh,480px); border-radius:18px; border:1px solid var(--line);
+        box-shadow:0 30px 80px -30px rgba(0,0,0,.8); margin-top:34px}
+
+    /* ---------- playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,330px) minmax(0,1fr); gap:22px; align-items:start}
+    .play .carousel{height:280px; border-radius:0}
+    .play .slide .t{font-size:clamp(1.6rem,4vw,2.6rem)}
+    .play .slide .big{font-size:clamp(7rem,18vw,13rem)}
+    .stage-wrap{border-bottom:1px solid var(--line)}
+    .readout{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line)}
+    .readout div{background:var(--panel); padding:10px 14px; font-family:var(--mono); font-size:.74rem; color:var(--dim)}
+    .readout b{display:block; color:var(--fg); font-size:.95rem; font-weight:600}
+    .bs-in{font-size:.78rem !important}
+
+    /* ---------- twins ---------- */
+    .twins{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px}
+    .twins .carousel{height:230px; border-radius:12px 12px 0 0}
+    .twins .slide .t{font-size:clamp(1.4rem,3.4vw,2.1rem)}
+    .twins .slide .big{font-size:9rem}
+    .twin-meta{padding:12px 16px; font-family:var(--mono); font-size:.76rem; color:var(--dim); border-top:1px solid var(--line)}
+    .twin-meta code{color:var(--amber)}
+
+    /* ---------- gestures ---------- */
+    .gest{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:22px; align-items:start}
+    .gest .carousel{height:260px; border-radius:12px 12px 0 0}
+    .gest .slide .t{font-size:clamp(1.5rem,3.6vw,2.3rem)}
+    .gest .slide .big{font-size:10rem}
+    .hint{display:flex; align-items:center; gap:10px}
+    .hint .arrow{font-family:var(--mono); color:var(--amber); animation:nudge 1.6s ease-in-out infinite}
+    @keyframes nudge{50%{transform:translateX(-8px)}}
+
+    @media (max-width:860px){
+        .play,.gest{grid-template-columns:minmax(0,1fr)}
+    }
+    @media (max-width:640px){
+        .twins{grid-template-columns:minmax(0,1fr)}
+        .readout{grid-template-columns:1fr 1fr 1fr}
+        .slide .d{display:none}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> Carousel <b>/</b> v4.0.0-beta</p>
+        <h1>Slides that keep their place.</h1>
+        <p class="hero-sub">Autoplay, dots, swipe and hover-pause from <b>one constructor</b> and two elements you already have.</p>
+
+        <!-- Container > viewport > slides. The viewport is the container's first child. -->
+        <div class="carousel" id="heroCarousel">
+            <div class="viewport" id="heroViewport">
+                <div class="slide s1">
+                    <p class="k">01 — autoplay</p>
+                    <p class="t">It moves on its own.</p>
+                    <p class="d">Every <code>delay + speed</code> milliseconds the viewport slides one frame, and wraps at the end.</p>
+                    <span class="big">01</span>
+                </div>
+                <div class="slide s2">
+                    <p class="k">02 — dots</p>
+                    <p class="t">Jump anywhere.</p>
+                    <p class="d">One dot per slide is generated for you. Click one and autoplay carries on from there.</p>
+                    <span class="big">02</span>
+                </div>
+                <div class="slide s3">
+                    <p class="k">03 — swipe</p>
+                    <p class="t">Drag it sideways.</p>
+                    <p class="d">A quarter of the frame's width is enough to commit; less springs back.</p>
+                    <span class="big">03</span>
+                </div>
+                <div class="slide s4">
+                    <p class="k">04 — hover</p>
+                    <p class="t">Point to pause.</p>
+                    <p class="d">The pointer over the frame holds the current slide until it leaves.</p>
+                    <span class="big">04</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-src">new Carousel(container, viewport).initialize(); <span class="d">// then .start()</span></div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Every <code>config</code> property, applied live to a running carousel. No rebuild is needed for any of
+            them; <em>Destroy</em> and <em>Rebuild</em> are here to show the teardown.
+        </p>
+
+        <div class="play">
+            <div class="panel">
+                <div class="panel-h"><span>Config</span></div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="delay">delay <span class="val" id="delayV">2200ms</span></label>
+                        <input type="range" id="delay" min="0" max="6000" step="100" value="2200">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="speed">speed <span class="val" id="speedV">700ms</span></label>
+                        <input type="range" id="speed" min="0" max="2000" step="50" value="700">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="effect">slideEffect</label>
+                        <select id="effect" style="width:100%">
+                            <option value="linear">linear</option>
+                            <option value="ease">ease</option>
+                            <option value="ease-in-out" selected>ease-in-out</option>
+                            <option value="cubic-bezier(.68,-0.55,.27,1.55)">cubic-bezier — overshoot</option>
+                            <option value="cubic-bezier(.16,1,.3,1)">cubic-bezier — expo out</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="bsNormal">buttonStyle[0] — normal</label>
+                        <input type="text" class="bs-in" id="bsNormal" spellcheck="false"
+                               value="width:10px;height:10px;background:rgba(255,255,255,.45)">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="bsActive">buttonStyle[1] — active</label>
+                        <input type="text" class="bs-in" id="bsActive" spellcheck="false"
+                               value="width:28px;border-radius:6px;background:#ffb454;box-shadow:0 0 12px #ffb454">
+                    </div>
+                    <div class="field row" style="justify-content:space-between">
+                        <label class="switch"><input type="checkbox" id="touch" checked> touchResponse</label>
+                        <span class="pill" id="bsState">styles ok</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h">
+                        <span class="dots"><i></i><i></i><i></i></span>
+                        <span id="playLabel">running</span>
+                    </div>
+                    <div class="stage-wrap">
+                        <div class="carousel" id="playCarousel">
+                            <div class="viewport" id="playViewport">
+                                <div class="slide s2"><p class="k">slide 0</p><p class="t">Tune the timing.</p><span class="big">0</span></div>
+                                <div class="slide s3"><p class="k">slide 1</p><p class="t">Change the curve.</p><span class="big">1</span></div>
+                                <div class="slide s1"><p class="k">slide 2</p><p class="t">Restyle the dots.</p><span class="big">2</span></div>
+                                <div class="slide s4"><p class="k">slide 3</p><p class="t">All while it runs.</p><span class="big">3</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="readout">
+                        <div>active<b id="roActive">0</b></div>
+                        <div>interval<b id="roInterval">2900ms</b></div>
+                        <div>instance<b id="roInst">#1</b></div>
+                    </div>
+                    <div class="status run" id="status"><span class="dot"></span><span id="statusText">autoplaying</span></div>
+                </div>
+
+                <div class="row" style="margin-top:16px">
+                    <button class="primary" id="start">start()</button>
+                    <button class="danger" id="destroy">destroy()</button>
+                    <button id="rebuild">Rebuild</button>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="snippet"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Two on one page</h2>
+        <p class="lede">
+            Each instance owns its dots and its <code>buttonStyle</code>. Click a dot on one and the other does not
+            notice; the styles are scoped to their own container.
+        </p>
+        <div class="twins">
+            <div class="panel">
+                <div class="carousel" id="twinA">
+                    <div class="viewport">
+                        <div class="slide s1"><p class="k">A · 0</p><p class="t">Round amber dots.</p><span class="big">A</span></div>
+                        <div class="slide s3"><p class="k">A · 1</p><p class="t">Its own interval.</p><span class="big">A</span></div>
+                        <div class="slide s2"><p class="k">A · 2</p><p class="t">Its own state.</p><span class="big">A</span></div>
+                    </div>
+                </div>
+                <div class="twin-meta">delay <code>1800</code> · buttonStyle <code>circle / amber glow</code></div>
+            </div>
+            <div class="panel">
+                <!-- no id on this viewport: slides are read from its children, not an #id selector -->
+                <div class="carousel" id="twinB">
+                    <div class="viewport">
+                        <div class="slide s4"><p class="k">B · 0</p><p class="t">Square cyan bars.</p><span class="big">B</span></div>
+                        <div class="slide s2"><p class="k">B · 1</p><p class="t">Slower, eased.</p><span class="big">B</span></div>
+                        <div class="slide s3"><p class="k">B · 2</p><p class="t">No viewport id.</p><span class="big">B</span></div>
+                        <div class="slide s1"><p class="k">B · 3</p><p class="t">Four slides.</p><span class="big">B</span></div>
+                    </div>
+                </div>
+                <div class="twin-meta">delay <code>3200</code> · buttonStyle <code>bar / cyan</code></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Swipe and hover</h2>
+        <p class="lede">
+            With <code>touchResponse</code> on (the default) the carousel builds a <code>TouchHandler</code> on the
+            container. Drag with a mouse or a finger. Pointing at the frame pauses autoplay; leaving resumes it.
+        </p>
+        <div class="gest">
+            <div class="panel">
+                <div class="carousel" id="gestCarousel">
+                    <div class="viewport">
+                        <div class="slide s3"><p class="k">drag me</p><p class="t">Pull left.</p><span class="big">←</span></div>
+                        <div class="slide s1"><p class="k">keep going</p><p class="t">Or back right.</p><span class="big">↔</span></div>
+                        <div class="slide s4"><p class="k">end stop</p><p class="t">The last one holds.</p><span class="big">■</span></div>
+                    </div>
+                </div>
+                <div class="status" id="gestStatus"><span class="dot"></span><span id="gestText">pointer outside — autoplaying</span></div>
+            </div>
+            <div class="card">
+                <h3 class="hint"><span class="arrow">←</span> How a swipe resolves</h3>
+                <p>
+                    A drag past <strong>a quarter of the frame's width</strong> commits to the neighbouring slide;
+                    anything shorter springs back. The first and last slides are end stops: swipes do not wrap,
+                    autoplay does.<br><br>
+                    When the swipe settles, the carousel marks that slide active and lights its dot, so autoplay
+                    continues from where your finger left it, not from where the timer thought it was.
+                </p>
+                <p class="note" style="margin:0">While swiping is on, the container carries <code>vTouchHandler</code>, which gives it the grab cursor and
+                    <code>touch-action:pan-y</code>, so on a phone a horizontal swipe is not taken over by page scrolling.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
+        <p class="lede">
+            The constructor and every <code>config</code> setter validate on the spot and throw a message naming the
+            offending argument. These buttons do the wrong thing on purpose.
+        </p>
+        <div class="row">
+            <button data-bad="ctor">new Carousel("#x", null)</button>
+            <button data-bad="ctor2">new Carousel(el, "viewport")</button>
+            <button data-bad="bs3">buttonStyle = [a, b, c]</button>
+            <button data-bad="bsNum">buttonStyle = [12]</button>
+            <button data-bad="bsStr">buttonStyle = "red"</button>
+            <button data-bad="delay">delay = "x"</button>
+            <button data-bad="early">start() before initialize()</button>
+            <button data-bad="dead">initialize() after destroy()</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/carousel.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The instances are on <span class="kbd">window</span> as <span class="kbd">heroCarousel</span>,
+            <span class="kbd">playCarousel</span>, <span class="kbd">twinA</span>, <span class="kbd">twinB</span> and
+            <span class="kbd">gestCarousel</span> — try <span class="kbd">playCarousel.config.speed = 120</span>.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

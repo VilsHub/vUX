@@ -1,0 +1,44 @@
+FILE: doc/README.md
+FEATURE: carousel-verification
+DATE: 2026-10-02
+
+================================================================================
+CHANGE 1 — guide table
+================================================================================
+
+OLD_SECTION
+    | [Resizer](resizer.md) | `vUX-resizer.js` | Drag-to-resize handles on any element, on either axis, clamped to bounds you set |
+
+NEW_SECTION
+    | [Resizer](resizer.md) | `vUX-resizer.js` | Drag-to-resize handles on any element, on either axis, clamped to bounds you set |
+    | [Carousel](carousel.md) | `vUX-carousel.js` | Autoplaying slideshow with dot navigation, hover pause and swipe, reconfigurable while running |
+
+REASON
+Lists the new Carousel guide.
+
+================================================================================
+CHANGE 2 — remaining-guides sentence
+================================================================================
+
+OLD_SECTION
+    Guides for the remaining modules (`Carousel`, `FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+
+NEW_SECTION
+    Guides for the remaining modules (`FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+
+REASON
+Carousel now has a guide.
+
+================================================================================
+CHANGE 3 — other references
+================================================================================
+
+OLD_SECTION
+    - [Component example](../examples/component/README.md) — ...
+
+NEW_SECTION
+    - [Carousel example](../examples/carousel/README.md) — runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+    - [Component example](../examples/component/README.md) — ...
+
+REASON
+Links the new runnable example, alongside the other module examples.

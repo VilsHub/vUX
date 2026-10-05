@@ -25,6 +25,7 @@ export function FormValidator(form = null) {
     var bottomConStyle = "",initialized = false,leftConStyle = "",rightConStyle = "",self = this,submissionMethod="POST";
     var errorLog = {},n = 0,progressAnimationType = "default",progressAnimationCallbacks =null, progressIndicatorStyle = null,formSubmitted = false,smallViewAttribute = "",wrapperClassAttribute = null, CSRFTokenElement=null;
     var modal = null, controller = null, submitButtonClass ="", loaderLocation="form", overlayStyle="", successButtonAction="close", redirectTo="/", feedbackModalStyles={};
+    var destroyed = false;
     var supportedRules = {
         required: 1, //done
         minLength: 1, //done
@@ -230,41 +231,53 @@ export function FormValidator(form = null) {
         }
     }
 
-    //Attach event handler
+    //Attach event handler. The three document listeners are named rather than anonymous so that
+    //destroy() can detach this instance's own listeners without disturbing another validator
+    //sharing the same document.
     function addEventhandler() {
-        document.addEventListener("transitionend", function(e) {
-            if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("error") && e.target.classList.contains("clear") == false) {
-                e.target.style["color"] = $$.sm(form).cssStyle("--error-color");
-            } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("warning") && e.target.classList.contains("clear") == false) {
-                e.target.style["color"] = $$.sm(form).cssStyle("--warning-color");
-            } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false) {
-                e.target.style["color"] =  $$.sm(form).cssStyle("--success-color");
-            } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("clear")) {
-                var parent = e.target.parentNode;
-                parent != null ? e.target.parentNode.removeChild(e.target) : null;
-            }
-        });
-        document.addEventListener("focusin", function(e) {
-            if (e.target.getAttribute("id") == "fbBtn") {
-                if( e.target.getAttribute("data-rs") == "suc"){
-                    if(successButtonAction == "close"){
-                        if(modal != null) modal.close();
-                        hideProgress();
-                    }else{
-                        location.assign(redirectTo);
-                    }
-                    
-                }else{
+        document.addEventListener("transitionend", handleMsgBoxTransition, false);
+        document.addEventListener("focusin", handleFocusIn, false);
+        document.addEventListener("click", handleItemClick, false);
+    }
+
+    function removeEventhandler() {
+        document.removeEventListener("transitionend", handleMsgBoxTransition, false);
+        document.removeEventListener("focusin", handleFocusIn, false);
+        document.removeEventListener("click", handleItemClick, false);
+    }
+
+    function handleMsgBoxTransition(e) {
+        if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("error") && e.target.classList.contains("clear") == false) {
+            e.target.style["color"] = $$.sm(form).cssStyle("--error-color");
+        } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("warning") && e.target.classList.contains("clear") == false) {
+            e.target.style["color"] = $$.sm(form).cssStyle("--warning-color");
+        } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("success") && e.target.classList.contains("clear") == false) {
+            e.target.style["color"] =  $$.sm(form).cssStyle("--success-color");
+        } else if (e.target.classList.contains("vMsgBox") && e.target.classList.contains("clear")) {
+            var parent = e.target.parentNode;
+            parent != null ? e.target.parentNode.removeChild(e.target) : null;
+        }
+    }
+
+    function handleFocusIn(e) {
+        if (e.target.getAttribute("id") == "fbBtn") {
+            if( e.target.getAttribute("data-rs") == "suc"){
+                if(successButtonAction == "close"){
+                    if(modal != null) modal.close();
                     hideProgress();
+                }else{
+                    location.assign(redirectTo);
                 }
-            } 
-            if (e.target.classList.contains("vItem")) self.message.clear(e.target);
-        }, false);
+                
+            }else{
+                hideProgress();
+            }
+        } 
+        if (e.target.classList.contains("vItem")) self.message.clear(e.target);
+    }
 
-
-        document.addEventListener("click", function(e) {
-            if (e.target.classList.contains("vItem")) self.message.clear(e.target);
-        }, false);
+    function handleItemClick(e) {
+        if (e.target.classList.contains("vItem")) self.message.clear(e.target);
     }
 
     function showProgress(){
@@ -392,8 +405,17 @@ export function FormValidator(form = null) {
             if(loaderLocation == "form"){
                 var loader = $$.ce("DIV");
                 loader.classList.add("vFormLoader");
-                $$.sm(loader).center();
                 overLay.appendChild(loader);
+                form.appendChild(overLay);
+
+                //The loader must be in the document, and positioned, before it is centred:
+                //$$.sm().center() reads parentNode on its static-element branch, and
+                //'formValidator.css' arrives asynchronously, so the class alone cannot be relied
+                //on to have made the element absolute by this point. Setting it inline keeps
+                //center() on its transform branch deterministically.
+                loader.style["position"] = "absolute";
+                $$.sm(loader).center();
+                return;
             }
         }
         
@@ -608,9 +630,30 @@ export function FormValidator(form = null) {
     }
     /**********/
 
+    /*Teardown*/
+    this.destroy = function() {
+        //Detaches this instance's three document listeners and removes the overlay/loader injected
+        //into the form, so a form swapped out by the SPA engine leaves nothing bound to the document
+        //behind it. The 'config.modal' displayer is deliberately left alone: it is supplied by the
+        //consumer, who may still be using it elsewhere on the page.
+        if (destroyed) return;
+
+        removeEventhandler();
+
+        if (form != null){
+            var overlay = form.querySelector(".vFormOverlay");
+            if (overlay != null) overlay.remove();
+        }
+
+        initialized = false;
+        destroyed = true;
+    }
+    /**********/
+
     /*Initialize*/
     this.initialize = function() {
         if (initialized == false) {
+            if (destroyed) throw new Error("This FormValidator has been destroyed, create a new instance instead of re-initializing");
             if (form == null) throw new Error("Cannot initialize without settinig a form to perform validation on, pass target form to FormValidator() contructor, to set target form");
             if(progressAnimationType == "custom" && progressAnimationCallbacks == null){
                 throw new Error("Progress animation type is set to 'custom' and no handler is defined for it. Define a handler using the 'config.progressAnimationCallbacks' property");
@@ -1424,6 +1467,7 @@ export function FormValidator(form = null) {
         validate: { writable: false},
         message: { writable: false},
         initialize: { writable: false},
+        destroy: { writable: false},
         submit: { writable: false},
         formOk: { writable: false},
         showFeedback: { writable: false},

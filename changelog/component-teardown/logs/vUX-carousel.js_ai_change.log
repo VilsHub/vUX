@@ -1,0 +1,259 @@
+FILE: vUX-carousel.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+Three separate problems. First, the autoplay setInterval started by start() was never
+cleared, so a removed carousel went on calling nextSlide() forever. Second, the
+transitionend listener was anonymous and the container's onmouseenter/onmouseleave/onclick
+assignments were never cleared. Third, the nested TouchHandler was held in a var local to
+initialize(), so nothing could reach it to tear it down.
+
+The transitionend handler is now the named handleTransitionEnd, hoisted out of
+initialize() along with the touch setup; touchHdr moved to instance scope; and destroy()
+clears the interval, detaches everything, destroys the TouchHandler, removes the generated
+control strip and strips the inline styles and data attributes from the viewport and
+sliders. The shared 'carouselStyles' sheet is deliberately left in place because every
+Carousel on the page shares that one data-id.
+
+Separately, this file called 'new TouchHandler(container)' without importing it. Since
+config.touchResponse defaults to true, that was the default path, and initialize() threw
+'TouchHandler is not defined' on any page that did not explicitly disable touch. The
+import is now present.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+// Import vUX core
+import "./src/vUX-core-4.0.0-beta.js";
+
+/***************************Carousel*****************************/
+
+NEW_SECTION
+// Import vUX core
+import "./src/vUX-core-4.0.0-beta.js";
+import { TouchHandler } from "./vUX-touchHandler.js";
+
+/***************************Carousel*****************************/
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+    var current = 0, buttonId = 0, forceSld = 0, pauseMode = 0, completed = 1, started = 0, delay = 4000, speed = 1000, initialized = 0, buttonStyle = null;
+    var touchResponse = true, slideEffect = "linear",s;
+
+    //Assign buttons event
+
+NEW_SECTION
+    var current = 0, buttonId = 0, forceSld = 0, pauseMode = 0, completed = 1, started = 0, delay = 4000, speed = 1000, initialized = 0, buttonStyle = null;
+    var touchResponse = true, slideEffect = "linear",s;
+    var destroyed = false, touchHdr = null;   //touchHdr is held at instance scope so destroy() can tear it down too
+
+    //Assign buttons event
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+    this.initialize = function() {
+        if (initialized == 0) {
+            viewport.classList.add("vSliderViewPort");
+            viewport.style["transition-duration"] = speed + "ms";
+
+NEW_SECTION
+    this.initialize = function() {
+        if (initialized == 0) {
+            if (destroyed) throw new Error("This Carousel has been destroyed, create a new instance instead of re-initializing");
+            viewport.classList.add("vSliderViewPort");
+            viewport.style["transition-duration"] = speed + "ms";
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+            }
+
+            viewport.addEventListener("transitionend", function(e) {
+                var activeButton = $$.ss(".vControlButtonsShell .active");
+                var previousActive = viewport.querySelector("div[data-activeDisplay='1']");
+                var id = null;
+                if (e.target.classList.contains("posUpdate")) {
+                    return;
+                }
+                if (forceSld == 0) {
+                    if(e.target.classList.contains("vSliderViewPort")){
+                        //Assign new active
+                        if (checkNext(previousActive)) {
+                            //set next
+                            previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
+                            id = previousActive.nextElementSibling.getAttribute("data-ratio");
+                        } else { // reached the last
+                            //set the 1st child
+                            sliders[0].setAttribute("data-activeDisplay", "1");
+                            id = 0;
+                        }
+
+                        // unset previous
+                        previousActive.setAttribute("data-activeDisplay", "0");
+
+                        //Set buttons
+                        activeButton.classList.remove("active"); //remove previous
+                        var nextActiveButton = $$.ss(".vControlButtonsShell div[data-ratio='" + id + "']");
+                        nextActiveButton.classList.add("active"); //make Next active
+                        completed = 1;
+                    }
+                } else if (forceSld == 1) {
+                    //unset any current view
+                    previousActive.setAttribute("data-activeDisplay", "0");
+                    forceSetCurrent(activeButton, previousActive, buttonId);
+                    completed = 1;
+                    forceSld = 0;
+                }
+            }, false);
+
+            //Enable touch if specified
+            if (touchResponse) {
+                var touchHdr = new TouchHandler(container);
+                touchHdr.config.slideCallBack = touchEndCallBack;
+                touchHdr.config.viewPortTransition = "left " + speed + "ms "+slideEffect;
+
+NEW_SECTION
+            }
+
+            viewport.addEventListener("transitionend", handleTransitionEnd, false);
+
+            //Enable touch if specified
+            if (touchResponse) {
+                touchHdr = new TouchHandler(container);
+                touchHdr.config.slideCallBack = touchEndCallBack;
+                touchHdr.config.viewPortTransition = "left " + speed + "ms "+slideEffect;
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        }
+    }
+    this.start = function() {
+        if (started == 0) {
+            startSlide();
+            started = 1;
+        }
+    };
+    this.config = {
+
+NEW_SECTION
+        }
+    }
+
+    function handleTransitionEnd(e) {
+        var activeButton = $$.ss(".vControlButtonsShell .active");
+        var previousActive = viewport.querySelector("div[data-activeDisplay='1']");
+        var id = null;
+        if (e.target.classList.contains("posUpdate")) {
+            return;
+        }
+        if (forceSld == 0) {
+            if(e.target.classList.contains("vSliderViewPort")){
+                //Assign new active
+                if (checkNext(previousActive)) {
+                    //set next
+                    previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
+                    id = previousActive.nextElementSibling.getAttribute("data-ratio");
+                } else { // reached the last
+                    //set the 1st child
+                    sliders[0].setAttribute("data-activeDisplay", "1");
+                    id = 0;
+                }
+
+                // unset previous
+                previousActive.setAttribute("data-activeDisplay", "0");
+
+                //Set buttons
+                activeButton.classList.remove("active"); //remove previous
+                var nextActiveButton = $$.ss(".vControlButtonsShell div[data-ratio='" + id + "']");
+                nextActiveButton.classList.add("active"); //make Next active
+                completed = 1;
+            }
+        } else if (forceSld == 1) {
+            //unset any current view
+            previousActive.setAttribute("data-activeDisplay", "0");
+            forceSetCurrent(activeButton, previousActive, buttonId);
+            completed = 1;
+            forceSld = 0;
+        }
+    }
+    this.start = function() {
+        if (started == 0) {
+            if (destroyed) throw new Error("This Carousel has been destroyed, create a new instance instead of restarting it");
+            startSlide();
+            started = 1;
+        }
+    };
+    this.destroy = function(){
+        //Stops the autoplay interval (which otherwise keeps firing for the life of the page), detaches
+        //the container and viewport listeners, tears down the nested TouchHandler and removes the
+        //generated control strip. The shared 'carouselStyles' sheet is left alone because every
+        //Carousel on the page shares it.
+        if (destroyed) return;
+
+        clearInterval(s);
+        s = null;
+
+        container.onclick = null;
+        container.onmouseenter = null;
+        container.onmouseleave = null;
+        viewport.removeEventListener("transitionend", handleTransitionEnd, false);
+
+        if (touchHdr != null){
+            touchHdr.destroy();
+            touchHdr = null;
+        }
+
+        var controlArea = container.querySelector(".vControlArea");
+        if (controlArea != null) controlArea.remove();
+
+        viewport.classList.remove("vSliderViewPort");
+        viewport.style.removeProperty("transition-duration");
+        viewport.style.removeProperty("transition-timing-function");
+        viewport.style.removeProperty("left");
+
+        Object.values(sliders).forEach(function(itemContent){
+            itemContent.removeAttribute("data-activeDisplay");
+            itemContent.removeAttribute("data-ratio");
+            itemContent.style.removeProperty("left");
+        });
+
+        started = 0;
+        initialized = 0;
+        destroyed = true;
+    }
+    this.config = {
+
+================================================================================
+CHANGE 6
+================================================================================
+
+OLD_SECTION
+            writable: false
+        },
+        config: {
+            writable: false
+
+NEW_SECTION
+            writable: false
+        },
+        destroy: {
+            writable: false
+        },
+        config: {
+            writable: false
+

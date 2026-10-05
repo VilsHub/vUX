@@ -98,6 +98,7 @@ export function CShapes() {
     /*******************animated dashed rectangle starts********************/
     this.animatedRectangle = function() {
         var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARactive = "",ARstop = 0,animationCount = 1,cycle = 0,callback = null;
+        var ARtarget = null;   //the canvas last drawn on, so destroy() can clear it
 
         var body = {
             config: {},
@@ -108,6 +109,7 @@ export function CShapes() {
                 }
                 //Set ID
                 ARactive = canvasElement.id;
+                ARtarget = canvasElement;
                 ARstop = 0;
 
                 //Reset canvas size
@@ -171,6 +173,19 @@ export function CShapes() {
             },
             stop: function() {
                 ARstop = 1;
+            },
+            destroy: function() {
+                //stop() halts the requestAnimationFrame loop at the next frame; destroy() additionally
+                //wipes the canvas, so an animation torn down mid-cycle does not leave its last frame
+                //painted on a canvas the consumer is about to reuse.
+                ARstop = 1;
+                ARactive = "";
+                cycle = 0;
+                if (ARtarget != null){
+                    var ctx = ARtarget.getContext("2d");
+                    ctx.clearRect(0, 0, ARtarget.width, ARtarget.height);
+                    ARtarget = null;
+                }
             }
         }
         Object.defineProperties(body.config, {

@@ -1,0 +1,108 @@
+FEATURE: component-module
+DATE: 2026-09-17
+SCOPE: add vUX-component.js — a consumer's own reusable component — on a shared
+       template-instancing engine, and move DataView onto the same engine
+FOLLOWS: changelog/component-teardown
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected. No build step, no
+dependency graph; changes take effect on the next page load.
+
+Consumer-visible surface:
+  - vUX-component.js          new module: Component + Instance
+  - src/componentEngine.js    new internal file, shared by Component and DataView
+  - vUX-dataView.js           reimplemented over the engine; public surface unchanged
+  - src/helpers.js            module registry entry, so vUxModules lists it
+  - doc/component.md          new guide
+  - examples/component/       new example page
+
+Additive. No member was renamed or removed and no existing call signature changed.
+
+--------------------------------------------------------------------------------
+WHAT WAS BUILT, AND WHY IN THIS SHAPE
+--------------------------------------------------------------------------------
+
+Before this, a vUX consumer had sixteen ready-made components for markup they had
+already written, and nothing at all for the reusable pieces of their own interface.
+The moment they wanted their own card repeated forty times they were back to
+$$.ce() and string concatenation. That is the wall at which people stop using vUX
+for the application and reach for a framework.
+
+The shape chosen is template instancing, not Web Components:
+
+  - Shadow DOM was rejected outright. $$.ss and $$.sa are document.querySelector
+    and stop at a shadow boundary, and linkStyleSheet()/attachStyleSheet() both
+    append to document.head, where styles cannot reach inside one. vUX's contract
+    is global CSS plus consumer-supplied class names; Shadow DOM's contract is no
+    global CSS. Adopting one means abandoning the other.
+
+  - A customElements.define() wrapper was rejected as well. Over the four lines the
+    browser already gives you it would have to add reactive properties and
+    re-rendering, which is Lit. The guide documents the six-line recipe for
+    wrapping a Component in a custom element instead, so the tag stays the
+    consumer's and vUX does not own that surface.
+
+  - What was built is the thing vUX already had half of: DataView's proven
+    'mark a template, detach it, clone per item, bind fields by key' machinery,
+    generalised from table rows to any fragment.
+
+The scope is fixed and stated in the guide so it does not get re-argued: instancing,
+field/attribute/event/class/show bindings, refs, keyed lists, nesting and teardown.
+No reactivity, no observables, no computed properties, no diffing, no scheduler, no
+data-v-if, no data-v-for. Every binding value is a plain field name, never an
+expression — which is the actual line between a binding layer and a template
+language, and it is enforced by there being no evaluator in the code at all.
+
+--------------------------------------------------------------------------------
+WHY IT FOLLOWED THE TEARDOWN WORK
+--------------------------------------------------------------------------------
+
+onDestroy is the seam at which a consumer releases the vUX components nested inside
+their own component. Until the component-teardown feature, destroy() existed on two
+of sixteen components, so that callback would have had almost nothing to call. The
+example page's section 04 demonstrates the pair working together.
+
+--------------------------------------------------------------------------------
+THE DATAVIEW REFACTOR
+--------------------------------------------------------------------------------
+
+sync() and DataView's reconcile() are the same function, so they are now one
+function. DataView keeps its whole public surface and every error string verbatim;
+the engine takes an 'itemNoun' purely so its keying errors keep saying 'row object'
+for DataView.
+
+Consumers of DataView gain the wider binding set in rows for free: previously only
+data-v-field worked, now data-v-bind, data-v-on, data-v-ref, data-v-show and
+data-v-class do too, with config.handlers and config.formatters added to drive them.
+
+One latent bug surfaced and was fixed: DataView.destroy() never cleared
+'initialized', which made its own 'This DataView has been destroyed' guard
+unreachable — re-initializing a destroyed view silently did nothing.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Every file syntax checked. Beyond that, three suites were run against a real DOM:
+
+  - Component, 30 assertions: all six bindings on first render and on patch,
+    formatters, update() returning only the fields that moved, the data getter
+    being a copy, absent values removing attributes, keyed sync building/patching/
+    dropping and preserving node identity across a reorder, nested ownership and
+    cascading destroy, both template forms, and nine validation failures each
+    checked for the specific message.
+
+  - DataView, 27 assertions, written as a regression check that the refactor
+    changed nothing: rendering, node reuse across a patch, key drop/add, updateRow
+    merging, sort moving the same nodes, filter, getData copying, config.data set
+    before initialize, every pre-existing error string, and destroy/re-initialize.
+
+  - The example page itself, 32 assertions: loaded into a DOM, its main.js run, then
+    every control on the page driven and the result checked — including that all
+    eleven failure-mode buttons raise a real Error.
+
+All pass. The guide's error list was captured from the running module rather than
+written by hand, and matches character for character.

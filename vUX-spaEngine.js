@@ -21,6 +21,9 @@ export function SPAEngine(defaultContentNode=null) {
     var initialize = false,tempStorage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
     var clickLoadCallback = null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
     var exitCallback=null, activeRoute=null;
+    //Teardown state: the detach handle for the delegated link listener, the popstate listener held at
+    //instance scope so destroy() can remove it, and the cache builder's timer id.
+    var destroyed=false, spaLinkHandle=null, handlePopState=null, cacheBuilderTimer=null;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         cache:"",
@@ -36,6 +39,7 @@ export function SPAEngine(defaultContentNode=null) {
     var routeConfigs = null;
     this.initialize = function() {
         if (!initialize) {
+            if (destroyed) throw new Error("This SPAEngine has been destroyed, create a new instance instead of re-initializing");
             if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
             if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
             
@@ -45,6 +49,32 @@ export function SPAEngine(defaultContentNode=null) {
             startCacheBuilder();
             initialize = true;
         }
+    }
+    this.destroy = function() {
+        //Detaches the delegated link listener and the popstate listener, and cancels the cache
+        //builder if it has not run yet. The cached page sections are dropped with it, so a new
+        //engine on the same page starts from an empty cache rather than another instance's.
+        //Browser history itself is left untouched: entries this engine pushed are the user's.
+        if (destroyed) return;
+
+        if (spaLinkHandle != null){
+            spaLinkHandle.detach();
+            spaLinkHandle = null;
+        }
+        if (handlePopState != null){
+            removeEventListener("popstate", handlePopState, false);
+            handlePopState = null;
+        }
+        clearTimeout(cacheBuilderTimer);
+        cacheBuilderTimer = null;
+
+        cacheBuilderTracker = {};
+        savedPageSection = {};
+        activeRoute = null;
+        routeProperties = null;
+
+        initialize = false;
+        destroyed = true;
     }
     this.config = {}
 
@@ -84,13 +114,13 @@ export function SPAEngine(defaultContentNode=null) {
 
         // Register Listeners
 
-        $$.attachEventHandler("click", classes.spaLink, function(e){
+        spaLinkHandle = $$.attachEventHandler("click", classes.spaLink, function(e){
             e.preventDefault();
             loadFrom(e.target);
         })
 
 
-        addEventListener("popstate", function(e){
+        handlePopState = function(e){
             if(e.state != null){
 
                 let parsedData          = JSON.parse(e.state);
@@ -148,7 +178,9 @@ export function SPAEngine(defaultContentNode=null) {
                 if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey, routeProperties.data)}, 200);
 
             }
-        }, false);
+        };
+
+        addEventListener("popstate", handlePopState, false);
 
     }
 
@@ -922,7 +954,7 @@ export function SPAEngine(defaultContentNode=null) {
         let routesEntries   = Object.entries(routeConfigs.routes);
         let totalRoutes     = routesEntries.length;
         
-        setTimeout(function(){
+        cacheBuilderTimer = setTimeout(function(){
             for (let x = 0; x < totalRoutes; x++) {
                 const routeName             = routesEntries[x][0];
                 const skipInCacheBuilder    = routesEntries[x][1].skipInCacheBuilder;
@@ -974,7 +1006,8 @@ export function SPAEngine(defaultContentNode=null) {
 
     Object.defineProperties(this, {
         config: { writable: false },
-        initialize: { writable: false }
+        initialize: { writable: false },
+        destroy: { writable: false }
     })
 
     Object.defineProperties(this.config, {

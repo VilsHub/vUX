@@ -1,0 +1,137 @@
+FILE: vUX-autoWriter.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+stop() already cleared the four timers, so the timer half of teardown existed; what was
+missing was the DOM. writeText() injects a '.vAutoWriter' span and, when the cursor is
+enabled, a '.vAutoWriterBlinker' span into each target, and reset() nulls the box list,
+so after a run nothing knew which elements had been written into. Every target is now
+recorded in managedBoxes as addSpan() touches it, and destroy() clears the spans out of
+all of them. writeText()/deleteText() now refuse to run on a destroyed instance.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+    cursorStyle = {style:"solid", width:"1px", color:"green"}, showCursor = false,
+    timers = {write:null, blink:null, erase:null, directive:null},
+    boxes = null, texts = null, boxIndex = 0, conE = null, currentText = "", cursorIndex = 0;
+
+    // |    => line break
+
+NEW_SECTION
+    cursorStyle = {style:"solid", width:"1px", color:"green"}, showCursor = false,
+    timers = {write:null, blink:null, erase:null, directive:null},
+    boxes = null, texts = null, boxIndex = 0, conE = null, currentText = "", cursorIndex = 0,
+    destroyed = false, managedBoxes = [];   //every element written into, so destroy() can clear the spans it added
+
+    // |    => line break
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+    }
+    function addSpan(con){
+        var spanE = con.querySelector(".vAutoWriter");
+        if(spanE == null){
+
+NEW_SECTION
+    }
+    function addSpan(con){
+        if (managedBoxes.indexOf(con) == -1) managedBoxes.push(con);
+        var spanE = con.querySelector(".vAutoWriter");
+        if(spanE == null){
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+    }
+    this.writeText = function(textBox, text, fn=null) {
+
+        var type = writeType(textBox, text);
+
+NEW_SECTION
+    }
+    this.writeText = function(textBox, text, fn=null) {
+        if (destroyed) throw new Error("writeTextObj.writeText() called on a destroyed AutoWriter");
+
+        var type = writeType(textBox, text);
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+    }
+    this.deleteText = function(n, textBox, fn=null) {
+
+        var temp = "writeTextObj.deleteText(x..) method argument 1 must be an integer";
+
+NEW_SECTION
+    }
+    this.deleteText = function(n, textBox, fn=null) {
+        if (destroyed) throw new Error("writeTextObj.deleteText() called on a destroyed AutoWriter");
+
+        var temp = "writeTextObj.deleteText(x..) method argument 1 must be an integer";
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        reset();
+    }
+    this.config = {}
+    Object.defineProperties(this.config, {
+
+NEW_SECTION
+        reset();
+    }
+    this.destroy = function(){
+        //stop() already clears the timers; destroy() additionally removes the '.vAutoWriter' text span
+        //and the blinker span from every element this writer typed into, so the markup is handed back
+        //as it was found. The instance cannot be reused afterwards.
+        if (destroyed) return;
+
+        reset();
+
+        for (var x = 0; x < managedBoxes.length; x++){
+            var con = managedBoxes[x];
+            var spanE = con.querySelector(".vAutoWriter");
+            if (spanE != null) spanE.remove();
+            var blinker = con.querySelector(".vAutoWriterBlinker");
+            if (blinker != null) blinker.remove();
+        }
+        managedBoxes = [];
+
+        destroyed = true;
+    }
+    this.config = {}
+    Object.defineProperties(this.config, {
+
+================================================================================
+CHANGE 6
+================================================================================
+
+OLD_SECTION
+        config: { writable: false },
+        deleteText: { writable: false },
+        stop: { writable: false }
+    })
+}
+
+NEW_SECTION
+        config: { writable: false },
+        deleteText: { writable: false },
+        stop: { writable: false },
+        destroy: { writable: false }
+    })
+}
+

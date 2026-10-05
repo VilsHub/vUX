@@ -15,7 +15,8 @@ import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************Tool tip*****************************/
 export function ToolTip() {
-    var tipBoxStyles = {arrowColor:"",fontColor:""},initialized = 0,toolTipClassName="";
+    var tipBoxStyles = {arrowColor:"",fontColor:""},initialized = 0,toolTipClassName="",destroyed = false;
+    var eventHandles = [];   //detach handles for the delegated listeners, so destroy() can unbind them
 
     function createStyles() {
         if ($$.ss("style[data-id='toolTipStyles-"+toolTipClassName+"']") == null) {
@@ -73,29 +74,29 @@ export function ToolTip() {
         tipBox.style["left"] = x + "px";      
     }
     function addEvent() {
-        $$.attachEventHandler("mouseover", "vtip", function(e) {
+        eventHandles.push($$.attachEventHandler("mouseover", "vtip", function(e) {
             if (e.target.classList.contains(toolTipClassName)){
                 if (e.target.getAttribute("data-vToolTipSwitch") == "ON") {
                     setPos(e);
                 }
             }
             
-        });
-        $$.attachEventHandler("mousemove", "vtip", function(e) {
+        }));
+        eventHandles.push($$.attachEventHandler("mousemove", "vtip", function(e) {
             if (e.target.classList.contains(toolTipClassName)){
                 if (e.target.getAttribute("data-vToolTipSwitch") == "ON") {
                     setPos(e);
                 }
             }
-        })  
-        $$.attachEventHandler("mouseout", "vtip", function(e) {
+        }));
+        eventHandles.push($$.attachEventHandler("mouseout", "vtip", function(e) {
             if (e.target.classList.contains(toolTipClassName)){
                 if (e.target.getAttribute("data-vToolTipSwitch") == "ON") {
                     mouseOutControl();
                 }
             }
             
-        })
+        }));
     }
     async function addVitalStyles() {
         try {
@@ -113,6 +114,7 @@ export function ToolTip() {
     }
     this.initialize = function() {
         if (initialized == 0) {
+            if (destroyed) throw new Error("This ToolTip has been destroyed, create a new instance instead of re-initializing");
             if (toolTipClassName == "") {
                 throw new Error("Setup imcomplete: toolTip class name must be supllied, specify using the 'config.className' property");
             }
@@ -125,6 +127,34 @@ export function ToolTip() {
     };
     this.refresh = function(){
         setCustomTitle();
+    }
+    this.destroy = function(){
+        //Detaches the delegated listeners, removes the injected tip box and generated stylesheet,
+        //and hands every member element its original 'title' attribute back, so the page is left
+        //exactly as it was before initialize().
+        if (destroyed) return;
+
+        for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+        eventHandles = [];
+
+        var tipBox = $$.ss("div[data-toolTipId='" + toolTipClassName + "']");
+        if (tipBox != null) tipBox.remove();
+
+        var styleEle = $$.ss("style[data-id='toolTipStyles-" + toolTipClassName + "']");
+        if (styleEle != null) styleEle.remove();
+
+        var members = $$.sa("." + toolTipClassName);
+        members.forEach(function(element){
+            var storedTip = element.getAttribute("data-tempTitle");
+            if (storedTip != null) element.setAttribute("title", storedTip);
+            element.removeAttribute("data-tempTitle");
+            element.removeAttribute("data-vToolTipSwitch");
+            element.removeAttribute("data-TID");
+            element.classList.remove("vtip");
+        });
+
+        destroyed = true;
+        initialized = 0;
     }
     this.config = {};
     this.on = function(element) {
@@ -179,7 +209,8 @@ export function ToolTip() {
         initialize: {writable: false},
         config: {writable: false},
         on: {writable: false},
-        off: {writable: false}
+        off: {writable: false},
+        destroy: {writable: false}
     })
 }
 /****************************************************************/

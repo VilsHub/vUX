@@ -1,0 +1,66 @@
+FILE: src/vUX-core-4.0.0-beta.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON (applies to both changes below)
+$$.attachEventHandler() delegated every handler to a listener bound on window, and
+kept no reference to the closure it created. Nothing could ever be passed to
+removeEventListener(), so every delegated handler in the library was permanently
+bound for the life of the page. This is the reason vUX-resizer.js binds its own
+named listeners instead of using the helper (see the comment at its addEventHanler()).
+
+The helper now keeps the listener in a local, binds that, and returns a handle whose
+detach() removes it again. The return value is additive: the six components that
+already called the helper and ignored its result are unaffected, and every component
+that now implements destroy() stores the handle instead.
+
+This had to land before the destroy() pass, because without it a component using the
+helper has no way to unbind what it registered.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+        var eventComponents = event.split(":");
+
+        addEventListener(eventComponents[0], function(e) {
+            if (idType == "single") {
+                var constraints = DomClass.split(",");
+
+NEW_SECTION
+        var eventComponents = event.split(":");
+
+        var listener = function(e) {
+            if (idType == "single") {
+                var constraints = DomClass.split(",");
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+                }
+            }
+        }, false);
+    },
+    ajax:function(options=null, returnDataType=null){
+
+NEW_SECTION
+                }
+            }
+        };
+
+        addEventListener(eventComponents[0], listener, false);
+
+        //Returned so that a component can detach the delegated listener again in its destroy().
+        //Older callers that ignore the return value keep working unchanged.
+        return {
+            detach: function(){
+                removeEventListener(eventComponents[0], listener, false);
+            }
+        };
+    },
+    ajax:function(options=null, returnDataType=null){
+

@@ -1,0 +1,111 @@
+FEATURE: component-teardown
+DATE: 2026-09-17
+SCOPE: give every component a destroy(), and make the core's delegated listeners detachable
+FOLLOWS: changelog/resizer-docs
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) — the only project affected. There is no build step
+and no dependency graph to propagate through; changes take effect on the next page
+load.
+
+Consumer-visible surface:
+  - $$.attachEventHandler()   now returns a handle; previously returned undefined
+  - 14 component files        gained a destroy() method
+  - vUX-carousel.js           now imports TouchHandler (bug fix, see below)
+  - vUX-formValidator.js      loader insertion order corrected (bug fix, see below)
+
+The public API is additive. No member was renamed or removed, and no existing call
+signature changed.
+
+--------------------------------------------------------------------------------
+WHY
+--------------------------------------------------------------------------------
+
+Before this change destroy() existed on exactly two of sixteen components
+(DataView and Resizer). Everything else bound listeners, started intervals and
+injected DOM with no way to undo any of it. For a plain multi-page site that is
+invisible: the page unloads and the browser reclaims everything. It is not
+invisible under SPAEngine, where route changes tear content out of a live document
+and every listener bound to window or document survives the swap.
+
+This also blocks the planned BYOC component module: a consumer component that
+nests vUX components needs something to call when it is unmounted.
+
+--------------------------------------------------------------------------------
+THE CORE CHANGE THAT HAD TO COME FIRST
+--------------------------------------------------------------------------------
+
+$$.attachEventHandler() delegated to a listener bound on window and kept no
+reference to the closure it built, so nothing could ever be handed to
+removeEventListener(). Six components used it. It now returns { detach } and the
+callers store the handle. Older calls that ignore the return value are unaffected.
+
+vUX-resizer.js had already worked around this by binding its own named listeners;
+the comment at its addEventHanler() records why.
+
+--------------------------------------------------------------------------------
+WHAT DESTROY() DOES, AND WHAT IT DELIBERATELY DOES NOT DO
+--------------------------------------------------------------------------------
+
+Uniformly: detach every listener the component bound, clear every timer and
+animation it started, and remove the DOM it injected. Where the component mutated
+consumer markup and retained enough to reverse it, it reverses it — ToolTip gives
+'title' attributes back, TimeLineList strips its marker classes, Carousel clears
+the attributes it wrote onto the sliders.
+
+It does not attempt to rebuild markup that was replaced in place without the
+original being kept. That is the case for the FormComponents widgets, which
+substitute custom markup for the consumer's native inputs. There, destroy() unbinds
+and says so in a comment rather than reconstructing an approximation of an element
+the consumer did not write.
+
+Two shared resources are left alone on purpose, in both cases because they belong
+to more than one instance:
+  - the 'carouselStyles' sheet, whose data-id every Carousel shares
+  - a FormValidator's 'config.modal', which is supplied by the consumer
+
+One shared resource is now reference counted instead of leaked: ModalDisplayer's
+four document-level handlers are detached by the last instance to be destroyed.
+
+Re-initialization after destroy() throws, following the message DataView already
+used. Resizer is the exception: its destroy() predates this work, guards on
+'initialized' rather than a destroyed flag, and deliberately allows reuse. That was
+left as it was rather than narrowed under a shipped component's feet.
+
+--------------------------------------------------------------------------------
+TWO PRE-EXISTING BUGS FOUND WHILE DOING THIS
+--------------------------------------------------------------------------------
+
+Both were found by running the components rather than by reading them, and both
+are on default configuration paths.
+
+1. Carousel never imported TouchHandler, although it constructs one whenever
+   config.touchResponse is true — which is the default. initialize() threw
+   'TouchHandler is not defined' on any page that did not explicitly disable touch.
+
+2. FormValidator.createLoader() centred the loader while it was still detached.
+   $$.sm().center() reads parentNode.scrollHeight on its static-element branch, and
+   a detached element computes 'position: static', so initialize() threw
+   'Cannot read properties of null' under the default configuration. The loader is
+   now inserted before it is centred, and given an inline position so that center()
+   does not depend on the asynchronously linked stylesheet having arrived.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Every source file was syntax checked. Beyond that, each component was booted
+against a DOM, initialized and destroyed, with window and document listener
+registration instrumented so that a listener surviving destroy() fails the check.
+
+Covered: ToolTip, TimeLineList, TouchHandler, Carousel, ListScroller, AutoWriter,
+DOMDrawer, ModalDisplayer, ProgressIndicator, FormValidator, DataView, and the
+select and checkbox widgets of FormComponents. All pass with zero listeners
+surviving. Both bugs above were found by this pass.
+
+Not exercised at runtime: SPAEngine (needs a route config and a server), and the
+datePicker, radio, slideSwitch and file widgets, whose destroy() is the same
+mechanism as the two widgets that are covered.

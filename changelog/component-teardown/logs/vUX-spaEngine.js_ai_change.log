@@ -1,0 +1,182 @@
+FILE: vUX-spaEngine.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+The delegated SPA-link click handler discarded its handle and the popstate handler was an
+anonymous closure, so an engine could never be shut down: its links kept intercepting
+clicks and its popstate handler kept rewriting the page. The popstate handler is now held
+in an instance-scope variable (assigned rather than reindented, to keep the diff to the
+binding itself), the click handle is stored, and the cache builder's setTimeout id is kept
+so a pending build can be cancelled.
+
+destroy() detaches both listeners, cancels the cache builder and drops the cached page
+sections. Browser history is deliberately not unwound: the entries this engine pushed are
+the user's navigation record, not the engine's private state.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+    var clickLoadCallback = null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
+    var exitCallback=null, activeRoute=null;
+    var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+
+NEW_SECTION
+    var clickLoadCallback = null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
+    var exitCallback=null, activeRoute=null;
+    //Teardown state: the detach handle for the delegated link listener, the popstate listener held at
+    //instance scope so destroy() can remove it, and the cache builder's timer id.
+    var destroyed=false, spaLinkHandle=null, handlePopState=null, cacheBuilderTimer=null;
+    var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+    this.initialize = function() {
+        if (!initialize) {
+            if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
+            if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
+
+NEW_SECTION
+    this.initialize = function() {
+        if (!initialize) {
+            if (destroyed) throw new Error("This SPAEngine has been destroyed, create a new instance instead of re-initializing");
+            if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
+            if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+        }
+    }
+    this.config = {}
+
+NEW_SECTION
+        }
+    }
+    this.destroy = function() {
+        //Detaches the delegated link listener and the popstate listener, and cancels the cache
+        //builder if it has not run yet. The cached page sections are dropped with it, so a new
+        //engine on the same page starts from an empty cache rather than another instance's.
+        //Browser history itself is left untouched: entries this engine pushed are the user's.
+        if (destroyed) return;
+
+        if (spaLinkHandle != null){
+            spaLinkHandle.detach();
+            spaLinkHandle = null;
+        }
+        if (handlePopState != null){
+            removeEventListener("popstate", handlePopState, false);
+            handlePopState = null;
+        }
+        clearTimeout(cacheBuilderTimer);
+        cacheBuilderTimer = null;
+
+        cacheBuilderTracker = {};
+        savedPageSection = {};
+        activeRoute = null;
+        routeProperties = null;
+
+        initialize = false;
+        destroyed = true;
+    }
+    this.config = {}
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+        // Register Listeners
+
+        $$.attachEventHandler("click", classes.spaLink, function(e){
+            e.preventDefault();
+            loadFrom(e.target);
+
+NEW_SECTION
+        // Register Listeners
+
+        spaLinkHandle = $$.attachEventHandler("click", classes.spaLink, function(e){
+            e.preventDefault();
+            loadFrom(e.target);
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+
+
+        addEventListener("popstate", function(e){
+            if(e.state != null){
+
+NEW_SECTION
+
+
+        handlePopState = function(e){
+            if(e.state != null){
+
+================================================================================
+CHANGE 6
+================================================================================
+
+OLD_SECTION
+
+            }
+        }, false);
+
+    }
+
+NEW_SECTION
+
+            }
+        };
+
+        addEventListener("popstate", handlePopState, false);
+
+    }
+
+================================================================================
+CHANGE 7
+================================================================================
+
+OLD_SECTION
+        let totalRoutes     = routesEntries.length;
+        
+        setTimeout(function(){
+            for (let x = 0; x < totalRoutes; x++) {
+                const routeName             = routesEntries[x][0];
+
+NEW_SECTION
+        let totalRoutes     = routesEntries.length;
+        
+        cacheBuilderTimer = setTimeout(function(){
+            for (let x = 0; x < totalRoutes; x++) {
+                const routeName             = routesEntries[x][0];
+
+================================================================================
+CHANGE 8
+================================================================================
+
+OLD_SECTION
+    Object.defineProperties(this, {
+        config: { writable: false },
+        initialize: { writable: false }
+    })
+
+NEW_SECTION
+    Object.defineProperties(this, {
+        config: { writable: false },
+        initialize: { writable: false },
+        destroy: { writable: false }
+    })
+

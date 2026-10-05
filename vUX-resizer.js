@@ -217,7 +217,10 @@ export function Resizer(elementSelector){
             get:function(){
                 return targetElementHeight;
             }
-        }
+        },
+        initialize: { writable: false },
+        destroy: { writable: false },
+        config: { writable: false }
     })
     Object.defineProperties(this.config, {
         thresholdValues:{

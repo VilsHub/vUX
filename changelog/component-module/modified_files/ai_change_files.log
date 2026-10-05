@@ -1,0 +1,28 @@
+FEATURE: component-module
+DATE: 2026-09-17
+
+Component (new module)
+  Added:
+    vUX-component.js
+    src/componentEngine.js
+
+Core
+  Modified:
+    src/helpers.js              (component.js added to the module registry)
+
+DataView
+  Modified:
+    vUX-dataView.js             (delegates to src/componentEngine.js; public surface unchanged)
+
+Documentation
+  Added:
+    doc/component.md
+  Modified:
+    doc/README.md
+    README.md
+
+Example
+  Added:
+    examples/component/index.html
+    examples/component/main.js
+    examples/component/README.md

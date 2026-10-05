@@ -1,0 +1,294 @@
+FILE: vUX-modalDisplayer.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+Two levels of listener here. The per-instance trigger listener was an anonymous document
+'click' closure, so an instance could never stop responding to its own trigger class.
+It is now the named handleTriggerClick.
+
+The four document-level handlers (Escape, effect transitions, resize, away/close clicks)
+are deliberately shared by every instance — binding them per instance would pop one layer
+per instance for a single Escape press. They were attached once and never detached, so
+they stayed bound even after every displayer on the page had been torn down. Initialized
+instances are now counted, and the last one to be destroyed detaches them.
+
+destroy() closes only the layers whose owner is this instance, walking the stack backwards
+because completeClose() splices from it.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+var pageState = { bodyOverflow: "", frozen: false };
+var globalHandlersAttached = false;
+
+function topLayer() {
+
+NEW_SECTION
+var pageState = { bodyOverflow: "", frozen: false };
+var globalHandlersAttached = false;
+var liveInstances = 0; //initialized instances sharing the document-level handlers below
+
+function topLayer() {
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+    globalHandlersAttached = true;
+
+    document.body.addEventListener("keydown", function(e) {
+        if (topLayer() == null) return;
+        if (keyboardEventHanler(e)["handled"] == true && e.key == "Escape") closeTopLayer();
+    }, false);
+
+    document.body.addEventListener("transitionend", function(e) {
+        //only the library's own animation boxes count; a transition on consumer
+        //content inside the modal bubbles up here too and must be ignored
+        if (e.target.classList == undefined || !e.target.classList.contains("vEffectBox")) return;
+
+        var layer = layerOf(e.target);
+        if (layer == null || layer.effectsCon == null || !layer.effectsCon.contains(e.target)) return;
+
+        if (layer.effectsCon.classList.contains("trans_in")) {
+            if (layer.effect == "split") {
+                e.target.innerHTML = "";
+                if (!e.target.classList.contains("vRight")) return; //wait for the second half
+            }
+            completeOpen(layer);
+        } else if (layer.effectsCon.classList.contains("trans_out")) {
+            if (layer.effect == "split" && !e.target.classList.contains("vLeft")) return;
+            completeClose(layer);
+        }
+    }, false);
+
+    window.addEventListener("resize", function() {
+        for (var x = 0; x < modalStack.length; x++) applyWidths(modalStack[x]);
+    }, false);
+
+    document.addEventListener("click", function(e) {
+        var layer = topLayer();
+        if (layer == null) return;
+        if (layer.exitOnAway && e.target === layer.overlay) {
+            closeTopLayer();
+            return;
+        }
+        if (layer.closeButtonClass != "" && e.target.closest("." + layer.closeButtonClass) != null) {
+            closeTopLayer();
+        }
+    }, false);
+}
+
+NEW_SECTION
+    globalHandlersAttached = true;
+
+    document.body.addEventListener("keydown", handleEscapeKey, false);
+    document.body.addEventListener("transitionend", handleEffectTransition, false);
+    window.addEventListener("resize", handleViewportResize, false);
+    document.addEventListener("click", handleAwayAndCloseClick, false);
+}
+
+//Detached once the last initialized ModalDisplayer is destroyed, so a page that tears all of
+//its displayers down is left with nothing of the library's bound to the document.
+function detachGlobalHandlers() {
+    if (!globalHandlersAttached) return;
+    globalHandlersAttached = false;
+
+    document.body.removeEventListener("keydown", handleEscapeKey, false);
+    document.body.removeEventListener("transitionend", handleEffectTransition, false);
+    window.removeEventListener("resize", handleViewportResize, false);
+    document.removeEventListener("click", handleAwayAndCloseClick, false);
+}
+
+function handleEscapeKey(e) {
+    if (topLayer() == null) return;
+    if (keyboardEventHanler(e)["handled"] == true && e.key == "Escape") closeTopLayer();
+}
+
+function handleEffectTransition(e) {
+    //only the library's own animation boxes count; a transition on consumer
+    //content inside the modal bubbles up here too and must be ignored
+    if (e.target.classList == undefined || !e.target.classList.contains("vEffectBox")) return;
+
+    var layer = layerOf(e.target);
+    if (layer == null || layer.effectsCon == null || !layer.effectsCon.contains(e.target)) return;
+
+    if (layer.effectsCon.classList.contains("trans_in")) {
+        if (layer.effect == "split") {
+            e.target.innerHTML = "";
+            if (!e.target.classList.contains("vRight")) return; //wait for the second half
+        }
+        completeOpen(layer);
+    } else if (layer.effectsCon.classList.contains("trans_out")) {
+        if (layer.effect == "split" && !e.target.classList.contains("vLeft")) return;
+        completeClose(layer);
+    }
+}
+
+function handleViewportResize() {
+    for (var x = 0; x < modalStack.length; x++) applyWidths(modalStack[x]);
+}
+
+function handleAwayAndCloseClick(e) {
+    var layer = topLayer();
+    if (layer == null) return;
+    if (layer.exitOnAway && e.target === layer.overlay) {
+        closeTopLayer();
+        return;
+    }
+    if (layer.closeButtonClass != "" && e.target.closest("." + layer.closeButtonClass) != null) {
+        closeTopLayer();
+    }
+}
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+    var self = this,initialized = false,effectName = "none",exitOnAway = true,overlayBackgroundType = "color",overlayStyle = "hsla(0, 0%, 100%, 0.48)",openProcessor = function() {},closeProcessor = function() {},pageContainer = null;
+    var defaultModalWidths = ["500px", "500px", "86%"],modalWidths = defaultModalWidths,brkpoints = { largeStart: 1000, mediumStart: 520 },className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+
+    //modalWidths => [a, b, c] => a = large; b = medium; c = small
+
+NEW_SECTION
+    var self = this,initialized = false,effectName = "none",exitOnAway = true,overlayBackgroundType = "color",overlayStyle = "hsla(0, 0%, 100%, 0.48)",openProcessor = function() {},closeProcessor = function() {},pageContainer = null;
+    var defaultModalWidths = ["500px", "500px", "86%"],modalWidths = defaultModalWidths,brkpoints = { largeStart: 1000, mediumStart: 520 },className = "",formIdAttribute = "",closeButtonClass = "",modalWidthsAttribute = "";
+    var destroyed = false;
+
+    //modalWidths => [a, b, c] => a = large; b = medium; c = small
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+        //Opening stays per instance: each instance recognises its own trigger class
+        //and id attribute. Triggers inside a displayed modal work like any other.
+        document.addEventListener("click", function(e) {
+            var trigger = e.target.closest("." + className);
+            if (trigger == null) return;
+
+            var modal = document.getElementById(trigger.getAttribute(formIdAttribute));
+            if (modal == null) return;
+            if (layerOf(modal) != null) return; //resolved to the displayed copy of an already open modal
+
+            if (modalWidthsAttribute != "" && trigger.getAttribute(modalWidthsAttribute) != null) {
+                modalWidths = trigger.getAttribute(modalWidthsAttribute).split(",");
+            } else {
+                modalWidths = defaultModalWidths;
+            }
+            show(modal);
+        }, false);
+    }
+
+NEW_SECTION
+        //Opening stays per instance: each instance recognises its own trigger class
+        //and id attribute. Triggers inside a displayed modal work like any other.
+        //Named rather than anonymous so that destroy() can detach this instance's listener
+        //without disturbing the other instances sharing the document.
+        document.addEventListener("click", handleTriggerClick, false);
+    }
+
+    function handleTriggerClick(e) {
+        var trigger = e.target.closest("." + className);
+        if (trigger == null) return;
+
+        var modal = document.getElementById(trigger.getAttribute(formIdAttribute));
+        if (modal == null) return;
+        if (layerOf(modal) != null) return; //resolved to the displayed copy of an already open modal
+
+        if (modalWidthsAttribute != "" && trigger.getAttribute(modalWidthsAttribute) != null) {
+            modalWidths = trigger.getAttribute(modalWidthsAttribute).split(",");
+        } else {
+            modalWidths = defaultModalWidths;
+        }
+        show(modal);
+    }
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        }
+    };
+    this.initialize = function() {
+        if (!initialized) {
+            if (className == "") throw new Error("Set up incomplete: No class name specified for modal, specify using 'config.className'");
+            if (formIdAttribute == "") throw new Error("Set up incomplete: No formId attribute specified for modal, specify using 'config.formIdAttribute'");
+
+NEW_SECTION
+        }
+    };
+    this.destroy = function() {
+        //Closes only the layers this instance opened, then detaches its own trigger listener. The
+        //document-level Escape, away-click, resize and transition handlers are shared by every
+        //ModalDisplayer on the page, so they are deliberately left attached.
+        if (destroyed) return;
+
+        for (var x = modalStack.length - 1; x >= 0; x--) {
+            if (modalStack[x].owner === self) {
+                modalStack[x].closing = true;
+                completeClose(modalStack[x]);
+            }
+        }
+
+        document.removeEventListener("click", handleTriggerClick, false);
+
+        //The document-level handlers are shared, so they come off only with the last live instance.
+        if (initialized){
+            liveInstances--;
+            if (liveInstances <= 0){
+                liveInstances = 0;
+                detachGlobalHandlers();
+            }
+        }
+
+        initialized = false;
+        destroyed = true;
+    };
+    this.initialize = function() {
+        if (!initialized) {
+            if (destroyed) throw new Error("This ModalDisplayer has been destroyed, create a new instance instead of re-initializing");
+            if (className == "") throw new Error("Set up incomplete: No class name specified for modal, specify using 'config.className'");
+            if (formIdAttribute == "") throw new Error("Set up incomplete: No formId attribute specified for modal, specify using 'config.formIdAttribute'");
+
+================================================================================
+CHANGE 6
+================================================================================
+
+OLD_SECTION
+            addEventhandler();
+            initialized = true;
+        }
+    }
+
+NEW_SECTION
+            addEventhandler();
+            initialized = true;
+            liveInstances++;
+        }
+    }
+
+================================================================================
+CHANGE 7
+================================================================================
+
+OLD_SECTION
+        closeAll: { writable: false },
+        initialize: { writable: false },
+        mainForm: {
+            get: function() {
+
+NEW_SECTION
+        closeAll: { writable: false },
+        initialize: { writable: false },
+        destroy: { writable: false },
+        mainForm: {
+            get: function() {
+

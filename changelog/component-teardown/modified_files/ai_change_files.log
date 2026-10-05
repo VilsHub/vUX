@@ -1,0 +1,32 @@
+FEATURE: component-teardown
+DATE: 2026-09-17
+
+Core
+  Modified:
+    src/vUX-core-4.0.0-beta.js
+
+Components — destroy() added
+  Modified:
+    vUX-autoWriter.js
+    vUX-carousel.js
+    vUX-domDrawer.js
+    vUX-formComponents.js
+    vUX-formValidator.js
+    vUX-listScroller.js
+    vUX-modalDisplayer.js
+    vUX-progressIndicator.js
+    vUX-spaEngine.js
+    vUX-timeLineList.js
+    vUX-toolTip.js
+    vUX-touchHandler.js
+
+Components — teardown extended on an existing object
+  Modified:
+    vUX-cShapes.js        (destroy() on the animatedRectangle() object; CShapes itself owns nothing)
+
+Components — convention only
+  Modified:
+    vUX-resizer.js        (destroy() already present; public members frozen like the others)
+
+Components — already complete, untouched
+    vUX-dataView.js       (destroy() shipped with the component)

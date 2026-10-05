@@ -35,6 +35,7 @@ window.vModel = {
             modules:[
                 "autoWriter.js",
                 "carousel.js",
+                "component.js",
                 "cShapes.js",
                 "dataView.js",
                 "domDrawer.js",

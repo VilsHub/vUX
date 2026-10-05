@@ -937,7 +937,7 @@ let $$ = {
         validateFunction(fn, "'$$.attachEventHandler(..x)' argument 3 must be a function to be called on the trigger");
         var eventComponents = event.split(":");
 
-        addEventListener(eventComponents[0], function(e) {
+        var listener = function(e) {
             if (idType == "single") {
                 var constraints = DomClass.split(",");
                 if (e.target.classList != null) {
@@ -981,7 +981,17 @@ let $$ = {
                    
                 }
             }
-        }, false);
+        };
+
+        addEventListener(eventComponents[0], listener, false);
+
+        //Returned so that a component can detach the delegated listener again in its destroy().
+        //Older callers that ignore the return value keep working unchanged.
+        return {
+            detach: function(){
+                removeEventListener(eventComponents[0], listener, false);
+            }
+        };
     },
     ajax:function(options=null, returnDataType=null){
         var xmlhttp = null;  

@@ -1,0 +1,146 @@
+FILE: vUX-listScroller.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+assignHandlers() registered a delegated click handler whose return value was discarded,
+an anonymous window resize listener, and a scroll listener on the container. destroy()
+now detaches all three — the resize handler having been named handleResize — and strips
+the layout classes and the inline width/left the component wrote onto the list parent.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+    var paddingRight = 0, paddingLeft = 0, ready = 0, listening = 0, hasButtons = true;
+    var buttons = [], scrollSize = 175,scrollSpeed = 290,inactiveButtonClassName = "",wrapperStyle = "width:100%";
+
+    var animationOptions = {
+
+NEW_SECTION
+    var paddingRight = 0, paddingLeft = 0, ready = 0, listening = 0, hasButtons = true;
+    var buttons = [], scrollSize = 175,scrollSpeed = 290,inactiveButtonClassName = "",wrapperStyle = "width:100%";
+    var destroyed = false, clickHandle = null;   //clickHandle is the detach handle for the delegated button listener
+
+    var animationOptions = {
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+
+    function assignHandlers() {
+        //Buttons
+        $$.attachEventHandler("click", "vListBt", clickHandler);
+
+        window.addEventListener("resize", function() {
+            if (listening == 1 && hasButtons) {
+                scrollStatus(container);
+            }
+        }, false);
+
+        container.addEventListener("scroll", updateLastValue)
+    }
+
+    function updateLastValue(e){
+        if(hasButtons){
+
+NEW_SECTION
+
+    function assignHandlers() {
+        //Buttons. The handle returned by attachEventHandler() is kept so destroy() can detach the
+        //delegated listener; the resize handler is named for the same reason.
+        clickHandle = $$.attachEventHandler("click", "vListBt", clickHandler);
+
+        window.addEventListener("resize", handleResize, false);
+
+        container.addEventListener("scroll", updateLastValue)
+    }
+
+    function handleResize() {
+        if (listening == 1 && hasButtons) {
+            scrollStatus(container);
+        }
+    }
+
+    function updateLastValue(e){
+        if(hasButtons){
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+    this.initialize = function() {
+        if (ready == 0) { //Not initialized
+            var listItems = listParent.children;
+            var children = listItems.length;
+
+NEW_SECTION
+    this.initialize = function() {
+        if (ready == 0) { //Not initialized
+            if (destroyed) throw new Error("This ListScroller has been destroyed, create a new instance instead of re-initializing");
+            var listItems = listParent.children;
+            var children = listItems.length;
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+        }
+    };
+    Object.defineProperties(this.config, {
+        buttons: {
+
+NEW_SECTION
+        }
+    };
+    this.destroy = function(){
+        //Detaches the delegated button listener, the window resize listener and the container's own
+        //scroll listener, then strips the layout classes and inline sizing this instance applied.
+        if (destroyed) return;
+
+        if (clickHandle != null){
+            clickHandle.detach();
+            clickHandle = null;
+        }
+        window.removeEventListener("resize", handleResize, false);
+        container.removeEventListener("scroll", updateLastValue);
+
+        container.classList.remove("vlistParentXContainer");
+        listParent.classList.remove("vlistParentX", "vlistCon", "noWrap");
+        listParent.style.removeProperty("width");
+        listParent.style.removeProperty("left");
+
+        for (var list of listParent.children) list.classList.remove("vlist");
+
+        listening = 0;
+        ready = 0;
+        destroyed = true;
+    };
+    Object.defineProperties(this.config, {
+        buttons: {
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        initialize: { writable: false },
+        onScroller: { writable: false },
+        offScroller: { writable: false }
+    });
+}
+
+NEW_SECTION
+        initialize: { writable: false },
+        onScroller: { writable: false },
+        offScroller: { writable: false },
+        destroy: { writable: false }
+    });
+}
+

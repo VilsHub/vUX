@@ -1,0 +1,154 @@
+FILE: vUX-touchHandler.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+addTouchEventHandler() bound gesture listeners to the frame plus an anonymous
+transitionend listener and an anonymous window resize listener. The two anonymous ones
+were unremovable, so a TouchHandler whose frame was swapped out by the SPA engine kept
+recalculating its slope on every window resize for the life of the page. They are now
+named, a mirrored removeTouchEventHandler() detaches everything addTouchEventHandler()
+binds (using the same pointer names checkSupport() settled on), and destroy() calls it.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+    var pointerDownName = 'pointerdown',slopeValue = 0,pointerUpName = 'pointerup',pointerMoveName = 'pointermove',pointerCancelName = "pointercancel",viewPortTransition = "";
+    var moved = 0,node = 0,enableTouch = false,maxStop = 0,targetDirection = null,SLIDE_LEFT = 1,SLIDE_RIGHT = 2,SLIDE_TOP = 3,SLIDE_BOTTOM = 4,DEFAULT = 5;
+
+    function addTouchEventHandler() {
+
+NEW_SECTION
+    var pointerDownName = 'pointerdown',slopeValue = 0,pointerUpName = 'pointerup',pointerMoveName = 'pointermove',pointerCancelName = "pointercancel",viewPortTransition = "";
+    var moved = 0,node = 0,enableTouch = false,maxStop = 0,targetDirection = null,SLIDE_LEFT = 1,SLIDE_RIGHT = 2,SLIDE_TOP = 3,SLIDE_BOTTOM = 4,DEFAULT = 5;
+    var destroyed = false;
+
+    function addTouchEventHandler() {
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+            frame.addEventListener('mousedown', handleGestureStart, false);
+        }
+        frame.addEventListener("transitionend", function(e) {
+            if (mode == "slider") {
+                if (e.target.classList.contains("posUpdate")) {
+                    e.target.classList.remove("posUpdate");
+                    viewPortTransition != "" ? viewPort.style.transition = viewPortTransition : null;
+                    hasMoved = false;
+                    slideCallBack != null ? slideCallBack(node) : null;
+                }
+            }
+        }, false);
+        window.addEventListener("resize", function() {
+            calculateSlope();
+        }, false);
+    }
+
+NEW_SECTION
+            frame.addEventListener('mousedown', handleGestureStart, false);
+        }
+        //Named rather than anonymous so that destroy() can detach them again.
+        frame.addEventListener("transitionend", handleTransitionEnd, false);
+        window.addEventListener("resize", handleResize, false);
+    }
+
+    function handleTransitionEnd(e) {
+        if (mode == "slider") {
+            if (e.target.classList.contains("posUpdate")) {
+                e.target.classList.remove("posUpdate");
+                viewPortTransition != "" ? viewPort.style.transition = viewPortTransition : null;
+                hasMoved = false;
+                slideCallBack != null ? slideCallBack(node) : null;
+            }
+        }
+    }
+
+    function handleResize() {
+        calculateSlope();
+    }
+
+    function removeTouchEventHandler() {
+        //Mirrors addTouchEventHandler(); the pointer/touch names are the ones checkSupport() settled on.
+        frame.removeEventListener(pointerDownName, handleGestureStart, false);
+        frame.removeEventListener(pointerMoveName, handleGestureMove, false);
+        frame.removeEventListener(pointerUpName, handleGestureEnd, false);
+        frame.removeEventListener(pointerCancelName, handleGestureEnd, false);
+        frame.removeEventListener('touchstart', handleGestureStart, false);
+        frame.removeEventListener('touchmove', handleGestureMove, false);
+        frame.removeEventListener('touchend', handleGestureEnd, false);
+        frame.removeEventListener('mousedown', handleGestureStart, false);
+        frame.removeEventListener("transitionend", handleTransitionEnd, false);
+        window.removeEventListener("resize", handleResize, false);
+        document.removeEventListener(pointerUpName, handleGestureEnd, false);
+    }
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+    }
+    this.initialize = function() {
+        validateElement(frame, "Contructor argument must be a valid HTML element");
+        viewPort = frame.children[0];
+
+NEW_SECTION
+    }
+    this.initialize = function() {
+        if (destroyed) throw new Error("This TouchHandler has been destroyed, create a new instance instead of re-initializing");
+        validateElement(frame, "Contructor argument must be a valid HTML element");
+        viewPort = frame.children[0];
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+        }
+    }
+    this.config = {}
+    Object.defineProperties(this, {
+
+NEW_SECTION
+        }
+    }
+    this.destroy = function(){
+        //Detaches every gesture listener from the frame and from window, and clears the marker
+        //classes. Call it when the frame's page is exited, otherwise the resize listener outlives it.
+        if (destroyed) return;
+
+        removeTouchEventHandler();
+        frame.classList.remove("vTouchHandler", "grab");
+
+        enableTouch = false;
+        initialized = false;
+        destroyed = true;
+    }
+    this.config = {}
+    Object.defineProperties(this, {
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        config: { writable: false },
+        enable: { writable: false },
+        disable: { writable: false }
+    })
+    Object.defineProperties(this.config, {
+
+NEW_SECTION
+        config: { writable: false },
+        enable: { writable: false },
+        disable: { writable: false },
+        destroy: { writable: false }
+    })
+    Object.defineProperties(this.config, {
+

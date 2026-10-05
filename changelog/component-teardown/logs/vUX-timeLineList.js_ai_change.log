@@ -1,0 +1,136 @@
+FILE: vUX-timeLineList.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+The resize handler was an anonymous closure passed straight to addEventListener, so it
+could never be removed, and the marker classes activateList() applied were permanent.
+The handler is now the named wrapList function (it takes no arguments, so the event
+object it is handed is harmless), and every activated list is recorded so destroy() can
+strip 'vtimeLine', its unique class, 'activated' and 'wrap' again.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+/***************************TimeLine List*****************************/
+export function TimeLineList(){
+    var className ="";
+    var dataAttributes = {
+        timeLineBorderStyleAttrib:"",
+
+NEW_SECTION
+/***************************TimeLine List*****************************/
+export function TimeLineList(){
+    var className ="", destroyed = false;
+    var activatedLists = [];   //every <ul> this instance marked, so destroy() can unmark them again
+    var dataAttributes = {
+        timeLineBorderStyleAttrib:"",
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+    }
+    this.autoBuild = function(){
+        if(className == "")throw new Error("Setup imcomplete: TimeLineList class name must be supllied, specify using the 'config.className' property");
+        var existingSheet = $$.ss("#v" + className);
+
+NEW_SECTION
+    }
+    this.autoBuild = function(){
+        if (destroyed) throw new Error("This TimeLineList has been destroyed, create a new instance instead of rebuilding");
+        if(className == "")throw new Error("Setup imcomplete: TimeLineList class name must be supllied, specify using the 'config.className' property");
+        var existingSheet = $$.ss("#v" + className);
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+    }
+
+    this.config = {}
+
+NEW_SECTION
+    }
+
+    this.destroy = function(){
+        //Removes the window resize listener and the generated stylesheet, then strips the marker
+        //classes from every list this instance activated, so a rebuilt page starts from clean markup.
+        if (destroyed) return;
+
+        removeEventListener("resize", wrapList, false);
+
+        var styleEle = $$.ss("style[data-id='v" + className + "']");
+        if (styleEle != null) styleEle.remove();
+
+        for (var x = 0; x < activatedLists.length; x++){
+            var entry = activatedLists[x];
+            entry.ul.classList.remove("vtimeLine", entry.uniqueClass, "activated", "wrap");
+        }
+        activatedLists = [];
+
+        destroyed = true;
+    }
+
+    this.config = {}
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+
+    function assignTimeLineEventHanler(){
+        addEventListener("resize", function(){
+            wrapList();
+        }, false)
+    }
+
+NEW_SECTION
+
+    function assignTimeLineEventHanler(){
+        //Bound as a named listener rather than an anonymous one so that destroy() can detach it.
+        addEventListener("resize", wrapList, false)
+    }
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        var uniqueClass = "vtl"+index;
+        ul.classList.add("vtimeLine", uniqueClass, "activated"); 
+        return uniqueClass;
+    }
+
+NEW_SECTION
+        var uniqueClass = "vtl"+index;
+        ul.classList.add("vtimeLine", uniqueClass, "activated"); 
+        activatedLists.push({ul:ul, uniqueClass:uniqueClass});
+        return uniqueClass;
+    }
+
+================================================================================
+CHANGE 6
+================================================================================
+
+OLD_SECTION
+        autoBuild: { writable: false },
+        config: { writable: false },
+        refresh: { writable: false }
+    })
+}
+
+NEW_SECTION
+        autoBuild: { writable: false },
+        config: { writable: false },
+        refresh: { writable: false },
+        destroy: { writable: false }
+    })
+}
+

@@ -15,7 +15,8 @@ import "./src/vUX-core-4.0.0-beta.js";
 
 /***************************TimeLine List*****************************/
 export function TimeLineList(){
-    var className ="";
+    var className ="", destroyed = false;
+    var activatedLists = [];   //every <ul> this instance marked, so destroy() can unmark them again
     var dataAttributes = {
         timeLineBorderStyleAttrib:"",
         listStyleAttrib:"",
@@ -24,12 +25,32 @@ export function TimeLineList(){
         smallViewAttrib:""
     }
     this.autoBuild = function(){
+        if (destroyed) throw new Error("This TimeLineList has been destroyed, create a new instance instead of rebuilding");
         if(className == "")throw new Error("Setup imcomplete: TimeLineList class name must be supllied, specify using the 'config.className' property");
         var existingSheet = $$.ss("#v" + className);
         if(existingSheet == null){
             timeLineStyleSheet();
             assignTimeLineEventHanler();
         }
+    }
+
+    this.destroy = function(){
+        //Removes the window resize listener and the generated stylesheet, then strips the marker
+        //classes from every list this instance activated, so a rebuilt page starts from clean markup.
+        if (destroyed) return;
+
+        removeEventListener("resize", wrapList, false);
+
+        var styleEle = $$.ss("style[data-id='v" + className + "']");
+        if (styleEle != null) styleEle.remove();
+
+        for (var x = 0; x < activatedLists.length; x++){
+            var entry = activatedLists[x];
+            entry.ul.classList.remove("vtimeLine", entry.uniqueClass, "activated", "wrap");
+        }
+        activatedLists = [];
+
+        destroyed = true;
     }
 
     this.config = {}
@@ -50,9 +71,8 @@ export function TimeLineList(){
     }
 
     function assignTimeLineEventHanler(){
-        addEventListener("resize", function(){
-            wrapList();
-        }, false)
+        //Bound as a named listener rather than an anonymous one so that destroy() can detach it.
+        addEventListener("resize", wrapList, false)
     }
 
     function wrapList(){
@@ -91,6 +111,7 @@ export function TimeLineList(){
     function activateList(ul, index){
         var uniqueClass = "vtl"+index;
         ul.classList.add("vtimeLine", uniqueClass, "activated"); 
+        activatedLists.push({ul:ul, uniqueClass:uniqueClass});
         return uniqueClass;
     }
 
@@ -120,7 +141,8 @@ export function TimeLineList(){
     Object.defineProperties(this, {
         autoBuild: { writable: false },
         config: { writable: false },
-        refresh: { writable: false }
+        refresh: { writable: false },
+        destroy: { writable: false }
     })
 }
 

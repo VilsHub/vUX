@@ -1,0 +1,184 @@
+FILE: vUX-progressIndicator.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+addEvents() bound 'online', 'offline' and 'transitionend' to window as anonymous
+closures. All three were unremovable, and the tinyIncrement() setInterval was only ever
+cleared by hideProgress() — an indicator torn down mid-progress kept the interval
+running and kept writing to an element that had been removed. The three handlers are now
+named, every element a progress block is built into is recorded, and destroy() clears the
+interval, stops the grid animation, detaches the listeners and removes the injected
+blocks.
+
+The grid animation is now ended with the CShapes animation object's new destroy() rather
+than stop(), so the canvas is cleared as well as halted.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+    let network         = "online";
+    let smallIncrement  = null;
+    let dataAttributes = {
+        progressSpaceId:""// The data attribute to hold the ID of the element on which progress should show on. the data attribute value can be the ID of the target element or 'self' refering to it self. If this attribute takes mor priority than the default progress space element
+
+NEW_SECTION
+    let network         = "online";
+    let smallIncrement  = null;
+    let destroyed       = false;
+    let managedSpaces   = [];   //every element a progress block was built into, so destroy() can clear them
+    let dataAttributes = {
+        progressSpaceId:""// The data attribute to hold the ID of the element on which progress should show on. the data attribute value can be the ID of the target element or 'self' refering to it self. If this attribute takes mor priority than the default progress space element
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+    this.initialize = function (){
+        if(!initialized){
+            addEvents();
+            addVitalStyles();
+
+NEW_SECTION
+    this.initialize = function (){
+        if(!initialized){
+            if (destroyed) throw new Error("This ProgressIndicator has been destroyed, create a new instance instead of re-initializing");
+            addEvents();
+            addVitalStyles();
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+    }
+
+    this.config = {}
+
+NEW_SECTION
+    }
+
+    this.destroy = function (){
+        //Clears the incremental timer and the grid animation, detaches the three window listeners
+        //and removes every progress block this instance injected. Without it the 'online', 'offline'
+        //and 'transitionend' listeners stay bound to window for the life of the page.
+        if (destroyed) return;
+
+        clearInterval(smallIncrement);
+        smallIncrement = null;
+
+        //destroy() stops the animation and clears the canvas; the grid indicator's canvas is removed
+        //with its progress block below, but clearing first keeps a reused space from flashing the last frame.
+        if (gbr != null && typeof gbr.destroy == "function") gbr.destroy();
+
+        removeEventListener("online", handleOnline);
+        removeEventListener("offline", handleOffline);
+        removeEventListener("transitionend", handleTransitionEnd, false);
+
+        for (let x = 0; x < managedSpaces.length; x++){
+            let block = managedSpaces[x].querySelector(".vProgressItem");
+            if (block != null) block.remove();
+        }
+        managedSpaces = [];
+
+        initialized = false;
+        destroyed = true;
+    }
+
+    this.config = {}
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+    function buildProgressBlock(element){
+        let targetSpace = getProgressSpaceElement(element);
+        setTemplate(targetSpace).then(animationController);
+    }
+    
+    function addEvents(){
+        addEventListener("online", function(){
+            network = true;
+        })
+
+        addEventListener("offline", function(){
+            network = false;
+        })
+
+        addEventListener("transitionend", function(e){
+            if(e.target.classList.contains("style3")){
+                if(!e.target.classList.contains("slow") && !e.target.classList.contains("halted")){
+                    if(!e.target.classList.contains("completed")) slowMo();
+                }
+                if(e.target.classList.contains("slow")){
+                    e.target.classList.add("halted", "tiny"); 
+                    tinyIncrement();
+                }
+                if(e.target.classList.contains("completed")){
+                    e.target.parentNode.parentNode.classList.add("done");
+                    e.target.classList.remove("completed")
+                }
+            }
+        }, false)
+    }
+
+NEW_SECTION
+    function buildProgressBlock(element){
+        let targetSpace = getProgressSpaceElement(element);
+        if (managedSpaces.indexOf(targetSpace) == -1) managedSpaces.push(targetSpace);
+        setTemplate(targetSpace).then(animationController);
+    }
+    
+    function addEvents(){
+        //Named rather than anonymous so that destroy() can detach them from window again.
+        addEventListener("online", handleOnline)
+        addEventListener("offline", handleOffline)
+        addEventListener("transitionend", handleTransitionEnd, false)
+    }
+
+    function handleOnline(){
+        network = true;
+    }
+
+    function handleOffline(){
+        network = false;
+    }
+
+    function handleTransitionEnd(e){
+        if(e.target.classList.contains("style3")){
+            if(!e.target.classList.contains("slow") && !e.target.classList.contains("halted")){
+                if(!e.target.classList.contains("completed")) slowMo();
+            }
+            if(e.target.classList.contains("slow")){
+                e.target.classList.add("halted", "tiny"); 
+                tinyIncrement();
+            }
+            if(e.target.classList.contains("completed")){
+                e.target.parentNode.parentNode.classList.add("done");
+                e.target.classList.remove("completed")
+            }
+        }
+    }
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        showProgress: { writable: false },
+        hideProgress: { writable: false },
+        initialize: {writable:false}
+    })
+
+NEW_SECTION
+        showProgress: { writable: false },
+        hideProgress: { writable: false },
+        initialize: {writable:false},
+        destroy: {writable:false}
+    })
+

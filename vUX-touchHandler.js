@@ -18,6 +18,7 @@ export function TouchHandler(frame) {
     var initialTouchPos = {},slideCallBack = null,mode = "slider",hasMoved = false,lastTouchPos = {},lastPoint = { x: 0, y: 0 },usePoint = 0,initialized = false,rafPending = false,pan = "x",pressed = false,viewPort = null;
     var pointerDownName = 'pointerdown',slopeValue = 0,pointerUpName = 'pointerup',pointerMoveName = 'pointermove',pointerCancelName = "pointercancel",viewPortTransition = "";
     var moved = 0,node = 0,enableTouch = false,maxStop = 0,targetDirection = null,SLIDE_LEFT = 1,SLIDE_RIGHT = 2,SLIDE_TOP = 3,SLIDE_BOTTOM = 4,DEFAULT = 5;
+    var destroyed = false;
 
     function addTouchEventHandler() {
         if (window.PointerEvent) {
@@ -36,19 +37,52 @@ export function TouchHandler(frame) {
             // Add Mouse Listener
             frame.addEventListener('mousedown', handleGestureStart, false);
         }
-        frame.addEventListener("transitionend", function(e) {
-            if (mode == "slider") {
-                if (e.target.classList.contains("posUpdate")) {
-                    e.target.classList.remove("posUpdate");
-                    viewPortTransition != "" ? viewPort.style.transition = viewPortTransition : null;
-                    hasMoved = false;
-                    slideCallBack != null ? slideCallBack(node) : null;
-                }
+        //Named rather than anonymous so that destroy() can detach them again.
+        frame.addEventListener("transitionend", handleTransitionEnd, false);
+        window.addEventListener("resize", handleResize, false);
+    }
+
+    function handleTransitionEnd(e) {
+        if (mode == "slider") {
+            if (e.target.classList.contains("posUpdate")) {
+                e.target.classList.remove("posUpdate");
+                viewPortTransition != "" ? viewPort.style.transition = viewPortTransition : null;
+                hasMoved = false;
+                slideCallBack != null ? slideCallBack(node) : null;
             }
-        }, false);
-        window.addEventListener("resize", function() {
-            calculateSlope();
-        }, false);
+        }
+    }
+
+    function handleResize() {
+        calculateSlope();
+    }
+
+    async function addVitalStyles() {
+        try {
+            var path = await processAssetPath();
+            if (!(path instanceof Error)){
+                vModel.core.functions.linkStyleSheet(path+"css/touchHandler.css", "touchHandler");
+            }else{
+                throw new Error(path)
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    function removeTouchEventHandler() {
+        //Mirrors addTouchEventHandler(); the pointer/touch names are the ones checkSupport() settled on.
+        frame.removeEventListener(pointerDownName, handleGestureStart, false);
+        frame.removeEventListener(pointerMoveName, handleGestureMove, false);
+        frame.removeEventListener(pointerUpName, handleGestureEnd, false);
+        frame.removeEventListener(pointerCancelName, handleGestureEnd, false);
+        frame.removeEventListener('touchstart', handleGestureStart, false);
+        frame.removeEventListener('touchmove', handleGestureMove, false);
+        frame.removeEventListener('touchend', handleGestureEnd, false);
+        frame.removeEventListener('mousedown', handleGestureStart, false);
+        frame.removeEventListener("transitionend", handleTransitionEnd, false);
+        window.removeEventListener("resize", handleResize, false);
+        document.removeEventListener(pointerUpName, handleGestureEnd, false);
     }
 
     function checkSupport() {
@@ -149,7 +183,7 @@ export function TouchHandler(frame) {
         hasMoved = true;
 
         //use new value here
-        viewport.style.left = newValue + "px";
+        viewPort.style.left = newValue + "px";
         rafPending = false;
     }
 
@@ -175,7 +209,7 @@ export function TouchHandler(frame) {
 
     function updateSliderPosition() {
         viewPort.style.transition = "all .2s cubic-bezier(0,.99,0,.99) 0s";
-        viewport.classList.add("posUpdate");
+        viewPort.classList.add("posUpdate");
         if (Math.abs(moved) > slopeValue) {
             //change position
             if (moved < 0) {
@@ -193,18 +227,18 @@ export function TouchHandler(frame) {
 
         var property = pan == "x" ? "left" : "top";
         if (targetDirection == DEFAULT) {
-            viewport.style[property] = usePoint + "px";
+            viewPort.style[property] = usePoint + "px";
         } else if (targetDirection == SLIDE_RIGHT) {
             if (node == 0) { //no further movement
-                viewport.style[property] = "0px";
+                viewPort.style[property] = "0px";
             } else { //slide right
-                viewport.style[property] = -(node * 100) + "%";
+                viewPort.style[property] = -(node * 100) + "%";
             }
         } else if (targetDirection == SLIDE_LEFT) {
             if (node == maxStop) { //no further movement
-                viewport.style[property] = -(maxStop * 100) + "%";
+                viewPort.style[property] = -(maxStop * 100) + "%";
             } else { //slide left
-                viewport.style[property] = -(node * 100) + "%";;
+                viewPort.style[property] = -(node * 100) + "%";;
             }
         }
 
@@ -238,10 +272,12 @@ export function TouchHandler(frame) {
         }
     }
     this.initialize = function() {
+        if (destroyed) throw new Error("This TouchHandler has been destroyed, create a new instance instead of re-initializing");
         validateElement(frame, "Contructor argument must be a valid HTML element");
         viewPort = frame.children[0];
         var totalChildren = viewPort.childElementCount;
         maxStop = totalChildren - 1;
+        addVitalStyles();
         checkSupport();
         calculateSlope();
         addTouchEventHandler();
@@ -253,6 +289,7 @@ export function TouchHandler(frame) {
         }
         enableTouch = true;
         frame.classList.add("vTouchHandler");
+        frame.classList.toggle("vPanY", pan == "y"); //touchHandler.css picks the touch-action from this
     }
     this.disableTouch = function() {
         if (enableTouch == true) {
@@ -260,12 +297,25 @@ export function TouchHandler(frame) {
             frame.classList.remove("vTouchHandler");
         }
     }
+    this.destroy = function(){
+        //Detaches every gesture listener from the frame and from window, and clears the marker
+        //classes. Call it when the frame's page is exited, otherwise the resize listener outlives it.
+        if (destroyed) return;
+
+        removeTouchEventHandler();
+        frame.classList.remove("vTouchHandler", "grab", "vPanY");
+
+        enableTouch = false;
+        initialized = false;
+        destroyed = true;
+    }
     this.config = {}
     Object.defineProperties(this, {
         initialize: { writable: false },
         config: { writable: false },
         enable: { writable: false },
-        disable: { writable: false }
+        disable: { writable: false },
+        destroy: { writable: false }
     })
     Object.defineProperties(this.config, {
         pan: {

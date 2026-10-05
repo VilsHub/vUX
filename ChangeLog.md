@@ -29,6 +29,19 @@
 - Resizer.destroy() — removes the module's listeners and any resize handlers it injected, and releases a drag in progress
 - Runnable Resizer example (examples/resizer/) — both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
 - Resizer guide (doc/resizer.md) — the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
+- destroy() on every component — AutoWriter, Carousel, DOMDrawer, FormValidator, ListScroller, ModalDisplayer, ProgressIndicator, SPAEngine, TimeLineList, ToolTip and TouchHandler, plus each of the six FormComponents widgets — detaching the listeners, timers and animations the component started and removing the DOM it injected, so a component can be torn down without leaving anything bound to the page
+- $$.attachEventHandler() now returns a handle whose detach() removes the delegated listener again; calls that ignore the return value are unaffected
+- destroy() on the object returned by CShapes().animatedRectangle() — stops the animation and clears the canvas, where stop() leaves the last frame painted
+- ToolTip.destroy() restores the original title attribute on every element it took one from
+- Component module (vUX-component.js) — build your own reusable component from your own markup: a `<template>` marked with `data-v-*` bindings, cloned and managed by vUX, with `mount()`, `update()`, `destroy()` and keyed `sync()`
+- Component bindings: `data-v-field` (text), `data-v-bind` (attributes), `data-v-on` (events), `data-v-ref` (named nodes), `data-v-show` and `data-v-class` (truthiness toggles) — every value a plain field name, never an expression
+- Component nesting: a child mounted with `instance.mount()` is owned by its parent and destroyed with it, and `config.onMount`/`onUpdate`/`onDestroy` are where nested vUX components are attached and released
+- DataView rows now accept the full binding set — `data-v-bind`, `data-v-on`, `data-v-ref`, `data-v-show` and `data-v-class` work alongside `data-v-field` — with `config.handlers` and `config.formatters` to drive them
+- Component guide (doc/component.md) — the binding contract, both template forms, keyed lists, nesting, the custom-element recipe, and the full error list
+- Runnable Component example (examples/component/) — every binding under live control, keyed lists keeping their nodes through a sort, nesting with a ToolTip attached and released, and every validation error raised on demand
+- Carousel config changes on a live carousel — delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+- Carousel guide (doc/carousel.md) — the required consumer CSS, every config property, the generated markup, and the error list
+- Runnable Carousel example (examples/carousel/) — a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
 
 ## Fixed
 - modal multiple display bug
@@ -80,6 +93,24 @@
 - Resizer silently ignoring unknown or miscased resizeHandlerProperties keys, never enforcing its key-count limit, throwing a bare TypeError on an empty object, and naming 'position' in every error raised while validating 'styles'
 - Resizer reporting a missing target selector only later as an internal TypeError, and appending duplicate handles, listeners and stylesheets when initialize() was called twice
 - Resizer leaving a dead <style> element behind on every rebuild when a handle style is configured through config.resizeHandlerProperties.styles
+- Carousel crashing with "TouchHandler is not defined" on its default path; touch support is enabled by default, so initialize() failed on any page that did not explicitly turn it off
+- FormValidator crashing with "Cannot read properties of null" in initialize() under the default configuration, because the progress loader was centred before being inserted into the page
+- ModalDisplayer's shared Escape, away-click, resize and transition handlers staying bound to the document after every displayer on the page had been torn down
+- Carousel's autoplay interval continuing to run after the carousel was removed from the page
+- ProgressIndicator's crawl interval continuing to write to a progress bar that had been removed
+- DataView.destroy() leaving the view marked as initialized, so re-initializing a destroyed view silently did nothing instead of reporting that it had been destroyed
+- Carousel dots having no height, so they were invisible and unclickable by default — assets/css/carousel.css is now loaded by the module instead of never being linked
+- Carousel autoplay jumping back after a dot click or a swipe while marking a different slide active, so the slide on screen, the active slide and the active dot drifted apart
+- Carousel dot clicks on one carousel moving the active dot of another carousel on the same page
+- Carousel finding no slides, and building no dots, when its viewport had no id attribute
+- Carousel swipe and drag throwing on every gesture, because TouchHandler moved an undefined `viewport` instead of the frame's viewport
+- Carousel swipes being taken over by page scrolling on phones, and the grab cursor never showing — TouchHandler now links assets/css/touchHandler.css, which also sets touch-action on the swipe area
+- Carousel autoplay stopping for good when config.speed was 0, or when the carousel was hidden partway through a slide
+- Carousel pressing or hovering over a slide in motion marking it finished early, which let autoplay start the next slide from the wrong place
+- Carousel config.buttonStyle applying only to the first carousel on a page, and being overridden by the default dot colours
+- Carousel config.buttonStyle errors reading " of strings" or " of either 1 or 2 element(s)" without naming the property, and an empty array being accepted
+- Carousel replacing the container's own onclick, onmouseenter and onmouseleave handlers
+- Carousel start() before initialize() throwing on every autoplay tick; it now reports the misuse once
 
 ## Removed
 - colorOverlayStyle in modalDisplayerObj
@@ -89,6 +120,8 @@
 - validator.config.progressIndicatorStyle
 
 ## Changed
+- DataView is now built on the shared template-instancing engine (src/componentEngine.js) that backs the Component module; its API, behaviour and error messages are unchanged
+- DataView.updateRow() now writes a merged copy back into the model rather than mutating the row object in place, so an array held from getData() is no longer changed underneath you
 - AutoWriter '|' now inserts a real <br> element, erasable as a single unit, instead of a parsed "<br/>" string
 - AutoWriter deleteText() now erases from the '.vAutoWriter' span when the target holds one, so the same element can be given to writeText() and deleteText()
 - All four example pages redesigned onto the shared system; the SPA dev server additionally maps /shared/ to examples/shared/
@@ -105,6 +138,7 @@
 - GridBorderRectangle() constructor changed to CShapes() => Canvas Shapes
 - CircularProgress() changed to arc()
 - ResourceIO module changed to IO
+- Carousel dot buttons no longer carry id="b1", id="b2"…, which duplicated across carousels and could collide with page ids; select them by .vButton[data-ratio] within the container
 
 ## Optimised
 - Optimized $$.cssStyle() static method functionality

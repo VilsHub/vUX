@@ -1,0 +1,859 @@
+FILE: vUX-formComponents.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+Each widget returned by select(), radio(), checkbox(), datePicker(), slideSwitch() and
+file() registered its own delegated listeners — twenty across the file — and discarded
+every handle; select and datePicker additionally bound window scroll/resize and document
+click listeners as anonymous closures. A page that rebuilt its form widgets therefore
+accumulated listeners with no way to shed them.
+
+Every attachEventHandler() call is now collected into the owning widget's eventHandles
+array, the direct listeners in select and datePicker are named, and each widget's returned
+body gained a destroy() that detaches everything it registered.
+
+destroy() unbinds; it does not rebuild the page. These builders replace consumer markup in
+place and never retain the original, so there is nothing to restore from. That is the
+right scope for the case this exists to serve — a widget going away with the markup around
+it — and pretending otherwise would mean silently reconstructing an element that is not
+the one the consumer wrote.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+    this.select = function() {
+        var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", optionGroupStyle = "", selectClassName = "",searchIconStyle = "",wrapAttribute = "",includeSearchField = true, optionsWrapperStyle = "",optionsConWrapperStyle="",familyID = "vSelect",inputButtonStyle = "",sizeAttribute = "",optionStateStyle = [];
+
+        function autoPlace(optionsCon) {
+
+NEW_SECTION
+    this.select = function() {
+        var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", optionGroupStyle = "", selectClassName = "",searchIconStyle = "",wrapAttribute = "",includeSearchField = true, optionsWrapperStyle = "",optionsConWrapperStyle="",familyID = "vSelect",inputButtonStyle = "",sizeAttribute = "",optionStateStyle = [];
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
+
+        function autoPlace(optionsCon) {
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+
+        function assignSelectEventHandler() {
+            $$.attachEventHandler("transitionend", "optionsCon", function(e) {
+                if (e.target.classList.contains("closing")) { //close
+                    var wrapper = e.target.parentNode;
+
+NEW_SECTION
+
+        function assignSelectEventHandler() {
+            eventHandles.push($$.attachEventHandler("transitionend", "optionsCon", function(e) {
+                if (e.target.classList.contains("closing")) { //close
+                    var wrapper = e.target.parentNode;
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+                    e.target.classList.remove("opening");
+                }
+            })
+            $$.attachEventHandler("click", ["sIcon", "sOption", "sField"], function(e, id) {
+                if (id == "sIcon") {
+                    var openState = selectInputState(e.target, "icon");
+
+NEW_SECTION
+                    e.target.classList.remove("opening");
+                }
+            }))
+            eventHandles.push($$.attachEventHandler("click", ["sIcon", "sOption", "sField"], function(e, id) {
+                if (id == "sIcon") {
+                    var openState = selectInputState(e.target, "icon");
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+                    }
+                }
+            });
+            $$.attachEventHandler("mouseover", "sOption", function(e) {
+                if (e.target.getAttribute("data-disabled") == "false") {
+                    hover(e.target);
+                }
+            });
+            $$.attachEventHandler("mouseout", "sOption", function(e) {
+                unhover(e.target);
+            });
+            $$.attachEventHandler("dblclick", "sOption", function(e) {
+                if (e.detail == 2) {
+                    var selectButton = $$.sm(e.target).getParent(2).previousElementSibling.children[1];
+
+NEW_SECTION
+                    }
+                }
+            }));
+            eventHandles.push($$.attachEventHandler("mouseover", "sOption", function(e) {
+                if (e.target.getAttribute("data-disabled") == "false") {
+                    hover(e.target);
+                }
+            }));
+            eventHandles.push($$.attachEventHandler("mouseout", "sOption", function(e) {
+                unhover(e.target);
+            }));
+            eventHandles.push($$.attachEventHandler("dblclick", "sOption", function(e) {
+                if (e.detail == 2) {
+                    var selectButton = $$.sm(e.target).getParent(2).previousElementSibling.children[1];
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+                    selectButton.classList.remove("iconOpen");
+                }
+            })
+            $$.attachEventHandler("input", "sSearchInput", function(e) {
+                var searchQuery = e.target.value.toLowerCase();
+                var optionsCon = e.target.parentNode.nextElementSibling;
+
+NEW_SECTION
+                    selectButton.classList.remove("iconOpen");
+                }
+            }))
+            eventHandles.push($$.attachEventHandler("input", "sSearchInput", function(e) {
+                var searchQuery = e.target.value.toLowerCase();
+                var optionsCon = e.target.parentNode.nextElementSibling;
+
+================================================================================
+CHANGE 6
+================================================================================
+
+OLD_SECTION
+                optionsConParent.style["height"] = "auto";
+                autoPlace(optionsConParent);
+            })
+            $$.attachEventHandler("keydown", "v" + selectClassName, function(e) {
+                var khdlr = keyboardEventHanler(e);
+                var optionsCon = e.target.querySelector(".optionsCon");
+
+NEW_SECTION
+                optionsConParent.style["height"] = "auto";
+                autoPlace(optionsConParent);
+            }))
+            eventHandles.push($$.attachEventHandler("keydown", "v" + selectClassName, function(e) {
+                var khdlr = keyboardEventHanler(e);
+                var optionsCon = e.target.querySelector(".optionsCon");
+
+================================================================================
+CHANGE 7
+================================================================================
+
+OLD_SECTION
+                    }
+                }
+            })
+            $$.attachEventHandler("focusin", "sOption", function(e) {
+                hover(e.target);
+            })
+            addEventListener("scroll", function() {
+                var anyOpen = $$.ss(".sField[data-state='opened']");
+                if (anyOpen != null) {
+                    var optionsCon = anyOpen.parentNode.nextElementSibling;
+                    autoPlace(optionsCon);
+                }
+            }, false)
+            document.addEventListener("click", function(e) {
+                if (!$$.sm(e.target).hasParent(familyID, 4)) {
+                    var anyOpen = $$.ss(".sField[data-state='opened']");
+                    if (anyOpen != null) {
+                        var optionsCon = anyOpen.parentNode.nextSibling;
+                        toggleOptionList(optionsCon, "close", "fast");
+                    }
+                }
+            }, false)
+            addEventListener("resize", function(e) {
+                if (wrapAttribute != "") wrap("select", wrapAttribute);
+            }, false)
+        }
+
+NEW_SECTION
+                    }
+                }
+            }))
+            eventHandles.push($$.attachEventHandler("focusin", "sOption", function(e) {
+                hover(e.target);
+            }))
+            //Named rather than anonymous so that destroy() can detach them from window/document again.
+            addEventListener("scroll", handleSelectScroll, false)
+            document.addEventListener("click", handleSelectAwayClick, false)
+            addEventListener("resize", handleSelectResize, false)
+        }
+
+        function handleSelectScroll() {
+            var anyOpen = $$.ss(".sField[data-state='opened']");
+            if (anyOpen != null) {
+                var optionsCon = anyOpen.parentNode.nextElementSibling;
+                autoPlace(optionsCon);
+            }
+        }
+
+        function handleSelectAwayClick(e) {
+            if (!$$.sm(e.target).hasParent(familyID, 4)) {
+                var anyOpen = $$.ss(".sField[data-state='opened']");
+                if (anyOpen != null) {
+                    var optionsCon = anyOpen.parentNode.nextSibling;
+                    toggleOptionList(optionsCon, "close", "fast");
+                }
+            }
+        }
+
+        function handleSelectResize(e) {
+            if (wrapAttribute != "") wrap("select", wrapAttribute);
+        }
+
+================================================================================
+CHANGE 8
+================================================================================
+
+OLD_SECTION
+                }
+            },
+            config: {}
+        }
+
+NEW_SECTION
+                }
+            },
+            destroy: function() {
+                //Detaches every delegated listener this select widget registered, plus the window scroll/resize and
+                //document click listeners it bound directly. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                removeEventListener("scroll", handleSelectScroll, false);
+                document.removeEventListener("click", handleSelectAwayClick, false);
+                removeEventListener("resize", handleSelectResize, false);
+                destroyed = true;
+            },
+            config: {}
+        }
+
+================================================================================
+CHANGE 9
+================================================================================
+
+OLD_SECTION
+            refresh: { writable: false },
+            refreshSelect: { writable: false },
+            config: { writable: false }
+        })
+
+NEW_SECTION
+            refresh: { writable: false },
+            refreshSelect: { writable: false },
+            destroy: { writable: false },
+            config: { writable: false }
+        })
+
+================================================================================
+CHANGE 10
+================================================================================
+
+OLD_SECTION
+    this.radio = function() {
+        var radioDim = [],radioWrapperStyle = "",selectedStyle = "",deselectedStyle = "",radioClassName = "", mouseEffect = [],axisClass = [];
+        /************************************************************************************/
+        /* radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
+
+NEW_SECTION
+    this.radio = function() {
+        var radioDim = [],radioWrapperStyle = "",selectedStyle = "",deselectedStyle = "",radioClassName = "", mouseEffect = [],axisClass = [];
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
+        /************************************************************************************/
+        /* radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
+
+================================================================================
+CHANGE 11
+================================================================================
+
+OLD_SECTION
+
+        function assignRadioEventHanler() {
+            $$.attachEventHandler("click", "vRadioButton", function(e) {
+                e.stopImmediatePropagation();
+                var mainRadio = e.target.parentNode.nextElementSibling;
+
+NEW_SECTION
+
+        function assignRadioEventHanler() {
+            eventHandles.push($$.attachEventHandler("click", "vRadioButton", function(e) {
+                e.stopImmediatePropagation();
+                var mainRadio = e.target.parentNode.nextElementSibling;
+
+================================================================================
+CHANGE 12
+================================================================================
+
+OLD_SECTION
+                }
+                mainRadio.click();
+            })
+            $$.attachEventHandler("click", "vRadioButtonLabel", function(e) {
+                e.stopImmediatePropagation();
+                var targetRadio = e.target.parentNode.querySelector("[tabindex='0']");
+                targetRadio != null ? targetRadio.click() : null;
+            })
+        }
+
+NEW_SECTION
+                }
+                mainRadio.click();
+            }))
+            eventHandles.push($$.attachEventHandler("click", "vRadioButtonLabel", function(e) {
+                e.stopImmediatePropagation();
+                var targetRadio = e.target.parentNode.querySelector("[tabindex='0']");
+                targetRadio != null ? targetRadio.click() : null;
+            }))
+        }
+
+================================================================================
+CHANGE 13
+================================================================================
+
+OLD_SECTION
+                }
+            },
+            config: {}
+        }
+
+NEW_SECTION
+                }
+            },
+            destroy: function() {
+                //Detaches every delegated listener this radio widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
+            config: {}
+        }
+
+================================================================================
+CHANGE 14
+================================================================================
+
+OLD_SECTION
+            autoBuild: { writable: false },
+            config: { writable: false },
+            refresh: { writable: false }
+        })
+        Object.defineProperties(body.config, {
+
+NEW_SECTION
+            autoBuild: { writable: false },
+            config: { writable: false },
+            refresh: { writable: false },
+            destroy: { writable: false }
+        })
+        Object.defineProperties(body.config, {
+
+================================================================================
+CHANGE 15
+================================================================================
+
+OLD_SECTION
+    this.checkbox = function() {
+        var checkboxDim = [],checkboxWrapperStyle = "",checkedStyle = "",uncheckedStyle = "",checkboxClassName = "",mouseEffect = [];
+        /************************************************************************************/
+        //checkboxDim[a,b] a=> width of checkbox cElement , b=> height of checkbox cElemt
+
+NEW_SECTION
+    this.checkbox = function() {
+        var checkboxDim = [],checkboxWrapperStyle = "",checkedStyle = "",uncheckedStyle = "",checkboxClassName = "",mouseEffect = [];
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
+        /************************************************************************************/
+        //checkboxDim[a,b] a=> width of checkbox cElement , b=> height of checkbox cElemt
+
+================================================================================
+CHANGE 16
+================================================================================
+
+OLD_SECTION
+
+        function assignCheckboxEventHanler() {
+            $$.attachEventHandler("click", "vCheckbox", function(e) {
+                e.stopImmediatePropagation();
+                var mainCheckbox = e.target.parentNode.nextElementSibling;
+
+NEW_SECTION
+
+        function assignCheckboxEventHanler() {
+            eventHandles.push($$.attachEventHandler("click", "vCheckbox", function(e) {
+                e.stopImmediatePropagation();
+                var mainCheckbox = e.target.parentNode.nextElementSibling;
+
+================================================================================
+CHANGE 17
+================================================================================
+
+OLD_SECTION
+
+                mainCheckbox.click();
+            })
+            $$.attachEventHandler("click", "vCheckboxLabel", function(e) {
+                e.stopImmediatePropagation();
+                var targetCheckbox = e.target.parentNode.querySelector("[tabindex='0']");
+                targetCheckbox != null ? targetCheckbox.click() : null;
+            })
+        }
+
+NEW_SECTION
+
+                mainCheckbox.click();
+            }))
+            eventHandles.push($$.attachEventHandler("click", "vCheckboxLabel", function(e) {
+                e.stopImmediatePropagation();
+                var targetCheckbox = e.target.parentNode.querySelector("[tabindex='0']");
+                targetCheckbox != null ? targetCheckbox.click() : null;
+            }))
+        }
+
+================================================================================
+CHANGE 18
+================================================================================
+
+OLD_SECTION
+                }
+            },
+            config: {}
+        }
+
+NEW_SECTION
+                }
+            },
+            destroy: function() {
+                //Detaches every delegated listener this checkbox widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
+            config: {}
+        }
+
+================================================================================
+CHANGE 19
+================================================================================
+
+OLD_SECTION
+            autoBuild: { writable: false },
+            config: { writable: false },
+            refresh: { writable: false }
+        })
+        Object.defineProperties(body.config, {
+
+NEW_SECTION
+            autoBuild: { writable: false },
+            config: { writable: false },
+            refresh: { writable: false },
+            destroy: { writable: false }
+        })
+        Object.defineProperties(body.config, {
+
+================================================================================
+CHANGE 20
+================================================================================
+
+OLD_SECTION
+    this.datePicker = function() {
+        var falseState = "cX.1zwAP",trueState = "mp.3Cy._Xa";
+        var toolTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
+        var vBoxWidth = 300, initX = 10, wrapAttribute = "", paddingRight = 10, maxX = null, arrowXpos = 0, boxXpos = null, sizeAttribute = "";
+
+NEW_SECTION
+    this.datePicker = function() {
+        var falseState = "cX.1zwAP",trueState = "mp.3Cy._Xa";
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
+        var toolTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
+        var vBoxWidth = 300, initX = 10, wrapAttribute = "", paddingRight = 10, maxX = null, arrowXpos = 0, boxXpos = null, sizeAttribute = "";
+
+================================================================================
+CHANGE 21
+================================================================================
+
+OLD_SECTION
+
+        function AddEventHandlers() {
+            $$.attachEventHandler("click", ["vDateIcon", "range", "year", "month", "day", "vbActive", "vClose", "dField", "meridianSwitchCon", "tbuttonActive"], function(e, id) {
+                if (id == "vDateIcon" || id == "dField") {
+                    var wrapper = $$.sm(e.target).getParent(2);
+
+NEW_SECTION
+
+        function AddEventHandlers() {
+            eventHandles.push($$.attachEventHandler("click", ["vDateIcon", "range", "year", "month", "day", "vbActive", "vClose", "dField", "meridianSwitchCon", "tbuttonActive"], function(e, id) {
+                if (id == "vDateIcon" || id == "dField") {
+                    var wrapper = $$.sm(e.target).getParent(2);
+
+================================================================================
+CHANGE 22
+================================================================================
+
+OLD_SECTION
+                    closeDateBox(wrapper);
+                }
+            })
+            //_______Transition control
+            $$.attachEventHandler("transitionend", ["displayActive", "vDateBoxTool", "rangeToYear", "yearToMonth", "monthToDay", "dayToTime", "rewind", "temp", "meridianSwitchCon", "vDateRangeCon"], function(e, id) {
+                if (id == "displayActive") {
+                    var wrapper = $$.sm(e.target).getParent(4);
+
+NEW_SECTION
+                    closeDateBox(wrapper);
+                }
+            }))
+            //_______Transition control
+            eventHandles.push($$.attachEventHandler("transitionend", ["displayActive", "vDateBoxTool", "rangeToYear", "yearToMonth", "monthToDay", "dayToTime", "rewind", "temp", "meridianSwitchCon", "vDateRangeCon"], function(e, id) {
+                if (id == "displayActive") {
+                    var wrapper = $$.sm(e.target).getParent(4);
+
+================================================================================
+CHANGE 23
+================================================================================
+
+OLD_SECTION
+                    }
+                }
+            })
+
+            //_________Time input
+            $$.attachEventHandler("input", ["hr", "min"], function(e, id) {
+                var wrapper = $$.sm(e.target).getParent(6);
+                if (id == "hr") {
+
+NEW_SECTION
+                    }
+                }
+            }))
+
+            //_________Time input
+            eventHandles.push($$.attachEventHandler("input", ["hr", "min"], function(e, id) {
+                var wrapper = $$.sm(e.target).getParent(6);
+                if (id == "hr") {
+
+================================================================================
+CHANGE 24
+================================================================================
+
+OLD_SECTION
+                }
+                toggleDoneButton(wrapper);
+            })
+            $$.attachEventHandler("focusout", ["hr", "min"], function(e, id) {
+                e.target.value = fixDigitLength(e.target.value);
+            })
+            window.addEventListener("resize", function(e) {
+                var anyOpenDate = $$.ss(".dField[data-state='opened']");
+                if (anyOpenDate != null) {
+                    var wrapper = $$.sm(anyOpenDate).getParent(2);
+                    var dateBoxParent = wrapper.querySelector(".vDateBoxTool");
+                    var dateBoxArrow = wrapper.querySelectorAll(".vDateBoxArrow");
+                    shift(dateBoxParent, dateBoxArrow);
+                }
+                if (wrapAttribute != "") wrap("datePicker", wrapAttribute);
+            })
+            addEventListener("scroll", function() {
+                var anyOpen = $$.ss(".dField[data-state='opened']");
+                if (anyOpen != null) {
+                    var dateBox = anyOpen.parentNode.nextElementSibling;
+                    autoPlace(dateBox);
+                }
+            }, false)
+            $$.attachEventHandler("mouseover", "meridianSwitchCon", function(e) {
+                var wrapper = $$.sm(e.target).getParent(5);
+                var hrValue = wrapper.querySelector(".hr").value;
+                hrValue > 0 ? e.target.style["cursor"] = "pointer" : e.target.style["cursor"] = "not-allowed";
+            })
+        }
+
+NEW_SECTION
+                }
+                toggleDoneButton(wrapper);
+            }))
+            eventHandles.push($$.attachEventHandler("focusout", ["hr", "min"], function(e, id) {
+                e.target.value = fixDigitLength(e.target.value);
+            }))
+            //Named rather than anonymous so that destroy() can detach them from window again.
+            window.addEventListener("resize", handleDateResize)
+            addEventListener("scroll", handleDateScroll, false)
+            eventHandles.push($$.attachEventHandler("mouseover", "meridianSwitchCon", function(e) {
+                var wrapper = $$.sm(e.target).getParent(5);
+                var hrValue = wrapper.querySelector(".hr").value;
+                hrValue > 0 ? e.target.style["cursor"] = "pointer" : e.target.style["cursor"] = "not-allowed";
+            }))
+        }
+
+        function handleDateResize(e) {
+            var anyOpenDate = $$.ss(".dField[data-state='opened']");
+            if (anyOpenDate != null) {
+                var wrapper = $$.sm(anyOpenDate).getParent(2);
+                var dateBoxParent = wrapper.querySelector(".vDateBoxTool");
+                var dateBoxArrow = wrapper.querySelectorAll(".vDateBoxArrow");
+                shift(dateBoxParent, dateBoxArrow);
+            }
+            if (wrapAttribute != "") wrap("datePicker", wrapAttribute);
+        }
+
+        function handleDateScroll() {
+            var anyOpen = $$.ss(".dField[data-state='opened']");
+            if (anyOpen != null) {
+                var dateBox = anyOpen.parentNode.nextElementSibling;
+                autoPlace(dateBox);
+            }
+        }
+
+================================================================================
+CHANGE 25
+================================================================================
+
+OLD_SECTION
+                    }
+                }
+            }
+        }
+
+NEW_SECTION
+                    }
+                }
+            },
+            destroy: function() {
+                //Detaches every delegated listener this datePicker widget registered, plus the window resize and scroll
+                //listeners it bound directly. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                removeEventListener("resize", handleDateResize);
+                removeEventListener("scroll", handleDateScroll, false);
+                destroyed = true;
+            }
+        }
+
+================================================================================
+CHANGE 26
+================================================================================
+
+OLD_SECTION
+            autoBuild: {
+                writable: false
+            }
+        });
+
+NEW_SECTION
+            autoBuild: {
+                writable: false
+            },
+            destroy: {
+                writable: false
+            }
+        });
+
+================================================================================
+CHANGE 27
+================================================================================
+
+OLD_SECTION
+    this.slideSwitch = function(){
+        var slideSwitchClassName = "", showLabel=true, slideDistance="";
+        var dataAttributes = {//data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+            size: "",
+
+NEW_SECTION
+    this.slideSwitch = function(){
+        var slideSwitchClassName = "", showLabel=true, slideDistance="";
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
+        var dataAttributes = {//data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+            size: "",
+
+================================================================================
+CHANGE 28
+================================================================================
+
+OLD_SECTION
+        }
+        function assignSlideSwitchEventHanler(){
+            $$.attachEventHandler("click", ["vSlideSwitchWrapper", "vSliderBg-ON", "vSliderBg-OFF"], function(e, id){
+                if(id == "vSlideSwitchWrapper"){
+                    var nativeCheckBox = e.target.previousElementSibling;
+
+NEW_SECTION
+        }
+        function assignSlideSwitchEventHanler(){
+            eventHandles.push($$.attachEventHandler("click", ["vSlideSwitchWrapper", "vSliderBg-ON", "vSliderBg-OFF"], function(e, id){
+                if(id == "vSlideSwitchWrapper"){
+                    var nativeCheckBox = e.target.previousElementSibling;
+
+================================================================================
+CHANGE 29
+================================================================================
+
+OLD_SECTION
+                    wrapper.click();
+                }
+            })
+        }
+        function convertCheckboxTosliderSwitch(){
+
+NEW_SECTION
+                    wrapper.click();
+                }
+            }))
+        }
+        function convertCheckboxTosliderSwitch(){
+
+================================================================================
+CHANGE 30
+================================================================================
+
+OLD_SECTION
+                }
+            },
+            config: {}
+        }
+
+NEW_SECTION
+                }
+            },
+            destroy: function() {
+                //Detaches every delegated listener this slideSwitch widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
+            config: {}
+        }
+
+================================================================================
+CHANGE 31
+================================================================================
+
+OLD_SECTION
+            autoBuild: {
+                writable: false
+            }
+        });
+
+NEW_SECTION
+            autoBuild: {
+                writable: false
+            },
+            destroy: {
+                writable: false
+            }
+        });
+
+================================================================================
+CHANGE 32
+================================================================================
+
+OLD_SECTION
+    this.file = function() {
+        var fileDim = [],label="", toolTipHandler=null, buttonLabel="",toolTipHandler = null, fileToolTip = false, fileClassName = "", enableButtonIcon=false;
+
+        var styles = {
+
+NEW_SECTION
+    this.file = function() {
+        var fileDim = [],label="", toolTipHandler=null, buttonLabel="",toolTipHandler = null, fileToolTip = false, fileClassName = "", enableButtonIcon=false;
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
+
+        var styles = {
+
+================================================================================
+CHANGE 33
+================================================================================
+
+OLD_SECTION
+
+        function assignFileEventHandler() {
+            $$.attachEventHandler("click", ["fButton", "fLabel"], function(e, id) {
+                var nativeFileInput = $$.sm(e.target).getParent(2).nextElementSibling;
+                nativeFileInput.click();
+            });
+            $$.attachEventHandler("change", "xFnative", function(e) {
+                inputLabeler(e.target);
+            });
+        }
+
+NEW_SECTION
+
+        function assignFileEventHandler() {
+            eventHandles.push($$.attachEventHandler("click", ["fButton", "fLabel"], function(e, id) {
+                var nativeFileInput = $$.sm(e.target).getParent(2).nextElementSibling;
+                nativeFileInput.click();
+            }));
+            eventHandles.push($$.attachEventHandler("change", "xFnative", function(e) {
+                inputLabeler(e.target);
+            }));
+        }
+
+================================================================================
+CHANGE 34
+================================================================================
+
+OLD_SECTION
+                }
+            },
+            config: {}
+        }
+
+NEW_SECTION
+                }
+            },
+            destroy: function() {
+                //Detaches every delegated listener this file widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
+            config: {}
+        }
+
+================================================================================
+CHANGE 35
+================================================================================
+
+OLD_SECTION
+            refresh: { writable: false },
+            refreshFile: { writable: false },
+            config: { writable: false }
+        })
+
+NEW_SECTION
+            refresh: { writable: false },
+            refreshFile: { writable: false },
+            destroy: { writable: false },
+            config: { writable: false }
+        })
+

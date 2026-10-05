@@ -100,6 +100,7 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom select builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.select = function() {
         var selectDim = [], selectIcon = "",labelAttribute="", wrapperStyle = "",toolTipHandler = null,enableToolTip = false,selectFieldStyle = "", optionStyle = "", optionGroupStyle = "", selectClassName = "",searchIconStyle = "",wrapAttribute = "",includeSearchField = true, optionsWrapperStyle = "",optionsConWrapperStyle="",familyID = "vSelect",inputButtonStyle = "",sizeAttribute = "",optionStateStyle = [];
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
 
         function autoPlace(optionsCon) {
             var sField = optionsCon.previousElementSibling.querySelector(".sField");
@@ -537,7 +538,7 @@ export function FormComponents() {
         }
 
         function assignSelectEventHandler() {
-            $$.attachEventHandler("transitionend", "optionsCon", function(e) {
+            eventHandles.push($$.attachEventHandler("transitionend", "optionsCon", function(e) {
                 if (e.target.classList.contains("closing")) { //close
                     var wrapper = e.target.parentNode;
                     e.target.style["display"] = "none";
@@ -546,8 +547,8 @@ export function FormComponents() {
                 } else if (e.target.classList.contains("opening")) {
                     e.target.classList.remove("opening");
                 }
-            })
-            $$.attachEventHandler("click", ["sIcon", "sOption", "sField"], function(e, id) {
+            }))
+            eventHandles.push($$.attachEventHandler("click", ["sIcon", "sOption", "sField"], function(e, id) {
                 if (id == "sIcon") {
                     var openState = selectInputState(e.target, "icon");
                     var optionsCon = $$.sm(e.target).getParent(2).querySelector(".optionsCon");
@@ -577,16 +578,16 @@ export function FormComponents() {
                         toggleOptionList(optionsCon, "open");
                     }
                 }
-            });
-            $$.attachEventHandler("mouseover", "sOption", function(e) {
+            }));
+            eventHandles.push($$.attachEventHandler("mouseover", "sOption", function(e) {
                 if (e.target.getAttribute("data-disabled") == "false") {
                     hover(e.target);
                 }
-            });
-            $$.attachEventHandler("mouseout", "sOption", function(e) {
+            }));
+            eventHandles.push($$.attachEventHandler("mouseout", "sOption", function(e) {
                 unhover(e.target);
-            });
-            $$.attachEventHandler("dblclick", "sOption", function(e) {
+            }));
+            eventHandles.push($$.attachEventHandler("dblclick", "sOption", function(e) {
                 if (e.detail == 2) {
                     var selectButton = $$.sm(e.target).getParent(2).previousElementSibling.children[1];
                     var optionsCon = $$.sm(e.target).getParent(2);
@@ -594,8 +595,8 @@ export function FormComponents() {
                     selectButton.classList.add("iconClose");
                     selectButton.classList.remove("iconOpen");
                 }
-            })
-            $$.attachEventHandler("input", "sSearchInput", function(e) {
+            }))
+            eventHandles.push($$.attachEventHandler("input", "sSearchInput", function(e) {
                 var searchQuery = e.target.value.toLowerCase();
                 var optionsCon = e.target.parentNode.nextElementSibling;
                 var allOptions = optionsCon.querySelectorAll("div");
@@ -635,8 +636,8 @@ export function FormComponents() {
                 }
                 optionsConParent.style["height"] = "auto";
                 autoPlace(optionsConParent);
-            })
-            $$.attachEventHandler("keydown", "v" + selectClassName, function(e) {
+            }))
+            eventHandles.push($$.attachEventHandler("keydown", "v" + selectClassName, function(e) {
                 var khdlr = keyboardEventHanler(e);
                 var optionsCon = e.target.querySelector(".optionsCon");
                 var sField = e.target.querySelector(".sField");
@@ -662,29 +663,36 @@ export function FormComponents() {
 
                     }
                 }
-            })
-            $$.attachEventHandler("focusin", "sOption", function(e) {
+            }))
+            eventHandles.push($$.attachEventHandler("focusin", "sOption", function(e) {
                 hover(e.target);
-            })
-            addEventListener("scroll", function() {
+            }))
+            //Named rather than anonymous so that destroy() can detach them from window/document again.
+            addEventListener("scroll", handleSelectScroll, false)
+            document.addEventListener("click", handleSelectAwayClick, false)
+            addEventListener("resize", handleSelectResize, false)
+        }
+
+        function handleSelectScroll() {
+            var anyOpen = $$.ss(".sField[data-state='opened']");
+            if (anyOpen != null) {
+                var optionsCon = anyOpen.parentNode.nextElementSibling;
+                autoPlace(optionsCon);
+            }
+        }
+
+        function handleSelectAwayClick(e) {
+            if (!$$.sm(e.target).hasParent(familyID, 4)) {
                 var anyOpen = $$.ss(".sField[data-state='opened']");
                 if (anyOpen != null) {
-                    var optionsCon = anyOpen.parentNode.nextElementSibling;
-                    autoPlace(optionsCon);
+                    var optionsCon = anyOpen.parentNode.nextSibling;
+                    toggleOptionList(optionsCon, "close", "fast");
                 }
-            }, false)
-            document.addEventListener("click", function(e) {
-                if (!$$.sm(e.target).hasParent(familyID, 4)) {
-                    var anyOpen = $$.ss(".sField[data-state='opened']");
-                    if (anyOpen != null) {
-                        var optionsCon = anyOpen.parentNode.nextSibling;
-                        toggleOptionList(optionsCon, "close", "fast");
-                    }
-                }
-            }, false)
-            addEventListener("resize", function(e) {
-                if (wrapAttribute != "") wrap("select", wrapAttribute);
-            }, false)
+            }
+        }
+
+        function handleSelectResize(e) {
+            if (wrapAttribute != "") wrap("select", wrapAttribute);
         }
 
         var body = {
@@ -716,6 +724,19 @@ export function FormComponents() {
                     }
                 }
             },
+            destroy: function() {
+                //Detaches every delegated listener this select widget registered, plus the window scroll/resize and
+                //document click listeners it bound directly. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                removeEventListener("scroll", handleSelectScroll, false);
+                document.removeEventListener("click", handleSelectAwayClick, false);
+                removeEventListener("resize", handleSelectResize, false);
+                destroyed = true;
+            },
             config: {}
         }
 
@@ -723,6 +744,7 @@ export function FormComponents() {
             autoBuild: { writable: false },
             refresh: { writable: false },
             refreshSelect: { writable: false },
+            destroy: { writable: false },
             config: { writable: false }
         })
         Object.defineProperties(body.config, {
@@ -837,6 +859,7 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom radio builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.radio = function() {
         var radioDim = [],radioWrapperStyle = "",selectedStyle = "",deselectedStyle = "",radioClassName = "", mouseEffect = [],axisClass = [];
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
         /************************************************************************************/
         /* radioDim[a,b] a=> width of select cElement , b=> height of select cElemt
         /* mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
@@ -959,7 +982,7 @@ export function FormComponents() {
         }
 
         function assignRadioEventHanler() {
-            $$.attachEventHandler("click", "vRadioButton", function(e) {
+            eventHandles.push($$.attachEventHandler("click", "vRadioButton", function(e) {
                 e.stopImmediatePropagation();
                 var mainRadio = e.target.parentNode.nextElementSibling;
                 if (e.target.classList.contains("ds")) { //Select non selected
@@ -977,12 +1000,12 @@ export function FormComponents() {
                     hideClicked(e.target, nxt, "checked");
                 }
                 mainRadio.click();
-            })
-            $$.attachEventHandler("click", "vRadioButtonLabel", function(e) {
+            }))
+            eventHandles.push($$.attachEventHandler("click", "vRadioButtonLabel", function(e) {
                 e.stopImmediatePropagation();
                 var targetRadio = e.target.parentNode.querySelector("[tabindex='0']");
                 targetRadio != null ? targetRadio.click() : null;
-            })
+            }))
         }
 
         function hideClicked(ele, nxt, type) {
@@ -1043,13 +1066,23 @@ export function FormComponents() {
                     }
                 }
             },
+            destroy: function() {
+                //Detaches every delegated listener this radio widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
             config: {}
         }
 
         Object.defineProperties(body, {
             autoBuild: { writable: false },
             config: { writable: false },
-            refresh: { writable: false }
+            refresh: { writable: false },
+            destroy: { writable: false }
         })
         Object.defineProperties(body.config, {
             radioButtonSize: {
@@ -1117,6 +1150,7 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom checkBox builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.checkbox = function() {
         var checkboxDim = [],checkboxWrapperStyle = "",checkedStyle = "",uncheckedStyle = "",checkboxClassName = "",mouseEffect = [];
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
         /************************************************************************************/
         //checkboxDim[a,b] a=> width of checkbox cElement , b=> height of checkbox cElemt
         //mouseEffect[a,b] a=> mouse hover , b=> mouse clicked
@@ -1212,7 +1246,7 @@ export function FormComponents() {
         }
 
         function assignCheckboxEventHanler() {
-            $$.attachEventHandler("click", "vCheckbox", function(e) {
+            eventHandles.push($$.attachEventHandler("click", "vCheckbox", function(e) {
                 e.stopImmediatePropagation();
                 var mainCheckbox = e.target.parentNode.nextElementSibling;
                 if (e.target.classList.contains("unchk")) { //check action, apply check
@@ -1224,12 +1258,12 @@ export function FormComponents() {
                 }
 
                 mainCheckbox.click();
-            })
-            $$.attachEventHandler("click", "vCheckboxLabel", function(e) {
+            }))
+            eventHandles.push($$.attachEventHandler("click", "vCheckboxLabel", function(e) {
                 e.stopImmediatePropagation();
                 var targetCheckbox = e.target.parentNode.querySelector("[tabindex='0']");
                 targetCheckbox != null ? targetCheckbox.click() : null;
-            })
+            }))
         }
 
         function toggleCheckbox(ele, nxt, type) {
@@ -1287,13 +1321,23 @@ export function FormComponents() {
                     }
                 }
             },
+            destroy: function() {
+                //Detaches every delegated listener this checkbox widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
             config: {}
         }
 
         Object.defineProperties(body, {
             autoBuild: { writable: false },
             config: { writable: false },
-            refresh: { writable: false }
+            refresh: { writable: false },
+            destroy: { writable: false }
         })
         Object.defineProperties(body.config, {
             checkboxSize: {
@@ -1349,6 +1393,7 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Date Picker^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.datePicker = function() {
         var falseState = "cX.1zwAP",trueState = "mp.3Cy._Xa";
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
         var toolTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
         var vBoxWidth = 300, initX = 10, wrapAttribute = "", paddingRight = 10, maxX = null, arrowXpos = 0, boxXpos = null, sizeAttribute = "";
 
@@ -1432,7 +1477,7 @@ export function FormComponents() {
         }
 
         function AddEventHandlers() {
-            $$.attachEventHandler("click", ["vDateIcon", "range", "year", "month", "day", "vbActive", "vClose", "dField", "meridianSwitchCon", "tbuttonActive"], function(e, id) {
+            eventHandles.push($$.attachEventHandler("click", ["vDateIcon", "range", "year", "month", "day", "vbActive", "vClose", "dField", "meridianSwitchCon", "tbuttonActive"], function(e, id) {
                 if (id == "vDateIcon" || id == "dField") {
                     var wrapper = $$.sm(e.target).getParent(2);
                     var pickerState = wrapper.querySelector(".dField").getAttribute("data-state");
@@ -1634,9 +1679,9 @@ export function FormComponents() {
                     var wrapper = $$.sm(e.target).getParent(4);
                     closeDateBox(wrapper);
                 }
-            })
+            }))
             //_______Transition control
-            $$.attachEventHandler("transitionend", ["displayActive", "vDateBoxTool", "rangeToYear", "yearToMonth", "monthToDay", "dayToTime", "rewind", "temp", "meridianSwitchCon", "vDateRangeCon"], function(e, id) {
+            eventHandles.push($$.attachEventHandler("transitionend", ["displayActive", "vDateBoxTool", "rangeToYear", "yearToMonth", "monthToDay", "dayToTime", "rewind", "temp", "meridianSwitchCon", "vDateRangeCon"], function(e, id) {
                 if (id == "displayActive") {
                     var wrapper = $$.sm(e.target).getParent(4);
                     wrapper.querySelector(".vDateBoxHeader").innerHTML = e.target.getAttribute("data-title");
@@ -1701,10 +1746,10 @@ export function FormComponents() {
                         unsetSuperActive(wrapper);
                     }
                 }
-            })
+            }))
 
             //_________Time input
-            $$.attachEventHandler("input", ["hr", "min"], function(e, id) {
+            eventHandles.push($$.attachEventHandler("input", ["hr", "min"], function(e, id) {
                 var wrapper = $$.sm(e.target).getParent(6);
                 if (id == "hr") {
                     var dateComponents = dateComponentsVariables(wrapper)["dateComponents"];
@@ -1730,32 +1775,37 @@ export function FormComponents() {
                     writeToInput(wrapper, dateComponents);
                 }
                 toggleDoneButton(wrapper);
-            })
-            $$.attachEventHandler("focusout", ["hr", "min"], function(e, id) {
+            }))
+            eventHandles.push($$.attachEventHandler("focusout", ["hr", "min"], function(e, id) {
                 e.target.value = fixDigitLength(e.target.value);
-            })
-            window.addEventListener("resize", function(e) {
-                var anyOpenDate = $$.ss(".dField[data-state='opened']");
-                if (anyOpenDate != null) {
-                    var wrapper = $$.sm(anyOpenDate).getParent(2);
-                    var dateBoxParent = wrapper.querySelector(".vDateBoxTool");
-                    var dateBoxArrow = wrapper.querySelectorAll(".vDateBoxArrow");
-                    shift(dateBoxParent, dateBoxArrow);
-                }
-                if (wrapAttribute != "") wrap("datePicker", wrapAttribute);
-            })
-            addEventListener("scroll", function() {
-                var anyOpen = $$.ss(".dField[data-state='opened']");
-                if (anyOpen != null) {
-                    var dateBox = anyOpen.parentNode.nextElementSibling;
-                    autoPlace(dateBox);
-                }
-            }, false)
-            $$.attachEventHandler("mouseover", "meridianSwitchCon", function(e) {
+            }))
+            //Named rather than anonymous so that destroy() can detach them from window again.
+            window.addEventListener("resize", handleDateResize)
+            addEventListener("scroll", handleDateScroll, false)
+            eventHandles.push($$.attachEventHandler("mouseover", "meridianSwitchCon", function(e) {
                 var wrapper = $$.sm(e.target).getParent(5);
                 var hrValue = wrapper.querySelector(".hr").value;
                 hrValue > 0 ? e.target.style["cursor"] = "pointer" : e.target.style["cursor"] = "not-allowed";
-            })
+            }))
+        }
+
+        function handleDateResize(e) {
+            var anyOpenDate = $$.ss(".dField[data-state='opened']");
+            if (anyOpenDate != null) {
+                var wrapper = $$.sm(anyOpenDate).getParent(2);
+                var dateBoxParent = wrapper.querySelector(".vDateBoxTool");
+                var dateBoxArrow = wrapper.querySelectorAll(".vDateBoxArrow");
+                shift(dateBoxParent, dateBoxArrow);
+            }
+            if (wrapAttribute != "") wrap("datePicker", wrapAttribute);
+        }
+
+        function handleDateScroll() {
+            var anyOpen = $$.ss(".dField[data-state='opened']");
+            if (anyOpen != null) {
+                var dateBox = anyOpen.parentNode.nextElementSibling;
+                autoPlace(dateBox);
+            }
         }
 
         function toggleMeridianSwitch(ele) {
@@ -2603,6 +2653,18 @@ export function FormComponents() {
                         allNewdatePickers[x].classList.contains(datePickerClassName) ? runDatePickerBuild(allNewdatePickers[x]) : null;
                     }
                 }
+            },
+            destroy: function() {
+                //Detaches every delegated listener this datePicker widget registered, plus the window resize and scroll
+                //listeners it bound directly. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                removeEventListener("resize", handleDateResize);
+                removeEventListener("scroll", handleDateScroll, false);
+                destroyed = true;
             }
         }
         Object.defineProperties(body, {
@@ -2611,6 +2673,9 @@ export function FormComponents() {
                 writable: false
             },
             autoBuild: {
+                writable: false
+            },
+            destroy: {
                 writable: false
             }
         });
@@ -2726,6 +2791,7 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*SlideSwitch^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.slideSwitch = function(){
         var slideSwitchClassName = "", showLabel=true, slideDistance="";
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
         var dataAttributes = {//data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
             size: "",
             label: ""
@@ -2775,7 +2841,7 @@ export function FormComponents() {
             }
         }
         function assignSlideSwitchEventHanler(){
-            $$.attachEventHandler("click", ["vSlideSwitchWrapper", "vSliderBg-ON", "vSliderBg-OFF"], function(e, id){
+            eventHandles.push($$.attachEventHandler("click", ["vSlideSwitchWrapper", "vSliderBg-ON", "vSliderBg-OFF"], function(e, id){
                 if(id == "vSlideSwitchWrapper"){
                     var nativeCheckBox = e.target.previousElementSibling;
                     if(e.target.classList.contains("sOn")){ //turn off
@@ -2795,7 +2861,7 @@ export function FormComponents() {
                     var wrapper = $$.sm(e.target).getParent(3);
                     wrapper.click();
                 }
-            })
+            }))
         }
         function convertCheckboxTosliderSwitch(){
             var allSelects = $$.sa("." + slideSwitchClassName);
@@ -2910,6 +2976,15 @@ export function FormComponents() {
                     }
                 }
             },
+            destroy: function() {
+                //Detaches every delegated listener this slideSwitch widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
             config: {}
         }
         Object.defineProperties(body, {
@@ -2918,6 +2993,9 @@ export function FormComponents() {
                 writable: false
             },
             autoBuild: {
+                writable: false
+            },
+            destroy: {
                 writable: false
             }
         });
@@ -3000,6 +3078,7 @@ export function FormComponents() {
     /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*Custom file builder^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
     this.file = function() {
         var fileDim = [],label="", toolTipHandler=null, buttonLabel="",toolTipHandler = null, fileToolTip = false, fileClassName = "", enableButtonIcon=false;
+        var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
 
         var styles = {
             toolTip:{arrowColor:"",fontColor:""},
@@ -3134,13 +3213,13 @@ export function FormComponents() {
         }
 
         function assignFileEventHandler() {
-            $$.attachEventHandler("click", ["fButton", "fLabel"], function(e, id) {
+            eventHandles.push($$.attachEventHandler("click", ["fButton", "fLabel"], function(e, id) {
                 var nativeFileInput = $$.sm(e.target).getParent(2).nextElementSibling;
                 nativeFileInput.click();
-            });
-            $$.attachEventHandler("change", "xFnative", function(e) {
+            }));
+            eventHandles.push($$.attachEventHandler("change", "xFnative", function(e) {
                 inputLabeler(e.target);
-            });
+            }));
         }
 
         var body = {
@@ -3171,6 +3250,15 @@ export function FormComponents() {
                     }
                 }
             },
+            destroy: function() {
+                //Detaches every delegated listener this file widget registered. The widgets replace
+                //consumer markup in place and do not retain the original, so destroy() unbinds rather
+                //than rebuilding the page: use it before the markup itself is discarded.
+                if (destroyed) return;
+                for (var x = 0; x < eventHandles.length; x++) eventHandles[x].detach();
+                eventHandles = [];
+                destroyed = true;
+            },
             config: {}
         }
 
@@ -3178,6 +3266,7 @@ export function FormComponents() {
             autoBuild: { writable: false },
             refresh: { writable: false },
             refreshFile: { writable: false },
+            destroy: { writable: false },
             config: { writable: false }
         })
         Object.defineProperties(body.config, {

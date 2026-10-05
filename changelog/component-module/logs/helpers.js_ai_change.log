@@ -1,0 +1,28 @@
+FILE: helpers.js
+FEATURE: component-module
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'component-teardown'
+
+REASON
+component.js added to the module registry (vModel.core.data.modules), so that
+window.vUxModules lists it alongside the others at runtime. This is the registry
+CLAUDE.md names as one of the places a new module must be recorded.
+
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+                "autoWriter.js",
+                "carousel.js",
+                "cShapes.js",
+                "dataView.js",
+
+NEW_SECTION
+                "autoWriter.js",
+                "carousel.js",
+                "component.js",
+                "cShapes.js",
+                "dataView.js",
+

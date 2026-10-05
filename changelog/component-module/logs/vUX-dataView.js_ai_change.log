@@ -1,0 +1,291 @@
+FILE: vUX-dataView.js
+FEATURE: component-module
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'component-teardown'
+
+REASON
+DataView now delegates to src/componentEngine.js instead of carrying its own
+buildRow()/reconcile()/cells machinery.
+
+The public surface is unchanged: initialize, setData, updateRow, sort, filter,
+getData, destroy, config.key and config.data all behave exactly as before, and
+every error message is preserved verbatim - including 'the row object at index N'
+and 'a string naming the unique key field of each row object', which is why the
+engine takes an itemNoun and why config.key keeps its own validateString call
+rather than using the engine's generic helper.
+
+What consumers gain: a row template now accepts the engine's whole binding set,
+not just data-v-field. data-v-bind, data-v-on, data-v-ref, data-v-show and
+data-v-class work in rows, and config.handlers and config.formatters were added to
+support them.
+
+Two behaviour notes:
+
+  - updateRow() now merges into the row and writes the merged object back into the
+    model. Previously it mutated the row object in place, which meant getData()
+    handed back objects the view was still using. Externally the observable result
+    is the same, except that getData() is now safe to hold on to.
+
+  - destroy() now clears 'initialized'. It did not before, which made the
+    'This DataView has been destroyed' guard in initialize() unreachable: a
+    re-initialize after destroy silently did nothing instead of reporting itself.
+    The message was already written; it now actually fires.
+
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+ */
+// Import vUX core
+import { validateElement, validateString, validateFunction, validateObjectLiteral } from "./src/helpers.js";
+import "./src/vUX-core-4.0.0-beta.js";
+
+NEW_SECTION
+ */
+// Import vUX core
+import { validateElement, validateFunction, validateObjectLiteral, validateString } from "./src/helpers.js";
+import {
+    resolveTemplate, patchBindings, destroyInstance, reconcileList
+} from "./src/componentEngine.js";
+import "./src/vUX-core-4.0.0-beta.js";
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+     * attribute; inside it, elements marked 'data-v-field="<fieldName>"' render that field of
+     * each row object. The template is detached on initialize() and cloned per row.
+     */
+    validateElement(container, "DataView(x) constructor argument 1 must be an element (the container holding the row template)");
+
+    var initialized = false, destroyed = false, key = "id", model = [], rowTemplate = null, rowParent = null;
+    var rows = new Map(); // row key -> {data, node, cells}
+    var activeFilter = null;
+
+    this.initialize = function(){
+        if(!initialized){
+            if (destroyed) throw new Error("This DataView has been destroyed, create a new instance instead of re-initializing");
+            rowTemplate = container.querySelector("[data-v-row]");
+            if (rowTemplate == null) throw new Error("Setup Incomplete: no row template found. Mark the template element inside the container with the 'data-v-row' attribute");
+            rowParent = rowTemplate.parentNode;
+            rowTemplate.remove();
+            rowTemplate.removeAttribute("data-v-row");
+            initialized = true;
+            if (model.length > 0) reconcile(model);
+
+NEW_SECTION
+     * attribute; inside it, elements marked 'data-v-field="<fieldName>"' render that field of
+     * each row object. The template is detached on initialize() and cloned per row.
+     *
+     * The instancing itself lives in src/componentEngine.js, shared with vUX-component.js, so
+     * rows also accept the rest of that engine's bindings - 'data-v-bind' for attributes,
+     * 'data-v-on' for events, 'data-v-ref' for named nodes, 'data-v-show' and 'data-v-class'
+     * for truthiness toggles. A row binding an event needs config.handlers set, as the
+     * component module does.
+     */
+    validateElement(container, "DataView(x) constructor argument 1 must be an element (the container holding the row template)");
+
+    var self = this;
+    var initialized = false, destroyed = false, key = "id", model = [], rowTemplate = null, rowParent = null;
+    var rows = new Map(); // row key -> engine entry {data, node, bindings, ...}
+    var activeFilter = null;
+    var handlers = null, formatters = null;
+
+    //Read live by the engine, so config set after initialize() still applies to the next build.
+    var spec = {
+        methodName: "DataView",
+        itemNoun: "row object",
+        get formatters(){ return formatters; },
+        get handlers(){ return handlers; },
+        owner: function(){ return self; }
+    };
+
+    this.initialize = function(){
+        if(!initialized){
+            if (destroyed) throw new Error("This DataView has been destroyed, create a new instance instead of re-initializing");
+            var marked = container.querySelector("[data-v-row]");
+            if (marked == null) throw new Error("Setup Incomplete: no row template found. Mark the template element inside the container with the 'data-v-row' attribute");
+
+            //The parent is read before the template is lifted out of it: it is where every
+            //row is appended, and resolveTemplate() detaches the marked element.
+            rowParent = marked.parentNode;
+            rowTemplate = resolveTemplate(marked, "DataView(x) row template");
+            rowTemplate.removeAttribute("data-v-row");
+
+            initialized = true;
+            if (model.length > 0) reconcile(model);
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+        if (entry == undefined) throw new Error("dataViewObj.updateRow(x, y): no row found with "+key+" '"+rowKey+"'");
+
+        for (let field in fields){
+            if (entry.data[field] !== fields[field]){
+                entry.data[field] = fields[field];
+                if (entry.cells[field] != undefined) entry.cells[field].textContent = fields[field];
+            }
+        }
+
+NEW_SECTION
+        if (entry == undefined) throw new Error("dataViewObj.updateRow(x, y): no row found with "+key+" '"+rowKey+"'");
+
+        //Merged rather than replaced so the row keeps the fields the caller did not name;
+        //patchBindings() then writes only the ones whose value actually moved.
+        let merged = Object.assign({}, entry.data, fields);
+        patchBindings(entry, merged, spec);
+
+        //The model holds the same row objects the caller handed in, so it is updated to match.
+        for (let x = 0; x < model.length; x++){
+            if (model[x][key] === rowKey){
+                model[x] = merged;
+                break;
+            }
+        }
+
+================================================================================
+CHANGE 4
+================================================================================
+
+OLD_SECTION
+    this.destroy = function(){
+        // release the model, the key->node map and all managed rows; call when the view's page is exited
+        rows.forEach(function(entry){ entry.node.remove(); });
+        rows = new Map();
+        model = [];
+
+NEW_SECTION
+    this.destroy = function(){
+        // release the model, the key->node map and all managed rows; call when the view's page is exited
+        rows.forEach(function(entry){ destroyInstance(entry); });
+        rows = new Map();
+        model = [];
+
+================================================================================
+CHANGE 5
+================================================================================
+
+OLD_SECTION
+        rowParent = null;
+        activeFilter = null;
+        destroyed = true;
+    }
+
+NEW_SECTION
+        rowParent = null;
+        activeFilter = null;
+        //Cleared so that the 'has been destroyed' guard in initialize() is actually reachable:
+        //while this stayed true, re-initializing a destroyed view silently did nothing instead.
+        initialized = false;
+        destroyed = true;
+    }
+
+================================================================================
+CHANGE 6
+================================================================================
+
+OLD_SECTION
+    }
+
+    function buildRow(rowData){
+        let node = rowTemplate.cloneNode(true);
+        let cells = {};
+        let cellNodes = node.querySelectorAll("[data-v-field]");
+
+        for (let x = 0; x < cellNodes.length; x++){
+            cells[cellNodes[x].dataset.vField] = cellNodes[x];
+        }
+
+        let entry = {data: rowData, node: node, cells: cells};
+        for (let field in cells) cells[field].textContent = rowData[field] != undefined ? rowData[field] : "";
+        return entry;
+    }
+
+    function reconcile(newData){
+        let seen = new Map();
+        let fragment = document.createDocumentFragment();
+
+        for (let x = 0; x < newData.length; x++){
+            let rowData = newData[x];
+            let rowKey  = rowData[key];
+            if (rowKey == undefined) throw new Error("DataView: the row object at index "+x+" has no value for the key field '"+key+"'");
+
+            let entry = rows.get(rowKey);
+            if (entry == undefined){ // new key: build a fresh row
+                entry = buildRow(rowData);
+            }else{ // existing key: patch only the fields that changed
+                for (let field in entry.cells){
+                    if (entry.data[field] !== rowData[field]){
+                        entry.cells[field].textContent = rowData[field] != undefined ? rowData[field] : "";
+                    }
+                }
+                entry.data = rowData;
+            }
+            seen.set(rowKey, entry);
+            fragment.appendChild(entry.node); // moves already-mounted nodes, keeping their state
+        }
+
+        // drop rows whose key is gone from the new data
+        rows.forEach(function(entry, rowKey){
+            if (!seen.has(rowKey)) entry.node.remove();
+        });
+
+        rows = seen;
+        model = newData.slice();
+        rowParent.appendChild(fragment);
+        if (activeFilter != null) applyFilter();
+    }
+
+    function applyFilter(){
+        for (let x = 0; x < model.length; x++){
+            let entry = rows.get(model[x][key]);
+
+NEW_SECTION
+    }
+
+    function reconcile(newData){
+        let result = reconcileList(rowParent, newData, rows, rowTemplate, key, spec);
+        rows = result.entries;
+        model = newData.slice();
+        if (activeFilter != null) applyFilter();
+    }
+
+    function applyFilter(){
+        //Written straight onto the row's own display, which is why a row template should not
+        //also carry a 'data-v-show' binding on its outermost element: the two would contend.
+        for (let x = 0; x < model.length; x++){
+            let entry = rows.get(model[x][key]);
+
+================================================================================
+CHANGE 7
+================================================================================
+
+OLD_SECTION
+                }
+            }
+        }
+    })
+
+NEW_SECTION
+                }
+            }
+        },
+        handlers: {
+            set: function(value) {
+                validateObjectLiteral(value, "config.handlers property value must be a literal object of functions, keyed by the name used in a data-v-on binding");
+                handlers = value;
+            }
+        },
+        formatters: {
+            set: function(value) {
+                validateObjectLiteral(value, "config.formatters property value must be a literal object of functions, keyed by field name");
+                formatters = value;
+            }
+        }
+    })
+

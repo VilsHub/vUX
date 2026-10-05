@@ -1,0 +1,722 @@
+FILE: vUX-carousel.js
+FEATURE: carousel-verification
+DATE: 2026-10-02
+PRIOR STATE: working tree as of the component-teardown change (destroy() added; TouchHandler import added)
+
+Verified by driving headless Chromium (Playwright) over a test page served from the repository
+root. Baseline before these changes: 13 passed, 14 failed. After: 27 passed, 0 failed. The
+public API (constructor, initialize, start, destroy, config.delay/speed/slideEffect/buttonStyle/
+touchResponse) is unchanged; start() before initialize() now throws, and dots lose their id
+attributes (see ChangeLog 'Changed').
+
+================================================================================
+CHANGE 1 — Slide discovery no longer depends on the viewport id; instance numbering and new state
+================================================================================
+
+OLD_SECTION
+        var self = this;
+        var viewportId = viewport.getAttribute("id");
+        var sliders = container.querySelectorAll("#" + viewportId + "> div");
+        var current = 0, buttonId = 0, forceSld = 0, pauseMode = 0, completed = 1, started = 0, delay = 4000, speed = 1000, initialized = 0, buttonStyle = null;
+        var touchResponse = true, slideEffect = "linear",s;
+        var destroyed = false, touchHdr = null;   //touchHdr is held at instance scope so destroy() can tear it down too
+
+NEW_SECTION
+    var carouselCount = 0; //numbers each instance so its generated button styles stay scoped to it
+        ...
+        var self = this;
+        //The viewport's direct <div> children are the slides. Read from children rather than through an
+        //'#id > div' selector, so a viewport without an id attribute works too.
+        var sliders = Array.prototype.filter.call(viewport.children, function(child){ return child.nodeName == "DIV"; });
+        var instanceId = ++carouselCount;
+        var current = 0, target = 0, pauseMode = 0, completed = 1, started = 0, delay = 4000, speed = 1000, initialized = 0, buttonStyle = null;
+        var touchResponse = true, slideEffect = "linear", s = null;
+        var destroyed = false, touchHdr = null, controlArea = null;   //touchHdr is held at instance scope so destroy() can tear it down too
+
+REASON
+Slides were collected with container.querySelectorAll("#" + viewportId + "> div"). A viewport
+with no id attribute produced the selector "#null> div", which matched nothing: no slides were laid
+out and no dots were built (verified: 0 buttons). The ChangeLog has claimed "no more ID dependent"
+since v3. The slides are now the viewport's direct <div> children, which is what the old selector
+meant, read without an id.
+
+'current' was a percentage offset that only autoplay updated; it is now a slide index, with 'target'
+holding the slide a transition is heading for. forceSld and buttonId are gone (see change 2).
+instanceId scopes the per-carousel button styles (change 5); controlArea is kept so every lookup
+goes through this instance's own dots (change 3).
+
+================================================================================
+CHANGE 2 — One movement path: goTo() / settle() replace forceSlide(), nextSlide() and the two-branch transitionend handler
+================================================================================
+
+OLD_SECTION
+        //Assign buttons event
+        function assingnHandlers() {
+            container.onclick = function(e) {
+                if (e.target.classList.contains("vButton") && e.target.nodeName == "DIV") {
+                    if(!e.target.classList.contains("active")){
+                        var id = e.target.getAttribute("data-ratio");
+                        forceSld = 1;
+                        buttonId = id;
+                        forceSlide(id);
+                    }
+                }
+            };
+        }
+
+        function forceSlide(ratio) {
+            var leftValue = parseInt(ratio) * 100;
+            var newPos = -leftValue + "%";
+            viewport.style["left"] = newPos;
+            completed = 0;
+        }
+
+        function checkNext(current) {
+            var check = current.nextElementSibling;
+            if (check != null) {
+                return true;
+            } else {
+                return false
+            }
+        }
+
+        function nextSlide(ele) {
+            if (pauseMode == 0 && completed == 1) {
+                var currentView = viewport.querySelector("div[data-activeDisplay='1']");
+                if (checkNext(currentView)) {
+                    current = current + 100;
+                    ele.style["left"] = -current + "%";
+                } else {
+                    ele.style["left"] = "0";
+                    current = 0;
+                }
+                completed = 0;
+            }
+        }
+        ...
+        function forceSetCurrent(activeButton, previousActive, node) {
+            //unset any current view
+            previousActive.setAttribute("data-activeDisplay", "0");
+
+            var x = viewport.querySelector("div[data-ratio='" + node + "']");
+            x.setAttribute("data-activeDisplay", "1");
+
+            //Set buttons
+            activeButton.classList.remove("active"); //remove previous
+            var selectedButton = $$.ss(".vControlButtonsShell div[data-ratio='" + node + "']");
+            selectedButton.classList.add("active"); //remove previous
+        }
+
+        function touchEndCallBack(node) {
+            var activeButton = $$.ss(".vControlButtonsShell .active");
+            var previousActive = viewport.querySelector("div[data-activeDisplay='1']");
+            forceSetCurrent(activeButton, previousActive, node);
+        }
+        ...
+        function handleTransitionEnd(e) {
+            var activeButton = $$.ss(".vControlButtonsShell .active");
+            var previousActive = viewport.querySelector("div[data-activeDisplay='1']");
+            var id = null;
+            if (e.target.classList.contains("posUpdate")) {
+                return;
+            }
+            if (forceSld == 0) {
+                if(e.target.classList.contains("vSliderViewPort")){
+                    //Assign new active
+                    if (checkNext(previousActive)) {
+                        //set next
+                        previousActive.nextElementSibling.setAttribute("data-activeDisplay", "1");
+                        id = previousActive.nextElementSibling.getAttribute("data-ratio");
+                    } else { // reached the last
+                        //set the 1st child
+                        sliders[0].setAttribute("data-activeDisplay", "1");
+                        id = 0;
+                    }
+
+                    // unset previous
+                    previousActive.setAttribute("data-activeDisplay", "0");
+
+                    //Set buttons
+                    activeButton.classList.remove("active"); //remove previous
+                    var nextActiveButton = $$.ss(".vControlButtonsShell div[data-ratio='" + id + "']");
+                    nextActiveButton.classList.add("active"); //make Next active
+                    completed = 1;
+                }
+            } else if (forceSld == 1) {
+                //unset any current view
+                previousActive.setAttribute("data-activeDisplay", "0");
+                forceSetCurrent(activeButton, previousActive, buttonId);
+                completed = 1;
+                forceSld = 0;
+            }
+        }
+
+NEW_SECTION
+        //Every lookup goes through this instance's own control strip, never the document, so two
+        //carousels on one page cannot move each other's active button.
+        function buttonFor(index) {
+            return controlArea != null ? controlArea.querySelector(".vButton[data-ratio='" + index + "']") : null;
+        }
+
+        function markActive(index) {
+            sliders.forEach(function(slide, i){
+                slide.setAttribute("data-activeDisplay", i == index ? "1" : "0");
+            });
+            if (controlArea != null) {
+                var previous = controlArea.querySelector(".vButton.active");
+                if (previous != null) previous.classList.remove("active");
+                var next = buttonFor(index);
+                if (next != null) next.classList.add("active");
+            }
+        }
+
+        //Moves the viewport to a slide. All three movers (autoplay, a button click, the end of a swipe)
+        //go through here, so 'current' always matches the slide on screen.
+        function goTo(index) {
+            target = index;
+            if (index == current && completed == 1) {
+                settle(); //already there: no transition will run, so there will be no transitionend either
+                return;
+            }
+            completed = 0;
+            viewport.style["left"] = -(index * 100) + "%";
+            if (speed == 0) settle(); //a 0ms transition never fires transitionend
+        }
+
+        function settle() {
+            current = target;
+            markActive(current);
+            completed = 1;
+        }
+
+        function handleButtonClick(e) {
+            if (e.target.classList.contains("vButton") && e.target.nodeName == "DIV" && !e.target.classList.contains("active")) {
+                goTo(parseInt(e.target.getAttribute("data-ratio")));
+            }
+        }
+
+        function handleMouseEnter() {
+            pauseMode = 1;
+        }
+
+        function handleMouseLeave() {
+            pauseMode = 0;
+        }
+
+        function handleTransitionEnd(e) {
+            //Only the viewport's own 'left' transition counts. transitionend bubbles, so a transition on
+            //anything inside a slide would otherwise end the slide early.
+            if (e.target != viewport || e.propertyName != "left") return;
+            //'posUpdate' marks the snap at the end of a swipe; TouchHandler reports that one through
+            //touchEndCallBack instead.
+            if (viewport.classList.contains("posUpdate")) return;
+            settle();
+        }
+
+        function handleTransitionCancel(e) {
+            //A slide in flight is cancelled when the carousel is hidden (display:none, e.g. an SPA route
+            //swap) or detached. transitionend then never fires and autoplay would stall for good, so
+            //settle here, unless a replacement transition is already running (a button clicked mid-slide).
+            if (e.target != viewport || e.propertyName != "left") return;
+            if (viewport.getAnimations().length == 0) settle();
+        }
+
+        function nextSlide() {
+            if (pauseMode == 0 && completed == 1) {
+                goTo((current + 1) % sliders.length);
+            }
+        }
+
+REASON
+Three movers (autoplay, dot click, end of swipe) each kept their own idea of the position.
+Autoplay advanced 'current' by 100% from wherever *it* last left the viewport, ignoring dot clicks
+and swipes, so after clicking dot 3 the next autoplay tick slid back to slide 2 while the
+transitionend handler marked slide 4 active (verified: active 3, on screen 1). Every mover now calls
+goTo(index); settle() updates the slides, the dots and 'current' together when the move ends, and
+nextSlide() moves to (current + 1) % slides.
+
+transitionend handling: the event bubbles, and the old forced-slide branch did not check its
+target, so any transition inside a slide ended a dot-click slide early; it now requires
+e.target == viewport and e.propertyName == "left", which also stops a multi-property transition
+from advancing twice.
+
+speed = 0: a 0ms transition never fires transitionend, so 'completed' stayed 0 and autoplay stopped
+after the first move (verified). goTo() now settles immediately when speed is 0, and when asked to
+go where it already is.
+
+transitioncancel: hiding the carousel (display:none, e.g. an SPA route swap) mid-slide cancels the
+transition; transitionend never fires and autoplay stopped for good (verified). The cancel handler
+settles unless a replacement transition is already running (getAnimations()).
+
+mouseenter used to force completed = 1. That let a hover or press over a slide in motion mark it
+finished, so the next tick started from the wrong place (verified: active 3, on screen 2). Hover
+now only pauses. The listeners are named functions attached with addEventListener rather than
+container.onclick/onmouseenter/onmouseleave, which overwrote any handlers the consumer had put on
+the container (and were overwritten by them).
+
+================================================================================
+CHANGE 3 — Dots: no ids, listener instead of onclick, controlArea kept
+================================================================================
+
+OLD_SECTION
+        function createControls() {
+            var controlArea = $$.ce("DIV");
+            var buttonsCons = $$.ce("DIV");
+
+            controlArea.classList.add("vControlArea");
+            buttonsCons.classList.add("vControlButtonsCon");
+
+            for (var x = 0; x < sliders.length; x++) {
+                var buttonsShell = $$.ce("DIV");
+                var button = $$.ce("DIV");
+                var id = x + 1;
+                buttonsShell.classList.add("vControlButtonsShell");
+                x == 0 ? button.setAttribute("class", "vButton active") : button.classList.add("vButton");
+                button.setAttribute("id", "b" + id);
+                button.setAttribute("data-ratio", x);
+                buttonsShell.appendChild(button);
+                buttonsCons.appendChild(buttonsShell);
+            }
+
+            controlArea.appendChild(buttonsCons);
+            container.appendChild(controlArea) != null ? assingnHandlers() : null;
+        }
+
+NEW_SECTION
+        function createControls() {
+            controlArea = $$.ce("DIV");
+            var buttonsCons = $$.ce("DIV");
+
+            controlArea.classList.add("vControlArea");
+            buttonsCons.classList.add("vControlButtonsCon");
+
+            for (var x = 0; x < sliders.length; x++) {
+                var buttonsShell = $$.ce("DIV");
+                var button = $$.ce("DIV");
+                buttonsShell.classList.add("vControlButtonsShell");
+                button.classList.add("vButton");
+                if (x == 0) button.classList.add("active");
+                button.setAttribute("data-ratio", x);
+                buttonsShell.appendChild(button);
+                buttonsCons.appendChild(buttonsShell);
+            }
+
+            controlArea.appendChild(buttonsCons);
+            container.appendChild(controlArea);
+            container.addEventListener("click", handleButtonClick, false);
+        }
+
+REASON
+Each dot got id="b1", "b2"…, duplicated by every carousel on the page and liable to collide
+with page ids; nothing in the library read them. Dot lookups were document-wide
+($$.ss(".vControlButtonsShell .active")), so clicking a dot on the second carousel removed the
+active class from the first carousel's dot (verified). Lookups now go through controlArea.
+
+================================================================================
+CHANGE 4 — Per-instance button styles that beat carousel.css; carousel.css now linked
+================================================================================
+
+OLD_SECTION
+        function createControlStyles() {
+            if ($$.ss("style[data-id='carouselStyles']") == null) {
+                var css = "";
+                if (buttonStyle != null) {
+                    css += ".vButton{" + buttonStyle[0] + "}"; //Normal button
+                    if (buttonStyle[1] != undefined || buttonStyle[1] != undefined) {
+                        css += ".vButton.active{" + buttonStyle[1] + "}"; //active button
+                    }
+                }
+                attachStyleSheet("carouselStyles", css);
+            }
+        }
+
+NEW_SECTION
+        function createControlStyles() {
+            //Scoped to this container, and one selector more specific than carousel.css, which is linked
+            //after this <style> and would otherwise win on equal specificity.
+            if (buttonStyle != null) {
+                var scope = "[data-vcarousel='" + instanceId + "'] .vControlArea ";
+                var css = scope + ".vButton{" + buttonStyle[0] + "}"; //Normal button
+                if (buttonStyle[1] != undefined) {
+                    css += scope + ".vButton.active{" + buttonStyle[1] + "}"; //active button
+                }
+                attachStyleSheet("carouselStyles-" + instanceId, css);
+            }
+        }
+
+        function removeControlStyles() {
+            var sheet = document.querySelector("style[data-id='carouselStyles-" + instanceId + "']");
+            if (sheet != null) sheet.remove();
+        }
+
+        async function addVitalStyles() {
+            try {
+                var path = await processAssetPath();
+                if (!(path instanceof Error)){
+                    vModel.core.functions.linkStyleSheet(path+"css/carousel.css", "carousel");
+                }else{
+                    throw new Error(path)
+                }
+            } catch (error) {
+                console.error(error)
+            }
+        }
+
+REASON
+Styles were written once per page under data-id 'carouselStyles' with a bare .vButton
+selector, so the second carousel's buttonStyle was ignored and the first one's restyled every
+carousel. They are now scoped to [data-vcarousel='<n>'] and removed by destroy().
+
+carousel.css (dot size, colour, strip position) existed but was never linked: the dots were
+<div>s 0px tall, invisible and unclickable (verified: 400x0). It is now linked through
+processAssetPath()/linkStyleSheet, the pattern the other modules use. Because linkStyleSheet appends
+the <link> after the generated <style>, the generated rules carry an extra .vControlArea in their
+selector so buttonStyle still wins.
+
+The duplicated condition (buttonStyle[1] != undefined || buttonStyle[1] != undefined) is reduced to
+one test.
+
+================================================================================
+CHANGE 5 — Autoplay interval and touch wiring
+================================================================================
+
+OLD_SECTION
+        function startSlide() {
+            var m_delay = delay + speed;
+            clearInterval(s);
+            s = setInterval(function(){
+                if (pauseMode == 0 && completed == 1) {
+                    nextSlide(viewport);
+                }
+            }, m_delay)
+        }
+        ...
+        function touchEndCallBack(node) {
+            var activeButton = $$.ss(".vControlButtonsShell .active");
+            var previousActive = viewport.querySelector("div[data-activeDisplay='1']");
+            forceSetCurrent(activeButton, previousActive, node);
+        }
+
+NEW_SECTION
+        function startSlide() {
+            clearInterval(s);
+            s = setInterval(nextSlide, delay + speed);
+        }
+
+        function touchEndCallBack(node) {
+            target = node;
+            settle();
+        }
+
+        function touchTransition() {
+            return "left " + speed + "ms " + slideEffect;
+        }
+
+        //Lets speed and slideEffect be changed on a carousel that is already running
+        function applyTransition() {
+            if (initialized == 0) return;
+            viewport.style.removeProperty("transition"); //TouchHandler leaves a shorthand behind after a drag
+            viewport.style["transition-duration"] = speed + "ms";
+            viewport.style["transition-timing-function"] = slideEffect;
+            if (touchHdr != null) touchHdr.config.viewPortTransition = touchTransition();
+            if (s != null) startSlide(); //the interval spans delay + speed
+        }
+
+REASON
+The interval callback re-checked conditions nextSlide() already checks; it now calls nextSlide
+directly. The swipe callback sets the target and settles through the shared path, so a swipe
+updates 'current' too. applyTransition() lets speed and slideEffect be changed on a live
+carousel; it clears the transition shorthand TouchHandler leaves behind after a drag, which would
+otherwise override the longhands.
+
+================================================================================
+CHANGE 6 — initialize(), start(), destroy()
+================================================================================
+
+OLD_SECTION
+        this.initialize = function() {
+            if (initialized == 0) {
+                if (destroyed) throw new Error("This Carousel has been destroyed, create a new instance instead of re-initializing");
+                viewport.classList.add("vSliderViewPort");
+                viewport.style["transition-duration"] = speed + "ms";
+                viewport.style["transition-timing-function"] = slideEffect;
+
+                //Place sliders in order
+                Object.values(sliders).forEach(function(itemContent, arrayIndex, targetArray) {
+                    var leftValue = arrayIndex * 100;
+                    itemContent.style["left"] = leftValue + "%";
+                    arrayIndex == 0 ? itemContent.setAttribute("data-activeDisplay", "1") : itemContent.setAttribute("data-activeDisplay", "0");
+                    itemContent.setAttribute("data-ratio", arrayIndex);
+                });
+
+                //Assign event listeners
+                container.onmouseenter = function() {
+                    pauseMode = 1;
+                    completed = 1;
+                }
+                container.onmouseleave = function() {
+                    pauseMode = 0;
+                }
+
+                viewport.addEventListener("transitionend", handleTransitionEnd, false);
+
+                //Enable touch if specified
+                if (touchResponse) {
+                    touchHdr = new TouchHandler(container);
+                    touchHdr.config.slideCallBack = touchEndCallBack;
+                    touchHdr.config.viewPortTransition = "left " + speed + "ms "+slideEffect;
+                    touchHdr.initialize();
+                    touchHdr.enableTouch();
+                }
+                createControlStyles();
+                createControls();
+                initialized = 1;
+            }
+        }
+        ...
+        this.start = function() {
+            if (started == 0) {
+                if (destroyed) throw new Error("This Carousel has been destroyed, create a new instance instead of restarting it");
+                startSlide();
+                started = 1;
+            }
+        };
+        this.destroy = function(){
+            //Stops the autoplay interval (which otherwise keeps firing for the life of the page), detaches
+            //the container and viewport listeners, tears down the nested TouchHandler and removes the
+            //generated control strip. The shared 'carouselStyles' sheet is left alone because every
+            //Carousel on the page shares it.
+            if (destroyed) return;
+
+            clearInterval(s);
+            s = null;
+
+            container.onclick = null;
+            container.onmouseenter = null;
+            container.onmouseleave = null;
+            viewport.removeEventListener("transitionend", handleTransitionEnd, false);
+
+            if (touchHdr != null){
+                touchHdr.destroy();
+                touchHdr = null;
+            }
+
+            var controlArea = container.querySelector(".vControlArea");
+            if (controlArea != null) controlArea.remove();
+
+            viewport.classList.remove("vSliderViewPort");
+            viewport.style.removeProperty("transition-duration");
+            viewport.style.removeProperty("transition-timing-function");
+            viewport.style.removeProperty("left");
+
+            Object.values(sliders).forEach(function(itemContent){
+                itemContent.removeAttribute("data-activeDisplay");
+                itemContent.removeAttribute("data-ratio");
+                itemContent.style.removeProperty("left");
+            });
+
+            started = 0;
+            initialized = 0;
+            destroyed = true;
+        }
+
+NEW_SECTION
+        this.initialize = function() {
+            if (initialized == 0) {
+                if (destroyed) throw new Error("This Carousel has been destroyed, create a new instance instead of re-initializing");
+                addVitalStyles();
+                container.setAttribute("data-vcarousel", instanceId);
+                viewport.classList.add("vSliderViewPort");
+                viewport.style["transition-duration"] = speed + "ms";
+                viewport.style["transition-timing-function"] = slideEffect;
+
+                //Place sliders in order
+                sliders.forEach(function(itemContent, arrayIndex) {
+                    itemContent.style["left"] = (arrayIndex * 100) + "%";
+                    itemContent.setAttribute("data-ratio", arrayIndex);
+                });
+
+                //Listeners rather than on* properties, so the consumer's own container handlers survive
+                container.addEventListener("mouseenter", handleMouseEnter, false);
+                container.addEventListener("mouseleave", handleMouseLeave, false);
+                viewport.addEventListener("transitionend", handleTransitionEnd, false);
+                viewport.addEventListener("transitioncancel", handleTransitionCancel, false);
+
+                //Enable touch if specified
+                if (touchResponse) {
+                    touchHdr = new TouchHandler(container);
+                    touchHdr.config.slideCallBack = touchEndCallBack;
+                    touchHdr.config.viewPortTransition = touchTransition();
+                    touchHdr.initialize();
+                    touchHdr.enableTouch();
+                }
+                createControlStyles();
+                createControls();
+                markActive(0);
+                initialized = 1;
+            }
+        }
+
+        this.start = function() {
+            if (started == 0) {
+                if (destroyed) throw new Error("This Carousel has been destroyed, create a new instance instead of restarting it");
+                if (initialized == 0) throw new Error("Call Carousel.initialize() before Carousel.start()");
+                if (sliders.length > 1) startSlide(); //nothing to rotate through otherwise
+                started = 1;
+            }
+        };
+        this.destroy = function(){
+            //Stops the autoplay interval (which otherwise keeps firing for the life of the page), detaches
+            //the container and viewport listeners, tears down the nested TouchHandler and removes the
+            //generated control strip and this instance's button styles. carousel.css stays linked, as
+            //other carousels on the page may still use it.
+            if (destroyed) return;
+
+            clearInterval(s);
+            s = null;
+
+            container.removeEventListener("click", handleButtonClick, false);
+            container.removeEventListener("mouseenter", handleMouseEnter, false);
+            container.removeEventListener("mouseleave", handleMouseLeave, false);
+            viewport.removeEventListener("transitionend", handleTransitionEnd, false);
+            viewport.removeEventListener("transitioncancel", handleTransitionCancel, false);
+
+            if (touchHdr != null){
+                touchHdr.destroy();
+                touchHdr = null;
+            }
+
+            if (controlArea != null) controlArea.remove();
+            controlArea = null;
+            removeControlStyles();
+            container.removeAttribute("data-vcarousel");
+
+            viewport.classList.remove("vSliderViewPort", "posUpdate");
+            viewport.style.removeProperty("transition");
+            viewport.style.removeProperty("transition-duration");
+            viewport.style.removeProperty("transition-timing-function");
+            viewport.style.removeProperty("left");
+
+            sliders.forEach(function(itemContent){
+                itemContent.removeAttribute("data-activeDisplay");
+                itemContent.removeAttribute("data-ratio");
+                itemContent.style.removeProperty("left");
+            });
+
+            started = 0;
+            initialized = 0;
+            destroyed = true;
+        }
+
+REASON
+initialize(): links carousel.css, tags the container with data-vcarousel, attaches named
+listeners (including transitioncancel), and marks slide 0 through markActive().
+start(): start() before initialize() used to run an interval that threw on every tick
+("Cannot read properties of null"); it now throws once with a clear message. With fewer than two
+slides there is nothing to rotate, so no interval is started.
+destroy(): removes the named listeners, this instance's style element, data-vcarousel, a leftover
+posUpdate class and the transition shorthand, in addition to what it removed before.
+
+================================================================================
+CHANGE 7 — config setters: live application and buttonStyle messages
+================================================================================
+
+OLD_SECTION
+            delay: {
+                set: function(value) {
+                    validateNumber(value, "'config.delay' property value must be numeric");
+                    value < 0 ? value = 0 : null;
+                    delay = value;
+                }
+            },
+            speed: {
+                set: function(value) {
+                    validateNumber(value, "'config.speed' property value must be numeric");
+                    value < 0 ? value = 0 : null;
+                    speed = value;
+                }
+            },
+            slideEffect:{
+                set: function(value) {
+                    validateString(value, "'config.slideEffect' property value must be a string");
+                    slideEffect = value;
+                }
+            },
+            buttonStyle: {
+                set: function(value) {
+                    //value = [a, b] => a = string styles for normal button state; b =>  string styles for active button state
+                    var temp = "'config.buttonStyle' property value must be an array";
+                    validateArray(value, temp);
+                    if (value.length > 2) {
+                        throw new Error(" of either 1 or 2 element(s)");
+                    }
+                    validateString(value[0], " of strings");
+                    value[1] != undefined ? validateString(value[1], " of strings") : null;
+                    buttonStyle = value;
+                }
+            },
+            touchResponse: {
+                set: function(value) {
+                    validateBoolean(value, "config.touchResponse property expects a boolean");
+                    touchResponse = value;
+                }
+            }
+
+NEW_SECTION
+            delay: {
+                set: function(value) {
+                    validateNumber(value, "'config.delay' property value must be numeric");
+                    value < 0 ? value = 0 : null;
+                    delay = value;
+                    if (s != null) startSlide(); //takes effect on a running carousel
+                }
+            },
+            speed: {
+                set: function(value) {
+                    validateNumber(value, "'config.speed' property value must be numeric");
+                    value < 0 ? value = 0 : null;
+                    speed = value;
+                    applyTransition();
+                }
+            },
+            slideEffect:{
+                set: function(value) {
+                    validateString(value, "'config.slideEffect' property value must be a string");
+                    slideEffect = value;
+                    applyTransition();
+                }
+            },
+            buttonStyle: {
+                set: function(value) {
+                    //value = [a, b] => a = string styles for normal button state; b =>  string styles for active button state
+                    var temp = "'config.buttonStyle' property value must be an array";
+                    validateArray(value, temp);
+                    if (value.length < 1 || value.length > 2) {
+                        throw new Error(temp + " of either 1 or 2 element(s)");
+                    }
+                    validateString(value[0], temp + " of strings");
+                    value[1] != undefined ? validateString(value[1], temp + " of strings") : null;
+                    buttonStyle = value;
+                    if (initialized == 1) { //restyle a live carousel
+                        removeControlStyles();
+                        createControlStyles();
+                    }
+                }
+            },
+            touchResponse: {
+                set: function(value) {
+                    validateBoolean(value, "config.touchResponse property expects a boolean");
+                    touchResponse = value;
+                    if (touchHdr != null) value ? touchHdr.enableTouch() : touchHdr.disableTouch();
+                }
+            }
+
+REASON
+delay/speed/slideEffect were only read at initialize()/start(); changing them on a running
+carousel did nothing (verified). They now apply immediately (delay and speed restart the interval,
+which spans delay + speed). buttonStyle restyles a live carousel; touchResponse toggles the existing
+TouchHandler.
+
+buttonStyle errors were thrown as bare fragments: " of strings" and " of either 1 or 2 element(s)"
+never had the 'config.buttonStyle…' prefix concatenated. An empty array passed validation and then
+wrote ".vButton{undefined}". Both fixed.

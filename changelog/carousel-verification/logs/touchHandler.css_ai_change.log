@@ -1,0 +1,43 @@
+FILE: assets/css/touchHandler.css
+FEATURE: carousel-verification
+DATE: 2026-10-02
+
+================================================================================
+CHANGE 1 — touch-action
+================================================================================
+
+OLD_SECTION
+    .vTouchHandler{
+        cursor: grab;
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+    }
+    .vTouchHandler.grab{
+        cursor: grabbing;
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
+    }
+
+NEW_SECTION
+    .vTouchHandler{
+        cursor: grab;
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+        /* Hand horizontal drags to the handler and keep vertical page scrolling; without this a phone
+           treats a sideways drag as a page gesture and cancels the pointer stream mid-swipe */
+        touch-action: pan-y;
+    }
+    .vTouchHandler.vPanY{
+        touch-action: pan-x;
+    }
+    .vTouchHandler.grab{
+        cursor: grabbing;
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
+    }
+
+REASON
+touch-action: pan-y hands horizontal drags to the handler while keeping vertical page scrolling;
+.vPanY flips it for a vertical handler. Scoped to .vTouchHandler, which is present only while
+touch is enabled, so disableTouch() restores the browser's default. Verified computed
+touch-action 'pan-y' and cursor 'grab' on a carousel container.

@@ -1,0 +1,156 @@
+FILE: vUX-touchHandler.js
+FEATURE: carousel-verification
+DATE: 2026-10-02
+
+================================================================================
+CHANGE 1 — move(): use the frame's viewport
+================================================================================
+
+OLD_SECTION
+            //use new value here
+            viewport.style.left = newValue + "px";
+
+NEW_SECTION
+            //use new value here
+            viewPort.style.left = newValue + "px";
+
+================================================================================
+CHANGE 2 — updateSliderPosition(): use the frame's viewport
+================================================================================
+
+OLD_SECTION
+        function updateSliderPosition() {
+            viewPort.style.transition = "all .2s cubic-bezier(0,.99,0,.99) 0s";
+            viewport.classList.add("posUpdate");
+            if (Math.abs(moved) > slopeValue) {
+                //change position
+                if (moved < 0) {
+                    targetDirection = pan == "x" ? SLIDE_RIGHT : SLIDE_BOTTOM;
+                } else {
+                    targetDirection = pan == "x" ? SLIDE_LEFT : SLIDE_TOP;
+                }
+            } else {
+                //return to default position
+                targetDirection = DEFAULT;
+            }
+
+            //log current position
+            logPosition("slider");
+
+            var property = pan == "x" ? "left" : "top";
+            if (targetDirection == DEFAULT) {
+                viewport.style[property] = usePoint + "px";
+            } else if (targetDirection == SLIDE_RIGHT) {
+                if (node == 0) { //no further movement
+                    viewport.style[property] = "0px";
+                } else { //slide right
+                    viewport.style[property] = -(node * 100) + "%";
+                }
+            } else if (targetDirection == SLIDE_LEFT) {
+                if (node == maxStop) { //no further movement
+                    viewport.style[property] = -(maxStop * 100) + "%";
+                } else { //slide left
+                    viewport.style[property] = -(node * 100) + "%";;
+                }
+            }
+
+        }
+
+NEW_SECTION
+        function updateSliderPosition() {
+            viewPort.style.transition = "all .2s cubic-bezier(0,.99,0,.99) 0s";
+            viewPort.classList.add("posUpdate");
+            if (Math.abs(moved) > slopeValue) {
+                //change position
+                if (moved < 0) {
+                    targetDirection = pan == "x" ? SLIDE_RIGHT : SLIDE_BOTTOM;
+                } else {
+                    targetDirection = pan == "x" ? SLIDE_LEFT : SLIDE_TOP;
+                }
+            } else {
+                //return to default position
+                targetDirection = DEFAULT;
+            }
+
+            //log current position
+            logPosition("slider");
+
+            var property = pan == "x" ? "left" : "top";
+            if (targetDirection == DEFAULT) {
+                viewPort.style[property] = usePoint + "px";
+            } else if (targetDirection == SLIDE_RIGHT) {
+                if (node == 0) { //no further movement
+                    viewPort.style[property] = "0px";
+                } else { //slide right
+                    viewPort.style[property] = -(node * 100) + "%";
+                }
+            } else if (targetDirection == SLIDE_LEFT) {
+                if (node == maxStop) { //no further movement
+                    viewPort.style[property] = -(maxStop * 100) + "%";
+                } else { //slide left
+                    viewPort.style[property] = -(node * 100) + "%";;
+                }
+            }
+
+        }
+
+REASON (both)
+The viewport is held in 'viewPort' (set in initialize() from frame.children[0]), but move() and
+updateSliderPosition() wrote to 'viewport', lower-case, which is not declared in the module. In
+Chrome that name resolves to window.viewport (the Viewport Segments API object), so every drag threw
+"Cannot set properties of undefined (setting 'left')" and the release threw "Cannot read properties
+of undefined (reading 'add')"; in other browsers it would be a ReferenceError, or silently the
+consumer's element if one has id="viewport". Swiping a Carousel, which is on by default, never
+worked. Renamed to viewPort; no other change to TouchHandler.
+
+================================================================================
+CHANGE 3 — link touchHandler.css; mark pan axis
+================================================================================
+
+OLD_SECTION
+        function removeTouchEventHandler() {
+        ...
+            enableTouch = true;
+            frame.classList.add("vTouchHandler");
+        ...
+            checkSupport();
+            calculateSlope();
+            addTouchEventHandler();
+        ...
+            frame.classList.remove("vTouchHandler", "grab");
+
+NEW_SECTION
+        async function addVitalStyles() {
+            try {
+                var path = await processAssetPath();
+                if (!(path instanceof Error)){
+                    vModel.core.functions.linkStyleSheet(path+"css/touchHandler.css", "touchHandler");
+                }else{
+                    throw new Error(path)
+                }
+            } catch (error) {
+                console.error(error)
+            }
+        }
+
+        function removeTouchEventHandler() {
+        ...
+            enableTouch = true;
+            frame.classList.add("vTouchHandler");
+            frame.classList.toggle("vPanY", pan == "y"); //touchHandler.css picks the touch-action from this
+        ...
+            addVitalStyles();
+            checkSupport();
+            calculateSlope();
+            addTouchEventHandler();
+        ...
+            frame.classList.remove("vTouchHandler", "grab", "vPanY");
+
+REASON
+assets/css/touchHandler.css (the grab cursor) existed but was never linked, so no TouchHandler
+frame ever showed it. More seriously, nothing set touch-action: on a phone the browser claims a
+horizontal drag for page panning and sends pointercancel, so Carousel swipes could not work on
+touch devices. The stylesheet is now linked the same way the other modules link theirs, and it
+sets touch-action (see the touchHandler.css log). vPanY selects pan-x for a vertical handler.
+Found while building the example page; the touch-device consequence follows from the Pointer
+Events spec and could not be reproduced in headless Chromium, which has no real touch input.

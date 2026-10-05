@@ -1,0 +1,35 @@
+FILE: ChangeLog.md
+FEATURE: carousel-verification
+DATE: 2026-10-02
+
+================================================================================
+CHANGE 1 — v4.0.0-beta: bullets appended under Added, Fixed and Changed
+================================================================================
+
+OLD_SECTION
+    (no entries for this change; the two existing Carousel bullets under Fixed — the TouchHandler
+    import crash and the autoplay interval outliving the page — are left as they were)
+
+NEW_SECTION
+    - Carousel config changes on a live carousel — delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+    - Carousel guide (doc/carousel.md) — the required consumer CSS, every config property, the generated markup, and the error list
+    - Runnable Carousel example (examples/carousel/) — a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+    - Carousel dots having no height, so they were invisible and unclickable by default — assets/css/carousel.css is now loaded by the module instead of never being linked
+    - Carousel autoplay jumping back after a dot click or a swipe while marking a different slide active, so the slide on screen, the active slide and the active dot drifted apart
+    - Carousel dot clicks on one carousel moving the active dot of another carousel on the same page
+    - Carousel finding no slides, and building no dots, when its viewport had no id attribute
+    - Carousel swipe and drag throwing on every gesture, because TouchHandler moved an undefined `viewport` instead of the frame's viewport
+    - Carousel autoplay stopping for good when config.speed was 0, or when the carousel was hidden partway through a slide
+    - Carousel pressing or hovering over a slide in motion marking it finished early, which let autoplay start the next slide from the wrong place
+    - Carousel config.buttonStyle applying only to the first carousel on a page, and being overridden by the default dot colours
+    - Carousel config.buttonStyle errors reading " of strings" or " of either 1 or 2 element(s)" without naming the property, and an empty array being accepted
+    - Carousel replacing the container's own onclick, onmouseenter and onmouseleave handlers
+    - Carousel start() before initialize() throwing on every autoplay tick; it now reports the misuse once
+    - Carousel dot buttons no longer carry id="b1", id="b2"…, which duplicated across carousels and could collide with page ids; select them by .vButton[data-ratio] within the container
+    - Carousel
+
+REASON
+The release-facing record of the carousel verification: three Added bullets (live config, the
+guide, the example), eleven Fixed bullets (one per distinct defect found and fixed), and one
+Changed bullet for the removed dot ids, which a consumer selecting #b1… would notice. Appended at
+the end of each section, following the existing one-bullet-per-change style.

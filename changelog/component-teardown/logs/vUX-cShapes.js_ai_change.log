@@ -1,0 +1,73 @@
+FILE: vUX-cShapes.js
+FEATURE: component-teardown
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'resizer-docs'
+
+REASON
+CShapes itself holds no listeners, timers or injected DOM, so it has no destroy(); the
+only ongoing work in the file is the requestAnimationFrame loop inside animatedRectangle(),
+which already had stop(). stop() halts the loop but leaves the last frame painted, which
+matters when the consumer reuses the canvas. destroy() on that returned object stops the
+loop and clears the canvas, and the target canvas is now remembered so it can do so.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+    this.animatedRectangle = function() {
+        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARactive = "",ARstop = 0,animationCount = 1,cycle = 0,callback = null;
+
+        var body = {
+
+NEW_SECTION
+    this.animatedRectangle = function() {
+        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARactive = "",ARstop = 0,animationCount = 1,cycle = 0,callback = null;
+        var ARtarget = null;   //the canvas last drawn on, so destroy() can clear it
+
+        var body = {
+
+================================================================================
+CHANGE 2
+================================================================================
+
+OLD_SECTION
+                //Set ID
+                ARactive = canvasElement.id;
+                ARstop = 0;
+
+NEW_SECTION
+                //Set ID
+                ARactive = canvasElement.id;
+                ARtarget = canvasElement;
+                ARstop = 0;
+
+================================================================================
+CHANGE 3
+================================================================================
+
+OLD_SECTION
+            stop: function() {
+                ARstop = 1;
+            }
+        }
+
+NEW_SECTION
+            stop: function() {
+                ARstop = 1;
+            },
+            destroy: function() {
+                //stop() halts the requestAnimationFrame loop at the next frame; destroy() additionally
+                //wipes the canvas, so an animation torn down mid-cycle does not leave its last frame
+                //painted on a canvas the consumer is about to reuse.
+                ARstop = 1;
+                ARactive = "";
+                cycle = 0;
+                if (ARtarget != null){
+                    var ctx = ARtarget.getContext("2d");
+                    ctx.clearRect(0, 0, ARtarget.width, ARtarget.height);
+                    ARtarget = null;
+                }
+            }
+        }
+

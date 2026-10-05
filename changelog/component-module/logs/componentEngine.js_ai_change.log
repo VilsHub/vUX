@@ -1,0 +1,48 @@
+FILE: componentEngine.js
+FEATURE: component-module
+DATE: 2026-09-17
+PRIOR STATE: as left by feature 'component-teardown'
+
+REASON
+NEW FILE: src/componentEngine.js
+
+The template-instancing engine, shared by vUX-component.js and vUX-dataView.js.
+
+It exists as its own file because sync() and DataView's reconcile() are the same
+function. Shipping them twice would mean every future fix landing twice or, more
+realistically, once. DataView's buildRow()/reconcile() were lifted here and
+generalised from 'rows of a table' to 'any fragment', and DataView now delegates.
+
+What it deliberately does not contain: observation, a scheduler, a virtual tree,
+or an expression evaluator. Every binding value is a plain field name, optionally
+negated with '!'. That constraint is the line between a binding layer and a
+template language, and it is enforced here rather than left to documentation -
+there is simply no code path that evaluates a string.
+
+Design points worth recording:
+
+  - matching() collects the root as well as its descendants. querySelectorAll
+    alone misses the root, and a component whose only binding is on its outermost
+    element is an ordinary thing to write.
+
+  - Bindings are collected once per instance into a map, and a patch walks that
+    map. A patch never re-queries the DOM.
+
+  - Event handlers are bound through a wrapper that reads entry.data at call time
+    rather than closing over it. A patch replaces entry.data wholesale, so a
+    closure would hand the handler whatever the row held when it was first built.
+
+  - An absent bound value removes the attribute rather than writing the string
+    "undefined" into it, so a row without an avatar yields <img> with no src
+    instead of a request for "undefined".
+
+  - destroyInstance() detaches listeners explicitly even though removing the node
+    would let the browser reclaim them, so that a consumer who keeps the node is
+    not left with handlers firing against a destroyed instance.
+
+  - spec.itemNoun exists solely so DataView keeps its original 'row object'
+    wording in keying errors; the refactor changes no message a consumer may be
+    matching on.
+
+
+(new file - see the source, which is commented for this purpose)
