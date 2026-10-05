@@ -1,0 +1,95 @@
+FILE: vUX-formComponents.js
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — datePicker destroy() tears down its ListScroller
+================================================================================
+
+OLD_SECTION
+                removeEventListener("scroll", handleDateScroll, false);
+                destroyed = true;
+
+NEW_SECTION
+                removeEventListener("scroll", handleDateScroll, false);
+                //The decade-series scroller watches the picker's own elements, so it goes with the picker
+                if (listControllerObj != null) listControllerObj.destroy();
+                listControllerObj = null;
+                destroyed = true;
+
+REASON
+The decade-series ListScroller now holds listeners on the picker's buttons and container and a ResizeObserver on them. datePicker.destroy() released its own listeners but never the scroller's, so those would outlive the picker. Verified the picker's decade Prev/Next still work with the new ListScroller on a 1700-2030 range (two range boxes): Next 0→300, end 302 with Next inactive, and Prev from the end now moves (it did not before).
+
+================================================================================
+CHANGE 2 — follow-up: one ListScroller per picker instead of one per builder
+================================================================================
+
+OLD_SECTION
+        ... familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = "";
+
+                    listControllerObj.offScroller();                 (range picked)
+
+                        } else if (prev.classList.contains("vDateRangeCon")) {
+                            listControllerObj.onScroller();          (Back to the range view)
+                        }
+
+        function toggleListScroller(wrapper) {
+            ...
+            if (listControllerObj == null) {
+                listControllerObj = new ListScroller(listConParent, listCon);
+                ...
+                listControllerObj.initialize();
+
+            }
+            ...
+        }
+
+                //The decade-series scroller watches the picker's own elements, so it goes with the picker
+                if (listControllerObj != null) listControllerObj.destroy();
+                listControllerObj = null;
+
+NEW_SECTION
+        ... familyID = "vDatePicker", inputButtonStyle = "";
+        var listScrollers = new Map();   //one decade-series ListScroller per picker, keyed by that picker's .vDateBoxDisplayCon
+
+                    var rangeScroller = listScrollerOf(wrapper);
+                    if (rangeScroller != null) rangeScroller.offScroller();
+
+                        } else if (prev.classList.contains("vDateRangeCon")) {
+                            var rangeScroller = listScrollerOf(wrapper);
+                            if (rangeScroller != null) rangeScroller.onScroller();
+                        }
+
+        function listScrollerOf(wrapper) {
+            var listConParent = wrapper.querySelector(".vDateBox .vDateBoxDisplayCon");
+            return listConParent == null ? null : (listScrollers.get(listConParent) || null);
+        }
+
+        function toggleListScroller(wrapper) {
+            ...
+            //Each picker gets its own scroller over its own decade boxes and arrows. A single shared one
+            //only ever drove the first picker opened, leaving the others' arrows dead.
+            var listControllerObj = listScrollers.get(listConParent);
+            if (listControllerObj == undefined) {
+                listControllerObj = new ListScroller(listConParent, listCon);
+                ...
+                listControllerObj.initialize();
+                listScrollers.set(listConParent, listControllerObj);
+            }
+            ...
+        }
+
+                //The decade-series scrollers watch the pickers' own elements, so they go with the pickers
+                listScrollers.forEach(function(scroller) { scroller.destroy(); });
+                listScrollers.clear();
+
+REASON
+One builder held a single listControllerObj, created for the first picker that opened its decade
+view. Every later picker on the builder reused it, so their arrows never scrolled, and a decade
+pick or Back on a later picker parked or re-armed the first picker's arrows. Reproduced with two
+pickers (1700-2030 and 1600-2030) on one builder: picker 2 showed max=2 with both arrows inactive,
+and Next did nothing. After the change both pickers scroll 0 -> 300 and back with correct arrow
+states, decade pick parks and Back re-arms each picker's own arrows, and destroy() releases both
+scrollers (2 scroll containers before, 0 after). The single-picker page and examples/form behave
+as before. Keyed by the display container rather than the wrapper so that each handler resolves
+the same key from whatever ancestor it walks up to.

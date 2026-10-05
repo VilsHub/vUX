@@ -1,25 +1,24 @@
-/*list parent container */
+/*list parent container: its width comes from config.wrapperStyle (width:100% by default) */
 .vlistParentXContainer{
     /* overflow: hidden!important; */
-    width: 100%!important;
     position: relative!important;
     overflow-x: scroll;
 }
 
-/*Style list parent */
+/*Style list parent: in normal flow, so the container takes the list's height */
 .vlistParentX{
     display: flex!important;
     white-space: nowrap!important;
-    position: absolute;
-    padding: 0px!important;
+    position: relative;
+    margin: 0!important;
     list-style: none!important;
 }
 .vlistParentX{
     flex-direction: row!important;
 }
 
-/*Style list */
-.vlist{
+/*Style list: every item, including ones added after initialize() */
+.vlist, .vlistParentX > *{
     flex-shrink: 0!important;
 }
 /*  */

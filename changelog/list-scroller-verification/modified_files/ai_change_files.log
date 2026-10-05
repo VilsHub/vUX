@@ -1,0 +1,23 @@
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+<ListScroller>
+  vUX-listScroller.js
+  assets/css/listScroller.css
+  examples/listscroller/index.html    (new)
+  examples/listscroller/main.js       (new)
+  examples/listscroller/README.md     (new)
+  doc/list-scroller.md                (new)
+
+<FormComponents>
+  vUX-formComponents.js               (one ListScroller per date picker; destroy() releases them)
+
+<Documentation>
+  doc/README.md
+  doc/list-scroller.md                (Limits: datePicker bullet removed in the follow-up)
+
+<Release record>
+  ChangeLog.md
+
+<Working record>
+  changelog/list-scroller-verification/   (these files)

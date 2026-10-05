@@ -1,0 +1,73 @@
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+SCOPE: verify the ListScroller module, fix what is broken, and document it
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+The vUX library (this repository). The workspace consumers (Apps/vGet and
+Apps/myinvitees/app.myinvitees.com) mount vUX through a symlink and pick up changes on the next page
+load. Neither imports vUX-listScroller.js directly; any page using the FormComponents datePicker
+with a range over 11 decades uses it through the picker, whose behaviour was re-verified.
+
+Consumer-visible surface:
+  - vUX-listScroller.js          internals rebuilt; public API unchanged. Presses measured from the
+                                 real position, scrollSpeed and paddingRight now work, config is
+                                 live, stricter validation, buttons start inactive at initialize().
+  - assets/css/listScroller.css  list in normal flow (no absolute positioning), container width no
+                                 longer forced, late-added items covered.
+  - vUX-formComponents.js        one ListScroller per date picker instead of per builder;
+                                 datePicker destroy() destroys them all.
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+No test runner exists. Headless Chromium (chrome-headless-shell) was driven in real time over the
+DevTools protocol (virtual-time mode runs only one requestAnimationFrame, so it cannot test the
+scroll animation), against pages served with python3 -m http.server. The same suite ran against
+the original files.
+
+Baseline (original code):   21 passed, 27 failed
+After the fixes:            48 passed, 0 failed
+Example page suite:         15 passed, 0 failed  (at 1280px and at 375px), plus visual review of
+                            full-page screenshots at both widths
+datePicker (1700-2030 range, two decade boxes): Next/Prev and button states correct; Prev from the
+                            end now moves, which it did not before
+
+The harnesses live in the session scratchpad, not the repository. Not verified: real touch devices,
+or browsers other than Chromium.
+
+--------------------------------------------------------------------------------
+DEFECTS FOUND AND FIXED
+--------------------------------------------------------------------------------
+
+ 1. $$.animate() kept its own start value; at the row's end it overshot with no scroll event to
+    correct it, so the next opposite press moved nothing. Two quick presses moved 317px, not 450.
+ 2. The list width was item count x scrollSize, so the row scrolled into empty space.
+ 3. The list was position:absolute, collapsing the container to 0px height.
+ 4. Button state never updated on a container-only resize, new items, or the stylesheet arriving.
+ 5. Clicks on an icon inside a button were ignored (delegated handler checked e.target only).
+ 6. A manual scroll after offScroller() re-enabled both buttons.
+ 7. offScroller() threw a TypeError with hasButtons = false.
+ 8. wrapperStyle replaced the container's whole inline style; the stylesheet's width:100%!important
+    made a wrapperStyle width ineffective.
+ 9. scrollSpeed and paddingRight were stored and never used.
+10. destroy() left container scroll classes, wrapperStyle, button classes and cursor behind.
+11. Accepted at assignment, failing later: list outside container, same button twice,
+    scrollSize <= 0 / NaN, negative scrollSpeed, class name with spaces.
+12. scrollSpeed's error said "must be an array"; the dead 'children < 0' check is removed.
+13. datePicker destroy() did not release its ListScroller.
+14. (follow-up) The datePicker shared one ListScroller per builder, so only the first picker opened
+    got working decade arrows, and a later picker's decade pick or Back drove the first one's.
+    Each picker now has its own scroller; destroy() releases them all. Verified with two
+    long-range pickers on one builder.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS (documented, not changed)
+--------------------------------------------------------------------------------
+
+ - Horizontal only, and no events; consumers watch the buttons' class or the container's scroll.
+ - config properties are write-only, as across vUX.
+ - The default wrapperStyle width:100% is inline and outranks a stylesheet width.

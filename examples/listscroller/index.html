@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX ListScroller example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- what the page styles, and what it leaves to ListScroller ----------
+       ListScroller lays the <ul> out in one row, makes its container the scroll viewport and
+       toggles a class on two buttons. Everything you can SEE is the page's: the tiles, the arrow
+       buttons and what the inactive class looks like. */
+
+    /* arrow buttons: the page's own <button>s. ListScroller only toggles the inactive class,
+       the cursor and aria-disabled on them */
+    .arrow{
+        width:44px; height:44px; padding:0; border-radius:50%; flex:none;
+        display:grid; place-items:center; font-size:1.1rem; line-height:1;
+        background:var(--panel-2); border:1px solid var(--line); color:var(--fg);
+        transition:opacity .2s, transform .2s, border-color .15s, background .15s;
+    }
+    .arrow:hover{border-color:var(--amber); color:var(--amber)}
+    .arrow svg{width:18px; height:18px; pointer-events:none}
+    /* the two inactive looks the playground can switch between */
+    .arrow.is-off{opacity:.28; border-color:var(--line); color:var(--fg)}
+    .arrow.is-off:hover{background:var(--panel-2)}
+    .arrow.is-gone{opacity:0; transform:scale(.6); pointer-events:none}
+
+    /* tiles: any markup works as an item. ListScroller only stops them shrinking */
+    .tile{
+        width:200px; height:250px; margin-right:16px; border-radius:16px; padding:18px;
+        display:flex; flex-direction:column; justify-content:flex-end;
+        position:relative; overflow:hidden; color:#0a0d12; white-space:normal;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+    .tile::before{
+        content:""; position:absolute; inset:auto -30% 45% auto; width:150px; height:150px;
+        border-radius:50%; background:rgba(255,255,255,.22); filter:blur(2px);
+    }
+    .tile .n{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; opacity:.7; position:relative}
+    .tile .t{font-weight:700; font-size:1.1rem; letter-spacing:-.02em; position:relative; overflow-wrap:anywhere}
+    .tile:last-child{margin-right:0}
+    .g1{background:linear-gradient(150deg,#ffd08a,#ffb454 55%,#e2803a)}
+    .g2{background:linear-gradient(150deg,#9ff0ff,#5ccfe6 55%,#2f8fb0)}
+    .g3{background:linear-gradient(150deg,#d6f79d,#a7e05f 55%,#6ea534)}
+    .g4{background:linear-gradient(150deg,#e8d6ff,#c8a2ff 55%,#8e62d6)}
+    .g5{background:linear-gradient(150deg,#ffc0c9,#ff6b7f 55%,#c93d55)}
+    .g6{background:linear-gradient(150deg,#c9d7ea,#7b8ba3 55%,#4d5b71)}
+
+    /* ---------- hero ---------- */
+    .hero-shelf{margin-top:44px}
+    .shelf-bar{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:16px}
+    .shelf-bar .pos{font-family:var(--mono); font-size:.78rem; color:var(--dim)}
+    .shelf-bar .pos b{color:var(--amber); font-weight:600}
+    .shelf-bar .btns{display:flex; gap:10px}
+    #heroBox{border-radius:16px}
+
+    /* ---------- playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:22px; align-items:start}
+    .stage-top{display:flex; align-items:center; gap:12px; padding:18px 18px 0}
+    .stage-top .grow{flex:1; min-width:0}
+    .stage-gap{height:18px}
+    #playList .tile{width:150px; height:150px; border-radius:12px}
+    #playList .tile .t{font-size:1rem}
+    #playBox{background:var(--ink); border-radius:10px; outline:1px dashed var(--line); outline-offset:4px}
+    .readout{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border-top:1px solid var(--line)}
+    .readout div{background:var(--panel); padding:10px 14px; font-family:var(--mono); font-size:.74rem; color:var(--dim); min-width:0}
+    .readout b{display:block; color:var(--fg); font-size:.95rem; font-weight:600; overflow:hidden; text-overflow:ellipsis}
+    .readout b.on{color:var(--green)} .readout b.off{color:var(--red)}
+    .play .panel + .panel{margin-top:22px}
+
+    /* ---------- follows ---------- */
+    .follow-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,300px); gap:22px; align-items:start}
+    /* a frame the visitor can drag narrower or wider: the scroller inside notices on its own */
+    .frame{
+        resize:horizontal; overflow:hidden; min-width:220px; max-width:100%; width:100%;
+        padding:16px; border-right:3px solid var(--line);
+    }
+    .frame-row{display:flex; align-items:center; gap:10px}
+    .frame-row .grow{flex:1; min-width:0}
+    .chip-tile{
+        width:120px; height:84px; margin-right:10px; border-radius:10px; padding:10px 12px;
+        display:flex; align-items:flex-end; font-family:var(--mono); font-size:.8rem; color:#0a0d12; font-weight:600;
+    }
+    .chip-tile .n{margin-right:6px; opacity:.55; font-weight:400}
+    #code{white-space:pre-wrap; overflow-wrap:anywhere}
+
+    /* ---------- no buttons ---------- */
+    .chips{padding:2px 0}
+    .chip{
+        margin-right:8px; padding:7px 14px; border-radius:999px; border:1px solid var(--line);
+        background:var(--panel-2); font-size:.86rem; color:var(--muted);
+    }
+    .chip b{color:var(--fg); font-weight:600}
+    .fade{position:relative}
+    .fade::after{
+        content:""; position:absolute; top:0; right:0; bottom:0; width:60px; pointer-events:none;
+        background:linear-gradient(to right,transparent,var(--panel));
+    }
+
+    @media (max-width:900px){
+        .play,.follow-grid{grid-template-columns:minmax(0,1fr)}
+    }
+    @media (max-width:520px){
+        .wrap{padding:0 16px}
+        .tile{width:160px; height:210px}
+        .readout{grid-template-columns:1fr 1fr}
+        .stage-top{flex-wrap:wrap}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> ListScroller <b>/</b> v4.0.0-beta</p>
+        <h1>A row wider than the page, two buttons to move it.</h1>
+        <p class="hero-sub">
+            Hand ListScroller a <code>&lt;ul&gt;</code>, the element around it and <b>your own two buttons</b>.
+            It lays the list out in one scrollable row, moves it a step per press, and keeps each button's
+            inactive state matched to where the row really is, however it got there.
+        </p>
+        <div class="hero-src">new ListScroller(box, list); ls.config.buttons = [prev, next]; ls.initialize(); ls.onScroller();</div>
+
+        <div class="hero-shelf">
+            <div class="shelf-bar">
+                <span class="pos" id="heroPos"><b>0</b> / 0 px</span>
+                <div class="btns">
+                    <button class="arrow" id="heroPrev" aria-label="Scroll left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+                    <button class="arrow" id="heroNext" aria-label="Scroll right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+                </div>
+            </div>
+            <!-- container: the viewport. list: the row. Nothing else is required in the markup -->
+            <div id="heroBox">
+                <ul id="heroList">
+                    <li class="tile g1"><span class="n">01</span><span class="t">Carousel</span></li>
+                    <li class="tile g2"><span class="n">02</span><span class="t">SPAEngine</span></li>
+                    <li class="tile g3"><span class="n">03</span><span class="t">DataView</span></li>
+                    <li class="tile g4"><span class="n">04</span><span class="t">ModalDisplayer</span></li>
+                    <li class="tile g5"><span class="n">05</span><span class="t">FormComponents</span></li>
+                    <li class="tile g6"><span class="n">06</span><span class="t">TimeLineList</span></li>
+                    <li class="tile g1"><span class="n">07</span><span class="t">Resizer</span></li>
+                    <li class="tile g2"><span class="n">08</span><span class="t">AutoWriter</span></li>
+                    <li class="tile g3"><span class="n">09</span><span class="t">ToolTip</span></li>
+                    <li class="tile g4"><span class="n">10</span><span class="t">Component</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Every <code>config</code> property, live. ListScroller reads the step, the speed and the paddings on each
+            use, so those apply straight away. Swapping the inactive class or turning the buttons off also works on a
+            running scroller. <code>offScroller()</code> parks both buttons until <code>onScroller()</code>.
+        </p>
+
+        <div class="play">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>config</span><span class="pill" id="pillListen">listening</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="cSize">scrollSize <span class="val" id="vSize">166px</span></label>
+                            <input type="range" id="cSize" min="40" max="700" step="2" value="166">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="cSpeed">scrollSpeed <span class="val" id="vSpeed">290ms</span></label>
+                            <input type="range" id="cSpeed" min="0" max="1500" step="10" value="290">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="cPadL">paddingLeft <span class="val" id="vPadL">0px</span></label>
+                            <input type="range" id="cPadL" min="0" max="120" value="0">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="cPadR">paddingRight <span class="val" id="vPadR">0px</span></label>
+                            <input type="range" id="cPadR" min="0" max="120" value="0">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="cWrap">wrapperStyle</label>
+                            <input type="text" id="cWrap" value="width:100%" spellcheck="false">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="cInactive">inactiveButtonClassName</label>
+                            <select id="cInactive">
+                                <option value="is-off">is-off (dimmed)</option>
+                                <option value="is-gone">is-gone (hidden)</option>
+                            </select>
+                        </div>
+                        <div class="field row">
+                            <label class="switch"><input type="checkbox" id="cButtons" checked> hasButtons</label>
+                            <label class="switch"><input type="checkbox" id="cListen" checked> onScroller()</label>
+                        </div>
+                        <div class="field row">
+                            <button class="tiny" id="addItem">+ item</button>
+                            <button class="tiny" id="removeItem">− item</button>
+                            <button class="tiny danger" id="destroyPlay">destroy()</button>
+                            <button class="tiny" id="rebuildPlay">Rebuild</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>Equivalent code</span><span class="dots"><i></i><i></i><i></i></span></div>
+                    <pre class="snip" id="code"></pre>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-h"><span>Stage</span><span id="stageNote">running</span></div>
+                <div class="stage-top">
+                    <button class="arrow" id="playPrev" aria-label="Scroll left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+                    <div class="grow">
+                        <div id="playBox"><ul id="playList"></ul></div>
+                    </div>
+                    <button class="arrow" id="playNext" aria-label="Scroll right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+                </div>
+                <div class="stage-gap"></div>
+                <div class="readout">
+                    <div>scrollLeft<b id="rPos">0</b></div>
+                    <div>max<b id="rMax">0</b></div>
+                    <div>left button<b id="rLeft">–</b></div>
+                    <div>right button<b id="rRight">–</b></div>
+                </div>
+                <div class="status run" id="playStatus"><span class="dot"></span><span id="playStatusText">initialize(); onScroller();</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>The buttons follow the list</h2>
+        <p class="lede">
+            The row is a real scroll area. Swipe it, use a trackpad or <span class="kbd">Shift</span> + wheel, or drag the
+            frame's corner to make it narrower. ListScroller measures the actual scroll position each time, so the
+            buttons never claim there is more to see when there isn't. Items added later widen the row by themselves.
+        </p>
+        <div class="follow-grid">
+            <div class="panel">
+                <div class="panel-h"><span>Resizable frame</span><span>drag the corner ↘</span></div>
+                <div class="frame" id="frame">
+                    <div class="frame-row">
+                        <button class="arrow" id="fPrev" aria-label="Scroll left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+                        <div class="grow"><div id="fBox"><ul id="fList"></ul></div></div>
+                        <button class="arrow" id="fNext" aria-label="Scroll right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+                    </div>
+                </div>
+                <div class="status" id="fStatus"><span class="dot"></span><span id="fStatusText">frame 100%</span></div>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>Button state log</span><button class="tiny ghost" id="fAdd">+ 3 items</button></div>
+                <div class="panel-b"><pre class="log" id="fLog"></pre></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>No buttons at all</h2>
+        <p class="lede">
+            With <code>config.hasButtons = false</code> ListScroller only does the layout: one row, no wrapping, its
+            scrollbar hidden. Swiping, the trackpad and <span class="kbd">Shift</span> + wheel still scroll it.
+            That suits a filter bar on a phone.
+        </p>
+        <div class="panel">
+            <div class="panel-h"><span>Filters</span><span id="chipNote">touch or trackpad to scroll</span></div>
+            <div class="panel-b fade">
+                <div id="chipBox"><ul id="chipList" class="chips"></ul></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
+        <p class="lede">
+            The constructor and the <code>config</code> setters throw on the spot and name what is wrong.
+            <code>initialize()</code> throws when the buttons or their inactive class are missing. Each button below
+            makes one of these mistakes on a scratch instance and prints what was thrown.
+        </p>
+        <div class="cards" id="errCards"></div>
+        <pre class="err-out" id="errOut">Pick a mistake above.</pre>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <a href="../../doc/list-scroller.md">ListScroller guide</a>
+        <a href="README.md">About this example</a>
+        <a href="../../doc/README.md">All guides</a>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+FILE: examples/listscroller/index.html
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+(none, new file)
+
+NEW_SECTION
+(full file; see examples/listscroller/index.html)
+
+REASON
+New example page required for every module (CLAUDE.md). Built on examples/shared/example.css: hero shelf, playground, a resizable frame with a state log, a buttonless chip row, and a bad-input section.

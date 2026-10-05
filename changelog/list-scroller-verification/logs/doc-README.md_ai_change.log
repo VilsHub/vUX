@@ -1,0 +1,35 @@
+FILE: doc/README.md
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — guide row added; ListScroller removed from 'coming next'
+================================================================================
+
+OLD_SECTION
+| [TimeLineList](timeline-list.md) | `vUX-timeLineList.js` | Plain lists drawn as vertical timelines, each list styled by its own data attributes, stacking on narrow windows |
+
+Guides for the remaining modules (`FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `CShapes`, `DOMDrawer`) are coming next.
+
+NEW_SECTION
+| [TimeLineList](timeline-list.md) | `vUX-timeLineList.js` | Plain lists drawn as vertical timelines, each list styled by its own data attributes, stacking on narrow windows |
+| [ListScroller](list-scroller.md) | `vUX-listScroller.js` | A list as one horizontal row, moved a step at a time by your own two buttons, with their inactive state kept true to the scroll position |
+
+Guides for the remaining modules (`FormValidator`, `TouchHandler`, `ToolTip`, `CShapes`, `DOMDrawer`) are coming next.
+
+REASON
+The new guide is linked from the index.
+
+================================================================================
+CHANGE 2 — example link added to Other references
+================================================================================
+
+OLD_SECTION
+- [Component example](../examples/component/README.md) — …
+
+NEW_SECTION
+- [ListScroller example](../examples/listscroller/README.md) — runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
+- [Component example](../examples/component/README.md) — …
+
+REASON
+Every example is linked from the index.

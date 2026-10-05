@@ -1,0 +1,16 @@
+FILE: doc/list-scroller.md
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+(none, new file)
+
+NEW_SECTION
+(full file; see doc/list-scroller.md)
+
+REASON
+New guide: the container/list/button contract, every config property with defaults, methods, the produced markup, styling notes, limits and the full error table. ListScroller had no guide.

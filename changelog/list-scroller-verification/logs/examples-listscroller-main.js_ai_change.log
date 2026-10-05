@@ -1,0 +1,16 @@
+FILE: examples/listscroller/main.js
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+(none, new file)
+
+NEW_SECTION
+(full file; see examples/listscroller/main.js)
+
+REASON
+Drives the example. Commented for the reader: why the hero measures its step, why state is watched through the buttons' class, why a rebuild needs a new instance.

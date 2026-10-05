@@ -1,0 +1,16 @@
+FILE: examples/listscroller/README.md
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+(none, new file)
+
+NEW_SECTION
+(full file; see examples/listscroller/README.md)
+
+REASON
+How to run the example, what each section shows, and the consumer-side techniques it relies on.

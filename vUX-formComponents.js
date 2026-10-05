@@ -1394,7 +1394,8 @@ export function FormComponents() {
     this.datePicker = function() {
         var falseState = "cX.1zwAP",trueState = "mp.3Cy._Xa";
         var eventHandles = [], destroyed = false;   //detach handles for the delegated listeners, for destroy()
-        var toolTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", listControllerObj = null, inputButtonStyle = ""; 
+        var toolTipHandler = null,dateInputIconStyle = [],daysToolTip = false,months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],  mobileView = 320, labelProperties = [], daysToolTipProperties = {backgroundColor:"purple",fontColor:"white"}, datePickerClassName = "",datePickerDim = [], dateFieldStyle = "", selectionStyle = "", validationAttribute = "", familyID = "vDatePicker", inputButtonStyle = "";
+        var listScrollers = new Map();   //one decade-series ListScroller per picker, keyed by that picker's .vDateBoxDisplayCon
         var vBoxWidth = 300, initX = 10, wrapAttribute = "", paddingRight = 10, maxX = null, arrowXpos = 0, boxXpos = null, sizeAttribute = "";
 
         function autoPlace(dateBox) {
@@ -1508,7 +1509,8 @@ export function FormComponents() {
                     updateActive(wrapper, e.target, "range");
                     toggleBackButton(wrapper);
                     dateComponents["timeParts"] != null ? toggleDoneButton(wrapper) : null;
-                    listControllerObj.offScroller();
+                    var rangeScroller = listScrollerOf(wrapper);
+                    if (rangeScroller != null) rangeScroller.offScroller();
                 } else if (id == "year") { //hide yearsCon and show MonthsCon
                     var wrapper = $$.sm(e.target).getParent(5);
                     var nativeDateInput = wrapper.nextElementSibling;
@@ -1662,7 +1664,8 @@ export function FormComponents() {
                         if (!(prev.classList.contains("vDateRangeCon"))) {
                             prev.style["width"] = "100%";
                         } else if (prev.classList.contains("vDateRangeCon")) {
-                            listControllerObj.onScroller();
+                            var rangeScroller = listScrollerOf(wrapper);
+                            if (rangeScroller != null) rangeScroller.onScroller();
                         }
                     }
                 } else if (id == "vClose") { //close button clicked
@@ -2227,13 +2230,21 @@ export function FormComponents() {
             daysCon.appendChild(day);
         }
 
+        function listScrollerOf(wrapper) {
+            var listConParent = wrapper.querySelector(".vDateBox .vDateBoxDisplayCon");
+            return listConParent == null ? null : (listScrollers.get(listConParent) || null);
+        }
+
         function toggleListScroller(wrapper) {
             var listCon = wrapper.querySelector(".vDateBox  .vDateRangeCon");
             var list = wrapper.querySelectorAll(".vDateBox  .rangeBox");
             var listConParent = wrapper.querySelector(".vDateBox .vDateBoxDisplayCon");
             var LeftBt = wrapper.querySelector("#vPrev");
             var RightBt = wrapper.querySelector("#vNext");
-            if (listControllerObj == null) {
+            //Each picker gets its own scroller over its own decade boxes and arrows. A single shared one
+            //only ever drove the first picker opened, leaving the others' arrows dead.
+            var listControllerObj = listScrollers.get(listConParent);
+            if (listControllerObj == undefined) {
                 listControllerObj = new ListScroller(listConParent, listCon);
 
                 listControllerObj.config.buttons = [LeftBt, RightBt];
@@ -2241,7 +2252,7 @@ export function FormComponents() {
                 listControllerObj.config.scrollSize = 300
                 listControllerObj.config.paddingRight = 0;
                 listControllerObj.initialize();
-
+                listScrollers.set(listConParent, listControllerObj);
             }
             if (list.length > 1 && $$.sm(listCon).cssStyle("display") != "none") {
                 listControllerObj.onScroller();
@@ -2664,6 +2675,9 @@ export function FormComponents() {
                 eventHandles = [];
                 removeEventListener("resize", handleDateResize);
                 removeEventListener("scroll", handleDateScroll, false);
+                //The decade-series scrollers watch the pickers' own elements, so they go with the pickers
+                listScrollers.forEach(function(scroller) { scroller.destroy(); });
+                listScrollers.clear();
                 destroyed = true;
             }
         }

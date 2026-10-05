@@ -42,6 +42,11 @@
 - Carousel config changes on a live carousel — delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
 - Carousel guide (doc/carousel.md) — the required consumer CSS, every config property, the generated markup, and the error list
 - Runnable Carousel example (examples/carousel/) — a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+- ListScroller config.scrollSpeed and config.paddingRight now work: scrollSpeed is the duration of one button scroll in milliseconds (0 jumps), and paddingRight leaves room after the last item inside the scroll range
+- ListScroller buttons, inactiveButtonClassName, wrapperStyle, hasButtons and the paddings can be changed on a running scroller
+- ListScroller buttons get aria-disabled matching their inactive state
+- ListScroller guide (doc/list-scroller.md) — the container, list and button contract, every config property, the markup it produces, limits and the error list
+- Runnable ListScroller example (examples/listscroller/) — a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
 
 ## Fixed
 - modal multiple display bug
@@ -111,6 +116,19 @@
 - Carousel config.buttonStyle errors reading " of strings" or " of either 1 or 2 element(s)" without naming the property, and an empty array being accepted
 - Carousel replacing the container's own onclick, onmouseenter and onmouseleave handlers
 - Carousel start() before initialize() throwing on every autoplay tick; it now reports the misuse once
+- ListScroller moving less than a full step, or not at all, after reaching the end of the row or after two quick presses; every press now starts from the real scroll position and two presses always move two steps
+- ListScroller rows extending into empty space past the last item; the list is now as wide as its items instead of item count × scrollSize
+- ListScroller containers collapsing to zero height unless the consumer gave them one; the list now sits in normal flow
+- ListScroller button state going stale when the container was resized on its own, when items were added, or when its stylesheet arrived after onScroller()
+- ListScroller ignoring clicks on an icon or other element inside a button
+- ListScroller re-enabling the buttons after offScroller() whenever the row was scrolled by touch or trackpad
+- ListScroller offScroller() throwing when config.hasButtons was false
+- ListScroller replacing the container's whole inline style with wrapperStyle, and its stylesheet forcing the container to width 100% so a wrapperStyle width had no effect
+- ListScroller destroy() leaving the scroll classes on the container, wrapperStyle in place, and its classes and cursor on the buttons
+- ListScroller accepting a list outside its container, the same button twice, a scrollSize of 0, negative or NaN, a negative scrollSpeed and an inactive class name with spaces, each of which failed later instead of at the assignment
+- ListScroller config.scrollSpeed's error saying it "must be an array"
+- FormComponents datePicker destroy() now also tears down its decade-series scroller
+- FormComponents datePicker decade arrows dead on every picker but the first one opened when several pickers with long date ranges share one builder; picking a decade or going Back on a later picker also parked or re-armed the first picker's arrows instead of its own
 
 ## Removed
 - colorOverlayStyle in modalDisplayerObj
@@ -139,6 +157,10 @@
 - CircularProgress() changed to arc()
 - ResourceIO module changed to IO
 - Carousel dot buttons no longer carry id="b1", id="b2"…, which duplicated across carousels and could collide with page ids; select them by .vButton[data-ratio] within the container
+- ListScroller no longer adds a window resize listener or a delegated document click listener; it listens on its own buttons and container and uses a ResizeObserver
+- ListScroller sets the list's width to max-content and its paddings inline, instead of an item-count width and a left offset; listScroller.css no longer positions the list absolutely or forces the container's width
+- ListScroller button scrolls take config.scrollSpeed's default of 290ms instead of a fixed 200ms
+- ListScroller marks both buttons inactive at initialize(), until onScroller() arms them
 
 ## Optimised
 - Optimized $$.cssStyle() static method functionality

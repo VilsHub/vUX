@@ -1,0 +1,64 @@
+FILE: assets/css/listScroller.css
+FEATURE: list-scroller-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — list in normal flow, container width left to wrapperStyle, late items covered
+================================================================================
+
+OLD_SECTION
+/*list parent container */
+.vlistParentXContainer{
+    /* overflow: hidden!important; */
+    width: 100%!important;
+    position: relative!important;
+    overflow-x: scroll;
+}
+
+/*Style list parent */
+.vlistParentX{
+    display: flex!important;
+    white-space: nowrap!important;
+    position: absolute;
+    padding: 0px!important;
+    list-style: none!important;
+}
+.vlistParentX{
+    flex-direction: row!important;
+}
+
+/*Style list */
+.vlist{
+    flex-shrink: 0!important;
+}
+/*  */
+
+NEW_SECTION
+/*list parent container: its width comes from config.wrapperStyle (width:100% by default) */
+.vlistParentXContainer{
+    /* overflow: hidden!important; */
+    position: relative!important;
+    overflow-x: scroll;
+}
+
+/*Style list parent: in normal flow, so the container takes the list's height */
+.vlistParentX{
+    display: flex!important;
+    white-space: nowrap!important;
+    position: relative;
+    margin: 0!important;
+    list-style: none!important;
+}
+.vlistParentX{
+    flex-direction: row!important;
+}
+
+/*Style list: every item, including ones added after initialize() */
+.vlist, .vlistParentX > *{
+    flex-shrink: 0!important;
+}
+/*  */
+
+
+REASON
+width:100%!important on the container beat any config.wrapperStyle width (verified: wrapperStyle 'width:300px' gave 1185px); the default wrapperStyle already sets width:100% inline. position:absolute on the list collapsed the container to 0px height (verified). padding:0!important is replaced by the module's inline !important paddings, and margin:0!important strips a ul's default margins. '.vlistParentX > *' keeps items added after initialize() from shrinking. The datePicker's own rules (.vDateBoxTool .vDateRangeCon, position absolute in a 180px box) still outrank these, so the picker is unchanged (verified).
