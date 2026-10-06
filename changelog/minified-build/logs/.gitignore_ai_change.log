@@ -1,0 +1,11 @@
+FILE: .gitignore   (new file)
+
+OLD_SECTION
+(file did not exist)
+
+NEW_SECTION
+dist/
+
+REASON
+dist/ is build output from minify.sh and is regenerated from source, so it is
+kept out of the repository.

@@ -1,0 +1,24 @@
+FILE: README.md
+
+OLD_SECTION
+**Note**
+
+ - To see all the available modules filename to be imported for use, execute the command **vUxModules** on the console 
+
+## Features
+
+NEW_SECTION
+**Note**
+
+ - To see all the available modules filename to be imported for use, execute the command **vUxModules** on the console 
+
+## Minified build
+
+Run `./minify.sh` from the repository root (needs Node 18+; esbuild is fetched by `npx`). It writes a minified copy of the library to `dist/<version>/`, with every file in the same place as in the source, plus `assets/` and `LICENSE`. Point `data-library-root` and your imports at that folder instead of the repository root; nothing else changes. Files are minified one by one rather than bundled, because modules load each other through relative imports at runtime. `dist/` is build output and is not committed.
+
+## Features
+
+REASON
+Consumers and maintainers need to know the script exists, what it produces, and
+that switching to the minified build only means pointing data-library-root and
+the imports at dist/<version>/.

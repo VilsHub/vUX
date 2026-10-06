@@ -1,0 +1,15 @@
+FILE: ChangeLog.md
+
+OLD_SECTION
+- SPAEngine `loggedIn` property — ...
+
+## Fixed
+
+NEW_SECTION
+- SPAEngine `loggedIn` property — ...
+- Minified build: ./minify.sh writes a minified copy of the library (about 60% smaller JS) to dist/<version>/ with the same file layout, so a page switches to it by pointing data-library-root and its imports at that folder
+
+## Fixed
+
+REASON
+Release-facing record of the new minified build, appended under v4.0.0-beta Added.

@@ -72,6 +72,7 @@
 - SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
 - Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
 - SPAEngine `loggedIn` property — the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+- Minified build: ./minify.sh writes a minified copy of the library (about 60% smaller JS) to dist/<version>/ with the same file layout, so a page switches to it by pointing data-library-root and its imports at that folder
 
 ## Fixed
 - modal multiple display bug

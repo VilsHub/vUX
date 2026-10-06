@@ -1,0 +1,15 @@
+FEATURE: minified-build
+DATE: 2026-10-07
+
+Build tooling
+  Added:
+    minify.sh
+    .gitignore
+
+Documentation
+  Modified:
+    README.md
+
+Release record
+  Modified:
+    ChangeLog.md

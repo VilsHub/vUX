@@ -1,0 +1,35 @@
+FEATURE: minified-build
+DATE: 2026-10-07
+SCOPE: add a script that produces a minified copy of the library
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) is the only project changed. No library source
+changed, so consumers (vGet, sketch-app, app.myinvitees.com) are unaffected
+until they choose to point at dist/<version>/.
+
+  - minify.sh      new; esbuild per-file minify into dist/<version>/
+  - .gitignore     new; ignores dist/
+  - README.md      new "Minified build" section
+  - ChangeLog.md   one bullet under v4.0.0-beta Added
+
+--------------------------------------------------------------------------------
+RESULT
+--------------------------------------------------------------------------------
+
+JS: 722,024 bytes -> 281,262 bytes (62% smaller), 21 files, same layout.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+All 12 example pages (autowriter, carousel, component, fontsplash, form,
+listscroller, modal, resizer, skeleton, sketchpad, spa, timelinelist) were
+loaded in headless Chromium twice: once served from the source tree, once from
+the dist build with the examples placed beside it. Rendered DOM size and
+console errors matched on every page. The only console errors were FontSplash
+font-load messages, which appear identically on the source and include
+the page's deliberate missing-font demo. Only page load was exercised; the
+interactive controls were not clicked through.

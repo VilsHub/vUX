@@ -35,6 +35,10 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
 
  - To see all the available modules filename to be imported for use, execute the command **vUxModules** on the console 
 
+## Minified build
+
+Run `./minify.sh` from the repository root (needs Node 18+; esbuild is fetched by `npx`). It writes a minified copy of the library to `dist/<version>/`, with every file in the same place as in the source, plus `assets/` and `LICENSE`. Point `data-library-root` and your imports at that folder instead of the repository root; nothing else changes. Files are minified one by one rather than bundled, because modules load each other through relative imports at runtime. `dist/` is build output and is not committed.
+
 ## Features
 
 

@@ -1,0 +1,21 @@
+FILE: minify.sh   (new file)
+
+OLD_SECTION
+(file did not exist)
+
+NEW_SECTION
+Bash script at the repository root. It reads the version from the core's
+filename (src/vUX-core-<version>.js), clears dist/<version>/, runs a pinned
+esbuild (0.28.2, fetched through npx) over vUX-*.js and src/*.js with
+--minify --format=esm --target=es2017 --outbase=. --legal-comments=none,
+copies assets/ and LICENSE alongside, and prints the before/after JS size.
+
+REASON
+The library had no way to ship a minified copy. Each file is minified on its own
+rather than bundled because components load each other through relative dynamic
+imports (vUX-formComponents.js -> ./vUX-toolTip.js, vUX-progressIndicator.js ->
+./vUX-cShapes.js), so the output keeps the same names and layout as the source.
+Export names and free globals are never renamed by the minifier, so the core's
+promotion of helpers onto window still works. assets/ is copied because the core
+resolves CSS through data-library-root + "/assets/". esbuild is pinned so two
+runs of the script produce the same output.
