@@ -1,0 +1,25 @@
+FEATURE: font-splash-module
+DATE: 2026-10-06
+
+<FontSplash (new module)>
+  Added:
+    vUX-fontSplash.js
+    assets/css/fontSplash.css
+
+<Core>
+  Modified:
+    src/helpers.js              (fontSplash.js added to the module registry)
+
+<Documentation>
+  Added:
+    doc/font-splash.md
+  Modified:
+    doc/README.md
+    README.md
+    ChangeLog.md
+
+<Example>
+  Added:
+    examples/fontsplash/index.html
+    examples/fontsplash/main.js
+    examples/fontsplash/README.md

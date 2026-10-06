@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" class="vux-fs-cloak">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX FontSplash example</title>
+<!-- The cloak. Without it the page paints, then the module script runs, then the
+     splash covers it: a flash of the very page the splash is meant to hide. The page
+     is hidden from the first paint, the splash makes itself visible (visibility is
+     the one hiding property a child can override) and removes the class when it is
+     up. The 4s animation is the safety net: if the script never runs, the page
+     shows anyway. It must be inline - a linked stylesheet would arrive too late. -->
+<style>
+    .vux-fs-cloak body{visibility:hidden; animation:vux-fs-uncloak 0s 4s forwards}
+    @keyframes vux-fs-uncloak{to{visibility:visible}}
+</style>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* A face this PAGE declares, the way a site declares its brand font. It points at
+       fonts already on the machine, so the example stays offline. FontSplash is only
+       given the family name and asks the browser to load it (section 03). */
+    @font-face{
+        font-family:"Page Display";
+        src:local("Georgia Bold"), local("Georgia-Bold"), local("DejaVu Serif Bold"), local("Liberation Serif Bold");
+        font-weight:700;
+    }
+
+    /* ---------- stages: the boxes a splash covers ----------
+       Each one is just an element. FontSplash puts an absolutely positioned overlay
+       inside it; the stage only needs a size. */
+    .stage{
+        position:relative; border-radius:14px; overflow:hidden;
+        background:var(--ink); border:1px solid var(--line);
+    }
+    .stage-note{
+        position:absolute; inset:auto 0 0 0; padding:12px 16px; z-index:0;
+        font-family:var(--mono); font-size:.74rem; color:var(--dim);
+    }
+
+    /* ---------- hero ---------- */
+    .hero-stage{height:clamp(240px,42vw,400px); margin-top:40px}
+    .hero-stage::after{
+        /* a faint grid under the backdrop's gradient, so the stage reads as a screen */
+        content:""; position:absolute; inset:0; pointer-events:none; z-index:2;
+        background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+        background-size:32px 32px; border-radius:inherit;
+    }
+    .hero-bar{display:flex; align-items:center; gap:12px 18px; flex-wrap:wrap; margin-top:18px}
+    .seg{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; flex-wrap:wrap}
+    .seg button{border:none; border-radius:0; background:transparent; color:var(--muted); padding:7px 13px; font-size:.8rem}
+    .seg button + button{border-left:1px solid var(--line)}
+    .seg button.on{background:var(--panel-2); color:var(--amber)}
+    .bar-label{font-family:var(--mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim)}
+
+    /* ---------- 01 · playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,330px) minmax(0,1fr); gap:22px; align-items:start}
+    .play-side{display:grid; grid-template-columns:minmax(0,1fr); gap:18px; min-width:0}
+    .play-stage{height:320px; border-radius:0 0 12px 12px; border:none}
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .swatches{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .swatches input[type=color]{width:38px; height:30px}
+    .play-actions{display:flex; gap:10px; flex-wrap:wrap; padding:14px 16px; border-top:1px solid var(--line)}
+    .config-scroll{max-height:none}
+    @media (max-width:880px){ .play{grid-template-columns:1fr} }
+
+    /* ---------- 02 · progress ---------- */
+    .prog-stage{height:260px}
+    .steps{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px}
+    .steps .pill.done{border-color:var(--green); color:var(--green)}
+
+    /* ---------- 03 · font first ---------- */
+    .font-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(236px,1fr)); gap:18px}
+    .font-card{padding:0; overflow:hidden}
+    .font-card .stage{height:170px; border:none; border-radius:0; border-bottom:1px solid var(--line)}
+    .font-card .body{padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1}
+    .font-card h3{margin:0}
+    .font-card p{margin:0; flex:1}
+    .timeline{font-family:var(--mono); font-size:.74rem; color:var(--muted); line-height:1.7; min-height:3.4em}
+    .timeline b{color:var(--amber); font-weight:500}
+    .timeline .bad{color:var(--red)} .timeline .good{color:var(--green)}
+    .file-pick{font-size:.8rem; color:var(--muted)}
+    .file-pick input{max-width:100%; font-size:.78rem; color:var(--muted)}
+
+    /* ---------- 04 · animations and exits ---------- */
+    .anim-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(236px,1fr)); gap:18px}
+    .anim-card{padding:0; overflow:hidden}
+    .anim-card .stage{height:150px; border:none; border-radius:0; border-bottom:1px solid var(--line)}
+    .anim-card .body{padding:14px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px}
+    .anim-card code{color:var(--amber)}
+
+    /* ---------- 05 · page splash ---------- */
+    .recipe{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px}
+
+    /* ---------- 06 · errors ---------- */
+    .err-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px}
+    .err-grid button{text-align:left; font-family:var(--mono); font-size:.76rem; font-weight:500}
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX · <b>FontSplash</b> · the loader is a word</p>
+        <h1>Your name, loading.</h1>
+        <p class="hero-sub">
+            <b>FontSplash</b> sets a word in the font you choose and makes it the loader: a gradient
+            flows through the letters while they fade in a wave. It waits for the font, so the
+            word never shows in the wrong face. You saw it when this page opened.
+        </p>
+        <div class="stage hero-stage" id="heroStage"></div>
+        <div class="hero-bar">
+            <span class="bar-label">font</span>
+            <div class="seg" id="heroFont" role="group" aria-label="Font"></div>
+            <span class="bar-label">animation</span>
+            <div class="seg" id="heroAnim" role="group" aria-label="Animation">
+                <button data-v="fade" class="on">fade</button>
+                <button data-v="flow">flow</button>
+                <button data-v="breathe">breathe</button>
+            </div>
+            <button class="primary" id="heroReplay">Replay the page splash</button>
+        </div>
+    </div>
+</header>
+
+<main>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Every <code>config</code> property, live. Look settings restyle a splash that is already
+            up, and changing the text or the font rebuilds the letters in place. <b>Hide</b> and
+            <b>Show</b> to see the timing settings at work.
+        </p>
+        <div class="play">
+            <div class="panel">
+                <div class="panel-h"><span>config</span></div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="pText">text</label>
+                        <input type="text" id="pText" value="Starlight" maxlength="80">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pFont">font</label>
+                        <select id="pFont"></select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pFile">…or your own font file</label>
+                        <input type="file" id="pFile" accept=".woff2,.woff,.ttf,.otf,font/*">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pSize">size <span class="val" id="vSize">96px</span></label>
+                        <input type="range" id="pSize" min="28" max="160" value="96">
+                    </div>
+                    <div class="field">
+                        <label class="lbl">colors</label>
+                        <div class="swatches" id="pColors">
+                            <input type="color" value="#ff5f6d" aria-label="colour 1">
+                            <input type="color" value="#ffc371" aria-label="colour 2">
+                            <input type="color" value="#47cacc" aria-label="colour 3">
+                            <input type="color" value="#7b6cff" aria-label="colour 4">
+                            <button class="tiny ghost" id="pColorLess" title="One colour fewer">−</button>
+                            <button class="tiny ghost" id="pColorMore" title="One colour more">+</button>
+                        </div>
+                    </div>
+                    <div class="two">
+                        <div class="field">
+                            <label class="lbl" for="pBg">background</label>
+                            <input type="color" id="pBg" value="#080b11">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pTrack">trackColor</label>
+                            <select id="pTrack">
+                                <option value="rgba(127,127,127,.16)">grey 16%</option>
+                                <option value="rgba(255,255,255,.06)">white 6%</option>
+                                <option value="null">null (none)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pCaption">caption</label>
+                        <input type="text" id="pCaption" value="Tuning the telescope">
+                    </div>
+                    <div class="two">
+                        <div class="field">
+                            <label class="lbl" for="pAnim">animation</label>
+                            <select id="pAnim"><option>fade</option><option>flow</option><option>breathe</option><option>none</option></select>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pExit">exit</label>
+                            <select id="pExit"><option>fade</option><option>lift</option><option>zoom</option><option>none</option></select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pSpeed">speed <span class="val" id="vSpeed">2400ms</span></label>
+                        <input type="range" id="pSpeed" min="400" max="8000" step="100" value="2400">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pFadeSpeed">fadeSpeed <span class="val" id="vFadeSpeed">1500ms</span></label>
+                        <input type="range" id="pFadeSpeed" min="300" max="5000" step="100" value="1500">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pStagger">stagger <span class="val" id="vStagger">110ms</span></label>
+                        <input type="range" id="pStagger" min="0" max="500" step="10" value="110">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pMinOpacity">minOpacity <span class="val" id="vMinOpacity">0.12</span></label>
+                        <input type="range" id="pMinOpacity" min="0" max="1" step="0.02" value="0.12">
+                    </div>
+                    <div class="two">
+                        <div class="field">
+                            <label class="lbl" for="pDelay">delay <span class="val" id="vDelay">0</span></label>
+                            <input type="range" id="pDelay" min="0" max="1500" step="50" value="0">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pMin">minDuration <span class="val" id="vMin">800</span></label>
+                            <input type="range" id="pMin" min="0" max="4000" step="100" value="800">
+                        </div>
+                    </div>
+                    <div class="two">
+                        <div class="field">
+                            <label class="lbl" for="pTimeout">fontTimeout <span class="val" id="vTimeout">3000</span></label>
+                            <input type="range" id="pTimeout" min="0" max="8000" step="250" value="3000">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pExitDur">exitDuration <span class="val" id="vExitDur">500</span></label>
+                            <input type="range" id="pExitDur" min="0" max="2000" step="50" value="500">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="pLabel">label <span class="val">screen readers</span></label>
+                        <input type="text" id="pLabel" value="Loading Starlight">
+                    </div>
+                </div>
+            </div>
+
+            <div class="play-side">
+                <div class="panel">
+                    <div class="panel-h"><span>splash · container mode</span><span class="dots"><i></i><i></i><i></i></span></div>
+                    <div class="stage play-stage" id="playStage">
+                        <div class="stage-note">hidden · press Show</div>
+                    </div>
+                    <div class="play-actions">
+                        <button class="primary" id="pShow">Show</button>
+                        <button id="pHide">Hide</button>
+                        <button id="pRun">Run a 2.5s load with during()</button>
+                    </div>
+                    <div class="status" id="playStatus"><span class="dot"></span><span>state idle · fontStatus none</span></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>equivalent code</span></div>
+                    <pre class="snip" id="playCode"></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>onShow / onHide</span><button class="tiny ghost" id="logClear">clear</button></div>
+                    <div class="panel-b"><pre class="log" id="playLog"></pre></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>When you know how far along it is</h2>
+        <p class="lede">
+            <code>setProgress(0…1)</code> turns the word into a progress bar: the gradient fills the
+            letters from the left and the track shows what is left. <code>setProgress(null)</code>
+            goes back to indeterminate. Screen readers get a <code>progressbar</code> with the
+            percentage instead of a status.
+        </p>
+        <div class="stage prog-stage" id="progStage"></div>
+        <div class="hero-bar">
+            <button class="primary" id="progRun">Install the update</button>
+            <button id="progIndet">setProgress(null)</button>
+        </div>
+        <div class="steps" id="progSteps"></div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>The font comes first</h2>
+        <p class="lede">
+            The backdrop goes up at once, and the word appears only when its font is ready, or
+            when <code>fontTimeout</code> runs out. Each card replays a splash with a different
+            kind of font and prints what happened, in milliseconds from <code>show()</code>.
+        </p>
+        <div class="font-grid" id="fontGrid">
+            <div class="card font-card">
+                <div class="stage" data-case="face"></div>
+                <div class="body">
+                    <h3>A face of its own</h3>
+                    <p class="note">
+                        <code>font: { family, src }</code>. FontSplash registers the face with
+                        <code>document.fonts</code> and loads it. Here <code>src</code> is a
+                        <code>local()</code> font on this machine.
+                    </p>
+                    <div class="timeline"></div>
+                </div>
+            </div>
+            <div class="card font-card">
+                <div class="stage" data-case="declared"></div>
+                <div class="body">
+                    <h3>A family the page declares</h3>
+                    <p class="note">
+                        <code>font: "Page Display"</code>, declared by this page's own
+                        <code>@font-face</code>. FontSplash asks the browser to load it now, rather
+                        than whenever it would first paint.
+                    </p>
+                    <div class="timeline"></div>
+                </div>
+            </div>
+            <div class="card font-card">
+                <div class="stage" data-case="missing"></div>
+                <div class="body">
+                    <h3>A file that is not there</h3>
+                    <p class="note">
+                        <code>src: "fonts/missing.woff2"</code>. The load fails, a warning goes to the
+                        console, and the word is shown in the <code>fallback</code> list rather than
+                        not at all.
+                    </p>
+                    <div class="timeline"></div>
+                </div>
+            </div>
+            <div class="card font-card">
+                <div class="stage" data-case="file"></div>
+                <div class="body">
+                    <h3>Bytes you hand it</h3>
+                    <p class="note">
+                        <code>src: arrayBuffer</code>, from a file input. Pick a .woff2, .ttf or .otf
+                        from your machine; nothing is uploaded anywhere.
+                    </p>
+                    <label class="file-pick"><input type="file" id="caseFile" accept=".woff2,.woff,.ttf,.otf,font/*"></label>
+                    <div class="timeline"></div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-bar"><button class="primary" id="fontReplay">Replay all four</button></div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Four animations, four exits</h2>
+        <p class="lede">
+            <code>animation</code> is how the word moves while it waits; <code>exit</code> is how
+            the splash leaves. Press <b>Hide</b> on a card to see its exit; it comes back a moment
+            later. With <i>reduce motion</i> set in your system, the gradient holds still and the
+            letters do not pulse.
+        </p>
+        <div class="anim-grid" id="animGrid"></div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>As the page's splash screen</h2>
+        <p class="lede">
+            With no element, a splash covers the viewport. This is all this page does to get the
+            splash you saw when it opened. The cloak in <code>&lt;head&gt;</code> is the part a
+            library cannot do for you: it has to be there before any script runs.
+        </p>
+        <div class="recipe">
+            <div class="panel">
+                <div class="panel-h"><span>index.html · &lt;head&gt;</span></div>
+                <pre class="snip"><span class="c">&lt;!-- hidden from the first paint --&gt;</span>
+&lt;html <span class="p">class</span>=<span class="s">"vux-fs-cloak"</span>&gt;
+&lt;style&gt;
+  .vux-fs-cloak body{
+    visibility:hidden;
+    <span class="c">/* safety net if the script never runs */</span>
+    animation:vux-fs-uncloak 0s 4s forwards;
+  }
+  @keyframes vux-fs-uncloak{to{visibility:visible}}
+&lt;/style&gt;</pre>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>main.js</span></div>
+                <pre class="snip"><span class="k">const</span> splash = <span class="k">new</span> FontSplash();
+splash.config.text = <span class="s">"vUX"</span>;
+splash.config.font = { family: <span class="s">"Brand"</span>,
+                       src: <span class="s">"/fonts/brand.woff2"</span> };
+splash.config.background = <span class="s">"#080b11"</span>;
+splash.initialize();
+
+<span class="c">// up until the page has loaded and booted</span>
+<span class="k">await</span> splash.during(boot());</pre>
+            </div>
+        </div>
+        <div class="hero-bar"><button class="primary" id="pageReplay">Replay it</button></div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">06</span>What it refuses to do</h2>
+        <p class="lede">
+            Each button misuses the API on purpose and prints the <code>Error</code> it throws.
+            Settings are checked when they are made, not later inside a timer.
+        </p>
+        <div class="err-grid" id="errGrid"></div>
+        <pre class="err-out" id="errOut">pick one</pre>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="wrap">
+        <a href="../../doc/font-splash.md">FontSplash guide</a>
+        <a href="README.md">About this example</a>
+        <a href="../skeleton/">Skeleton example</a>
+    </div>
+</footer>
+
+</body>
+</html>

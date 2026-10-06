@@ -38,6 +38,7 @@ window.vModel = {
                 "component.js",
                 "cShapes.js",
                 "dataView.js",
+                "fontSplash.js",
                 "formComponents.js",
                 "formValidator.js",
                 "listScroller.js",

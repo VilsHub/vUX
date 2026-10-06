@@ -1,0 +1,14 @@
+FILE: doc/README.md
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+The documentation index lists the new guide and the new example.
+
+OLD_SECTION
+(no existing lines changed; two lines inserted)
+
+NEW_SECTION
+| [FontSplash](font-splash.md) | `vUX-fontSplash.js` | A splash screen whose loader is a word in your font: gradient fill, fading letters, font loading handled, full-screen or over one element, with a progress mode |
+- [FontSplash example](../examples/fontsplash/README.md) — runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.

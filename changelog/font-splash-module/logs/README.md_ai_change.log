@@ -1,0 +1,16 @@
+FILE: README.md
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+The v4.0.0-beta feature list names the new module.
+
+OLD_SECTION
+- Skeleton module (`vUX-skeleton.js`), for placeholder screens ...
+- SketchPad module (`vUX-sketchPad.js`), ...
+
+NEW_SECTION
+- Skeleton module (`vUX-skeleton.js`), for placeholder screens ...
+- FontSplash module (`vUX-fontSplash.js`), a splash screen whose loader is a word in your own font, with a gradient flowing through the letters as they fade in a wave; full-screen or over one element, determinate or not, and never shown in the wrong font
+- SketchPad module (`vUX-sketchPad.js`), ...

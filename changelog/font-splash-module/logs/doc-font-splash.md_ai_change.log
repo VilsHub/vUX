@@ -1,0 +1,15 @@
+FILE: doc-font-splash.md
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+NEW FILE. The FontSplash guide: how it works, quick start, the page-splash
+cloak recipe, the font value forms and fontStatus, every config property,
+methods, styling hooks, accessibility, limits and the error list.
+
+OLD_SECTION
+(none - new file)
+
+NEW_SECTION
+(whole file; see doc/font-splash.md)

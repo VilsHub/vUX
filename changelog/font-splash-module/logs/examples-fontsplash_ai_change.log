@@ -1,0 +1,18 @@
+FILE: examples/fontsplash/ (index.html, main.js, README.md)
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+NEW FILES. The required runnable example for the new module, built on
+examples/shared/example.css. Opens with the page's own full-screen splash (with
+the inline cloak), then a wordmark hero, a playground over every config property
+(including a user-picked font file), progress mode, four kinds of font with a
+timeline each, every animation and exit, the page-splash recipe, and twenty
+validation errors. Offline: custom faces are local() sources.
+
+OLD_SECTION
+(none - new files)
+
+NEW_SECTION
+(whole files; see examples/fontsplash/)

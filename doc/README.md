@@ -27,6 +27,7 @@ A consuming page declares a single module script and tells vUX where the library
 | [SPA Engine — setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
 | [Progress Indicator](progress-indicator.md) | `vUX-progressIndicator.js` | Linear, circular and grid loading indicators; pairing with SPA navigation |
 | [Skeleton](skeleton.md) | `vUX-skeleton.js` | Placeholder screens derived from your own template, with timing that never flashes on a fast load or flickers on a slow one |
+| [FontSplash](font-splash.md) | `vUX-fontSplash.js` | A splash screen whose loader is a word in your font: gradient fill, fading letters, font loading handled, full-screen or over one element, with a progress mode |
 | [Component](component.md) | `vUX-component.js` | Your own reusable component from your own markup: template instancing, bindings, keyed lists, nesting and teardown |
 | [Data View](data-view.md) | `vUX-dataView.js` | Keyed data-to-DOM binding for tables/dashboards with frequent fine-grained updates |
 | [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
@@ -55,6 +56,7 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 - [TimeLineList example](../examples/timelinelist/README.md) — runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
 - [ListScroller example](../examples/listscroller/README.md) — runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
 - [Skeleton example](../examples/skeleton/README.md) — runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
+- [FontSplash example](../examples/fontsplash/README.md) — runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
 - [Component example](../examples/component/README.md) — runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
 - [SketchPad example](../examples/sketchpad/README.md) — runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
 - [README](../README.md) — installation and the public feature list per release.

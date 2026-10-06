@@ -1,0 +1,109 @@
+/* ============================================================================
+   vUX FontSplash.
+   Every value the module sets is a custom property on .vux-fs, written inline
+   per instance; this sheet only says what to do with them. Rules are kept at
+   one or two classes of specificity so a consumer's own .vux-fs-word or
+   .vux-fs-caption rule can restyle the word (letter-spacing, line-height,
+   text-transform) without !important.
+   ========================================================================== */
+
+.vux-fs{
+    position:fixed; inset:0; z-index:var(--vux-fs-z, 2147483000);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px; box-sizing:border-box; overflow:hidden;
+    /* A size container, so config.size can be given in cqw: a share of the
+       splash's own width, which fits the word to a card as well as a screen. */
+    container-type:inline-size;
+    background:var(--vux-fs-bg, #fff);
+    /* Visible even under the cloak, which hides the page with visibility. */
+    visibility:visible;
+    opacity:1; transform:none;
+    transition:opacity var(--vux-fs-exit, .5s) ease, transform var(--vux-fs-exit, .5s) ease;
+}
+.vux-fs.vux-fs-local{position:absolute; z-index:var(--vux-fs-z, 1); border-radius:inherit}
+
+.vux-fs-stage{display:flex; flex-direction:column; align-items:center; gap:.9em; max-width:100%}
+
+/* ---------- the word ----------
+   Two copies of the letters in one box: the track in flow, the fill laid
+   exactly over it. Same text, same font, same width - so they wrap alike. */
+.vux-fs-word{
+    position:relative; max-width:100%;
+    font-family:var(--vux-fs-family, inherit);
+    font-size:var(--vux-fs-size, 6rem);
+    font-weight:var(--vux-fs-weight, 700);
+    font-style:var(--vux-fs-style, normal);
+    line-height:1.08; letter-spacing:-.01em; text-align:center;
+    overflow-wrap:normal;
+    opacity:0; transform:translateY(.12em) scale(.985);
+    transition:opacity .5s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+}
+.vux-fs-ready .vux-fs-word{opacity:1; transform:none}
+
+.vux-fs-track{color:var(--vux-fs-track, transparent)}
+.vux-fs-fill{
+    position:absolute; inset:0;
+    /* Progress: the fill is clipped from the right. 1 while indeterminate. */
+    clip-path:inset(0 calc((1 - var(--vux-fs-p, 1)) * 100%) 0 0);
+}
+.vux-fs-determinate .vux-fs-fill{transition:clip-path .45s cubic-bezier(.3,.7,.2,1)}
+
+.vux-fs-w{white-space:nowrap}
+.vux-fs-ch{display:inline-block}
+
+/* Each letter holds its own slice of one gradient: twice the word's width,
+   shifted left by the letter's measured offset (--vux-fs-x). Flow slides
+   every slice by one word-width, in step, so the word reads as one fill. */
+.vux-fs-fill .vux-fs-ch{
+    color:transparent; -webkit-text-fill-color:transparent;
+    background-image:var(--vux-fs-gradient);
+    background-size:calc(var(--vux-fs-span, 100%) * 2) 100%;
+    background-repeat:no-repeat;
+    background-position:calc(var(--vux-fs-x, 0px) * -1) 0;
+    -webkit-background-clip:text; background-clip:text;
+}
+
+/* ---------- animations ---------- */
+.vux-fs-anim-flow .vux-fs-fill .vux-fs-ch,
+.vux-fs-anim-breathe .vux-fs-fill .vux-fs-ch{
+    animation:vux-fs-flow var(--vux-fs-speed, 2.4s) linear infinite;
+}
+.vux-fs-anim-fade .vux-fs-fill .vux-fs-ch{
+    animation:
+        vux-fs-flow var(--vux-fs-speed, 2.4s) linear infinite,
+        vux-fs-fade var(--vux-fs-fade, 1.5s) ease-in-out calc(var(--vux-fs-i, 0) * var(--vux-fs-stagger, 110ms)) infinite both;
+}
+.vux-fs-anim-breathe .vux-fs-fill{animation:vux-fs-fade var(--vux-fs-fade, 1.5s) ease-in-out infinite}
+
+@keyframes vux-fs-flow{
+    from{background-position:calc(var(--vux-fs-x, 0px) * -1 - var(--vux-fs-span, 0px)) 0}
+    to{background-position:calc(var(--vux-fs-x, 0px) * -1) 0}
+}
+@keyframes vux-fs-fade{
+    0%,100%{opacity:1}
+    50%{opacity:var(--vux-fs-min, .12)}
+}
+
+/* ---------- caption ---------- */
+.vux-fs-caption{
+    font:500 .95rem/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    letter-spacing:.04em; color:rgba(127,127,127,.95); text-align:center;
+    opacity:0; transition:opacity .5s ease .15s;
+}
+.vux-fs-ready .vux-fs-caption{opacity:1}
+.vux-fs-caption[hidden]{display:none}
+
+/* ---------- exit ---------- */
+.vux-fs.vux-fs-out{opacity:0; pointer-events:none}
+.vux-fs-exit-lift.vux-fs-out{transform:translateY(-6%)}
+.vux-fs-exit-zoom.vux-fs-out{transform:scale(1.08)}
+.vux-fs-exit-none{transition:none}
+
+/* ---------- reduced motion ----------
+   The gradient stays, still; letters do not pulse. The word still fades in
+   and the splash still fades out, which is a change of state, not motion. */
+@media (prefers-reduced-motion: reduce){
+    .vux-fs-fill, .vux-fs-fill .vux-fs-ch{animation:none !important}
+    .vux-fs-word{transform:none}
+    .vux-fs-exit-lift.vux-fs-out, .vux-fs-exit-zoom.vux-fs-out{transform:none}
+}

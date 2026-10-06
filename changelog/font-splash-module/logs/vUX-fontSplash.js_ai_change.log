@@ -1,0 +1,35 @@
+FILE: vUX-fontSplash.js
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+NEW FILE. The FontSplash module: a splash screen whose loader is a word set in
+the consumer's font, filled with a gradient that flows through the letters while
+they fade in a wave.
+
+Design points worth recording:
+  - Full-screen (no argument, position:fixed) or over one element (absolute
+    overlay inside it; a static container is made relative and restored).
+  - Font first: show() starts loading config.font (a FontFace of its own from a
+    URL, CSS src list or ArrayBuffer, or document.fonts.load() for a declared
+    family); the backdrop goes up at once and the word is revealed when the font
+    settles or fontTimeout expires. fontStatus reports none/loading/loaded/
+    system/timeout/failed. The FontFace is removed again on destroy().
+  - The overlay is not appended before fontSplash.css has loaded (styleReady),
+    since an unstyled 8rem word dropped into the page is worse than a late splash.
+  - Each letter carries the gradient sized to twice the word's width and offset
+    by its measured offsetLeft (--vux-fs-x), so letters read as one fill and can
+    fade independently. Re-measured by a ResizeObserver and after a late font.
+  - Timing copied from Skeleton (delay, minDuration, hide() -> Promise,
+    during()), with minDuration counted from the word's reveal, not the mount.
+  - Progress mode via setProgress(): the fill is clip-path'ed over a flat track;
+    ARIA role switches status <-> progressbar.
+  - Cloak: a full-screen splash removes 'vux-fs-cloak' from <html> once up, and
+    on hide/destroy.
+
+OLD_SECTION
+(none - new file)
+
+NEW_SECTION
+(whole file; see vUX-fontSplash.js)

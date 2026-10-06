@@ -62,6 +62,12 @@
 - SketchPad stamps and icons — `createStamp()` turns SVG source into a stamp the stamp tool places, with black-only SVGs retinted by the fill colour; `icon` arms the icon tool with a glyph from any loaded font
 - SketchPad works with touch and pen as well as the mouse, and several pads can share a page: pointer events are the canvas's own and keyboard shortcuts go to the focused pad (or the whole document, with `config.keyboardScope`)
 - SketchPad guide (doc/sketch-pad.md) and runnable example (examples/sketchpad/)
+- FontSplash module (vUX-fontSplash.js) — a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
+- FontSplash waits for its font — `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
+- FontSplash covers the whole viewport with `new FontSplash()`, or a single element with `new FontSplash(el)`; the `vux-fs-cloak` class on `<html>` hides the page from its first paint until a full-screen splash is up
+- FontSplash progress mode — `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
+- FontSplash timing — `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
+- FontSplash guide (doc/font-splash.md) and runnable example (examples/fontsplash/)
 - SPAEngine `config.cacheVersion` — ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
 - SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
 - Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying

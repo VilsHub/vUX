@@ -1,0 +1,16 @@
+FILE: fontSplash.css
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+NEW FILE. Stylesheet for FontSplash: overlay (fixed or local), the track/fill
+double word, per-letter gradient slices, flow/fade/breathe keyframes driven by
+custom properties, exits, and a prefers-reduced-motion block. The overlay is a
+size container so config.size may use cqw.
+
+OLD_SECTION
+(none - new file)
+
+NEW_SECTION
+(whole file; see assets/css/fontSplash.css)

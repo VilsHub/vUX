@@ -1,0 +1,50 @@
+FEATURE: font-splash-module
+DATE: 2026-10-06
+SCOPE: add vUX-fontSplash.js, a splash screen whose loader is a word in the
+       consumer's font, filled with an animated gradient while the letters fade
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) is the only project affected. Apps that symlink it
+(vGet, app.myinvitees.com, sketch-app) get the module on their next page load,
+and nothing changes for them unless they import it.
+
+Consumer-visible surface:
+  - vUX-fontSplash.js         new module: FontSplash
+  - assets/css/fontSplash.css its stylesheet, linked at import
+  - src/helpers.js            module registry entry
+  - doc/font-splash.md        new guide
+  - examples/fontsplash/      new example page
+
+Purely additive. No member was renamed or removed and no existing call
+signature changed.
+
+--------------------------------------------------------------------------------
+WHAT WAS BUILT
+--------------------------------------------------------------------------------
+
+new FontSplash([element]); config.text, font, size, colors, background,
+trackColor, caption, animation (fade | flow | breathe | none), speed, fadeSpeed,
+stagger, minOpacity, delay, minDuration, fontTimeout, exit (fade | lift | zoom |
+none), exitDuration, zIndex, label, onShow, onHide; initialize(), show(),
+hide() -> Promise, during(promise) -> Promise, setProgress(0..1 | null),
+destroy(), and read-only state and fontStatus.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+No test runner exists in vUX. Verified in headless Chrome 149 (Windows Chrome
+driven from WSL, results POSTed back to a scratch server):
+  - a scratch harness of 48 checks in real time, all passing: validation,
+    reveal, letter measurement, ARIA in both modes, live text rebuild, minDuration
+    + exit timing, delay suppression, during() value and rejection, container
+    mode and position restore, local() face, failed font, fontTimeout reveal at
+    ~430ms for a 400ms timeout against a slow endpoint, hide before reveal,
+    destroy dropping the FontFace, grapheme splitting, reshow after hide;
+  - screenshots of two variants and of the example page at 1280px reviewed;
+    only console output was the intended missing-font warning;
+  - no page-level horizontal overflow at 390px (scrollWidth checked in an iframe).
+Not tested: Firefox, Safari, real network fonts over a slow connection.

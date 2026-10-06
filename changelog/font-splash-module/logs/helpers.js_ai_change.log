@@ -1,0 +1,21 @@
+FILE: helpers.js
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+fontSplash.js added to the module registry (vModel.core.data.modules), so that
+window.vUxModules lists it at runtime. The line keeps the file's CRLF ending.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+                "dataView.js",
+                "formComponents.js",
+
+NEW_SECTION
+                "dataView.js",
+                "fontSplash.js",
+                "formComponents.js",

@@ -1,0 +1,19 @@
+FILE: ChangeLog.md
+FEATURE: font-splash-module
+DATE: 2026-10-06
+PRIOR STATE: as of commit cd3ca10 (Add SketchPad drawing module; remove DOMDrawer)
+
+REASON
+Six Added bullets for the FontSplash module, its font loading, its two modes and
+cloak, progress mode, timing, and its guide and example.
+
+OLD_SECTION
+(no existing lines changed; the bullets below were appended under ## Added)
+
+NEW_SECTION
+- FontSplash module (vUX-fontSplash.js) — a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
+- FontSplash waits for its font — `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
+- FontSplash covers the whole viewport with `new FontSplash()`, or a single element with `new FontSplash(el)`; the `vux-fs-cloak` class on `<html>` hides the page from its first paint until a full-screen splash is up
+- FontSplash progress mode — `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
+- FontSplash timing — `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
+- FontSplash guide (doc/font-splash.md) and runnable example (examples/fontsplash/)
