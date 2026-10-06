@@ -1,0 +1,23 @@
+FILE: examples/timelinelist/index.html
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+    (file did not exist)
+
+NEW_SECTION
+    the page: hero timeline, playground over every data attribute, one-instance gallery of three styled lists, late-list refresh section, validation section; the page/library styling split commented in its <style>.
+
+REASON
+CLAUDE.md requires a runnable example for every module; TimeLineList had none. Built to the
+example design standard on examples/shared/example.css. Verified in headless Chromium: 31 checks
+at 1280px and at 375px (no page errors, every list built, no layout element swept up, slider wrap
+and unwrap, presets and textarea rebuilds, destroy/rebuild, insert then refresh with per-list
+colour, all 9 validation buttons, no horizontal overflow). Two problems found while building it
+became documented consumer techniques. The playground list was first called "play", the page's
+own grid class, and autoBuild() turned the layout <div> into a timeline. The page's readout ran
+before the rebuilt instance's resize listener and showed the old layout.

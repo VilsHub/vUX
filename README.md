@@ -41,6 +41,7 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
 The beta version (**v4.0.0-beta** ) has the following features added:
 - Component module (`vUX-component.js`), for building your own reusable components from your own markup — template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
 - `destroy()` on every component, releasing the listeners, timers and animations it started and the DOM it injected
+- Skeleton module (`vUX-skeleton.js`), for placeholder screens derived from the template you already wrote, with a delay and minimum duration so they never flash or flicker
 
 See the [ChangeLog](ChangeLog.md) for the complete list of additions, fixes and renames in this release, and the [documentation index](doc/README.md) for the usage guides.
 

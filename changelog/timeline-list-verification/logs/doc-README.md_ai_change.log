@@ -1,0 +1,35 @@
+FILE: doc/README.md
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — guide row added to the usage-guides table
+================================================================================
+
+OLD_SECTION
+| [Carousel](carousel.md) | `vUX-carousel.js` | Autoplaying slideshow with dot navigation, hover pause and swipe, reconfigurable while running |
+
+Guides for the remaining modules (`FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+
+NEW_SECTION
+| [Carousel](carousel.md) | `vUX-carousel.js` | Autoplaying slideshow with dot navigation, hover pause and swipe, reconfigurable while running |
+| [TimeLineList](timeline-list.md) | `vUX-timeLineList.js` | Plain lists drawn as vertical timelines, each list styled by its own data attributes, stacking on narrow windows |
+
+Guides for the remaining modules (`FormValidator`, `ListScroller`, `TouchHandler`, `ToolTip`, `CShapes`, `DOMDrawer`) are coming next.
+
+REASON
+The new guide is linked from the index, and TimeLineList is removed from the "coming next" list.
+
+================================================================================
+CHANGE 2 — example link added to Other references
+================================================================================
+
+OLD_SECTION
+- [Component example](../examples/component/README.md) — …
+
+NEW_SECTION
+- [TimeLineList example](../examples/timelinelist/README.md) — runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
+- [Component example](../examples/component/README.md) — …
+
+REASON
+Every module example is listed under Other references.

@@ -1,0 +1,13 @@
+FILE: README.md
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+Skeleton module added to the v4.0.0-beta feature list. The file keeps its CRLF line endings.
+
+OLD_SECTION
+(see git diff of README.md; only appended lines)
+
+NEW_SECTION
+- Skeleton module (`vUX-skeleton.js`), for placeholder screens derived from the template you already wrote, with a delay and minimum duration so they never flash or flicker

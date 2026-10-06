@@ -1,0 +1,50 @@
+FEATURE: skeleton-module
+DATE: 2026-10-05
+SCOPE: add vUX-skeleton.js, placeholder screens derived from the consumer's own
+       template, and fix Component.sync() without onMount, found along the way
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) is the only project affected. Apps that symlink it
+(vGet, app.myinvitees.com) get the module on their next page load, and nothing
+changes for them unless they import it.
+
+Consumer-visible surface:
+  - vUX-skeleton.js           new module: Skeleton
+  - assets/css/skeleton.css   its stylesheet, linked at import
+  - src/helpers.js            module registry entry
+  - vUX-component.js          bug fix: sync() without config.onMount
+  - doc/skeleton.md           new guide
+  - examples/skeleton/        new example page
+
+Additive, apart from the Component fix. No member was renamed or removed and no
+existing call signature changed. The fix changes behaviour only where it was
+wrong: sync() without onMount used to return undefined per row and destroyAll()
+left those rows in the page.
+
+--------------------------------------------------------------------------------
+WHAT WAS BUILT
+--------------------------------------------------------------------------------
+
+new Skeleton(container); config.template (a <template> or element, or null for
+mask mode), count, animation (shimmer | pulse | none), delay, minDuration,
+colors, radius, label, reveal, onShow, onHide; initialize(), show(), hide() ->
+Promise, during(promise) -> Promise, destroy(), and a read-only state.
+
+Template mode derives ghosts from the template (fields -> bars, media -> blocks,
+controls -> blocks, structure kept) into a layer beside the container. Mask mode
+masks existing content in place and reverses every change. data-skeleton
+overrides the inference per element.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+No test runner exists in vUX. Verified in headless Chrome (Windows Chrome driven
+from WSL; the Linux headless shell lacks system libraries):
+  - a scratch harness of 27 checks, all passing;
+  - the example page scripted through every section with no uncaught errors;
+  - screenshots reviewed at 1280px; no horizontal overflow at 390px.
+Not tested: Firefox, Safari (including the iOS fallback for fixed backgrounds).

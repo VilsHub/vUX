@@ -1,0 +1,29 @@
+FEATURE: skeleton-module
+DATE: 2026-10-05
+
+<Skeleton (new module)>
+  Added:
+    vUX-skeleton.js
+    assets/css/skeleton.css
+
+<Core>
+  Modified:
+    src/helpers.js              (skeleton.js added to the module registry)
+
+<Component>
+  Modified:
+    vUX-component.js            (sync() always creates the Instance; fix)
+
+<Documentation>
+  Added:
+    doc/skeleton.md
+  Modified:
+    doc/README.md
+    README.md
+    ChangeLog.md
+
+<Example>
+  Added:
+    examples/skeleton/index.html
+    examples/skeleton/main.js
+    examples/skeleton/README.md

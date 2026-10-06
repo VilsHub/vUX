@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX TimeLineList example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- what the page styles, and what it leaves to the lists ----------
+       TimeLineList draws the line, the dots and the labels: timeLineList.css gives the defaults
+       and each list's data-* attributes override them. The page only styles what goes INSIDE an
+       <li> (.t / .d below) and never targets .vtimeLine itself: timeLineList.css is linked after
+       this block, so a page rule of equal specificity would lose to it anyway. */
+    .tl-entry .t{display:block; font-weight:650; color:var(--fg); letter-spacing:-.01em}
+    .tl-entry .d{display:block; color:var(--muted); font-size:.9rem; margin-top:2px}
+    .tl-entry .d code{color:var(--amber)}
+
+    /* ---------- hero ---------- */
+    .hero-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:48px; align-items:center}
+    .hero-stage{background:var(--panel); border:1px solid var(--line); border-radius:18px;
+        padding:34px 30px 18px; box-shadow:0 30px 80px -30px rgba(0,0,0,.8)}
+    .hero-stage ul{margin-top:0; margin-bottom:0}
+    .hero-stage .t{font-size:1.15rem}
+
+    /* ---------- playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,360px) minmax(0,1fr); gap:22px; align-items:start}
+    .play textarea{min-height:64px; font-size:.78rem}
+    .stage{padding:26px 22px 8px; min-height:280px; overflow:hidden}
+    .stage ul{margin-top:0}
+    .readout{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border-top:1px solid var(--line)}
+    .readout div{background:var(--panel); padding:10px 14px; font-family:var(--mono); font-size:.74rem; color:var(--dim)}
+    .readout b{display:block; color:var(--fg); font-size:.95rem; font-weight:600}
+
+    /* ---------- gallery ---------- */
+    .gallery .card ul{margin:6px 0 0}
+    .gallery .card h3{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+    .gallery .card h3 code{font-size:.72rem; color:var(--dim); font-weight:400}
+
+    /* ---------- feed ---------- */
+    .feed-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,300px); gap:22px; align-items:start}
+    #feed{padding:22px 22px 6px; min-height:180px}
+    #feed > ul{margin-top:0}
+    #feed > ul + ul{margin-top:22px; padding-top:4px}
+    .raw-tag{font-family:var(--mono); font-size:.7rem; color:var(--red); letter-spacing:.08em}
+
+    @media (max-width:900px){
+        .hero-grid,.play,.feed-grid{grid-template-columns:minmax(0,1fr)}
+    }
+    @media (max-width:520px){
+        .wrap{padding:0 16px}
+        .hero-stage{padding:26px 18px 10px}
+        .readout{grid-template-columns:1fr 1fr 1fr}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap hero-grid">
+        <div>
+            <p class="eyebrow">vUX <b>/</b> TimeLineList <b>/</b> v4.0.0-beta</p>
+            <h1>Any list, drawn as a timeline.</h1>
+            <p class="hero-sub">
+                Give a plain <code>&lt;ul&gt;</code> a class and a few <b>data attributes</b>. TimeLineList draws
+                the rail, the markers and the labels, and stacks them when the window gets narrow.
+            </p>
+            <div class="hero-src">tl.config.className = "history"; tl.autoBuild(); <span class="d">// that's all</span></div>
+        </div>
+
+        <!-- The styles live on the list itself: one attribute per part, read by autoBuild().
+             data-small is the window width (px) at or below which the labels stack on top. -->
+        <div class="hero-stage">
+            <ul class="history"
+                data-rail="border-left:2px solid transparent; border-image:linear-gradient(to bottom,#ffb454,#5ccfe6 55%,#c8a2ff) 1"
+                data-item="margin-bottom:26px"
+                data-marker="width:14px;height:14px;top:5px;left:-31px;background:#080b11;border:3px solid #ffb454;box-shadow:0 0 14px rgba(255,180,84,.7)"
+                data-label-style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;letter-spacing:.06em;color:#ffb454;top:2px;left:-148px;padding-left:10px"
+                data-small="720">
+                <li class="tl-entry" data-label="v2.0.0"><span class="t">The component set</span><span class="d">Form validator, modal displayer, date picker and tool tips.</span></li>
+                <li class="tl-entry" data-label="v3.0.0"><span class="t">Touch and motion</span><span class="d"><code>TouchHandler</code>, the animator, delegated event handling.</span></li>
+                <li class="tl-entry" data-label="v4.0.0-β"><span class="t">Apps, not pages</span><span class="d"><code>SPAEngine</code>, <code>DataView</code> and the <code>Component</code> module.</span></li>
+                <li class="tl-entry" data-label="now"><span class="t">Every module verified</span><span class="d">Each one driven in a browser, fixed, documented and given a page like this.</span></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Each box is one of the attributes a list carries, mapped through <code>config.dataAttributes</code>.
+            Styles are read once, when a list is built, so editing one rebuilds the list:
+            <code>destroy()</code>, then a fresh instance and <code>autoBuild()</code>. The small-view threshold is
+            different: it is re-read on every window resize, so the slider just changes the attribute.
+        </p>
+
+        <div class="play">
+            <div class="panel">
+                <div class="panel-h">
+                    <span>List attributes</span>
+                    <select id="preset" aria-label="Preset">
+                        <option value="amber">preset: amber</option>
+                        <option value="rail">preset: cyan rail</option>
+                        <option value="minimal">preset: minimal</option>
+                    </select>
+                </div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="aRail">timeLineBorderStyle → data-rail</label>
+                        <textarea id="aRail" spellcheck="false"></textarea>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="aItem">listStyle → data-item</label>
+                        <textarea id="aItem" spellcheck="false"></textarea>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="aMarker">listIconStyle → data-marker</label>
+                        <textarea id="aMarker" spellcheck="false"></textarea>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="aLabel">timeLineLabel → data-label-style</label>
+                        <textarea id="aLabel" spellcheck="false"></textarea>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="aSmall">smallView → data-small <span class="val" id="aSmallV">0px</span></label>
+                        <input type="range" id="aSmall" min="0" max="2000" step="20" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h">
+                        <span class="dots"><i></i><i></i><i></i></span>
+                        <span id="playLabel">built</span>
+                    </div>
+                    <div class="stage" id="stage"></div>
+                    <div class="readout">
+                        <div>window<b id="roWidth">—</b></div>
+                        <div>layout<b id="roLayout">—</b></div>
+                        <div>instance<b id="roInst">#1</b></div>
+                    </div>
+                    <div class="status run" id="status"><span class="dot"></span><span id="statusText">built</span></div>
+                </div>
+
+                <div class="row" style="margin-top:16px">
+                    <button class="primary" id="rebuild">Rebuild</button>
+                    <button class="danger" id="destroy">destroy()</button>
+                    <button id="addItem">Add an entry</button>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="snippet"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="gallery">
+    <div class="wrap">
+        <h2><span class="num">02</span>One instance, every list its own look</h2>
+        <p class="lede">
+            These three lists share a class and a single <code>TimeLineList</code>. Each one's attributes become rules
+            scoped to that list alone, so nothing leaks between them. The markers are plain CSS: a
+            <code>content</code> character, a ring, a dashed rail.
+        </p>
+        <div class="cards">
+            <div class="card">
+                <h3>Release <code>✓ markers</code></h3>
+                <ul class="board"
+                    data-rail="border-left:2px solid #2f9d6a"
+                    data-marker="content:'✓';width:18px;height:18px;left:-33px;top:2px;line-height:18px;font-size:11px;font-family:system-ui,sans-serif;color:#080b11;background:#a7e05f"
+                    data-label-style="color:#a7e05f;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;padding-left:5px"
+                    data-small="99999">
+                    <li class="tl-entry" data-label="design"><span class="t">Spec signed off</span><span class="d">Scope frozen.</span></li>
+                    <li class="tl-entry" data-label="build"><span class="t">Feature complete</span><span class="d">Behind a flag.</span></li>
+                    <li class="tl-entry" data-label="ship"><span class="t">Rolled out</span><span class="d">100% of traffic.</span></li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Incident <code>dashed rail</code></h3>
+                <ul class="board"
+                    data-rail="border-left:2px dashed #ff6b7f"
+                    data-marker="content:'!';width:18px;height:18px;left:-33px;top:2px;line-height:18px;font-size:11px;font-weight:800;font-family:system-ui,sans-serif;color:#fff;background:#ff6b7f;border-radius:4px"
+                    data-label-style="color:#ff6b7f;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;padding-left:5px"
+                    data-small="99999">
+                    <li class="tl-entry" data-label="14:02"><span class="t">Error rate climbs</span><span class="d">Paged on-call.</span></li>
+                    <li class="tl-entry" data-label="14:09"><span class="t">Cause found</span><span class="d">Bad config push.</span></li>
+                    <li class="tl-entry" data-label="14:15"><span class="t">Rolled back</span><span class="d">Errors back to baseline.</span></li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Roadmap <code>hollow rings</code></h3>
+                <ul class="board"
+                    data-rail="border-left:2px dotted #c8a2ff"
+                    data-marker="width:12px;height:12px;left:-30px;top:6px;background:transparent;border:2px solid #c8a2ff"
+                    data-label-style="color:#c8a2ff;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;padding-left:5px"
+                    data-small="99999">
+                    <li class="tl-entry" data-label="next"><span class="t">Keyboard support</span><span class="d">Focus and arrows.</span></li>
+                    <li class="tl-entry" data-label="later"><span class="t">Horizontal mode</span><span class="d">Left to right.</span></li>
+                    <li class="tl-entry" data-label="someday"><span class="t">Animated entry</span><span class="d">On scroll.</span></li>
+                </ul>
+            </div>
+        </div>
+        <p class="note">
+            <code>smallView</code> compares against the <em>window</em> width, not the list's. Cards this narrow never
+            have room for a label column, so these lists set <code>data-small="99999"</code> and always use the
+            stacked layout.
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Lists that arrive later</h2>
+        <p class="lede">
+            <code>autoBuild()</code> only sees the lists on the page when it runs. A list inserted afterwards renders as
+            a plain bullet list until <code>refresh()</code> picks it up, optionally scoped to a parent element.
+            New entries in a list that is already built need nothing: the styling is class-based.
+        </p>
+        <div class="feed-grid">
+            <div class="panel">
+                <div class="panel-h"><span>#feed</span><span id="feedCount">1 list · 1 built</span></div>
+                <div id="feed">
+                    <ul class="feedList" data-marker="background:#5ccfe6" data-label-style="color:#5ccfe6" data-rail="border-left-color:#1f6fb5" data-small="640">
+                        <li class="tl-entry" data-label="09:00"><span class="t">Present at autoBuild()</span><span class="d">Built straight away.</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Try it in order</h3>
+                <p>
+                    <strong>1.</strong> Insert a list: it shows up unstyled.<br>
+                    <strong>2.</strong> Call <code>refresh(feed)</code>: it becomes a timeline, with its own marker colour.<br>
+                    <strong>3.</strong> Add an entry to the first list: no refresh needed.
+                </p>
+                <div class="row">
+                    <button id="insert">1 · Insert a list</button>
+                    <button class="primary" id="refresh">2 · refresh(feed)</button>
+                    <button id="append">3 · Add an entry</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
+        <p class="lede">
+            The <code>config</code> setters and the methods validate on the spot and throw a message naming what is
+            wrong. These buttons do the wrong thing on purpose.
+        </p>
+        <div class="row">
+            <button data-bad="classNum">className = 5</button>
+            <button data-bad="classDot">className = ".history"</button>
+            <button data-bad="attrKey">dataAttributes = {color: …}</button>
+            <button data-bad="attrVal">dataAttributes = {listStyle: 3}</button>
+            <button data-bad="attrObj">dataAttributes = "data-x"</button>
+            <button data-bad="noClass">autoBuild() without className</button>
+            <button data-bad="early">refresh() before autoBuild()</button>
+            <button data-bad="parent">refresh("#feed")</button>
+            <button data-bad="dead">autoBuild() after destroy()</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/timeline-list.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The instances are on <span class="kbd">window</span> as <span class="kbd">heroTimeline</span>,
+            <span class="kbd">playTimeline</span>, <span class="kbd">boardTimeline</span> and
+            <span class="kbd">feedTimeline</span> — try <span class="kbd">boardTimeline.destroy()</span>.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

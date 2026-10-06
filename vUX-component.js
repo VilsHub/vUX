@@ -108,7 +108,9 @@ export function Component(template) {
             formatters: formatters,
             handlers: handlers,
             owner: spec.owner,
-            onMount: function(entry){ if (onMount != null) onMount(makeInstance(entry)); },
+            //The Instance is made whether or not onMount is set: sync()'s return value,
+            //instances() and destroyAll() all reach a row through entry.instance.
+            onMount: function(entry){ var instance = makeInstance(entry); if (onMount != null) onMount(instance); },
             onUpdate: function(entry, changed){ if (onUpdate != null) onUpdate(entry.instance, changed); },
             onDestroy: function(entry){ if (onDestroy != null) onDestroy(entry.instance); }
         });

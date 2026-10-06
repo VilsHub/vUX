@@ -45,6 +45,7 @@ window.vModel = {
                 "modalDisplayer.js",
                 "progressIndicator.js",
                 "resizer.js",
+                "skeleton.js",
                 "spaEngine.js",
                 "timeLineList.js",
                 "toolTip.js",

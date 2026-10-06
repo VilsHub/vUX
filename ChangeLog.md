@@ -42,11 +42,19 @@
 - Carousel config changes on a live carousel — delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
 - Carousel guide (doc/carousel.md) — the required consumer CSS, every config property, the generated markup, and the error list
 - Runnable Carousel example (examples/carousel/) — a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+- TimeLineList guide (doc/timeline-list.md) — the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
+- Runnable TimeLineList example (examples/timelinelist/) — a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
 - ListScroller config.scrollSpeed and config.paddingRight now work: scrollSpeed is the duration of one button scroll in milliseconds (0 jumps), and paddingRight leaves room after the last item inside the scroll range
 - ListScroller buttons, inactiveButtonClassName, wrapperStyle, hasButtons and the paddings can be changed on a running scroller
 - ListScroller buttons get aria-disabled matching their inactive state
 - ListScroller guide (doc/list-scroller.md) — the container, list and button contract, every config property, the markup it produces, limits and the error list
 - Runnable ListScroller example (examples/listscroller/) — a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
+- Skeleton module (vUX-skeleton.js) — placeholder screens derived from the template you already wrote for the real content: fields become text bars, images media blocks, controls filled blocks, and your card, padding and grid are kept, so the skeleton has the layout of what replaces it
+- Skeleton `data-skeleton` attribute — `text:N`, `circle`, `circle:<size>`, `rect`, `rect:<w>/<h>`, `media`, `keep` and `skip` override what an element is inferred to be
+- Skeleton timing — `config.delay` keeps a fast load from flashing a skeleton at all, `config.minDuration` keeps a slow one from flickering off, and `hide()` returns a promise so you render once it is down; `during(promise)` wraps the whole flow
+- Skeleton mask mode — with no template, masks the container's existing content in place for a refresh, and puts the same nodes back afterwards
+- Skeleton guide (doc/skeleton.md) — the two modes, what becomes what, `data-skeleton`, timing, styling through custom properties, accessibility, limits and the error list
+- Runnable Skeleton example (examples/skeleton/) — a feed reloading at three speeds, a template beside its rendered card and derived skeleton, a playground over every config property, a with/without timing comparison, mask mode with a byte-for-byte check, and the validation errors
 
 ## Fixed
 - modal multiple display bug
@@ -116,6 +124,17 @@
 - Carousel config.buttonStyle errors reading " of strings" or " of either 1 or 2 element(s)" without naming the property, and an empty array being accepted
 - Carousel replacing the container's own onclick, onmouseenter and onmouseleave handlers
 - Carousel start() before initialize() throwing on every autoplay tick; it now reports the misuse once
+- TimeLineList autoBuild() throwing a SyntaxError, and the resize handler throwing on every resize, whenever config.dataAttributes had no smallView entry
+- TimeLineList markers, labels and the label column never appearing: assets/css/timeLineList.css is now loaded by the module instead of never being linked
+- TimeLineList labels drawn off the left edge of the page; the default stylesheet now gives the list room for its 100px label column, and drops that margin in the stacked layout
+- TimeLineList lists picking up another list's styles: two instances on a page both used vtl0, vtl1…, and a list built by refresh() reused the class of the first list built
+- TimeLineList lists added through refresh() getting no styles of their own, and not stacking at narrow widths until the window was next resized
+- TimeLineList writing "{null}" rules for every list missing an attribute, and for attributes that were never configured
+- TimeLineList resize handling re-evaluating every timeline on the page, including lists built by other instances
+- TimeLineList refresh() building lists before autoBuild() had run, or after destroy(), without the resize listener and leaving them out of teardown; it now reports the misuse
+- TimeLineList config.dataAttributes accepting non-string attribute names, half-applying an assignment that failed partway, and reporting "more than 4 entries" for a limit of 5
+- TimeLineList config.className accepting a value with a leading dot or spaces, which later failed as an invalid selector inside refresh()
+- TimeLineList error messages misspelling "incomplete", "supplied" and "supported"
 - ListScroller moving less than a full step, or not at all, after reaching the end of the row or after two quick presses; every press now starts from the real scroll position and two presses always move two steps
 - ListScroller rows extending into empty space past the last item; the list is now as wide as its items instead of item count × scrollSize
 - ListScroller containers collapsing to zero height unless the consumer gave them one; the list now sits in normal flow
@@ -129,6 +148,7 @@
 - ListScroller config.scrollSpeed's error saying it "must be an array"
 - FormComponents datePicker destroy() now also tears down its decade-series scroller
 - FormComponents datePicker decade arrows dead on every picker but the first one opened when several pickers with long date ranges share one builder; picking a decade or going Back on a later picker also parked or re-armed the first picker's arrows instead of its own
+- Component sync() without config.onMount now returns the instances it mounted, and instances() and destroyAll() reach rows it mounted; before, sync() returned undefined for each new row and destroyAll() left those rows in the page
 
 ## Removed
 - colorOverlayStyle in modalDisplayerObj
@@ -157,6 +177,8 @@
 - CircularProgress() changed to arc()
 - ResourceIO module changed to IO
 - Carousel dot buttons no longer carry id="b1", id="b2"…, which duplicated across carousels and could collide with page ids; select them by .vButton[data-ratio] within the container
+- TimeLineList per-list classes are now vtl<instance>-<n> instead of vtl<n>, and each instance's generated stylesheet has data-id "v<className>-<instance>" instead of "v<className>"
+- TimeLineList autoBuild() called again now builds lists added since the first call, the same as refresh(), instead of doing nothing
 - ListScroller no longer adds a window resize listener or a delegated document click listener; it listens on its own buttons and container and uses a ResizeObserver
 - ListScroller sets the list's width to max-content and its paddings inline, instead of an item-count width and a left offset; listScroller.css no longer positions the list absolutely or forces the container's width
 - ListScroller button scrolls take config.scrollSpeed's default of 290ms instead of a fixed 200ms

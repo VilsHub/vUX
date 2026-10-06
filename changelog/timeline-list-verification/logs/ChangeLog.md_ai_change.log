@@ -1,0 +1,38 @@
+FILE: ChangeLog.md
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — v4.0.0-beta: bullets appended under Added, Fixed and Changed
+================================================================================
+
+OLD_SECTION
+    (no entries for this change; the existing destroy() bullet under Added, which names
+    TimeLineList, is left as it was)
+
+NEW_SECTION
+    ## Added
+    - TimeLineList guide (doc/timeline-list.md) — the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
+    - Runnable TimeLineList example (examples/timelinelist/) — a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
+    ## Fixed
+    - TimeLineList autoBuild() throwing a SyntaxError, and the resize handler throwing on every resize, whenever config.dataAttributes had no smallView entry
+    - TimeLineList markers, labels and the label column never appearing: assets/css/timeLineList.css is now loaded by the module instead of never being linked
+    - TimeLineList labels drawn off the left edge of the page; …
+    - TimeLineList lists picking up another list's styles: …
+    - TimeLineList lists added through refresh() getting no styles of their own, …
+    - TimeLineList writing "{null}" rules …
+    - TimeLineList resize handling re-evaluating every timeline on the page, …
+    - TimeLineList refresh() building lists before autoBuild() had run, or after destroy(), …
+    - TimeLineList config.dataAttributes accepting non-string attribute names, …
+    - TimeLineList config.className accepting a value with a leading dot or spaces, …
+    - TimeLineList error messages misspelling "incomplete", "supplied" and "supported"
+    ## Changed
+    - TimeLineList per-list classes are now vtl<instance>-<n> instead of vtl<n>, and each instance's generated stylesheet has data-id "v<className>-<instance>" instead of "v<className>"
+    - TimeLineList autoBuild() called again now builds lists added since the first call, the same as refresh(), instead of doing nothing
+
+REASON
+This is the release-facing record of the TimeLineList verification. Added has two bullets (the
+guide and the example). Fixed has eleven, one per distinct defect fixed. Changed has two, one for
+each renamed generated class or sheet id (a consumer may select on these) and one for the
+second-autoBuild() behaviour. Bullets are appended at the end of each section, in the existing
+style.

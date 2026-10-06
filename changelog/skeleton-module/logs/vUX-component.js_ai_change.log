@@ -1,0 +1,30 @@
+FILE: vUX-component.js
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+Bug found while building the Skeleton example. Component.sync() wrapped a newly
+built row in its public Instance only inside the onMount callback, and only when
+config.onMount was set. With no onMount:
+  - sync() returned an array of undefined for every new row, because it reads
+    result.order[x].instance;
+  - instances() and destroyAll() skip entries without an instance, so
+    destroyAll() left every synced row in the page.
+The Skeleton playground switches templates with destroyAll() and showed both
+lists at once. The Component example always sets onMount, which is why the bug
+had not shown. The Instance is now always made. onMount is still called
+exactly once per new row, with the same object.
+
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+            onMount: function(entry){ if (onMount != null) onMount(makeInstance(entry)); },
+
+NEW_SECTION
+            //The Instance is made whether or not onMount is set: sync()'s return value,
+            //instances() and destroyAll() all reach a row through entry.instance.
+            onMount: function(entry){ var instance = makeInstance(entry); if (onMount != null) onMount(instance); },

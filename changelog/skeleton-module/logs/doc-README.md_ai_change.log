@@ -1,0 +1,14 @@
+FILE: doc/README.md
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+Skeleton row added to the usage-guides table and the example added to Other references.
+
+OLD_SECTION
+(no existing lines changed; one table row and one reference bullet were inserted)
+
+NEW_SECTION
+| [Skeleton](skeleton.md) | `vUX-skeleton.js` | Placeholder screens derived from your own template, with timing that never flashes on a fast load or flickers on a slow one |
+- [Skeleton example](../examples/skeleton/README.md) — runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.

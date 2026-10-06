@@ -1,0 +1,21 @@
+FILE: examples/skeleton/index.html, main.js, README.md
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+NEW FILES. The required example page, built on examples/shared/example.css:
+  Hero  a six-card feed that loads on open, at three simulated speeds
+  01    the template's live source, a card rendered from it, and its derived
+        skeleton side by side, plus the inference table
+  02    a playground over every config property, two templates, equivalent code,
+        and an onShow/onHide log of time on screen
+  03    the same loads with delay 0 / minDuration 0 against the defaults, with a
+        timeline per lane
+  04    mask mode over a live panel, with a byte-for-byte check after unmask
+  05    sixteen misuses printing their thrown errors
+
+Verified in headless Chrome: every section scripted through (lanes, refresh,
+playground load and template switch, every error button) with no uncaught
+errors, screenshots reviewed at 1280px, and no horizontal overflow at 390px.
+Only the Chrome engine was available; Firefox and Safari were not tested.

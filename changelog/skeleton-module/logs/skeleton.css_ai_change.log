@@ -1,0 +1,21 @@
+FILE: assets/css/skeleton.css
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+NEW FILE. The skeleton's look, scoped entirely under .vux-sk-host (the layer or
+the masked container), so it never touches a page with no skeleton up.
+
+  - The fill is one 200vw gradient with background-attachment: fixed, so every
+    block shows a slice of the same sweep and the skeleton shimmers in step.
+  - Colours, radius and speed are custom properties (--vux-sk-base,
+    --vux-sk-highlight, --vux-sk-radius, --vux-sk-speed). config.colors and
+    config.radius set them inline per instance.
+  - Default sizing of stand-ins sits in :where() (zero specificity) so any class
+    of the consumer's wins. The fill is !important because it has to beat the
+    consumer's own colours.
+  - .vux-sk-inline (box-decoration-break: clone) gives exact-length bars per
+    line. .vux-sk-text is the fallback: whole-element fill cut into stripes by
+    a mask of 1lh.
+  - prefers-reduced-motion turns every animation off.

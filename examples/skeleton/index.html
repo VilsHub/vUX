@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX Skeleton example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- the demo content's own look ----------
+       Everything in this block styles the PAGE's markup: the post cards and comment
+       rows that the templates below describe. The skeleton has no styles of its own
+       for these - a ghost is a clone of the template, so it is laid out by these
+       same rules. That is the whole point: change .post here and the skeleton
+       follows without anyone touching it. */
+    .feed{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px}
+    .post{
+        background:var(--panel); border:1px solid var(--line); border-radius:14px;
+        overflow:hidden; display:flex; flex-direction:column;
+    }
+    .post-cover{display:block; width:100%; aspect-ratio:16 / 9; object-fit:cover; background:var(--panel-2)}
+    .post-body{padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1}
+    .post-tag{
+        align-self:flex-start; font-family:var(--mono); font-size:.68rem; letter-spacing:.12em;
+        text-transform:uppercase; color:var(--cyan); border:1px solid #1d3a45; border-radius:999px; padding:2px 10px;
+    }
+    .post-title{margin:0; font-size:1.06rem; line-height:1.35; font-weight:650}
+    .post-excerpt{margin:0; color:var(--muted); font-size:.88rem; line-height:1.55; flex:1}
+    .post-meta{display:flex; align-items:center; gap:10px; margin-top:6px; font-size:.8rem}
+    .post-avatar{
+        width:28px; height:28px; border-radius:50%; flex:none; display:grid; place-items:center;
+        background:var(--amber); color:#20160a; font-weight:700; font-family:var(--mono); font-size:.8rem;
+    }
+    .post-author{font-weight:600; min-width:0}
+    .post-time{margin-left:auto; color:var(--dim); font-family:var(--mono); font-size:.74rem}
+
+    .rows{display:flex; flex-direction:column; gap:0; border:1px solid var(--line); border-radius:12px; overflow:hidden}
+    .crow{display:flex; gap:14px; align-items:flex-start; padding:14px 16px; background:var(--panel); border-bottom:1px solid var(--line)}
+    .crow:last-child{border-bottom:none}
+    .c-av{
+        width:36px; height:36px; border-radius:50%; flex:none; display:grid; place-items:center;
+        background:var(--violet); color:#1a1030; font-weight:700; font-family:var(--mono);
+    }
+    .c-main{flex:1; min-width:0}
+    .c-head{font-size:.88rem}
+    .c-time{color:var(--dim); font-family:var(--mono); font-size:.74rem; margin-left:8px}
+    .c-text{margin:4px 0 0; color:var(--muted); font-size:.88rem; line-height:1.55}
+
+    /* ---------- hero ---------- */
+    .hero-feed{margin-top:40px}
+    .hero-bar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:34px}
+    .seg{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+    .seg button{border:none; border-radius:0; background:transparent; color:var(--muted); padding:7px 13px; font-size:.8rem}
+    .seg button + button{border-left:1px solid var(--line)}
+    .seg button.on{background:var(--panel-2); color:var(--amber)}
+    .hero .status{border:1px solid var(--line); border-radius:8px; background:var(--panel)}
+
+    /* ---------- 01 · derived ---------- */
+    .pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px; align-items:start}
+    .pair-cap{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); margin:0 0 10px}
+    .src-panel pre.snip{max-height:420px}
+    .snip .a{color:var(--amber)} .snip .t{color:var(--cyan)}
+    .rules{width:100%; border-collapse:collapse; font-size:.88rem; margin-top:28px}
+    .rules th,.rules td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+    .rules th{font-family:var(--mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); font-weight:500}
+    .rules td:first-child{font-family:var(--mono); font-size:.8rem; color:var(--amber); white-space:nowrap}
+    .rules td:last-child{color:var(--muted)}
+    .table-scroll{overflow-x:auto}
+
+    /* ---------- 02 · playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:22px; align-items:start}
+    /* minmax(0,1fr), not the implicit auto track: an auto track grows to the code
+       panel's longest line and pushes the page wider than a phone. */
+    .play-side{display:grid; grid-template-columns:minmax(0,1fr); gap:18px; min-width:0}
+    .stage{background:var(--ink); border-radius:0 0 12px 12px; padding:20px; min-height:300px}
+    .colors{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+    .colors label{display:flex; gap:8px; align-items:center; font-size:.82rem; color:var(--muted)}
+    @media (max-width:880px){ .play{grid-template-columns:1fr} }
+
+    /* ---------- 03 · timing ---------- */
+    .lanes{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px}
+    .lane .panel-b{min-height:156px}
+    .track{position:relative; height:26px; background:var(--ink); border:1px solid var(--line); border-radius:6px; margin-top:14px; overflow:hidden}
+    .track .seg-load{position:absolute; top:0; bottom:0; left:0; background:#1b2534}
+    .track .seg-sk{position:absolute; top:5px; bottom:5px; background:var(--amber); border-radius:3px; opacity:.85}
+    .track .seg-sk.flash{background:var(--red)}
+    .track-axis{display:flex; justify-content:space-between; font-family:var(--mono); font-size:.68rem; color:var(--dim); margin-top:4px}
+    .verdict{font-family:var(--mono); font-size:.78rem; color:var(--muted); margin-top:10px; min-height:1.4em}
+    .verdict.bad{color:var(--red)} .verdict.good{color:var(--green)}
+    .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:.8rem; color:var(--muted); margin-top:16px}
+    .legend i{display:inline-block; width:14px; height:8px; border-radius:2px; margin-right:6px; vertical-align:1px}
+
+    /* ---------- 04 · mask ---------- */
+    .stats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:16px}
+    .stat{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px}
+    .stat .n{font-family:var(--mono); font-size:1.5rem; font-weight:700; color:var(--fg)}
+    .stat .l{font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
+    .article{display:grid; grid-template-columns:120px minmax(0,1fr); gap:20px; align-items:start}
+    .article svg{width:120px; height:120px; border-radius:12px; display:block}
+    .article h3{font-size:1.25rem; margin:0 0 8px}
+    .article p{margin:0; color:var(--muted)}
+    @media (max-width:560px){
+        .article{grid-template-columns:1fr}
+        .stats{grid-template-columns:1fr}
+    }
+
+    /* ---------- 05 · errors ---------- */
+    .err-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px}
+    .err-grid button{text-align:left; font-family:var(--mono); font-size:.76rem; font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- ==========================================================================
+     TEMPLATES
+     The same <template> serves two masters: Component renders the real cards
+     from it, and Skeleton derives the placeholder from it. data-skeleton is the
+     only attribute here that exists for the skeleton's sake, and it is optional:
+     without it every field becomes one bar of text.
+     ========================================================================== -->
+
+<template id="postTpl">
+    <article class="post">
+        <img class="post-cover" data-v-bind="src:cover, alt:title">
+        <div class="post-body">
+            <span class="post-tag" data-v-field="tag" data-skeleton="rect"></span>
+            <h3 class="post-title" data-v-field="title" data-skeleton="text:2"></h3>
+            <p class="post-excerpt" data-v-field="excerpt" data-skeleton="text:3"></p>
+            <div class="post-meta">
+                <span class="post-avatar" data-v-field="initial" data-skeleton="circle"></span>
+                <span class="post-author" data-v-field="author"></span>
+                <span class="post-time" data-v-field="time"></span>
+            </div>
+        </div>
+    </article>
+</template>
+
+<template id="rowTpl">
+    <div class="crow">
+        <span class="c-av" data-v-field="initial" data-skeleton="circle"></span>
+        <div class="c-main">
+            <div class="c-head"><b data-v-field="author"></b><span class="c-time" data-v-field="time"></span></div>
+            <p class="c-text" data-v-field="text" data-skeleton="text:2"></p>
+        </div>
+        <button class="tiny ghost">Reply</button>
+    </div>
+</template>
+
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX · <b>Skeleton</b> · placeholders shaped like the real thing</p>
+        <h1>The page, before the page.</h1>
+        <p class="hero-sub">
+            <b>Skeleton</b> reads the template you already wrote for your cards and draws its
+            shape while the data is on its way — same grid, same padding, same line count.
+            Fast loads never flash it; slow ones never flicker it.
+        </p>
+        <div class="hero-bar">
+            <button class="primary" id="heroReload">Reload the feed</button>
+            <div class="seg" id="heroLatency" role="group" aria-label="Simulated latency">
+                <button data-ms="60">fast · 60ms</button>
+                <button data-ms="900" class="on">normal · 900ms</button>
+                <button data-ms="2600">slow · 2.6s</button>
+            </div>
+        </div>
+        <div class="hero-feed">
+            <div class="feed" id="feed"></div>
+        </div>
+        <div class="status" id="heroStatus" style="margin-top:18px"><span class="dot"></span><span>starting…</span></div>
+    </div>
+</header>
+
+<main>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Derived from your template</h2>
+        <p class="lede">
+            Left, the template this page passes to both <code>Component</code> and <code>Skeleton</code>,
+            printed from the live DOM. Middle, a card rendered from it. Right, the skeleton derived
+            from it. Nobody wrote the right-hand one.
+        </p>
+        <div class="pair">
+            <div class="panel src-panel">
+                <div class="panel-h"><span>#postTpl</span><span class="dots"><i></i><i></i><i></i></span></div>
+                <pre class="snip" id="tplSource"></pre>
+            </div>
+            <div>
+                <p class="pair-cap">rendered by Component</p>
+                <div class="feed" id="realOne"></div>
+            </div>
+            <div>
+                <p class="pair-cap">derived by Skeleton</p>
+                <div class="feed" id="ghostOne"></div>
+            </div>
+        </div>
+
+        <div class="table-scroll">
+        <table class="rules">
+            <thead><tr><th>In the template</th><th>Becomes</th></tr></thead>
+            <tbody>
+                <tr><td>data-v-field</td><td>one bar of text, of a varying word-like width</td></tr>
+                <tr><td>&lt;img&gt; &lt;video&gt; &lt;svg&gt; &lt;canvas&gt; …</td><td>a media block, swapped for a <code>&lt;span&gt;</code> carrying the same class and style, so your sizing still applies</td></tr>
+                <tr><td>&lt;button&gt; &lt;input&gt; &lt;select&gt; &lt;textarea&gt;</td><td>a filled block of the control's own size</td></tr>
+                <tr><td>static text</td><td>a bar exactly as long as the words, which stay in place, transparent</td></tr>
+                <tr><td>anything else</td><td>kept: your card, its padding, background and layout</td></tr>
+                <tr><td>data-skeleton="text:3"</td><td>three lines, the last one short</td></tr>
+                <tr><td>data-skeleton="circle"</td><td>a circle; <code>circle:48</code> or <code>circle:3rem</code> also sizes it</td></tr>
+                <tr><td>data-skeleton="rect"</td><td>a filled block; <code>rect:16/9</code> also sets an aspect ratio</td></tr>
+                <tr><td>data-skeleton="media"</td><td>a media block, for a <code>&lt;div&gt;</code> with a background image; <code>media:4/3</code> takes a ratio</td></tr>
+                <tr><td>data-skeleton="keep"</td><td>left exactly as written — a label that is true before the data arrives</td></tr>
+                <tr><td>data-skeleton="skip"</td><td>left out — a badge that only some items show</td></tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Playground</h2>
+        <p class="lede">
+            Every <code>config</code> property, live. Settings that change what is drawn redraw a
+            skeleton already on screen, so press <b>Show</b> and then play.
+        </p>
+        <div class="play">
+            <div class="panel">
+                <div class="panel-h"><span>config</span></div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl">template</label>
+                        <select id="pTemplate">
+                            <option value="post">#postTpl — cards</option>
+                            <option value="row">#rowTpl — comment rows</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl">count <span class="val" id="vCount">3</span></label>
+                        <input type="range" id="pCount" min="1" max="12" value="3">
+                    </div>
+                    <div class="field">
+                        <label class="lbl">animation</label>
+                        <select id="pAnimation">
+                            <option>shimmer</option><option>pulse</option><option>none</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="lbl">delay <span class="val" id="vDelay">120ms</span></label>
+                        <input type="range" id="pDelay" min="0" max="800" step="10" value="120">
+                    </div>
+                    <div class="field">
+                        <label class="lbl">minDuration <span class="val" id="vMin">400ms</span></label>
+                        <input type="range" id="pMin" min="0" max="2000" step="50" value="400">
+                    </div>
+                    <div class="field">
+                        <label class="lbl">colors</label>
+                        <div class="colors">
+                            <label><input type="color" id="pBase" value="#1b2638"> base</label>
+                            <label><input type="color" id="pHigh" value="#2c3d58"> highlight</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="lbl">radius <span class="val" id="vRadius">6px</span></label>
+                        <input type="range" id="pRadius" min="0" max="18" value="6">
+                    </div>
+                    <div class="field">
+                        <label class="lbl">label (announced to screen readers)</label>
+                        <input type="text" id="pLabel" value="Loading comments">
+                    </div>
+                    <div class="field">
+                        <label class="switch"><input type="checkbox" id="pReveal" checked> reveal — fade the content in</label>
+                    </div>
+                    <div class="field">
+                        <label class="lbl">simulated latency <span class="val" id="vLat">1200ms</span></label>
+                        <input type="range" id="pLat" min="0" max="4000" step="50" value="1200">
+                    </div>
+                    <div class="row">
+                        <button class="primary" id="pLoad">Load</button>
+                        <button id="pShow">Show</button>
+                        <button id="pHide">Hide</button>
+                    </div>
+                </div>
+            </div>
+            <div class="play-side">
+                <div class="panel">
+                    <div class="panel-h"><span>stage</span><span class="pill" id="pState">idle</span></div>
+                    <div class="stage"><div class="feed" id="playOut"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>equivalent code</span></div>
+                    <pre class="snip" id="pCode"></pre>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>onShow / onHide</span><button class="tiny ghost" id="pClearLog">clear</button></div>
+                    <div class="panel-b"><pre class="log" id="pLog"></pre></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Why delay and minDuration exist</h2>
+        <p class="lede">
+            Both lanes load the same thing at the same speed. The left one shows its skeleton the
+            instant loading starts and drops it the instant data lands; the right one uses the
+            defaults. Try a fast load, then a slow one. The bar under each lane is the skeleton's
+            time on screen against the load.
+        </p>
+        <div class="row" style="margin-bottom:22px">
+            <button data-ms="40">fast · 40ms</button>
+            <button data-ms="180">borderline · 180ms</button>
+            <button data-ms="480">quick · 480ms</button>
+            <button data-ms="1600">slow · 1.6s</button>
+        </div>
+        <div class="lanes">
+            <div class="panel lane" id="laneNaive">
+                <div class="panel-h"><span>naive — delay 0, minDuration 0</span></div>
+                <div class="panel-b">
+                    <div class="rows lane-out"></div>
+                    <div class="track"><div class="seg-load"></div><div class="seg-sk"></div></div>
+                    <div class="track-axis"><span>0</span><span class="axis-end">—</span></div>
+                    <div class="verdict"></div>
+                </div>
+            </div>
+            <div class="panel lane" id="laneTuned">
+                <div class="panel-h"><span>defaults — delay 120, minDuration 400</span></div>
+                <div class="panel-b">
+                    <div class="rows lane-out"></div>
+                    <div class="track"><div class="seg-load"></div><div class="seg-sk"></div></div>
+                    <div class="track-axis"><span>0</span><span class="axis-end">—</span></div>
+                    <div class="verdict"></div>
+                </div>
+            </div>
+        </div>
+        <div class="legend">
+            <span><i style="background:#1b2534"></i>loading</span>
+            <span><i style="background:var(--amber)"></i>skeleton on screen</span>
+            <span><i style="background:var(--red)"></i>on screen under 150ms: a flash</span>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Mask mode — refreshing what is already there</h2>
+        <p class="lede">
+            With no <code>config.template</code>, the skeleton masks the container's own content in
+            place. Nothing is cloned: classes go on, text is wrapped in a span so each bar is as long
+            as its words, and when the mask lifts the same nodes go back and the markup is
+            byte-for-byte what it was — the status line below checks.
+        </p>
+        <div class="panel">
+            <div class="panel-h"><span>a live panel</span><button class="tiny primary" id="mRefresh">Refresh</button></div>
+            <div class="panel-b" id="maskTarget">
+                <div class="article">
+                    <svg viewBox="0 0 120 120" aria-hidden="true">
+                        <defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ccfe6"/><stop offset="1" stop-color="#c8a2ff"/></linearGradient></defs>
+                        <rect width="120" height="120" fill="url(#mg)"/><circle cx="84" cy="36" r="18" fill="#080b11" opacity=".35"/>
+                    </svg>
+                    <div>
+                        <h3 id="mTitle">Throughput is up for the third week running</h3>
+                        <p id="mText">The new queue absorbed Tuesday's spike without shedding a single job, and p95 latency stayed under the line all week.</p>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat"><div class="n" id="mN1">12,408</div><div class="l" data-skeleton="keep">jobs / hour</div></div>
+                    <div class="stat"><div class="n" id="mN2">184ms</div><div class="l" data-skeleton="keep">p95 latency</div></div>
+                    <div class="stat"><div class="n" id="mN3">99.98%</div><div class="l" data-skeleton="keep">success</div></div>
+                </div>
+            </div>
+            <div class="status" id="mStatus"><span class="dot"></span><span>markup untouched</span></div>
+        </div>
+        <p class="note">
+            The stat labels carry <code>data-skeleton="keep"</code>: they are true before the refresh
+            and after it, so masking them would only hide information the reader already has.
+        </p>
+    </div>
+</section>
+
+<!-- ======================================================================= -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>What it refuses to do</h2>
+        <p class="lede">
+            Each button below misuses the API on purpose and prints the <code>Error</code> it throws.
+            Mistakes are caught when the setting is made, not later inside a timer.
+        </p>
+        <div class="err-grid" id="errGrid"></div>
+        <pre class="err-out" id="errOut">pick one</pre>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="wrap">
+        <a href="../../doc/skeleton.md">Skeleton guide</a>
+        <a href="README.md">About this example</a>
+        <a href="../component/">Component example</a>
+    </div>
+</footer>
+
+</body>
+</html>

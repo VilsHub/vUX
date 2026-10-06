@@ -1,0 +1,18 @@
+FILE: doc/timeline-list.md
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+    (file did not exist)
+
+NEW_SECTION
+    the TimeLineList guide: how it works, quick start, configuration (both properties, the five dataAttributes keys), methods, styling (defaults, the three specificity tiers, centring a custom marker), generated markup, limits, and the full error list.
+
+REASON
+doc/README.md listed TimeLineList among the modules whose guides were "coming next". The module
+had no documentation anywhere, including README.md. Every message in the error table was checked
+against the thrown text in the browser.

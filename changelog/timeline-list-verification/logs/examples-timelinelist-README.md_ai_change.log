@@ -1,0 +1,17 @@
+FILE: examples/timelinelist/README.md
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+
+================================================================================
+CHANGE 1 — new file
+================================================================================
+
+OLD_SECTION
+    (file did not exist)
+
+NEW_SECTION
+    how to run it, a table of the five sections, what the page demonstrates, the consumer-side techniques (unique class name, styling entry content not the timeline, the fixed data-label text attribute, centring markers, narrow containers), console instances.
+
+REASON
+CLAUDE.md requires every example to have a README stating how to run it, what each section
+shows, and the consumer-side techniques the page relies on.

@@ -1,0 +1,67 @@
+FILE: assets/css/timeLineList.css
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+PRIOR STATE: commit 3f1472a (unchanged since it was added; never linked by any code until this change)
+
+================================================================================
+CHANGE 1 — room for the label column
+================================================================================
+
+OLD_SECTION
+.vtimeLine {
+    border-left: solid 1px #710943;
+    padding-left: 23px;
+    list-style-type: none !important;
+}
+
+NEW_SECTION
+.vtimeLine {
+    border-left: solid 1px #710943;
+    padding-left: 23px;
+    margin-left: 110px; /* room for the label column drawn to the left of the line */
+    list-style-type: none !important;
+}
+
+REASON
+Labels are drawn at left:-133px from each <li>, about 109px left of the rail. With no margin, a
+list at the page edge put its labels off-screen (verified: 0px of room). This never showed because
+the file was never loaded. Now that the module links it, the default has to render. No consumer
+can depend on the old value, since the file was never applied.
+
+================================================================================
+CHANGE 2 — wrap rules: three classes, and the margin dropped when stacked
+================================================================================
+
+OLD_SECTION
+/* Wrap styles */
+.vtimeLine.wrap li{
+    padding-top: 23px;
+    
+}
+
+.vtimeLine.wrap li::after{
+    left: -14px;
+    text-align: left;
+}
+
+NEW_SECTION
+/* Wrap styles: three classes, so they outrank a list's own generated styles (two classes) */
+.vtimeLine.activated.wrap{
+    margin-left: 0;
+}
+.vtimeLine.activated.wrap li{
+    padding-top: 23px;
+    
+}
+
+.vtimeLine.activated.wrap li::after{
+    left: -14px;
+    text-align: left;
+}
+
+REASON
+In stacked mode the labels sit above the entries, so the 110px label margin must go. Generated
+per-list rules now use two classes so they beat the one-class defaults (see the module log, change
+6). The wrap rules move to three classes so the stacked layout still repositions a list whose own
+label style sets `left`. Verified: the label at -14px with a list style of left:-200px, and the
+list's label colour still applied.

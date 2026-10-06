@@ -26,6 +26,7 @@ A consuming page declares a single module script and tells vUX where the library
 |---|---|---|
 | [SPA Engine — setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
 | [Progress Indicator](progress-indicator.md) | `vUX-progressIndicator.js` | Linear, circular and grid loading indicators; pairing with SPA navigation |
+| [Skeleton](skeleton.md) | `vUX-skeleton.js` | Placeholder screens derived from your own template, with timing that never flashes on a fast load or flickers on a slow one |
 | [Component](component.md) | `vUX-component.js` | Your own reusable component from your own markup: template instancing, bindings, keyed lists, nesting and teardown |
 | [Data View](data-view.md) | `vUX-dataView.js` | Keyed data-to-DOM binding for tables/dashboards with frequent fine-grained updates |
 | [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
@@ -33,9 +34,10 @@ A consuming page declares a single module script and tells vUX where the library
 | [Auto Writer](auto-writer.md) | `vUX-autoWriter.js` | Typewriter text effect with an embedded directive syntax for line breaks, pauses and backspacing |
 | [Resizer](resizer.md) | `vUX-resizer.js` | Drag-to-resize handles on any element, on either axis, clamped to bounds you set |
 | [Carousel](carousel.md) | `vUX-carousel.js` | Autoplaying slideshow with dot navigation, hover pause and swipe, reconfigurable while running |
+| [TimeLineList](timeline-list.md) | `vUX-timeLineList.js` | Plain lists drawn as vertical timelines, each list styled by its own data attributes, stacking on narrow windows |
 | [ListScroller](list-scroller.md) | `vUX-listScroller.js` | A list as one horizontal row, moved a step at a time by your own two buttons, with their inactive state kept true to the scroll position |
 
-Guides for the remaining modules (`FormValidator`, `TouchHandler`, `ToolTip`, `TimeLineList`, `CShapes`, `DOMDrawer`) are coming next.
+Guides for the remaining modules (`FormValidator`, `TouchHandler`, `ToolTip`, `CShapes`, `DOMDrawer`) are coming next.
 
 ## Tearing a component down
 
@@ -49,7 +51,9 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 - [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
 - [Resizer example](../examples/resizer/README.md) — runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
 - [Carousel example](../examples/carousel/README.md) — runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+- [TimeLineList example](../examples/timelinelist/README.md) — runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
 - [ListScroller example](../examples/listscroller/README.md) — runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
+- [Skeleton example](../examples/skeleton/README.md) — runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
 - [Component example](../examples/component/README.md) — runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
 - [README](../README.md) — installation and the public feature list per release.
 - [ChangeLog](../ChangeLog.md) — API renames and changes between releases.

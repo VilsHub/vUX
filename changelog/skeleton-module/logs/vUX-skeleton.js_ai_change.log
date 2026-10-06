@@ -1,0 +1,70 @@
+FILE: vUX-skeleton.js
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+NEW FILE. The Skeleton module: placeholder screens shaped like the content about
+to arrive.
+
+vUX had ProgressIndicator, which says that something is loading. Nothing said
+what shape it would take. The design point that sets this module apart from a
+generic skeleton library is that the consumer already wrote the shape. Component
+and DataView templates tag every dynamic node with data-v-field / data-v-bind, so
+the skeleton is DERIVED from that template instead of being drawn a second time.
+
+Design points worth recording:
+
+  - Two modes, chosen by config.template. Template mode clones the template into
+    ghosts inside a LAYER, a shallow copy of the container inserted before it,
+    and hides the container. The layer copies the container's class/style so a
+    grid lays out the ghosts like the real items. Ghosts never enter the
+    container, because Component.sync() and DataView's reconcile own every child
+    of it and would treat a ghost as a vanished row. Mask mode (no template)
+    masks existing content in place and records every change so unmask
+    reverses it exactly.
+
+  - Timing is part of the contract. show() waits config.delay (120ms) before
+    drawing, so a fast load never flashes. Once drawn, hide() keeps the skeleton
+    up until config.minDuration (400ms) has passed, so a slow load never
+    flickers. hide() returns a promise for that reason. during() wraps the flow
+    and counts overlapping calls.
+
+  - show() during a hide in flight queues a fresh show after the hide instead of
+    cancelling it, because the caller awaiting the hide expects the skeleton to
+    be gone when its promise resolves.
+
+  - Validation runs while the setting call is on the stack: data-skeleton values
+    when config.template is set (or on each show() in mask mode), and the
+    detached-container check in show(). Otherwise a bad value would throw from
+    inside the delay timer, where nobody can catch it.
+
+  - Replaced elements (img, video, svg, canvas…) are swapped for a <span> with
+    the same class/style in ghosts, because an <img> without src paints a
+    broken-image icon and cannot carry the fill.
+
+  - Empty fields get bars of explicit em width (WIDTHS, varied so a column does
+    not read as a ruled grid). Single-line bars are inline-block so that two
+    fields sharing a line, such as an author and a timestamp, stay on one line.
+    Text that already has words is wrapped in an inline span: an inline
+    background covers each line's run of text and nothing more, so the bars
+    are exactly as long as the lines. Mask mode puts the SAME text nodes back
+    on unmask.
+
+  - Invisible filler is non-breaking spaces, never visible characters, so a
+    ghost drawn before the stylesheet arrives shows nothing stray.
+
+  - The stylesheet is linked at import and appended immediately, rather than
+    through linkStyleSheet() from initialize(). That helper waits 300ms before
+    it appends, and a skeleton is by nature needed in a page's first moments.
+    The first test run showed ghosts unstyled because of that delay.
+
+  - Accessibility: the layer is aria-hidden + inert, the masked container is
+    inert (its previous inert value is restored), the container carries
+    aria-busy, and config.label is announced through a visually hidden
+    role="status" element.
+
+Verified in headless Chrome against a scratch harness (27 checks: state machine,
+delay, minDuration, fast-hide-never-shows, during() value and rejection, ghost
+derivation, attribute stripping, layer/teardown cleanliness, byte-for-byte mask
+reversal, destroy, and every validation error).

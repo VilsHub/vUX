@@ -1,0 +1,69 @@
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+SCOPE: verify the TimeLineList module, fix what is broken, and document it
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+The vUX library (this repository). The workspace consumers (Apps/vGet and
+Apps/myinvitees/app.myinvitees.com) mount vUX through a symlink and pick up changes on the next
+page load. Neither imports vUX-timeLineList.js, so nothing in them changes.
+
+Consumer-visible surface:
+  - vUX-timeLineList.js          internals rebuilt around per-instance, per-list classes. The public
+                                 API is unchanged. refresh() before autoBuild() or after destroy()
+                                 now throws. A second autoBuild() builds newly added lists. The
+                                 generated class and sheet ids changed (see ChangeLog 'Changed').
+  - assets/css/timeLineList.css  now actually loaded. Adds a 110px label margin (0 when stacked).
+                                 Wrap rules moved to three classes.
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+There is no test runner, so the module was driven in headless Chromium (chrome-headless-shell) over
+a test page served with python3 -m http.server. The checks asserted computed styles (including
+::before and ::after), classes, generated stylesheets and thrown messages. The same suite was run
+against the original files.
+
+Baseline (original code):   18 passed, 16 failed
+After the fixes:            34 passed, 0 failed
+Example page suite:         31 passed, 0 failed  (at 1280px and at 375px), plus visual review of
+                            screenshots at both widths
+
+The harnesses live in the session scratchpad, not the repository. Not verified: real devices,
+or browsers other than Chromium.
+
+--------------------------------------------------------------------------------
+DEFECTS FOUND AND FIXED
+--------------------------------------------------------------------------------
+
+ 1. autoBuild() threw a SyntaxError ('.vtimeLine[]') without a smallView entry, partway through,
+    after marking lists but before binding the resize listener. Every resize threw the same way.
+ 2. timeLineList.css was never linked, so no markers, no labels and no label column appeared.
+ 3. Once loaded, the default labels would sit off-screen (no left margin for the column).
+ 4. Per-list classes vtl0, vtl1… collided across instances, and refresh() reused vtl0 and so on.
+ 5. refresh() generated no styles for the lists it activated, and did not apply wrap until the
+    next resize.
+ 6. Misspelled guards (…Atrrib) were always true, so "{null}" rules were written for unconfigured
+    and missing attributes.
+ 7. wrapList toggled every .vtimeLine on the page, including other instances' lists.
+ 8. refresh() worked before autoBuild() (no CSS, no listener) and after destroy() (lists never
+    unmarked again). With no className it threw a raw SyntaxError.
+ 9. The autoBuild() re-entry guard looked up "#v"+className, which never exists, so it never fired.
+10. dataAttributes accepted non-string values, half-applied a failing assignment, and its count
+    message said 4 for a limit of 5.
+11. className accepted ".x" or values with spaces, which failed later as an invalid selector.
+12. Typos in error messages: imcomplete, supllied, suported.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS (documented, not changed)
+--------------------------------------------------------------------------------
+
+ - smallView compares against the window width, not the list's (doc/timeline-list.md, Limits).
+ - className matches every element carrying it, including non-list wrappers.
+ - Styles are compiled at build time. Changing them needs destroy() and a new instance.
+ - The default marker uses font-family: vicon, which vUX does not ship. Plain-text markers
+   must override font-family.
+ - Stacked labels sit at a fixed offset. A large marker needs padding-left in the label style.

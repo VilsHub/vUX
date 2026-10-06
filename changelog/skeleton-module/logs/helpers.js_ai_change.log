@@ -1,0 +1,22 @@
+FILE: helpers.js
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+skeleton.js added to the module registry (vModel.core.data.modules), so that
+window.vUxModules lists it at runtime. The line keeps the file's CRLF ending.
+
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+                "resizer.js",
+                "spaEngine.js",
+
+NEW_SECTION
+                "resizer.js",
+                "skeleton.js",
+                "spaEngine.js",

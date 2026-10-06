@@ -1,6 +1,7 @@
 .vtimeLine {
     border-left: solid 1px #710943;
     padding-left: 23px;
+    margin-left: 110px; /* room for the label column drawn to the left of the line */
     list-style-type: none !important;
 }
 .vtimeLine li{
@@ -32,13 +33,16 @@
     text-align: right;
     font-size: 13px;
 }
-/* Wrap styles */
-.vtimeLine.wrap li{
+/* Wrap styles: three classes, so they outrank a list's own generated styles (two classes) */
+.vtimeLine.activated.wrap{
+    margin-left: 0;
+}
+.vtimeLine.activated.wrap li{
     padding-top: 23px;
     
 }
 
-.vtimeLine.wrap li::after{
+.vtimeLine.activated.wrap li::after{
     left: -14px;
     text-align: left;
 }

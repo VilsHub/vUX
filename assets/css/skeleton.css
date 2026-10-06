@@ -1,0 +1,121 @@
+/* ============================================================================
+   vUX Skeleton.
+   Every rule is scoped under .vux-sk-host - the layer in template mode, the
+   container in mask mode - so nothing here touches a page with no skeleton up.
+   Default SIZING is wrapped in :where(), which has zero specificity, so any
+   class of the consumer's wins. The skeleton LOOK (fill, transparent text) is
+   !important, because it must override the consumer's own colours to work.
+   ========================================================================== */
+
+.vux-sk-host{
+    --vux-sk-base:#e3e6eb;
+    --vux-sk-highlight:#f4f5f8;
+    --vux-sk-radius:6px;
+    --vux-sk-speed:1.6s;
+}
+.vux-sk-layer{pointer-events:none; user-select:none; -webkit-user-select:none}
+
+/* ---------- the fill ----------
+   One gradient, 200vw wide, attached to the viewport rather than to each
+   block: every block shows its own slice of the SAME gradient, so the sweep
+   crosses the whole skeleton in step instead of each bar running its own. */
+.vux-sk-host .vux-sk-bg{
+    background-color:var(--vux-sk-base) !important;
+    background-image:linear-gradient(90deg,
+        var(--vux-sk-base) 0 38%, var(--vux-sk-highlight) 50%, var(--vux-sk-base) 62% 100%) !important;
+    background-size:200vw 100% !important;
+    background-repeat:repeat-x !important;
+    background-attachment:fixed !important;
+    color:transparent !important;
+    border-color:transparent !important;
+    box-shadow:none !important;
+    text-shadow:none !important;
+    -webkit-text-fill-color:transparent;
+}
+.vux-sk-host.vux-sk-shimmer .vux-sk-bg{animation:vux-sk-sweep var(--vux-sk-speed) linear infinite}
+.vux-sk-host.vux-sk-pulse .vux-sk-bg{
+    background-image:none !important;
+    animation:vux-sk-pulse var(--vux-sk-speed) ease-in-out infinite;
+}
+.vux-sk-host.vux-sk-none .vux-sk-bg{background-image:none !important}
+
+@keyframes vux-sk-sweep{
+    from{background-position:0 0}
+    to{background-position:-200vw 0}
+}
+@keyframes vux-sk-pulse{
+    0%,100%{opacity:1}
+    50%{opacity:.5}
+}
+
+/* ---------- blocks: controls, media, circles, rects ---------- */
+.vux-sk-host .vux-sk-block{border-radius:var(--vux-sk-radius)}
+.vux-sk-host .vux-sk-block > *{visibility:hidden}
+.vux-sk-host .vux-sk-block::placeholder{color:transparent}
+.vux-sk-host .vux-sk-circle{border-radius:50% !important}
+.vux-sk-host .vux-sk-sized{width:var(--vux-sk-size) !important; height:var(--vux-sk-size) !important; flex:none}
+.vux-sk-host .vux-sk-ratio{aspect-ratio:var(--vux-sk-ratio) !important; height:auto !important}
+
+/* A real image masked in place keeps its box, but not its picture. */
+.vux-sk-host img.vux-sk-media, .vux-sk-host video.vux-sk-media{object-position:-99999px 0}
+.vux-sk-host svg.vux-sk-media > *{visibility:hidden}
+.vux-sk-host canvas.vux-sk-media{opacity:.0001}
+
+/* The <span> standing in for a media element in a ghost. Sized only by
+   default: the consumer's class, if the image had one, decides. */
+:where(.vux-sk-host span.vux-sk-media){display:block; width:100%; aspect-ratio:16 / 9}
+
+/* ---------- text with words: one bar per line, as long as the line ----------
+   The element's content is wrapped in this inline span while the skeleton is up.
+   An inline background covers each line's run of text and stops where the words
+   do; box-decoration-break gives every line fragment its own rounded ends. */
+.vux-sk-host .vux-sk-inline{
+    border-radius:var(--vux-sk-radius);
+    -webkit-box-decoration-break:clone;
+            box-decoration-break:clone;
+}
+.vux-sk-host .vux-sk-inline *{color:transparent !important; -webkit-text-fill-color:transparent; background:none !important}
+
+/* ---------- fallback: an element whose children are not all inline ----------
+   It cannot be wrapped, so the whole element is filled and a mask cuts the
+   fill into stripes, one per line box. The bars run the element's full width. */
+.vux-sk-host .vux-sk-text{
+    -webkit-mask-image:linear-gradient(transparent 20%, #000 20% 80%, transparent 80%);
+            mask-image:linear-gradient(transparent 20%, #000 20% 80%, transparent 80%);
+    -webkit-mask-size:100% 1lh;
+            mask-size:100% 1lh;
+    -webkit-mask-repeat:repeat-y;
+            mask-repeat:repeat-y;
+    -webkit-mask-origin:content-box;
+            mask-origin:content-box;
+    border-radius:var(--vux-sk-radius);
+}
+.vux-sk-host .vux-sk-text *{color:transparent !important; -webkit-text-fill-color:transparent}
+
+/* ---------- empty fields: lines of explicit width ---------- */
+.vux-sk-host .vux-sk-line{display:block; max-width:100%; overflow:hidden; white-space:nowrap}
+.vux-sk-host .vux-sk-line-1{display:inline-block; vertical-align:top}
+.vux-sk-host .vux-sk-line > i{
+    display:inline-block; vertical-align:middle; font-style:normal;
+    width:var(--vux-sk-w, 8em); max-width:100%; height:.72em;
+    border-radius:min(var(--vux-sk-radius), .36em);
+}
+.vux-sk-host .vux-sk-filler{display:block}
+
+/* ---------- skipped ---------- */
+.vux-sk-host .vux-sk-skip{visibility:hidden}
+
+/* ---------- screen-reader announcement ---------- */
+.vux-sk-sr{
+    position:absolute !important; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0;
+}
+
+/* ---------- the real content arriving ---------- */
+.vux-sk-revealed{animation:vux-sk-fade .26s ease-out}
+@keyframes vux-sk-fade{from{opacity:0}}
+
+@media (prefers-reduced-motion: reduce){
+    .vux-sk-host .vux-sk-bg{animation:none !important; background-image:none !important}
+    .vux-sk-revealed{animation:none}
+}

@@ -1,0 +1,10 @@
+FILE: doc/skeleton.md
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+NEW FILE. The Skeleton guide: how it works (two modes, timing, CSS-driven
+layout, untouched container), quick start with Component, the full inference
+table, data-skeleton values, the API and config tables, a timing diagram,
+styling through custom properties, accessibility, limits, and the error list.

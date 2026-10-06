@@ -1,0 +1,19 @@
+FILE: ChangeLog.md
+FEATURE: skeleton-module
+DATE: 2026-10-05
+PRIOR STATE: as left by feature 'timeline-list-verification' (uncommitted at the time)
+
+REASON
+Six Added bullets for the Skeleton module, its data-skeleton attribute, timing, mask mode, guide and example; one Fixed bullet for Component sync() without onMount.
+
+OLD_SECTION
+(no existing lines changed; the bullets below were appended under ## Added and ## Fixed)
+
+NEW_SECTION
+- Skeleton module (vUX-skeleton.js) — placeholder screens derived from the template you already wrote for the real content: fields become text bars, images media blocks, controls filled blocks, and your card, padding and grid are kept, so the skeleton has the layout of what replaces it
+- Skeleton `data-skeleton` attribute — `text:N`, `circle`, `circle:<size>`, `rect`, `rect:<w>/<h>`, `media`, `keep` and `skip` override what an element is inferred to be
+- Skeleton timing — `config.delay` keeps a fast load from flashing a skeleton at all, `config.minDuration` keeps a slow one from flickering off, and `hide()` returns a promise so you render once it is down; `during(promise)` wraps the whole flow
+- Skeleton mask mode — with no template, masks the container's existing content in place for a refresh, and puts the same nodes back afterwards
+- Skeleton guide (doc/skeleton.md) — the two modes, what becomes what, `data-skeleton`, timing, styling through custom properties, accessibility, limits and the error list
+- Runnable Skeleton example (examples/skeleton/) — a feed reloading at three speeds, a template beside its rendered card and derived skeleton, a playground over every config property, a with/without timing comparison, mask mode with a byte-for-byte check, and the validation errors
+- Component sync() without config.onMount now returns the instances it mounted, and instances() and destroyAll() reach rows it mounted; before, sync() returned undefined for each new row and destroyAll() left those rows in the page

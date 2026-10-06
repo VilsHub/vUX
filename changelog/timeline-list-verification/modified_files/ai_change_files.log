@@ -1,0 +1,19 @@
+FEATURE: timeline-list-verification
+DATE: 2026-10-05
+
+<TimeLineList>
+  vUX-timeLineList.js
+  assets/css/timeLineList.css         (existed, never linked by the module until now)
+  examples/timelinelist/index.html    (new)
+  examples/timelinelist/main.js       (new)
+  examples/timelinelist/README.md     (new)
+  doc/timeline-list.md                (new)
+
+<Documentation>
+  doc/README.md
+
+<Release record>
+  ChangeLog.md
+
+<Working record>
+  changelog/timeline-list-verification/   (these files)
