@@ -1,0 +1,10 @@
+FILE: doc/sketch-pad.md
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: did not exist
+
+REASON
+NEW FILE. The module guide, in the structure of the other guides: setup,
+the host contract, tools, config properties, the scene format, the API,
+constrained mode, keyboard scopes, styling the editor, limits and the error
+list.

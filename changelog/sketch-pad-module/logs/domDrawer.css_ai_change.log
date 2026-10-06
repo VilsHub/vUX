@@ -1,0 +1,8 @@
+FILE: assets/css/domDrawer.css
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: unchanged since the v4.0.0-beta line began
+
+REASON
+DELETED with vUX-domDrawer.js, its only user. SketchPad draws on a canvas and
+needs no stylesheet.

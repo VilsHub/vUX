@@ -1,0 +1,21 @@
+FILE: ChangeLog.md
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: as left by feature 'skeleton-module' (uncommitted at the time)
+
+OLD_SECTION
+(v4.0.0-beta ## Added ended with the Runnable Skeleton example bullet;
+ ## Removed ended with "- validator.config.progressIndicatorStyle")
+
+NEW_SECTION
+## Added: seven SketchPad bullets after the Skeleton ones (module, connectors,
+scene as data, constrained mode, stamps and icons, touch/multiple pads, guide
+and example).
+## Removed: "- DOMDrawer module (vUX-domDrawer.js and assets/css/domDrawer.css)
+— replaced by SketchPad, ..."
+
+REASON
+Release-facing record of the new module and the removal. The earlier bullets
+naming DOMDrawer ("domDrawer module" under Added, DOMDrawer in the destroy()
+bullet, the registry fix) are history and left as written; the Removed bullet
+records the end of it.

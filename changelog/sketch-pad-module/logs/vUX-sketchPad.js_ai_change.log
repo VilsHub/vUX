@@ -1,0 +1,61 @@
+FILE: vUX-sketchPad.js
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: did not exist
+
+REASON
+NEW FILE. The SketchPad module: a canvas drawing surface, extracted from the
+Sketchpad whiteboard app (Apps/sketch-app/app.js, sections state through
+keyboard, ~1100 lines), which is now its first consumer.
+
+Why it exists: DOMDrawer could only stretch one absolutely-positioned <div>
+into a rectangle. Circles, triangles, stars, polygons and curves cannot be
+built that way, and sketch-app already had all of them on a canvas engine with
+undo, connectors and pointer events. Moving that engine into vUX gives both
+apps one implementation and replaces DOMDrawer.
+
+What changed relative to the app's engine (behaviour otherwise carried over
+line for line: geometry, hit-testing, rendering, connectors and bindings,
+transform, drag state machine, text editor, duplicate/delete):
+
+  - All state is per instance, inside the constructor closure, so a page can
+    hold several pads. The app's globals (elements, camera, selection, drag,
+    history, ...) became closure variables.
+  - The pad creates its own <canvas> inside the host element, styled inline
+    (position absolute, inset 0, width/height 100%, touch-action none) so it
+    works on the first frame. The explicit 100% matters: the bitmap is sized
+    in device pixels, and without a CSS size a canvas takes its size from the
+    bitmap, so on a devicePixelRatio 2 screen it rendered at twice the host's
+    size (caught at phone width while building the example page); a ResizeObserver on the host replaces the window resize listener.
+    No stylesheet: the text editor is styled inline too and carries the
+    class vSketchPad-editor for consumers to theme.
+  - Keyboard: config.keyboardScope "element" (default, host made focusable,
+    focused on pointerdown), "document" (window listeners, what sketch-app
+    uses) or "none". Keys typed into inputs, selects and contenteditable are
+    ignored. Tool letter keys come from config.shortcuts instead of being
+    hard-coded. App-only keys (Ctrl+S, Escape closing dialogs) stay in the app.
+  - Constrained mode for consumers that mark out a region over an image:
+    config.tools (whitelist; connectors need "arrow", double-click text needs
+    "text"), config.panZoom (false: no wheel zoom, no panning),
+    config.bounded (create/resize/pen/connectors clamp to the visible
+    surface; move clamps the delta so the whole selection stays on it),
+    config.maxElements (enforced on every creation path, duplicate and
+    insertImage), config.returnToSelect.
+  - The app's style panel became setStyle(partial): sets defaults and applies
+    the same per-property rules to the selection in one undo step.
+  - Image elements: the app's dark-theme check (isDarkTheme() inside
+    drawElement) became the counterInvertImages property. insertImage() and
+    createStamp() wrap the app's image/SVG-icon placement; the mono-SVG
+    detection and retint moved with them.
+  - The app's svgicon tool is the "stamp" tool (armed with pad.stamp); the
+    font icon tool is armed with pad.icon = {family, char}.
+  - exportCanvas(options) replaces the app's separate thumbnail and PNG code
+    (margin, scale, maxWidth/maxHeight, background).
+  - load() validates entries and re-numbers missing or duplicate ids, since
+    scenes may come from files.
+  - pointercancel is handled (a touch interrupted by the browser no longer
+    leaves a drag open); a "grabbing" cursor shows during a pan.
+  - Every public method throws a descriptive Error when called before
+    initialize() or after destroy(); every config property validates.
+  - Callbacks: change (after every repaint; the app's autosave hook),
+    toolChange, zoomChange.

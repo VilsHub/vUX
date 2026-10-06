@@ -1,0 +1,21 @@
+FILE: vUX-domDrawer.js
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: as committed in 3f1472a (destroy() added)
+
+REASON
+DELETED. Replaced by SketchPad.
+
+DOMDrawer drew one rectangle by stretching an absolutely-positioned <div>. Its
+only consumer was the My Invitees card tool. Problems found on inspection:
+mouse events only, so no touch; getPoints() measured the first element with
+the class instead of the event target, so a second drawing surface drew at
+the wrong offset; enableDrawing() looked for an already-drawn item, so
+enabling did nothing visible before the first draw; release() left
+states.enabled true; the getDrawnPoints getter was an empty stub returning
+undefined; and several error messages named the wrong property.
+
+The design could not grow to other shapes. SketchPad's rect tool with
+config.tools = ["select", "rect"], config.maxElements = 1 and config.bounded
+covers DOMDrawer's use and adds move, resize, delete, undo and touch. My
+Invitees was migrated in the same change.

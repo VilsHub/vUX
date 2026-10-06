@@ -55,6 +55,13 @@
 - Skeleton mask mode — with no template, masks the container's existing content in place for a refresh, and puts the same nodes back afterwards
 - Skeleton guide (doc/skeleton.md) — the two modes, what becomes what, `data-skeleton`, timing, styling through custom properties, accessibility, limits and the error list
 - Runnable Skeleton example (examples/skeleton/) — a feed reloading at three speeds, a template beside its rendered card and derived skeleton, a playground over every config property, a with/without timing comparison, mask mode with a byte-for-byte check, and the validation errors
+- SketchPad module (vUX-sketchPad.js) — a canvas drawing surface, extracted from the Sketchpad whiteboard app: rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows, freehand pen, text, font icons and images, with selection, marquee, move, resize, duplicate, delete, undo/redo, wheel zoom and pan
+- SketchPad connectors — drag from a shape's border to another shape's to draw an arrow bound at both ends that re-routes when either shape moves or resizes; pressing Ctrl while drawing pins a joint, which curves the connector at that point
+- SketchPad scene as data — `elements` returns the scene as plain JSON and `load()` restores it (optionally as an undoable step); `exportCanvas()` renders it cropped to its content at any scale and background for PNG export or thumbnails
+- SketchPad constrained mode — `config.tools` limits the tools offered, `config.panZoom = false` fixes the view, `config.bounded` keeps every shape inside the surface and `config.maxElements` caps the scene, for a pad that marks out one region over an image
+- SketchPad stamps and icons — `createStamp()` turns SVG source into a stamp the stamp tool places, with black-only SVGs retinted by the fill colour; `icon` arms the icon tool with a glyph from any loaded font
+- SketchPad works with touch and pen as well as the mouse, and several pads can share a page: pointer events are the canvas's own and keyboard shortcuts go to the focused pad (or the whole document, with `config.keyboardScope`)
+- SketchPad guide (doc/sketch-pad.md) and runnable example (examples/sketchpad/)
 
 ## Fixed
 - modal multiple display bug
@@ -156,6 +163,7 @@
 - loadProgressIndicator Removed, as IO.dowload() send download status, to be used by user for their needs
 - imageManipulator module removed, now handled by $$.sm.filter()
 - validator.config.progressIndicatorStyle
+- DOMDrawer module (vUX-domDrawer.js and assets/css/domDrawer.css) — replaced by SketchPad, whose rect tool with `config.tools = ["select", "rect"]`, `config.maxElements = 1` and `config.bounded` does what DOMDrawer did, plus move, resize, delete, undo and touch input
 
 ## Changed
 - DataView is now built on the shared template-instancing engine (src/componentEngine.js) that backs the Component module; its API, behaviour and error messages are unchanged

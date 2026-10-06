@@ -36,8 +36,9 @@ A consuming page declares a single module script and tells vUX where the library
 | [Carousel](carousel.md) | `vUX-carousel.js` | Autoplaying slideshow with dot navigation, hover pause and swipe, reconfigurable while running |
 | [TimeLineList](timeline-list.md) | `vUX-timeLineList.js` | Plain lists drawn as vertical timelines, each list styled by its own data attributes, stacking on narrow windows |
 | [ListScroller](list-scroller.md) | `vUX-listScroller.js` | A list as one horizontal row, moved a step at a time by your own two buttons, with their inactive state kept true to the scroll position |
+| [SketchPad](sketch-pad.md) | `vUX-sketchPad.js` | A drawing surface in any element: shapes, bound and curved connectors, ink, text, images, undo, pan/zoom and export, with a scene that saves as JSON; or, constrained, a single box over an image |
 
-Guides for the remaining modules (`FormValidator`, `TouchHandler`, `ToolTip`, `CShapes`, `DOMDrawer`) are coming next.
+Guides for the remaining modules (`FormValidator`, `TouchHandler`, `ToolTip`, `CShapes`) are coming next.
 
 ## Tearing a component down
 
@@ -55,6 +56,7 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 - [ListScroller example](../examples/listscroller/README.md) — runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
 - [Skeleton example](../examples/skeleton/README.md) — runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
 - [Component example](../examples/component/README.md) — runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
+- [SketchPad example](../examples/sketchpad/README.md) — runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
 - [README](../README.md) — installation and the public feature list per release.
 - [ChangeLog](../ChangeLog.md) — API renames and changes between releases.
 - `window.vUxModules` — type this in the browser console to print the importable module list at runtime.

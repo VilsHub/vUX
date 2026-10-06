@@ -1,0 +1,31 @@
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+
+SketchPad
+  Added:
+    vUX-sketchPad.js
+    doc/sketch-pad.md
+    examples/sketchpad/index.html
+    examples/sketchpad/main.js
+    examples/sketchpad/README.md
+  Modified:
+    src/helpers.js        (module registry)
+    doc/README.md
+    README.md
+    CLAUDE.md
+
+DOMDrawer
+  Deleted:
+    vUX-domDrawer.js
+    assets/css/domDrawer.css
+
+Release record
+  Modified:
+    ChangeLog.md
+
+Outside this repository (consumers, recorded in summary/summary.log)
+  Apps/sketch-app: app.js, index.html, style.css, CLAUDE.md,
+    .claude/skills/verify/SKILL.md, lib/vUX (new symlink)
+  Apps/myinvitees/app.myinvitees.com: assets/js/pages/card-tool/card-ops.js,
+    assets/css/pages/card-tool/content.css, CLAUDE.md
+  VilsHub/CLAUDE.md (workspace): projects table and symlink table

@@ -1,0 +1,41 @@
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+SCOPE: move the Sketchpad app's drawing engine into vUX as SketchPad, make the
+       app consume it, move My Invitees off DOMDrawer onto it, delete DOMDrawer
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX (this repository)
+  New SketchPad module, guide and example; DOMDrawer and its stylesheet
+  deleted; registry, README, CLAUDE.md and ChangeLog.md updated.
+  Breaking for DOMDrawer consumers; My Invitees was the only one.
+
+Apps/sketch-app (git repo, uncommitted)
+  app.js went from ~2100 to ~900 lines: the engine sections (state, geometry,
+  history, rendering, connectors, transformation, pointer, text UI, keyboard)
+  are replaced by `new SketchPad(#canvas-wrap)` and calls into its API. app.js
+  is now an ES module booted with data-id="vUX" data-library-root="lib/vUX";
+  lib/vUX is a relative symlink to ../../../Libraries/vUX. The svgicon tool
+  is now the pad's "stamp" tool. Ctrl+S and dialog Escape stay in the app on a
+  capture-phase listener. window.sketchpad exposes the pad for headless checks.
+  Drawings saved before the change load unchanged (same element format).
+  Verified headless: shapes by shortcut and toolbar, a bound connector with a
+  pinned joint following a moved shape, pen, double-click text, setStyle on
+  the selection, duplicate/delete/undo/redo/select-all, wheel zoom and reset,
+  space-pan, image import, dark theme counter-inversion, save to server with
+  thumbnail, gallery Escape keeping the selection, PNG export, reload
+  restoring the session, stamp panel and placement; no console errors.
+
+Apps/myinvitees/app.myinvitees.com (not a git repo)
+  CardTool uses SketchPad (tools select+rect, no grid, fixed view, bounded,
+  maxElements 1) on a host covering #card; the text box stays a DOM element
+  positioned from the drawn rect so custom fonts and contenteditable keep
+  working. The hand-written move/clamp code is gone; select now moves and
+  resizes, Delete removes at once and is undoable. Verified headless.
+  api.myinvitees.com's older copy of card-ops.js was left alone: its vUX
+  library directory is empty, so it cannot run.
+
+VilsHub/CLAUDE.md (workspace, not a repo)
+  sketch-app row and the new lib/vUX symlink recorded.

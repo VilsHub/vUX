@@ -42,6 +42,7 @@ The beta version (**v4.0.0-beta** ) has the following features added:
 - Component module (`vUX-component.js`), for building your own reusable components from your own markup — template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
 - `destroy()` on every component, releasing the listeners, timers and animations it started and the DOM it injected
 - Skeleton module (`vUX-skeleton.js`), for placeholder screens derived from the template you already wrote, with a delay and minimum duration so they never flash or flicker
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface — rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images — with selection, move/resize, undo/redo, pan/zoom and PNG export
 
 See the [ChangeLog](ChangeLog.md) for the complete list of additions, fixes and renames in this release, and the [documentation index](doc/README.md) for the usage guides.
 

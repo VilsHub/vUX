@@ -1,0 +1,15 @@
+FILE: README.md
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: as left by feature 'skeleton-module' (uncommitted at the time)
+
+OLD_SECTION
+- Skeleton module (`vUX-skeleton.js`), for placeholder screens ...
+
+NEW_SECTION
+- Skeleton module (`vUX-skeleton.js`), for placeholder screens ...
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface — rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images — with selection, move/resize, undo/redo, pan/zoom and PNG export
+
+REASON
+Public feature list for the release gains the new module. DOMDrawer was never
+listed here, so nothing is removed. The file keeps its CRLF line endings.

@@ -1,0 +1,25 @@
+FILE: src/helpers.js
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: as left by feature 'skeleton-module' (uncommitted at the time)
+
+OLD_SECTION
+                "dataView.js",
+                "domDrawer.js",
+                "formComponents.js",
+...
+                "skeleton.js",
+                "spaEngine.js",
+
+NEW_SECTION
+                "dataView.js",
+                "formComponents.js",
+...
+                "skeleton.js",
+                "sketchPad.js",
+                "spaEngine.js",
+
+REASON
+Module registry (vModel.core.data.modules, printed by window.vUxModules):
+domDrawer.js removed with the module, sketchPad.js added in alphabetical
+order. The file keeps its CRLF line endings.

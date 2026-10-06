@@ -1,0 +1,15 @@
+FILE: doc/README.md
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: as left by feature 'skeleton-module' (uncommitted at the time)
+
+OLD_SECTION
+Guides for the remaining modules (`FormValidator`, `TouchHandler`, `ToolTip`, `CShapes`, `DOMDrawer`) are coming next.
+
+NEW_SECTION
+A SketchPad row in the guide table and a SketchPad example link; the
+"coming next" sentence no longer names DOMDrawer.
+
+REASON
+Index the new guide and example; DOMDrawer was removed, so no guide for it
+is coming.

@@ -1,0 +1,16 @@
+FILE: examples/sketchpad/ (index.html, main.js, README.md)
+FEATURE: sketch-pad-module
+DATE: 2026-10-06
+PRIOR STATE: did not exist
+
+REASON
+NEW FILES. The required runnable example for the new module, built on
+examples/shared/example.css. Sections: a hero whiteboard seeded through
+load() (shapes, text, pen, image, a straight and a curved connector bound
+to shapes) with toolbar, actions and a setStyle() sidebar; 01 a live
+control for every config property, with an equivalent-code panel and a
+callback log (keyboardScope rebuilds the pad around the same scene); 02 the
+scene as editable JSON with load({history:true}) and exportCanvas() PNG
+preview; 03 the constrained pad over a CSS-drawn invitation card, the setup
+My Invitees uses; 04 createStamp() on inline SVGs and mono retinting; 05 ten
+bad calls printing the thrown errors. Offline, responsive to 390px.

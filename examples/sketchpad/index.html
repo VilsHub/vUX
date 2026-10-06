@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX SketchPad example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* a shorter hero than the shared one: the board is the point, so it starts above the fold */
+    .hero{padding-top:clamp(40px,7vh,76px)}
+
+    /* ---------- the studio: toolbar / board / style sidebar ---------- */
+    .studio{margin-top:38px; overflow:hidden}
+    .studio-bar{
+        display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; justify-content:space-between;
+        padding:10px 12px; border-bottom:1px solid var(--line); background:var(--panel);
+    }
+    .tools{display:flex; flex-wrap:wrap; gap:4px}
+    .tools button, .acts button{
+        min-width:36px; height:34px; padding:0 9px; font-size:1rem; line-height:1;
+        display:inline-flex; align-items:center; justify-content:center;
+    }
+    .tools button.active{background:var(--amber); border-color:var(--amber); color:#20160a}
+    .tools button[hidden]{display:none}
+    .acts{display:flex; flex-wrap:wrap; gap:4px}
+    .acts button{font-size:.8rem}
+    .acts .sep{width:1px; background:var(--line); margin:4px 4px}
+
+    .studio-body{display:grid; grid-template-columns:minmax(0,1fr) 250px}
+    /* The pad fills its host, so the host is what gets a size. */
+    .board{height:min(560px,68vh); min-height:380px; background:#0b1018; position:relative}
+    .board:focus-visible{box-shadow:inset 0 0 0 2px rgba(92,207,230,.5)}
+    /* section 01's counterInvertImages demo: themes the surface by filter, the way Sketchpad does */
+    .board.inverted{filter:invert(92%) hue-rotate(180deg)}
+    .side{border-left:1px solid var(--line); background:var(--panel); padding:16px}
+    .side h3{font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); font-weight:500; margin:0 0 14px}
+    .seg{display:flex; gap:4px}
+    .seg button{flex:1; padding:6px 0; font-size:.95rem}
+    .seg button.active{border-color:var(--amber); color:var(--amber)}
+    .swatch-row{display:flex; gap:8px; align-items:center}
+    .studio .status{justify-content:space-between; flex-wrap:wrap}
+    .studio .status span{white-space:nowrap}
+
+    .keys{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px 22px; margin:22px 0 0; padding:0; list-style:none; color:var(--muted); font-size:.88rem}
+    .keys li b{color:var(--fg); font-weight:550}
+
+    /* ---------- config playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:22px; align-items:start}
+    .tool-checks{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:6px 10px}
+    .tool-checks .switch{font-size:.84rem; font-family:var(--mono)}
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+    .switches{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px 16px}
+    .switches .switch code{font-size:.84rem}
+    /* property names keep their camelCase inside the shared uppercase labels */
+    label.lbl code{text-transform:none; letter-spacing:0; color:var(--fg); font-size:.84rem}
+    input[type=number]{padding:7px 10px}
+
+    /* ---------- scene as data ---------- */
+    .data{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:22px; align-items:start}
+    #sceneJson{min-height:330px; font-size:.76rem; line-height:1.5; border-radius:0; border:0; border-top:1px solid var(--line)}
+    .export-view{
+        background:var(--ink); border-radius:0 0 12px 12px; min-height:240px; padding:16px;
+        display:flex; align-items:center; justify-content:center;
+    }
+    .export-view img{max-width:100%; max-height:300px; border:1px solid var(--line); border-radius:6px}
+    .export-view p{color:var(--dim); font-family:var(--mono); font-size:.8rem; margin:0; text-align:center}
+
+    /* ---------- constrained: an invitation card ---------- */
+    .bounded{display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:22px; align-items:start}
+    .invite{
+        position:relative; aspect-ratio:3/2; border-radius:10px; overflow:hidden;
+        background:
+            radial-gradient(circle at 18% 22%,rgba(255,180,84,.30),transparent 42%),
+            radial-gradient(circle at 85% 80%,rgba(200,162,255,.28),transparent 45%),
+            linear-gradient(140deg,#1d1526,#101827 60%,#0d1f24);
+        border:1px solid var(--line);
+    }
+    .invite .print{
+        position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+        text-align:center; pointer-events:none; padding:8%;
+    }
+    .invite .print small{font-family:var(--mono); letter-spacing:.3em; font-size:.68rem; color:var(--amber); text-transform:uppercase}
+    .invite .print strong{font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:clamp(1.5rem,4.4vw,2.5rem); line-height:1.1; margin:10px 0 6px; color:#f3eadb}
+    .invite .print span{color:var(--muted); font-size:.85rem}
+    /* the pad's host sits over the printed card; the canvas inside is transparent */
+    .invite .surface{position:absolute; inset:0}
+    .readout{font-family:var(--mono); font-size:.82rem; line-height:1.9; color:var(--muted); margin:0}
+    .readout b{color:var(--cyan); font-weight:500}
+
+    /* ---------- stamps ---------- */
+    .stamps{display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:22px; align-items:start}
+    .paper{height:340px; background:#f4f1ea; border-radius:0 0 12px 12px; position:relative}
+    .stamp-pick{display:flex; gap:10px; margin-bottom:16px}
+    .stamp-pick button{flex:1; height:64px; display:flex; align-items:center; justify-content:center; background:#f4f1ea; border-color:var(--line)}
+    .stamp-pick button img{width:34px; height:34px}
+    .stamp-pick button.active{box-shadow:0 0 0 2px var(--amber)}
+
+    .bad{display:flex; flex-wrap:wrap; gap:8px}
+    .bad button{font-family:var(--mono); font-size:.78rem}
+    button:disabled{opacity:.38; cursor:not-allowed}
+
+    @media (max-width:900px){
+        /* minmax(0,…) so a wide child (the code panel) scrolls instead of widening the column */
+        .studio-body,.play,.data,.bounded,.stamps{grid-template-columns:minmax(0,1fr)}
+        .side{border-left:0; border-top:1px solid var(--line)}
+    }
+    @media (max-width:560px){
+        .wrap{padding:0 16px}
+        .board{height:440px; min-height:0}
+        .two{grid-template-columns:1fr}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> SketchPad <b>/</b> v4.0.0-beta</p>
+        <h1>A whiteboard in one element.</h1>
+        <p class="hero-sub">
+            Shapes, curved connectors, freehand ink and text on a pan-and-zoom canvas,
+            with <b>undo, export and a scene you can save as JSON</b>. Draw on the board below.
+        </p>
+
+        <div class="panel studio">
+            <div class="studio-bar">
+                <div class="tools" id="tools"></div>
+                <div class="acts">
+                    <button id="undo" title="undo() · Ctrl+Z">↶</button>
+                    <button id="redo" title="redo() · Ctrl+Y">↷</button>
+                    <span class="sep"></span>
+                    <button id="dup" title="duplicateSelected() · Ctrl+D">Dup</button>
+                    <button id="del" title="deleteSelected() · Del">Del</button>
+                    <button id="all" title="selectAll() · Ctrl+A">All</button>
+                    <span class="sep"></span>
+                    <button id="zoomOut" title="zoomBy(1/1.2)">−</button>
+                    <button id="zoomFit" title="camera = fit">Fit</button>
+                    <button id="zoomIn" title="zoomBy(1.2)">+</button>
+                    <span class="sep"></span>
+                    <button class="danger" id="clear" title="clear()">Clear</button>
+                </div>
+            </div>
+            <div class="studio-body">
+                <div class="board" id="board"></div>
+                <aside class="side">
+                    <h3>setStyle()</h3>
+                    <div class="field">
+                        <label class="lbl">Stroke &amp; fill</label>
+                        <div class="swatch-row">
+                            <input type="color" id="stStroke" value="#d7e0ec" title="stroke">
+                            <label class="switch"><input type="checkbox" id="stFillOn"> fill</label>
+                            <input type="color" id="stFill" value="#5ccfe6" title="fill" disabled>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="stWidth">Stroke width <span class="val" id="stWidthV">2</span></label>
+                        <input type="range" id="stWidth" min="1" max="12" value="2">
+                    </div>
+                    <div class="field">
+                        <label class="lbl">Line style</label>
+                        <div class="seg" id="stLine">
+                            <button class="active" data-v="solid" title="solid">─</button>
+                            <button data-v="dashed" title="dashed">┄</button>
+                            <button data-v="dotted" title="dotted">┈</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="stGap">Dash gap <span class="val" id="stGapV">8</span></label>
+                        <input type="range" id="stGap" min="2" max="24" value="8">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="stFont">Font size <span class="val" id="stFontV">24</span></label>
+                        <input type="range" id="stFont" min="10" max="72" value="24">
+                    </div>
+                    <p class="note" style="margin:0">Sets the style of the next thing you draw, and restyles whatever is selected, as one undo step.</p>
+                </aside>
+            </div>
+            <div class="status run" id="status">
+                <span><span class="dot" style="display:inline-block;margin-right:8px"></span><span id="stTool">select</span></span>
+                <span id="stCount">0 elements</span>
+                <span id="stSel">nothing selected</span>
+                <span id="stZoom">100%</span>
+            </div>
+        </div>
+
+        <ul class="keys">
+            <li><b>Hover a shape's edge</b>, then drag: a connector that stays bound when shapes move.</li>
+            <li><b>Press <span class="kbd">Ctrl</span></b> while drawing one to pin a joint and curve it; <b>double-click</b> to end it anywhere.</li>
+            <li><b>Wheel</b> zooms, <b><span class="kbd">Space</span>-drag</b> or middle-drag pans.</li>
+            <li><b>Double-click</b> empty space to type; double-click text to edit it.</li>
+        </ul>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Every config property, live</h2>
+        <p class="lede">
+            These act on the board above. Most settings take effect immediately; <code>keyboardScope</code> is read
+            once by <code>initialize()</code>, so changing it here destroys the pad and builds a new one around the same scene.
+        </p>
+        <div class="play">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>config.tools</span><span id="toolsCount"></span></div>
+                    <div class="panel-b"><div class="tool-checks" id="toolChecks"></div></div>
+                </div>
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>config</span></div>
+                    <div class="panel-b">
+                        <div class="field switches">
+                            <label class="switch"><input type="checkbox" id="cGrid" checked> <code>grid</code></label>
+                            <label class="switch"><input type="checkbox" id="cPanZoom" checked> <code>panZoom</code></label>
+                            <label class="switch"><input type="checkbox" id="cBounded"> <code>bounded</code></label>
+                            <label class="switch"><input type="checkbox" id="cReturn" checked> <code>returnToSelect</code></label>
+                            <label class="switch"><input type="checkbox" id="cShortcuts" checked> <code>shortcuts</code></label>
+                            <label class="switch"><input type="checkbox" id="cInvert"> <code>counterInvertImages</code></label>
+                        </div>
+                        <div class="field two">
+                            <div>
+                                <label class="lbl"><code>gridColor</code></label>
+                                <input type="color" id="cGridColor" value="#1f2a3a">
+                            </div>
+                            <div>
+                                <label class="lbl"><code>accentColor</code></label>
+                                <input type="color" id="cAccent" value="#ffb454">
+                            </div>
+                        </div>
+                        <div class="field two">
+                            <div>
+                                <label class="lbl" for="cMax"><code>maxElements</code> <span class="val">0 = no limit</span></label>
+                                <input type="number" id="cMax" min="0" value="0">
+                            </div>
+                            <div>
+                                <label class="lbl" for="cHistory"><code>historyLimit</code></label>
+                                <input type="number" id="cHistory" min="1" value="100">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="cScope"><code>keyboardScope</code> <span class="val">rebuilds the pad</span></label>
+                            <select id="cScope" style="width:100%">
+                                <option value="element" selected>element: keys when the board has focus</option>
+                                <option value="document">document: keys anywhere on the page</option>
+                                <option value="none">none: no keyboard at all</option>
+                            </select>
+                        </div>
+                        <p class="note" id="cErr" style="color:var(--red); margin:0; min-height:1.4em"></p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="snippet"></pre>
+                </div>
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>config.callbacks</span><span id="renders">0 renders</span></div>
+                    <div class="panel-b"><pre class="log" id="log"></pre></div>
+                </div>
+            </div>
+        </div>
+        <p class="note">
+            <code>counterInvertImages</code> is for pages that theme the surface with a CSS <code>invert()</code> filter,
+            as Sketchpad's dark mode does. Ticking it here also inverts the board: shapes flip, while placed images
+            like the sun are drawn pre-inverted and keep their real colours.
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>The scene is data</h2>
+        <p class="lede">
+            <code>pad.elements</code> is a plain array of JSON objects in scene coordinates. Save it however you like and
+            hand it back to <code>load()</code>. <code>exportCanvas()</code> renders the whole scene, cropped to its content.
+        </p>
+        <div class="data">
+            <div class="panel">
+                <div class="panel-h">
+                    <span>pad.elements</span>
+                    <span class="row" style="gap:6px">
+                        <button class="tiny" id="jsonLoad" title="pad.load(JSON.parse(text), {history: true})">load()</button>
+                        <button class="tiny ghost" id="jsonFollow" title="discard edits and follow the board again">Follow</button>
+                        <button class="tiny ghost" id="jsonCopy">Copy</button>
+                    </span>
+                </div>
+                <textarea id="sceneJson" spellcheck="false"></textarea>
+                <div class="status" id="jsonStatus"><span class="dot"></span><span id="jsonStatusText">follows the board; edit it and press load()</span></div>
+            </div>
+            <div class="panel">
+                <div class="panel-h">
+                    <span>exportCanvas()</span>
+                    <span class="row" style="gap:6px">
+                        <select id="exBg" title="background">
+                            <option value="#080b11">ink</option>
+                            <option value="#ffffff">white</option>
+                            <option value="transparent">transparent</option>
+                        </select>
+                        <button class="tiny primary" id="exRun">Export</button>
+                    </span>
+                </div>
+                <div class="export-view" id="exView"><p>Press Export to render the board<br>at 2× onto a new canvas.</p></div>
+                <div class="status"><span class="dot"></span><span id="exInfo">—</span>
+                    <a id="exDl" href="#" download="sketch.png" style="margin-left:auto" hidden>download PNG</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Constrained: one box on a card</h2>
+        <p class="lede">
+            The same component with the whiteboard switched off: <code>tools: ["select", "rect"]</code>, a fixed view,
+            <code>bounded</code> so nothing leaves the card, and <code>maxElements: 1</code>. This is the configuration
+            an app uses to let someone mark the area on an uploaded design where a guest's name gets printed.
+        </p>
+        <div class="bounded">
+            <div class="panel">
+                <div class="panel-h">
+                    <span class="dots"><i></i><i></i><i></i></span>
+                    <span class="row" style="gap:6px">
+                        <button class="tiny primary" id="bDraw">Draw box</button>
+                        <button class="tiny" id="bSelect">Select</button>
+                        <button class="tiny danger" id="bDelete">Delete</button>
+                    </span>
+                </div>
+                <div class="panel-b">
+                    <div class="invite">
+                        <div class="print">
+                            <small>you are invited</small>
+                            <strong>An Evening<br>of Small Things</strong>
+                            <span>Saturday · eight o'clock</span>
+                        </div>
+                        <div class="surface" id="cardSurface"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>What the app would send</span></div>
+                <div class="panel-b">
+                    <p class="readout" id="bReadout"></p>
+                    <p class="note">
+                        Try to draw past an edge, or drag the box off the card: <code>bounded</code> clamps it.
+                        A second box is refused until this one is deleted.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Stamps from SVG</h2>
+        <p class="lede">
+            <code>createStamp(svgText)</code> turns SVG source into something the stamp tool places with each click.
+            A stamp drawn only in black is <strong>mono</strong>: once placed, the fill colour re-tints it.
+            A coloured one keeps its own colours.
+        </p>
+        <div class="stamps">
+            <div class="panel">
+                <div class="panel-h"><span>stamp tool</span><span id="stampHint">click the paper to place</span></div>
+                <div class="paper" id="paper"></div>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>pad.stamp</span></div>
+                <div class="panel-b">
+                    <div class="stamp-pick" id="stampPick"></div>
+                    <div class="field">
+                        <label class="lbl"><code>setStyle({ fill })</code></label>
+                        <div class="swatch-row">
+                            <input type="color" id="stampFill" value="#d6336c">
+                            <span style="color:var(--muted); font-size:.85rem">re-tints selected mono stamps</span>
+                        </div>
+                    </div>
+                    <p class="note" style="margin:0" id="stampNote"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>Bad input fails loudly</h2>
+        <p class="lede">
+            Arguments are checked at the call, and every error names the property or method and what it wanted.
+            None of these buttons changes the pads above: each call throws before it touches anything.
+        </p>
+        <div class="bad">
+            <button data-bad="ctor">new SketchPad("#board")</button>
+            <button data-bad="tool">pad.tool = "lasso"</button>
+            <button data-bad="disabled">card.tool = "pen"</button>
+            <button data-bad="style">setStyle({ strokeWidth: -2 })</button>
+            <button data-bad="styleKey">setStyle({ colour: "red" })</button>
+            <button data-bad="scope">config.keyboardScope after initialize()</button>
+            <button data-bad="early">undo() before initialize()</button>
+            <button data-bad="tools">config.tools = ["rect"]</button>
+            <button data-bad="load">load([{ x: 1 }])</button>
+            <button data-bad="max">config.maxElements = 1.5</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet. Press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/sketch-pad.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The three pads are on <span class="kbd">window</span> as <span class="kbd">pad</span>,
+            <span class="kbd">card</span> and <span class="kbd">paper</span>. Try
+            <span class="kbd">pad.camera = {x: -200, y: 0, zoom: 2}</span> from the console.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>
