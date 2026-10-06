@@ -1,0 +1,15 @@
+File: examples/spa/version.json
+Feature: spa-cache-version
+
+=======================================================================
+Section 1 — new file
+OLD_SECTION
+(file did not exist)
+
+NEW_SECTION
+{ "build": "demo-1" }
+
+REASON
+Stands in for the file a deploy script writes. The example reads it before initialize() and
+passes its build to config.cacheVersion; editing it on disk while the page is open simulates
+a release. The dev server already sends Cache-Control: no-store for every file.

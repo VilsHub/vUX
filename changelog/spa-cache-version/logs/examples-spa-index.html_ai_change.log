@@ -1,0 +1,154 @@
+File: examples/spa/index.html
+Feature: spa-cache-version
+
+=======================================================================
+Section 1
+OLD_SECTION
+    .urlbar-meta{margin-left:auto; color:var(--dim); font-size:.78rem; white-space:nowrap}
+    .urlbar-meta b{color:var(--cyan)}
+
+    .diag{border-top:1px solid var(--line); padding:40px 0 64px}
+    .diag .log{height:220px}
+    @media (max-width:720px){ .topbar .wrap{height:auto; padding-top:12px; padding-bottom:12px; flex-wrap:wrap} nav{margin-left:0} }
+
+NEW_SECTION
+    .urlbar-meta{margin-left:auto; color:var(--dim); font-size:.78rem; white-space:nowrap}
+    .urlbar-meta b{color:var(--cyan)}
+
+    /* release section: controls beside a live view of what the engine has cached */
+    .release-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:18px; align-items:start}
+    .release-grid .panel + .panel{margin-top:18px}
+    .steps{margin:0; padding-left:20px; color:var(--muted); font-size:.9rem}
+    .steps li{margin-bottom:6px}
+    .steps b{color:var(--fg); font-weight:600}
+    .ver{font-family:var(--mono); color:var(--amber)}
+    #cacheTable{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:.8rem}
+    #cacheTable th{text-align:left; color:var(--dim); font-weight:500; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; padding:0 8px 8px 0}
+    #cacheTable td{border-top:1px solid var(--line); padding:8px 8px 8px 0; vertical-align:top; color:var(--fg); overflow-wrap:anywhere}
+    #cacheTable td:nth-child(2){color:var(--amber); white-space:nowrap}
+    #cacheTable td:nth-child(3){color:var(--muted)}
+    #cacheTable tr.flash td{animation:flash .9s ease-out}
+    @keyframes flash{from{background:rgba(255,107,127,.18)} to{background:transparent}}
+    @media (max-width:820px){ .release-grid{grid-template-columns:minmax(0,1fr)} }
+
+    .diag{border-top:1px solid var(--line); padding:40px 0 64px}
+    .diag .log{height:220px}
+    @media (max-width:720px){ .topbar .wrap{height:auto; padding-top:12px; padding-bottom:12px; flex-wrap:wrap} nav{margin-left:0} }
+
+REASON
+Added section 02 'Shipping a new release' (steps, release controls, live sessionStorage table, app snippet) with its page-specific styles, renumbered validation to 03 and added a cacheVersion = "" validation button. Every module example must demonstrate its config and failure modes; cacheVersion and clearCache() are new API.
+
+=======================================================================
+Section 2
+OLD_SECTION
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Bad input fails immediately</h2>
+        <p class="lede">
+            <code>initialize()</code> refuses an incomplete setup, and the two object-valued config
+            properties reject unknown keys rather than ignoring them. Each button builds a throwaway
+
+NEW_SECTION
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Shipping a new release</h2>
+        <p class="lede">
+            Everything the engine fetches stays in <code>sessionStorage</code> — and that survives a
+            reload, even a hard one. <code>config.cacheVersion</code> ties the cache to a release: when
+            the value changes, the engine empties its cache and the next navigation fetches fresh.
+            This page reads it from <code>/version.json</code> before <code>initialize()</code>.
+        </p>
+        <div class="release-grid">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>try it</span></div>
+                    <div class="panel-b">
+                        <ol class="steps">
+                            <li>Click <b>User 7</b> — fetched, so the progress bar shows.</li>
+                            <li>Click it again from another route — served from cache, no bar.</li>
+                            <li>Ship a release: type a new version below and set it, or edit
+                                <code>examples/spa/version.json</code> on disk and press <b>Check</b>.</li>
+                            <li>Click <b>User 7</b> — the bar is back: the cache was emptied.</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>release controls</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="verInput">config.cacheVersion <span class="val" id="verLive">–</span></label>
+                            <div class="row">
+                                <input type="text" id="verInput" style="flex:1; min-width:0" spellcheck="false">
+                                <button class="primary" id="btnSetVer">Set</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <button id="btnCheck">Check /version.json</button>
+                            <button class="danger" id="btnClear">clearCache()</button>
+                        </div>
+                    </div>
+                    <div class="status" id="relStatus"><span class="dot"></span><span>waiting for boot</span></div>
+                </div>
+            </div>
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>sessionStorage, live</span></div>
+                    <div class="panel-b">
+                        <table id="cacheTable">
+                            <thead><tr><th>key</th><th>entries</th><th>holds</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                        <p class="note" style="margin-top:12px">
+                            <code>vuxSpaLoads</code> is this page's own key: <code>clearCache()</code>
+                            empties only the engine's four, so app state — like auth in
+                            <code>userProperties</code> — survives a release.
+                        </p>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>in your app</span></div>
+                    <pre class="snip">const res = await fetch("/version.json", { cache: "no-store" });
+spa.config.cacheVersion = (await res.json()).build;
+spa.initialize();
+
+// later, on a live engine: clears at once if it changed
+spa.config.cacheVersion = newBuild;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Bad input fails immediately</h2>
+        <p class="lede">
+            <code>initialize()</code> refuses an incomplete setup, and the two object-valued config
+            properties reject unknown keys rather than ignoring them. Each button builds a throwaway
+
+REASON
+Added section 02 'Shipping a new release' (steps, release controls, live sessionStorage table, app snippet) with its page-specific styles, renumbered validation to 03 and added a cacheVersion = "" validation button. Every module example must demonstrate its config and failure modes; cacheVersion and clearCache() are new API.
+
+=======================================================================
+Section 3
+OLD_SECTION
+            <button data-bad="badAttr">dataAttributeNames = { nope: "x" }</button>
+            <button data-bad="badClass">classes = { nope: "x" }</button>
+            <button data-bad="badNode">new SPAEngine("#contentBoundary")</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+
+NEW_SECTION
+            <button data-bad="badAttr">dataAttributeNames = { nope: "x" }</button>
+            <button data-bad="badClass">classes = { nope: "x" }</button>
+            <button data-bad="badNode">new SPAEngine("#contentBoundary")</button>
+            <button data-bad="badVersion">cacheVersion = ""</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+    </div>
+
+REASON
+Added section 02 'Shipping a new release' (steps, release controls, live sessionStorage table, app snippet) with its page-specific styles, renumbered validation to 03 and added a cacheVersion = "" validation button. Every module example must demonstrate its config and failure modes; cacheVersion and clearCache() are new API.

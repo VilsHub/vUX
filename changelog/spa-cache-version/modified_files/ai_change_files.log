@@ -1,0 +1,19 @@
+FEATURE: spa-cache-version
+DATE: 2026-10-06
+
+<SPAEngine>
+  Modified:
+    vUX-spaEngine.js            (config.cacheVersion, clearCache(); uncached page-section fix)
+
+<Documentation>
+  Modified:
+    doc/spa-engine.md
+    ChangeLog.md
+
+<Example>
+  Added:
+    examples/spa/version.json
+  Modified:
+    examples/spa/index.html
+    examples/spa/main.js
+    examples/spa/README.md

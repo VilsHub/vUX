@@ -1,0 +1,101 @@
+File: doc/spa-engine.md
+Feature: spa-cache-version
+
+=======================================================================
+Section 1
+OLD_SECTION
+| Method | Description |
+|---|---|
+| `initialize()` | Boots the engine with all preconfigured settings: mounts the entry route, registers the click and history listeners, and starts the background cache builder. Call it once, after all `config` properties are set. Throws if `config.classes.spaLink` or `config.routeConfigs` is missing. Subsequent calls are ignored. |
+
+## Config properties
+
+
+NEW_SECTION
+| Method | Description |
+|---|---|
+| `initialize()` | Boots the engine with all preconfigured settings: mounts the entry route, registers the click and history listeners, and starts the background cache builder. Call it once, after all `config` properties are set. Throws if `config.classes.spaLink` or `config.routeConfigs` is missing. Subsequent calls are ignored. |
+| `clearCache()` | Empties everything the engine has cached — route contents, page contents, page sections and block sections — so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them, such as `userProperties`, is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+
+## Config properties
+
+
+REASON
+Documents clearCache() and config.cacheVersion in the Methods/Config tables and adds a 'New releases' subsection under Caching: the version.json flow, boot vs running-engine behaviour, and the limits (history entries keep their own HTML; loaded JS/CSS are not replaced).
+
+=======================================================================
+Section 2
+OLD_SECTION
+| `config.clickLoadCallback` | no | Fallback function called after an SPA link's content loads, when the link has no dedicated click-callback data attribute. A dedicated callback on the link always wins over this one. |
+| `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback` — see [Callbacks](#callbacks). |
+| `config.preClickCallback` | no | Function called just before a link's content is fetched from the server — e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
+| `config.functions` | no | Reserved. Accepted and validated, but not currently consulted — dedicated callbacks are looked up in each route's `clickLoadCallbacks` / `historyCallbacks` objects instead. |
+
+## Route properties
+
+NEW_SECTION
+| `config.clickLoadCallback` | no | Fallback function called after an SPA link's content loads, when the link has no dedicated click-callback data attribute. A dedicated callback on the link always wins over this one. |
+| `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback` — see [Callbacks](#callbacks). |
+| `config.preClickCallback` | no | Function called just before a link's content is fetched from the server — e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
+| `config.cacheVersion` | no | A string or number identifying the release the cache belongs to, e.g. a build id. When it differs from the version the cache was built under, the cache is emptied: at `initialize()` if set before it, at once if set on a running engine. Throws a `TypeError` for anything other than a non-empty string or a finite number. Reading it returns the value as a string. See [New releases](#new-releases). |
+| `config.functions` | no | Reserved. Accepted and validated, but not currently consulted — dedicated callbacks are looked up in each route's `clickLoadCallbacks` / `historyCallbacks` objects instead. |
+
+## Route properties
+
+REASON
+Documents clearCache() and config.cacheVersion in the Methods/Config tables and adds a 'New releases' subsection under Caching: the version.json flow, boot vs running-engine behaviour, and the limits (history entries keep their own HTML; loaded JS/CSS are not replaced).
+
+=======================================================================
+Section 3
+OLD_SECTION
+- ~400ms after `initialize()`, a background **cache builder** prefetches and caches the page sections of every route not marked `skipInCacheBuilder`, and warms any stylesheets they link.
+- Per-link caching can be turned off with the `cache` data attribute.
+
+Since the cache lives in `sessionStorage`, it resets when the browser tab is closed. During development, a hard refresh alone does not clear it — empty the session storage from dev tools when editing fragment files.
+
+## Protected routes
+
+
+NEW_SECTION
+- ~400ms after `initialize()`, a background **cache builder** prefetches and caches the page sections of every route not marked `skipInCacheBuilder`, and warms any stylesheets they link.
+- Per-link caching can be turned off with the `cache` data attribute.
+
+Since the cache lives in `sessionStorage`, it resets when the browser tab is closed. During development, a hard refresh alone does not clear it — empty the session storage from dev tools when editing fragment files, or call `clearCache()`.
+
+### New releases
+
+Because a reload does not clear the cache, a user who keeps a tab open goes on seeing the fragments it cached before you deployed. Tie the cache to a release with `config.cacheVersion`:
+
+1. Publish a file the server never caches, e.g. `/version.json` containing `{ "build": "a1b2c3d" }`, and write a new value into it on every deploy — the commit hash from the deploy script is the usual choice.
+2. Read it before `initialize()` and hand the value to the engine:
+
+```js
+const res = await fetch("/version.json", { cache: "no-store" });
+spa.config.cacheVersion = (await res.json()).build;
+spa.initialize();
+```
+
+At `initialize()` the engine compares it with the version it recorded the last time it filled the cache (the `spaCacheVersion` key). If they differ — or no version was recorded — the cache is emptied before the entry route mounts. If they match, the cache is kept.
+
+3. For tabs that stay open, check again later — for example when the tab becomes visible — and set the value on the running engine. A changed value empties the cache immediately; the same value does nothing:
+
+```js
+document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState !== "visible") return;
+    const res = await fetch("/version.json", { cache: "no-store" });
+    spa.config.cacheVersion = (await res.json()).build;
+});
+```
+
+`clearCache()` empties the cache without any version, e.g. from a "refresh content" button or after a user's data changes.
+
+Limits:
+
+- Clearing the cache does not touch content already on screen or the browser's history entries. Back/forward navigation re-renders the HTML stored in each history entry, so a page visited before the release still shows its old content when reached with the back button. For breaking changes, reload the page instead.
+- The JavaScript and CSS already loaded are not replaced — only fetched HTML is. Have the server send `Cache-Control: no-cache` for HTML fragments so the refetch is not served from the HTTP cache.
+
+## Protected routes
+
+
+REASON
+Documents clearCache() and config.cacheVersion in the Methods/Config tables and adds a 'New releases' subsection under Caching: the version.json flow, boot vs running-engine behaviour, and the limits (history entries keep their own HTML; loaded JS/CSS are not replaced).

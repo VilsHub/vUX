@@ -24,6 +24,11 @@ export function SPAEngine(defaultContentNode=null) {
     //Teardown state: the detach handle for the delegated link listener, the popstate listener held at
     //instance scope so destroy() can remove it, and the cache builder's timer id.
     var destroyed=false, spaLinkHandle=null, handlePopState=null, cacheBuilderTimer=null;
+    //Release-scoped caching: the sessionStorage keys holding fetched HTML, the key recording which
+    //cacheVersion that HTML was fetched under, and the version this engine was configured with.
+    var CACHE_KEYS = ["linkContents", "pageContents", "pageSections", "blockSections"];
+    var CACHE_VERSION_KEY = "spaCacheVersion";
+    var cacheVersion = null;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         cache:"",
@@ -43,6 +48,8 @@ export function SPAEngine(defaultContentNode=null) {
             if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
             if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
             
+            //must run before boot(): boot mounts from the cache, and the cache builder fills it
+            syncCacheVersion();
             boot();
             startRouter();
             // SetPageState() //links state and page title
@@ -76,7 +83,36 @@ export function SPAEngine(defaultContentNode=null) {
         initialize = false;
         destroyed = true;
     }
+    this.clearCache = clearCache;
+    function clearCache() {
+        //Drops every piece of HTML the engine has cached, so the next navigation to any route
+        //fetches it from the server again. Only the engine's own keys are emptied: sessionStorage
+        //also holds userProperties (auth state), which a sessionStorage.clear() would wipe.
+        //The keys are reset to empty objects rather than removed, because the read paths parse
+        //them with getIterable() and JSON.parse(undefined) throws.
+        if (typeof(Storage) !== "undefined") {
+            CACHE_KEYS.forEach(function(key){
+                sessionStorage.setIterable(key, {});
+            });
+        }
+        tempStorage = {};
+
+        //In-memory "already cached" flags would otherwise stop the refetched content being stored
+        savedPageSection = {};
+        cacheBuilderTracker = {};
+    }
     this.config = {}
+
+    function syncCacheVersion() {
+        //Clears the cache when it was built under a different cacheVersion than the one configured.
+        //A cache with no recorded version predates cacheVersion being set, so it is cleared too.
+        if (cacheVersion == null || typeof(Storage) === "undefined") return;
+
+        if (sessionStorage.getItem(CACHE_VERSION_KEY) !== cacheVersion) {
+            clearCache();
+            sessionStorage.setItem(CACHE_VERSION_KEY, cacheVersion);
+        }
+    }
 
     function loadFrom(element) {
 
@@ -552,7 +588,7 @@ export function SPAEngine(defaultContentNode=null) {
              let sectionId           = routeName+"-"+pageSections[z][0];
              let mountPoint          = pageSections[z][1].mountPoint;
              let replace             = pageSections[z][1].replaceOld;
-             let cachedPageSections  = sessionStorage.getIterable("pageSections");
+             let cachedPageSections  = sessionStorage.pageSections != undefined ? sessionStorage.getIterable("pageSections") : {};
  
              if(cachedPageSections[sectionId] != undefined){ //get from cache and mount
 
@@ -564,17 +600,23 @@ export function SPAEngine(defaultContentNode=null) {
                  }
              }else{ //get from server mount and cache
 
-                 let url = routeConfigs.routes[routeName].pageSections[pageSections[z][0]];
+                 let url = pageSections[z][1].source;
  
                  const response = await fetch(url);
-                 content = await response.text();
+                 let content = await response.text();
                  
                  if (response.ok){
                      if (response.headers.get('X-Fallback') === 'true') {
                          // Handle invalid route
                          throw new Error('404: File '+url+' not found');
                      }else{
-                         // Save data
+                         // Mount, as the cached branch does, then save
+                         if(replace){
+                             $$.ss(mountPoint).innerHTML = content;
+                         }else{
+                             $$.ss(mountPoint).insertAdjacentHTML('beforeend', content);
+                         }
+
                          if(!savedPageSection[sectionId]){
                             saveSectionData("pageSections", sectionId, content);
                             savedPageSection[sectionId] = true;
@@ -976,7 +1018,7 @@ export function SPAEngine(defaultContentNode=null) {
                             html.then(function(data){
                                 
                                 // Save the data
-                                const activeCache = sessionStorage.getIterable("pageSections");
+                                const activeCache = sessionStorage.pageSections != undefined ? sessionStorage.getIterable("pageSections") : {};
                                 if(activeCache[sectionId] == undefined){
                                     saveSectionData("pageSections", sectionId, data);
                                     preloadStyles(data);
@@ -1007,7 +1049,8 @@ export function SPAEngine(defaultContentNode=null) {
     Object.defineProperties(this, {
         config: { writable: false },
         initialize: { writable: false },
-        destroy: { writable: false }
+        destroy: { writable: false },
+        clearCache: { writable: false }
     })
 
     Object.defineProperties(this.config, {
@@ -1076,6 +1119,21 @@ export function SPAEngine(defaultContentNode=null) {
         routeConfigs: {
             set: function(value){
                 routeConfigs = value;
+            }
+        },
+        cacheVersion: {
+            set: function(value){
+                //Any string or number that changes per release, e.g. the build id from a version.json.
+                //Set before initialize(), a mismatch clears the cache before the first route mounts;
+                //set on a running engine, it clears at once, so the next navigation fetches fresh.
+                if (!((typeof value == "string" && value.trim() != "") || (typeof value == "number" && isFinite(value)))) {
+                    throw new TypeError("config.cacheVersion property value must be a non-empty string or a finite number");
+                }
+                cacheVersion = String(value);
+                if (initialize) syncCacheVersion();
+            },
+            get: function(){
+                return cacheVersion;
             }
         }
     })

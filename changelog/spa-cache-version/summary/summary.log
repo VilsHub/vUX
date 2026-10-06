@@ -1,0 +1,30 @@
+Feature: spa-cache-version
+Target module: SPAEngine
+
+- config.cacheVersion: a string or number naming the release the sessionStorage cache
+  belongs to. Recorded under the sessionStorage key spaCacheVersion. When the configured
+  value differs from the recorded one (or none is recorded), the engine empties its cache:
+  at initialize() — before the entry route mounts — or immediately when set on a running
+  engine. Same value = no-op. Non-empty string or finite number only (TypeError otherwise).
+- clearCache(): resets linkContents, pageContents, pageSections and blockSections to empty
+  objects, drops the no-web-storage fallback and the in-memory "already saved" trackers.
+  Other sessionStorage keys (userProperties / auth) are untouched.
+- Fix (exposed by clearing): the uncached branch of loadPageSections threw on a missing
+  pageSections key (JSON.parse(undefined)), assigned an undeclared variable (ReferenceError
+  in a module), fetched the section's config object instead of its .source URL, and never
+  mounted the result. The cache builder had the same missing-key parse. All repaired.
+
+Why: sessionStorage survives reloads, so after a deploy users with an open tab kept seeing
+pre-deploy fragments with no way for the app to invalidate them short of closing the tab.
+
+Verified: headless Chromium against examples/spa/server.py — boot clears a cache from a
+different release and keeps one from the same release across reload; setting the same
+version keeps the cache, a new one empties it and the next visit refetches; version.json
+edited on disk is picked up by the Check button; clearCache() leaves the page's own key;
+the empty-value validation error; uncached page section fetched, mounted and saved, and
+refetched after clearCache(); the pre-change engine reproduced the page-section exception.
+No page errors.
+
+Affected projects: any consumer of vUX-spaEngine.js (app.myinvitees.com, vGet). No API
+removed; behaviour is unchanged unless cacheVersion is set or clearCache() is called,
+apart from the page-section fix.

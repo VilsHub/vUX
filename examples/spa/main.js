@@ -34,7 +34,57 @@ function showLoadCount(){
     document.querySelector("#loadCount").textContent = loads;
 }
 
-function run(){
+// The build id of the release the server is currently serving. no-store skips the HTTP
+// cache: a cached copy of the file that announces new releases would announce nothing.
+// Returns null when the file is missing or not JSON (e.g. the SPA fallback served
+// index.html instead), so a broken check never blocks boot.
+async function fetchBuild(){
+    try {
+        var res = await fetch("/version.json", { cache: "no-store" });
+        return (await res.json()).build;
+    } catch (e) {
+        return null;
+    }
+}
+
+// The engine's four cache keys, read straight from sessionStorage so the table shows
+// what is really stored rather than what the page believes is stored.
+var CACHE_KEYS = ["linkContents", "pageContents", "pageSections", "blockSections"];
+var lastCounts = {};
+
+function renderCacheTable(){
+    var rows = CACHE_KEYS.map(function(key){
+        var stored = {};
+        try { stored = JSON.parse(sessionStorage.getItem(key)) || {}; } catch (e) {}
+        var names = Object.keys(stored);
+        return { key: key, count: names.length, holds: names.join(", ") || "—" };
+    });
+    rows.push({ key: "spaCacheVersion", count: "", holds: sessionStorage.getItem("spaCacheVersion") || "—" });
+    rows.push({ key: "vuxSpaLoads", count: "", holds: sessionStorage.getItem("vuxSpaLoads") || "—" });
+
+    var body = document.querySelector("#cacheTable tbody");
+    body.innerHTML = "";
+    rows.forEach(function(row){
+        var tr = document.createElement("tr");
+        // flash a row whose entry count just dropped: that is a clear happening
+        if (typeof row.count == "number" && lastCounts[row.key] > row.count) tr.className = "flash";
+        lastCounts[row.key] = row.count;
+        [row.key, row.count, row.holds].forEach(function(text){
+            var td = document.createElement("td");
+            td.textContent = text;
+            tr.appendChild(td);
+        });
+        body.appendChild(tr);
+    });
+}
+
+function setReleaseStatus(text, kind){
+    var status = document.querySelector("#relStatus");
+    status.className = "status" + (kind ? " " + kind : "");
+    status.lastElementChild.textContent = text;
+}
+
+async function run(){
     // main.js is running, so the engine can load: the served-wrong notice is not for us
     var notice = document.querySelector("#bootNotice");
     if (notice != null) notice.remove();
@@ -167,10 +217,60 @@ function run(){
         if (routeName === "table") tablePage.mount(); // direct load of /table
     };
     spa.config.routeConfigs = routeConfigs;
+
+    // Tie the cache to the release BEFORE initialize(): initialize() mounts the entry
+    // route from the cache, so a version set afterwards would clear only after one stale
+    // render. A cache built under a different (or no) version is emptied right here.
+    var build = await fetchBuild();
+    if (build != null) spa.config.cacheVersion = build;
     spa.initialize();
 
     window.demoSpa = spa;
     markNav();
+
+    // ---- release controls
+    function showVersion(){
+        document.querySelector("#verLive").textContent = spa.config.cacheVersion || "unset";
+        renderCacheTable();
+    }
+    document.querySelector("#verInput").value = build || "";
+    setReleaseStatus(build != null ? "booted on release " + build : "no /version.json — cacheVersion unset", build != null ? "run" : "err");
+    showVersion();
+
+    // Setting cacheVersion on a running engine is how an open tab picks up a release:
+    // a different value empties the cache at once; the same value is a no-op.
+    function applyVersion(value, source){
+        var before = spa.config.cacheVersion;
+        try {
+            spa.config.cacheVersion = value;
+        } catch (error) {
+            setReleaseStatus(error.message, "err");
+            return;
+        }
+        var changed = before !== spa.config.cacheVersion;
+        setReleaseStatus(source + ": " + spa.config.cacheVersion + (changed ? " — new release, cache emptied" : " — unchanged, cache kept"), "run");
+        demoLog("[release] " + source + " → cacheVersion " + spa.config.cacheVersion + (changed ? " (cache cleared)" : " (no change)"));
+        showVersion();
+    }
+    document.querySelector("#btnSetVer").addEventListener("click", function(){
+        applyVersion(document.querySelector("#verInput").value, "set by hand");
+    });
+    document.querySelector("#btnCheck").addEventListener("click", async function(){
+        var latest = await fetchBuild();
+        if (latest == null) { setReleaseStatus("could not read /version.json", "err"); return; }
+        document.querySelector("#verInput").value = latest;
+        applyVersion(latest, "/version.json");
+    });
+    document.querySelector("#btnClear").addEventListener("click", function(){
+        spa.clearCache();
+        setReleaseStatus("clearCache() — every route will be fetched again", "run");
+        demoLog("[release] clearCache()");
+        showVersion();
+    });
+
+    // The engine writes to sessionStorage after each fetch resolves, not on the click, so
+    // the table polls rather than hooking navigation. Reading four small keys is cheap.
+    setInterval(renderCacheTable, 400);
 
     document.querySelector("#clearLog").addEventListener("click", function(){
         document.querySelector("#log").textContent = "";
@@ -187,7 +287,8 @@ function run(){
         },
         badAttr:  function(){ new SPAEngine().config.dataAttributeNames = { nope: "x" }; },
         badClass: function(){ new SPAEngine().config.classes = { nope: "x" }; },
-        badNode:  function(){ new SPAEngine("#contentBoundary"); }
+        badNode:  function(){ new SPAEngine("#contentBoundary"); },
+        badVersion: function(){ new SPAEngine().config.cacheVersion = ""; }
     };
     document.querySelectorAll("[data-bad]").forEach(function(button){
         button.addEventListener("click", function(){

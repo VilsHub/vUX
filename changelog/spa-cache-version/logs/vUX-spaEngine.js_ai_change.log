@@ -1,0 +1,260 @@
+File: vUX-spaEngine.js
+Feature: spa-cache-version
+
+=======================================================================
+Section 1
+OLD_SECTION
+    //Teardown state: the detach handle for the delegated link listener, the popstate listener held at
+    //instance scope so destroy() can remove it, and the cache builder's timer id.
+    var destroyed=false, spaLinkHandle=null, handlePopState=null, cacheBuilderTimer=null;
+    var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+        cache:"",
+
+NEW_SECTION
+    //Teardown state: the detach handle for the delegated link listener, the popstate listener held at
+    //instance scope so destroy() can remove it, and the cache builder's timer id.
+    var destroyed=false, spaLinkHandle=null, handlePopState=null, cacheBuilderTimer=null;
+    //Release-scoped caching: the sessionStorage keys holding fetched HTML, the key recording which
+    //cacheVersion that HTML was fetched under, and the version this engine was configured with.
+    var CACHE_KEYS = ["linkContents", "pageContents", "pageSections", "blockSections"];
+    var CACHE_VERSION_KEY = "spaCacheVersion";
+    var cacheVersion = null;
+    var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+        cache:"",
+
+REASON
+New instance state for release-scoped caching: the four cache keys the engine owns, the key that records which cacheVersion the cache was built under, and the configured version.
+
+=======================================================================
+Section 2
+OLD_SECTION
+            if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
+            if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
+            
+            boot();
+            startRouter();
+            // SetPageState() //links state and page title
+
+NEW_SECTION
+            if (classes.spaLink == "") throw new Error("Setup Incomplete: The class name for SPA links has not been specified. Supply using the config.classes.spaLink property");
+            if (routeConfigs == null) throw new Error("Setup Incomplete: The route configs has not been supplied. Supply using the config.routeConfigs property");
+            
+            //must run before boot(): boot mounts from the cache, and the cache builder fills it
+            syncCacheVersion();
+            boot();
+            startRouter();
+            // SetPageState() //links state and page title
+
+REASON
+initialize() reconciles the cache with cacheVersion before boot(), because boot() mounts the entry route from the cache; reconciling afterwards would render one stale route first.
+
+=======================================================================
+Section 3
+OLD_SECTION
+        initialize = false;
+        destroyed = true;
+    }
+    this.config = {}
+
+    function loadFrom(element) {
+
+        // Check if route exist and if protected
+
+NEW_SECTION
+        initialize = false;
+        destroyed = true;
+    }
+    this.clearCache = clearCache;
+    function clearCache() {
+        //Drops every piece of HTML the engine has cached, so the next navigation to any route
+        //fetches it from the server again. Only the engine's own keys are emptied: sessionStorage
+        //also holds userProperties (auth state), which a sessionStorage.clear() would wipe.
+        //The keys are reset to empty objects rather than removed, because the read paths parse
+        //them with getIterable() and JSON.parse(undefined) throws.
+        if (typeof(Storage) !== "undefined") {
+            CACHE_KEYS.forEach(function(key){
+                sessionStorage.setIterable(key, {});
+            });
+        }
+        tempStorage = {};
+
+        //In-memory "already cached" flags would otherwise stop the refetched content being stored
+        savedPageSection = {};
+        cacheBuilderTracker = {};
+    }
+    this.config = {}
+
+    function syncCacheVersion() {
+        //Clears the cache when it was built under a different cacheVersion than the one configured.
+        //A cache with no recorded version predates cacheVersion being set, so it is cleared too.
+        if (cacheVersion == null || typeof(Storage) === "undefined") return;
+
+        if (sessionStorage.getItem(CACHE_VERSION_KEY) !== cacheVersion) {
+            clearCache();
+            sessionStorage.setItem(CACHE_VERSION_KEY, cacheVersion);
+        }
+    }
+
+    function loadFrom(element) {
+
+        // Check if route exist and if protected
+
+REASON
+New public clearCache() and the internal syncCacheVersion(). sessionStorage survives reloads, so before this a deployed release never reached a user whose tab stayed open; the app had no supported way to invalidate the cache short of sessionStorage.clear(), which also drops userProperties (auth). Keys are reset to {} rather than removed because the read paths call getIterable(), and JSON.parse(undefined) throws.
+
+=======================================================================
+Section 4
+OLD_SECTION
+             let sectionId           = routeName+"-"+pageSections[z][0];
+             let mountPoint          = pageSections[z][1].mountPoint;
+             let replace             = pageSections[z][1].replaceOld;
+             let cachedPageSections  = sessionStorage.getIterable("pageSections");
+ 
+             if(cachedPageSections[sectionId] != undefined){ //get from cache and mount
+
+
+NEW_SECTION
+             let sectionId           = routeName+"-"+pageSections[z][0];
+             let mountPoint          = pageSections[z][1].mountPoint;
+             let replace             = pageSections[z][1].replaceOld;
+             let cachedPageSections  = sessionStorage.pageSections != undefined ? sessionStorage.getIterable("pageSections") : {};
+ 
+             if(cachedPageSections[sectionId] != undefined){ //get from cache and mount
+
+
+REASON
+loadPageSections: guard the read of a missing pageSections key. Previously a click on a route whose page sections were not cached threw a SyntaxError from JSON.parse(undefined) when no section had ever been stored; clearCache() makes this state common.
+
+=======================================================================
+Section 5
+OLD_SECTION
+                 }
+             }else{ //get from server mount and cache
+
+                 let url = routeConfigs.routes[routeName].pageSections[pageSections[z][0]];
+ 
+                 const response = await fetch(url);
+                 content = await response.text();
+                 
+                 if (response.ok){
+                     if (response.headers.get('X-Fallback') === 'true') {
+                         // Handle invalid route
+                         throw new Error('404: File '+url+' not found');
+                     }else{
+                         // Save data
+                         if(!savedPageSection[sectionId]){
+                            saveSectionData("pageSections", sectionId, content);
+                            savedPageSection[sectionId] = true;
+
+NEW_SECTION
+                 }
+             }else{ //get from server mount and cache
+
+                 let url = pageSections[z][1].source;
+ 
+                 const response = await fetch(url);
+                 let content = await response.text();
+                 
+                 if (response.ok){
+                     if (response.headers.get('X-Fallback') === 'true') {
+                         // Handle invalid route
+                         throw new Error('404: File '+url+' not found');
+                     }else{
+                         // Mount, as the cached branch does, then save
+                         if(replace){
+                             $$.ss(mountPoint).innerHTML = content;
+                         }else{
+                             $$.ss(mountPoint).insertAdjacentHTML('beforeend', content);
+                         }
+
+                         if(!savedPageSection[sectionId]){
+                            saveSectionData("pageSections", sectionId, content);
+                            savedPageSection[sectionId] = true;
+
+REASON
+loadPageSections uncached branch: it fetched the section config object (URL "[object Object]") instead of its .source, assigned the undeclared 'content' (a ReferenceError in a module), and never mounted what it fetched. Now fetches .source, declares the variable and mounts like the cached branch before saving.
+
+=======================================================================
+Section 6
+OLD_SECTION
+                            html.then(function(data){
+                                
+                                // Save the data
+                                const activeCache = sessionStorage.getIterable("pageSections");
+                                if(activeCache[sectionId] == undefined){
+                                    saveSectionData("pageSections", sectionId, data);
+                                    preloadStyles(data);
+
+NEW_SECTION
+                            html.then(function(data){
+                                
+                                // Save the data
+                                const activeCache = sessionStorage.pageSections != undefined ? sessionStorage.getIterable("pageSections") : {};
+                                if(activeCache[sectionId] == undefined){
+                                    saveSectionData("pageSections", sectionId, data);
+                                    preloadStyles(data);
+
+REASON
+Cache builder: the same missing-key guard as loadPageSections, since clearCache() can run before the builder's fetches resolve.
+
+=======================================================================
+Section 7
+OLD_SECTION
+    Object.defineProperties(this, {
+        config: { writable: false },
+        initialize: { writable: false },
+        destroy: { writable: false }
+    })
+
+    Object.defineProperties(this.config, {
+
+NEW_SECTION
+    Object.defineProperties(this, {
+        config: { writable: false },
+        initialize: { writable: false },
+        destroy: { writable: false },
+        clearCache: { writable: false }
+    })
+
+    Object.defineProperties(this.config, {
+
+REASON
+clearCache is read-only on the instance, like initialize and destroy.
+
+=======================================================================
+Section 8
+OLD_SECTION
+            set: function(value){
+                routeConfigs = value;
+            }
+        }
+    })
+}
+
+NEW_SECTION
+            set: function(value){
+                routeConfigs = value;
+            }
+        },
+        cacheVersion: {
+            set: function(value){
+                //Any string or number that changes per release, e.g. the build id from a version.json.
+                //Set before initialize(), a mismatch clears the cache before the first route mounts;
+                //set on a running engine, it clears at once, so the next navigation fetches fresh.
+                if (!((typeof value == "string" && value.trim() != "") || (typeof value == "number" && isFinite(value)))) {
+                    throw new TypeError("config.cacheVersion property value must be a non-empty string or a finite number");
+                }
+                cacheVersion = String(value);
+                if (initialize) syncCacheVersion();
+            },
+            get: function(){
+                return cacheVersion;
+            }
+        }
+    })
+}
+
+REASON
+New config.cacheVersion setter/getter. Validates a non-empty string or finite number, stores it as a string (sessionStorage stores strings, so 5 and "5" must compare equal), and on a running engine reconciles at once so an open tab can be moved to a new release without reloading.

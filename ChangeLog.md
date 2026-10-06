@@ -62,6 +62,9 @@
 - SketchPad stamps and icons — `createStamp()` turns SVG source into a stamp the stamp tool places, with black-only SVGs retinted by the fill colour; `icon` arms the icon tool with a glyph from any loaded font
 - SketchPad works with touch and pen as well as the mouse, and several pads can share a page: pointer events are the canvas's own and keyboard shortcuts go to the focused pad (or the whole document, with `config.keyboardScope`)
 - SketchPad guide (doc/sketch-pad.md) and runnable example (examples/sketchpad/)
+- SPAEngine `config.cacheVersion` — ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
+- SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
 
 ## Fixed
 - modal multiple display bug
@@ -156,6 +159,7 @@
 - FormComponents datePicker destroy() now also tears down its decade-series scroller
 - FormComponents datePicker decade arrows dead on every picker but the first one opened when several pickers with long date ranges share one builder; picking a decade or going Back on a later picker also parked or re-armed the first picker's arrows instead of its own
 - Component sync() without config.onMount now returns the instances it mounted, and instances() and destroyAll() reach rows it mounted; before, sync() returned undefined for each new row and destroyAll() left those rows in the page
+- SPAEngine page sections that were not yet cached now load: the first visit to a route whose page sections had not been prefetched threw instead of fetching them, and when it got further it fetched the wrong URL and never mounted the result
 
 ## Removed
 - colorOverlayStyle in modalDisplayerObj
