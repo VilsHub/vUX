@@ -122,7 +122,13 @@ new SPAEngine(defaultContentNode)
 | Method | Description |
 |---|---|
 | `initialize()` | Boots the engine with all preconfigured settings: mounts the entry route, registers the click and history listeners, and starts the background cache builder. Call it once, after all `config` properties are set. Throws if `config.classes.spaLink` or `config.routeConfigs` is missing. Subsequent calls are ignored. |
-| `clearCache()` | Empties everything the engine has cached — route contents, page contents, page sections and block sections — so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them, such as `userProperties`, is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+| `clearCache()` | Empties everything the engine has cached — route contents, page contents, page sections and block sections — so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+
+## Properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `loggedIn` | boolean | `false` | Whether the app has a signed-in user. [Protected routes](#protected-routes) read it before loading. It lives in memory only, so set it before `initialize()` on every page load, from the app's own session; set it to `true` after a successful sign-in and `false` on sign-out. Throws a `TypeError` for a non-boolean. |
 
 ## Config properties
 
@@ -283,4 +289,19 @@ Limits:
 
 ## Protected routes
 
-Setting `protected: true` on a route makes the engine check the session (`sessionStorage.userProperties.auth`) before loading it; unauthenticated users are redirected to the route's `authURL`. Note this is a client-side convenience only — the fragments themselves must still be protected on the server.
+Setting `protected: true` on a route makes the engine check `spa.loggedIn` before loading it, on first load and on SPA link clicks. When it is `false`, the engine sends the browser to the route's `authURL` instead (a full page load).
+
+The engine doesn't know who is signed in; the app tells it. Because `loggedIn` is held in memory, a page reload resets it to `false`, so restore it from wherever the app keeps its session before calling `initialize()`:
+
+```js
+spa.loggedIn = localStorage.getItem("token") != null;   // the app's own session check
+spa.initialize();
+
+// after a successful sign-in
+spa.loggedIn = true;
+
+// on sign-out
+spa.loggedIn = false;
+```
+
+This is a client-side convenience only: it decides which screen to show, not what the user may access. Anyone can set `loggedIn` from the console. The fragments and the data behind them must still be protected on the server, for example by validating a token on every API request.

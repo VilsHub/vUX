@@ -1,0 +1,27 @@
+Feature: spa-logged-in
+Target module: SPAEngine
+
+- SPAEngine.loggedIn: public boolean property (default false; TypeError for non-booleans).
+  isLoggedIn(), which protected routes call on first load and on SPA link clicks, now
+  returns it. The app owns the value: it sets it before initialize() on every page load
+  (it is held in memory, so a reload resets it), true after sign-in, false on sign-out.
+- Fix: isLoggedIn() had no return statement, so it returned undefined and every protected
+  route redirected, signed in or not. It also read sessionStorage.userProperties.auth, a
+  property of a string. Protected routes could not be used before this change.
+- Fix: the redirect for a protected route read routeProperties.authURL instead of
+  routeProperties.properties.authURL, sending signed-out users to /undefined (SPA link
+  click and first load). The default-route branch already read it correctly.
+
+Why: app.myinvitees.com needed a protected /card-writer route and was working around the
+broken check in its own page code.
+
+Verified: headless Chromium against app.myinvitees.com (dev-server.js + its backend):
+signed out -> /card-writer and the home page's SPA link both land on /login; sign-up lands
+on /card-writer; a reload while signed in stays there (flag restored from the token before
+initialize()); the SPA link while signed in renders the tool; sign-out and a later visit go
+to /login; a forged token reaches the page, the backend rejects it and the app signs out.
+No page errors or dialogs. No examples/spa change: it has no protected routes.
+
+Affected projects: consumers of vUX-spaEngine.js (app.myinvitees.com, vGet). No API
+removed. Apps with protected: true routes now need to set spa.loggedIn; before this change
+those routes always redirected, so no working app depended on the old behaviour.

@@ -71,6 +71,7 @@
 - SPAEngine `config.cacheVersion` — ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
 - SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
 - Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property — the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
 
 ## Fixed
 - modal multiple display bug
@@ -166,6 +167,7 @@
 - FormComponents datePicker decade arrows dead on every picker but the first one opened when several pickers with long date ranges share one builder; picking a decade or going Back on a later picker also parked or re-armed the first picker's arrows instead of its own
 - Component sync() without config.onMount now returns the instances it mounted, and instances() and destroyAll() reach rows it mounted; before, sync() returned undefined for each new row and destroyAll() left those rows in the page
 - SPAEngine page sections that were not yet cached now load: the first visit to a route whose page sections had not been prefetched threw instead of fetching them, and when it got further it fetched the wrong URL and never mounted the result
+- SPAEngine protected routes now work: the login check never returned a value, so every protected route redirected even for a signed-in user, and the redirect went to `/undefined` instead of the route's `authURL`
 
 ## Removed
 - colorOverlayStyle in modalDisplayerObj

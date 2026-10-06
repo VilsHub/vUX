@@ -1,0 +1,11 @@
+FEATURE: spa-logged-in
+DATE: 2026-10-07
+
+<SPAEngine>
+  Modified:
+    vUX-spaEngine.js            (loggedIn property; isLoggedIn() returns it; authURL redirect fix)
+
+<Documentation>
+  Modified:
+    doc/spa-engine.md
+    ChangeLog.md

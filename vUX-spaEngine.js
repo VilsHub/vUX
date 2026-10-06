@@ -29,6 +29,10 @@ export function SPAEngine(defaultContentNode=null) {
     var CACHE_KEYS = ["linkContents", "pageContents", "pageSections", "blockSections"];
     var CACHE_VERSION_KEY = "spaCacheVersion";
     var cacheVersion = null;
+    //Whether the app has a signed-in user, read by protected routes. The engine can't know this on
+    //its own: the app sets spa.loggedIn before initialize() on every page load (it lives in memory),
+    //to true after a successful sign-in, and to false on sign-out.
+    var loggedIn = false;
     var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         cache:"",
@@ -87,7 +91,7 @@ export function SPAEngine(defaultContentNode=null) {
     function clearCache() {
         //Drops every piece of HTML the engine has cached, so the next navigation to any route
         //fetches it from the server again. Only the engine's own keys are emptied: sessionStorage
-        //also holds userProperties (auth state), which a sessionStorage.clear() would wipe.
+        //may also hold the app's own state, which a sessionStorage.clear() would wipe.
         //The keys are reset to empty objects rather than removed, because the read paths parse
         //them with getIterable() and JSON.parse(undefined) throws.
         if (typeof(Storage) !== "undefined") {
@@ -133,7 +137,7 @@ export function SPAEngine(defaultContentNode=null) {
                     getLinkContent(element);
                 }else{
                     // Redirect to Auth page
-                    location.assign(routeProperties.authURL);
+                    location.assign(routeProperties.properties.authURL);
                 }
 
             }else{
@@ -411,7 +415,7 @@ export function SPAEngine(defaultContentNode=null) {
                     renderContent();
                 }else{
                     // Redirect to Auth page
-                    location.assign(routeProperties.authURL);
+                    location.assign(routeProperties.properties.authURL);
                 }
 
             }else{
@@ -805,14 +809,7 @@ export function SPAEngine(defaultContentNode=null) {
     }
 
     function isLoggedIn(){
-        let status=null;
-        if (sessionStorage.userProperties == undefined) {
-            status = false;
-        }else{
-            if (sessionStorage.userProperties.auth){
-                status = true;
-            }
-        }
+        return loggedIn;
     }
 
     function renderContent(){
@@ -1050,7 +1047,16 @@ export function SPAEngine(defaultContentNode=null) {
         config: { writable: false },
         initialize: { writable: false },
         destroy: { writable: false },
-        clearCache: { writable: false }
+        clearCache: { writable: false },
+        loggedIn: {
+            set: function(value) {
+                validateBoolean(value, "SPAEngine.loggedIn property value must be a boolean");
+                loggedIn = value;
+            },
+            get: function() {
+                return loggedIn;
+            }
+        }
     })
 
     Object.defineProperties(this.config, {

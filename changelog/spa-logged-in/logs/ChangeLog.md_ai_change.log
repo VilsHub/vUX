@@ -1,0 +1,39 @@
+File: ChangeLog.md
+Feature: spa-logged-in
+
+=======================================================================
+Section 1
+OLD_SECTION
+- SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+
+## Fixed
+
+NEW_SECTION
+- SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property — the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+
+## Fixed
+
+REASON
+Added bullet for SPAEngine loggedIn.
+
+=======================================================================
+Section 2
+OLD_SECTION
+- Component sync() without config.onMount now returns the instances it mounted, and instances() and destroyAll() reach rows it mounted; before, sync() returned undefined for each new row and destroyAll() left those rows in the page
+- SPAEngine page sections that were not yet cached now load: the first visit to a route whose page sections had not been prefetched threw instead of fetching them, and when it got further it fetched the wrong URL and never mounted the result
+
+## Removed
+
+NEW_SECTION
+- Component sync() without config.onMount now returns the instances it mounted, and instances() and destroyAll() reach rows it mounted; before, sync() returned undefined for each new row and destroyAll() left those rows in the page
+- SPAEngine page sections that were not yet cached now load: the first visit to a route whose page sections had not been prefetched threw instead of fetching them, and when it got further it fetched the wrong URL and never mounted the result
+- SPAEngine protected routes now work: the login check never returned a value, so every protected route redirected even for a signed-in user, and the redirect went to `/undefined` instead of the route's `authURL`
+
+## Removed
+
+REASON
+Fixed bullet for protected routes (missing return value, /undefined redirect).
+
