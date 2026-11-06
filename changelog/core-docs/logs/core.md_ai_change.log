@@ -1,0 +1,23 @@
+FILE: doc/core.md
+FEATURE: core-docs
+DATE: 2026-10-07
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file)
+
+NEW_SECTION
+The guide to the core: how the core loads (any vUX import, core.css about 300ms later,
+globals by design), the selector rule for $$.sm() (writers act on every match, readers on
+the first, no match throws), then selecting, every $$.sm() manipulator grouped by purpose,
+slide/flip/animate/filter in detail, attachEventHandler, data and network, time,
+environment, the built-in extensions, the global helpers, the error list, and a table of
+known defects.
+
+REASON
+The core had no guide. doc/README.md said "importing any component boots the vUX core and
+its global helpers" but nothing documented $$ itself. Every claim about behaviour was
+checked in headless Chromium against the current working tree, which includes the
+uncommitted slide-fixes changes, before it was written down. The known-defects table
+records what is broken without fixing it: the task was documentation, and each defect
+is a separate decision for the maintainer.

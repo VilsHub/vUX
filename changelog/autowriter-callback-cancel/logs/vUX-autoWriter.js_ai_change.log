@@ -1,0 +1,89 @@
+File: vUX-autoWriter.js
+
+=======================================================================
+Section 1
+OLD_SECTION
+    timers = {write:null, blink:null, erase:null, directive:null},
+    boxes = null, texts = null, boxIndex = 0, conE = null, currentText = "", cursorIndex = 0,
+    destroyed = false, managedBoxes = [];   //every element written into, so destroy() can clear the spans it added
+
+    // |    => line break
+
+NEW_SECTION
+    timers = {write:null, blink:null, erase:null, directive:null},
+    boxes = null, texts = null, boxIndex = 0, conE = null, currentText = "", cursorIndex = 0,
+    destroyed = false, managedBoxes = [],   //every element written into, so destroy() can clear the spans it added
+    callbackTimers = [];                    //callbacks waiting out callBackDelay, so stop() and destroy() can cancel them
+
+    // |    => line break
+
+REASON
+New state: the ids of callbacks waiting out callBackDelay, so they can be cancelled.
+
+=======================================================================
+Section 2
+OLD_SECTION
+        // 'fn' is optional throughout the public API, and a null timer handler is not a no-op:
+        // browsers coerce it to the string "null" and evaluate it (blocked under CSP), Node throws.
+        if (fn != null) setTimeout(fn, callBackDelay);
+    }
+    // Reads a '*n*' or '~n~' directive opened at 'startPoint'. Bounded by the string length so a
+
+NEW_SECTION
+        // 'fn' is optional throughout the public API, and a null timer handler is not a no-op:
+        // browsers coerce it to the string "null" and evaluate it (blocked under CSP), Node throws.
+        //The timer is kept so stop() and destroy() can cancel it: a callback that fired after the
+        //writer was destroyed would typically call the writer again, which throws. A new run
+        //leaves it alone, since that callback belongs to the run that already finished.
+        if (fn == null) return;
+        var id = setTimeout(function(){
+            callbackTimers.splice(callbackTimers.indexOf(id), 1);
+            fn();
+        }, callBackDelay);
+        callbackTimers.push(id);
+    }
+    function cancelCallBacks(){
+        callbackTimers.forEach(clearTimeout);
+        callbackTimers = [];
+    }
+    // Reads a '*n*' or '~n~' directive opened at 'startPoint'. Bounded by the string length so a
+
+REASON
+New state: the ids of callbacks waiting out callBackDelay, so they can be cancelled.
+
+=======================================================================
+Section 3
+OLD_SECTION
+    this.stop = function() {
+        reset();
+    }
+    this.destroy = function(){
+
+NEW_SECTION
+    this.stop = function() {
+        reset();
+        cancelCallBacks();
+    }
+    this.destroy = function(){
+
+REASON
+stop() cancels pending callbacks, matching the documented 'stop() does not run the callback'.
+
+=======================================================================
+Section 4
+OLD_SECTION
+
+        reset();
+
+        for (var x = 0; x < managedBoxes.length; x++){
+
+NEW_SECTION
+
+        reset();
+        cancelCallBacks();
+
+        for (var x = 0; x < managedBoxes.length; x++){
+
+REASON
+destroy() cancels pending callbacks, so nothing runs against a destroyed writer.
+

@@ -24,18 +24,21 @@ A consuming page declares a single module script and tells vUX where the library
 
 | Guide | Module | Description |
 |---|---|---|
+| [Core utilities](core.md) | `vUX-core.js` | `$$` and the `$$.sm()` manipulators: selection, classes, slides, flips, tweens, filters, delegated events, countdowns, breakpoints, the global helpers and built-in extensions |
 | [SPA Engine — setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
 | [Progress Indicator](progress-indicator.md) | `vUX-progressIndicator.js` | Linear, circular and grid loading indicators; pairing with SPA navigation |
 | [Skeleton](skeleton.md) | `vUX-skeleton.js` | Placeholder screens derived from your own template, with timing that never flashes on a fast load or flickers on a slow one |
 | [FontSplash](font-splash.md) | `vUX-fontSplash.js` | A splash screen whose loader is a word in your font: gradient fill, fading letters, font loading handled, full-screen or over one element, with a progress mode |
 | [Component](component.md) | `vUX-component.js` | Your own reusable component from your own markup: template instancing, bindings, keyed lists, nesting and teardown |
 | [Data View](data-view.md) | `vUX-dataView.js` | Keyed data-to-DOM binding for tables/dashboards with frequent fine-grained updates |
+| [MessageBox](message-box.md) | `vUX-messageBox.js` | Notification messages that drop in from the top or slide in from an edge, aligned left, centre or right, with a display time that pauses while read |
 | [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
 | [Form Components](form-components.md) | `vUX-formComponents.js` | Custom select, radio, checkbox, date picker, slide switch and file input built over the hidden native controls |
 | [Auto Writer](auto-writer.md) | `vUX-autoWriter.js` | Typewriter text effect with an embedded directive syntax for line breaks, pauses and backspacing |
 | [Resizer](resizer.md) | `vUX-resizer.js` | Drag-to-resize handles on any element, on either axis, clamped to bounds you set |
 | [Carousel](carousel.md) | `vUX-carousel.js` | Autoplaying slideshow with dot navigation, hover pause and swipe, reconfigurable while running |
 | [TimeLineList](timeline-list.md) | `vUX-timeLineList.js` | Plain lists drawn as vertical timelines, each list styled by its own data attributes, stacking on narrow windows |
+| [Marquee](marquee.md) | `vUX-marquee.js` | An endless, seamless scrolling strip from items written once: cloned to fit any width, pause on hover and focus, edge fade, reduced motion respected |
 | [ListScroller](list-scroller.md) | `vUX-listScroller.js` | A list as one horizontal row, moved a step at a time by your own two buttons, with their inactive state kept true to the scroll position |
 | [SketchPad](sketch-pad.md) | `vUX-sketchPad.js` | A drawing surface in any element: shapes, bound and curved connectors, ink, text, images, undo, pan/zoom and export, with a scene that saves as JSON; or, constrained, a single box over an image |
 
@@ -48,7 +51,7 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 ## Other references
 
 - [SPA example app](../examples/spa/README.md) — runnable example combining `SPAEngine` and `ProgressIndicator`. **Run it with its own `python3 server.py`**, not from the repository root: a SPA needs a history fallback.
-- [Modal example](../examples/modal/README.md) — runnable example exercising all four modal effects.
+- [Modal example](../examples/modal/README.md) — runnable example exercising all seven modal effects.
 - [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
 - [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
 - [Resizer example](../examples/resizer/README.md) — runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
@@ -59,6 +62,9 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 - [FontSplash example](../examples/fontsplash/README.md) — runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
 - [Component example](../examples/component/README.md) — runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
 - [SketchPad example](../examples/sketchpad/README.md) — runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
+- [Marquee example](../examples/marquee/README.md): runnable example with two opposing hero rows, a live playground over every config property, a strip of linked cards showing how clones stay out of the tab order, and the validation errors.
+- [MessageBox example](../examples/messagebox/README.md) — runnable example opening with a dropped-in message: the typed shorthands, a playground over every config property with an `onShow`/`onClose` log, every effect at each alignment, a sticky message closed through its handle, element content with Undo, and the validation errors.
+- [Core example](../examples/core/README.md) — runnable example of every core utility: a selection board, slides, a flip card, an easing lab, filters, overlays, delegated events, a countdown, the built-in extensions evaluated live, the validation errors, and the calls repaired in this release.
 - [README](../README.md) — installation and the public feature list per release.
 - [ChangeLog](../ChangeLog.md) — API renames and changes between releases.
 - `window.vUxModules` — type this in the browser console to print the importable module list at runtime.

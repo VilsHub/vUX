@@ -1,0 +1,18 @@
+FILE: examples/core/README.md
+FEATURE: core-docs
+DATE: 2026-10-07
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file)
+
+NEW_SECTION
+How to run, a section table, what the page demonstrates, the consumer-side techniques the
+page relies on (height for width slides, a fresh options object per slide, clearing the
+filter transition after a pulse, pinning and clipping the overlay, always passing true to
+scroll.x/y, checking the time before getTimeSegments), and console notes.
+
+REASON
+Follows the structure CLAUDE.md asks for. The techniques section lists what the core does
+not do for you, each of which a consumer would otherwise misread as the page or the
+library being broken.

@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2021-07-19=T22:30Z
  *
@@ -22,7 +22,7 @@ import "./src/vUX-core-4.0.0-beta.js";
 //document, not to an instance: it is captured when the stack becomes non empty and
 //released only when it empties again.
 var modalStack = [];
-var pageState = { bodyOverflow: "", frozen: false };
+var pageState = { bodyOverflow: "", bodyPaddingRight: "", frozen: false };
 var globalHandlersAttached = false;
 var liveInstances = 0; //initialized instances sharing the document-level handlers below
 
@@ -40,9 +40,19 @@ function layerOf(node) {
 //The page is held still with overflow rather than by taking the body out of flow:
 //the document never moves, so the scroll position needs no capturing and no
 //restoring, and the body keeps its own layout while a modal is up.
+//Hiding the overflow also removes the page's vertical scrollbar, which widens the
+//viewport and makes the content beneath the overlay jump sideways on open and back
+//on close. The scrollbar's width is measured first and handed back to the body as
+//extra right padding, so the content keeps the width it had.
 function freezePage() {
     if (pageState.frozen) return; //only the bottom layer freezes; nested opens must not re-freeze
+    var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     pageState.bodyOverflow = document.body.style["overflow"];
+    pageState.bodyPaddingRight = document.body.style["padding-right"];
+    if (scrollbarWidth > 0) {
+        var padding = parseFloat(window.getComputedStyle(document.body).paddingRight) || 0;
+        document.body.style["padding-right"] = (padding + scrollbarWidth) + "px";
+    }
     document.body.style["overflow"] = "hidden";
     pageState.frozen = true;
 }
@@ -50,6 +60,7 @@ function freezePage() {
 function releasePage() {
     if (!pageState.frozen) return;
     document.body.style["overflow"] = pageState.bodyOverflow;
+    document.body.style["padding-right"] = pageState.bodyPaddingRight;
     pageState.frozen = false;
 }
 
@@ -62,6 +73,30 @@ function applyWidths(layer) {
     } else {
         layer.space.style["width"] = layer.widths[2];
     }
+}
+
+//Measures the modal at the size it is finally shown at: inside its own host, at the
+//width applyWidths() gave the space, with its own id styles applied. The animation
+//boxes are sized from this, so the effect ends exactly where the displayed modal sits.
+//Measuring the hidden source on its own gave its shrink to fit width instead, which
+//is unrelated to the configured width, and the modal snapped wider or narrower (and
+//rewrapped to a new height) the moment the effect handed it to the host.
+function measureLayer(layer) {
+    var overlay = layer.overlay;
+    overlay.style["visibility"] = "hidden";
+    overlay.classList.add("show");
+
+    layer.host.innerHTML = layer.source.outerHTML;
+    var probe = layer.host.childNodes[0];
+    probe.style["display"] = "block";
+    probe.style["width"] = "100%";
+    var box = probe.getBoundingClientRect();
+    layer.width = box.width;
+    layer.height = box.height;
+
+    layer.host.innerHTML = "";
+    overlay.classList.remove("show");
+    overlay.style["visibility"] = "";
 }
 
 function positionLayer(layer) {
@@ -98,8 +133,8 @@ var openEffects = {
         layer.space.appendChild(effectsCon);
         layer.effectsCon = effectsCon;
 
-        fillEffectBox(leftEle, layer)["style"]["left"] = "0px";
-        fillEffectBox(rightEle, layer)["style"]["right"] = "0px";
+        fillSplitHalf(leftEle, layer, "left");
+        fillSplitHalf(rightEle, layer, "right");
 
         layer.overlay.classList.add("show");
         leftEle.scrollWidth; //force reflow so the transition runs from the off screen position
@@ -131,7 +166,7 @@ var openEffects = {
         layer.space.appendChild(effectsCon);
         layer.effectsCon = effectsCon;
 
-        fillEffectBox(flipperFormElement, layer);
+        fillEffectBox(flipperFormElement, layer, true);
 
         layer.overlay.classList.add("show");
         flipper.scrollHeight;
@@ -151,12 +186,42 @@ var openEffects = {
         layer.space.appendChild(effectsCon);
         layer.effectsCon = effectsCon;
 
-        fillEffectBox(box, layer);
+        fillEffectBox(box, layer, true);
 
         layer.overlay.classList.add("show");
         box.scrollHeight;
         box.style["width"] = "100%";
         box.style["height"] = "100%";
+    },
+    drop: function(layer) {
+        var effectsCon = $$.ce("DIV");
+        var slider = $$.ce("DIV");
+
+        effectsCon.setAttribute("style", "position:relative; width:" + layer.width + "px; height:" + layer.height + "px;");
+        effectsCon.setAttribute("class", "vEffects trans_in drop");
+
+        //Not a vEffectBox: the core slide utility drives this one and reports the end through its
+        //own callback, so the shared transitionend handler must leave it alone.
+        slider.setAttribute("class", "vSlideForm");
+        slider.setAttribute("style", "position:absolute; left:0; width:100%; height:100%;");
+
+        effectsCon.appendChild(slider);
+        layer.space.appendChild(effectsCon);
+        layer.effectsCon = effectsCon;
+
+        fillEffectBox(slider, layer, true);
+
+        //shown first, because a transition does not run inside a display:none overlay
+        layer.overlay.classList.add("show");
+        $$.sm(slider).slide.toBottom(dropConfigs([dropOffset(layer), 0], 500, "cubic-bezier(.16,1,.3,1)"), function() {
+            if (!layer.closing) completeOpen(layer); //closed mid drop: the close owns the boxes now
+        });
+    },
+    slideLeft: function(layer) {
+        openDocked(layer);
+    },
+    slideRight: function(layer) {
+        openDocked(layer);
     }
 };
 
@@ -168,12 +233,12 @@ var closeEffects = {
         var leftE = startCloseTransition(layer, ".vLeft");
         var rightE = layer.effectsCon.querySelector(".vRight");
 
-        fillEffectBox(leftE, layer)["style"]["left"] = "0px";
+        fillSplitHalf(leftE, layer, "left");
         leftE.style["transition"] = "left .4s cubic-bezier(.86,.01,.99,.48)";
         leftE.scrollWidth;
         leftE.style["left"] = "-200%";
 
-        fillEffectBox(rightE, layer)["style"]["right"] = "0px";
+        fillSplitHalf(rightE, layer, "right");
         rightE.style["transition"] = "right .4s cubic-bezier(.86,.01,.99,.48)";
         rightE.scrollWidth;
         rightE.style["right"] = "-200%";
@@ -184,7 +249,7 @@ var closeEffects = {
         var flipperBg = layer.effectsCon.querySelector(".vFlipBg");
 
         flipper.style["transform"] = "rotateX(0deg)";
-        fillEffectBox(flipperFormE, layer);
+        reclaimLiveCopy(flipperFormE, layer);
 
         //bring the form face back to the front so the modal is what flips away
         flipperFormE.style["transform"] = "rotateX(0deg)";
@@ -196,20 +261,164 @@ var closeEffects = {
     },
     box: function(layer) {
         var box = startCloseTransition(layer, ".vBoxForm");
-        fillEffectBox(box, layer);
+        reclaimLiveCopy(box, layer);
         box.scrollWidth;
         box.style["width"] = "0%";
         box.style["height"] = "0%";
+    },
+    drop: function(layer) {
+        var slider = startCloseTransition(layer, ".vSlideForm");
+        reclaimLiveCopy(slider, layer);
+        $$.sm(slider).slide.toTop(dropConfigs([dropOffset(layer)], 400, EXIT_CURVE), function() {
+            completeClose(layer);
+        });
+    },
+    slideLeft: function(layer) {
+        closeDocked(layer);
+    },
+    slideRight: function(layer) {
+        closeDocked(layer);
     }
 };
 
-//Copies the modal into an animation box. The copy drops its id so that only the
-//one finally handed to the user (in the layer host) carries it.
-function fillEffectBox(box, layer) {
+//The edge each sideways slide ends up docked to. A slide to the left travels in from
+//the right edge, stays there, and leaves back out through the right edge; a slide to
+//the right mirrors it on the left.
+var dockSides = { slideLeft: "right", slideRight: "left" };
+
+//A docked modal is a full height panel against its edge rather than a centred box: the
+//space is taken off the centring transform and stretched to at least the viewport.
+function dockLayer(layer) {
+    var style = layer.space.style;
+    style["top"] = "0px";
+    style["left"] = layer.dock == "left" ? "0px" : "auto";
+    style["right"] = layer.dock == "right" ? "0px" : "auto";
+    style["transform"] = "none";
+    style["min-height"] = "100%";
+}
+
+function openDocked(layer) {
+    var effectsCon = $$.ce("DIV");
+    var slider = $$.ce("DIV");
+    var filler = $$.ce("DIV");
+
+    //clipped, so the part of the panel still off its edge never shows or scrolls the overlay
+    effectsCon.setAttribute("style", "position:relative; width:100%; height:" + Math.max(layer.height, window.innerHeight) + "px; overflow:hidden;");
+    effectsCon.setAttribute("class", "vEffects trans_in " + layer.effect);
+
+    //The core slide sets display:block on what it moves, so the column that stretches
+    //the modal to the panel's height sits one level in, on the filler.
+    slider.setAttribute("class", "vSlideForm");
+    slider.setAttribute("style", "position:absolute; top:0; width:100%; height:100%;");
+    filler.setAttribute("class", "vDockFill");
+    filler.setAttribute("style", "display:flex; flex-direction:column; height:100%;");
+
+    slider.appendChild(filler);
+    effectsCon.appendChild(slider);
+    layer.space.appendChild(effectsCon);
+    layer.effectsCon = effectsCon;
+
+    fillEffectBox(filler, layer, true)["style"]["flex"] = "1 0 auto";
+
+    layer.overlay.classList.add("show");
+    var travel = effectsCon.offsetWidth; //the panel's own width takes it fully past its edge
+    var direction = layer.dock == "right" ? "toLeft" : "toRight";
+    $$.sm(slider).slide[direction](dockConfigs([offEdge(layer, travel), 0], 500, "cubic-bezier(.16,1,.3,1)"), function() {
+        if (!layer.closing) completeOpen(layer);
+    });
+}
+
+function closeDocked(layer) {
+    var slider = startCloseTransition(layer, ".vSlideForm");
+    reclaimLiveCopy(slider.querySelector(".vDockFill"), layer)["style"]["flex"] = "1 0 auto";
+
+    //Aimed a quarter past the edge: the core's callback fires on a timer at the transition's
+    //duration, which can land a frame before the transition ends, and the panel must already
+    //be out of view when completeClose() removes it.
+    var travel = Math.ceil(layer.effectsCon.offsetWidth * 1.25);
+    var direction = layer.dock == "right" ? "toRight" : "toLeft"; //back out the way it came
+    $$.sm(slider).slide[direction](dockConfigs([0, offEdge(layer, travel)], 400, EXIT_CURVE), function() {
+        completeClose(layer);
+    });
+}
+
+//Both sides move the panel by "left", never "right": core.css transitions "right" only
+//from this release on, so a page holding an older or cached core.css would jump a
+//right docked panel into place with no animation at all.
+function dockConfigs(x, speed, timingFunction) {
+    return { use: "position", positionProperty: "left", positions: { x: x }, speed: speed, timingFunction: timingFunction };
+}
+
+//The "left" offset that puts the panel past its docked edge.
+function offEdge(layer, travel) {
+    return layer.dock == "right" ? travel : -travel;
+}
+
+//Exits accelerate away steadily. A steeper ease-in sat almost still for most of the
+//duration and was removed by the core's timed callback while still half in view.
+var EXIT_CURVE = "cubic-bezier(.4,0,1,1)";
+
+//The drop effect's off screen start: a full viewport plus the modal's own height above
+//where it lands, so even a tall modal pinned near the top starts entirely out of view.
+function dropOffset(layer) {
+    return -(window.innerHeight + layer.height);
+}
+
+//A fresh object per call, because the core slide writes its defaults into the one it is given.
+function dropConfigs(y, speed, timingFunction) {
+    return { use: "position", positions: { y: y }, speed: speed, timingFunction: timingFunction };
+}
+
+//Copies the modal into an animation box. An effect that animates one whole copy keeps
+//that copy (liveCopy) and hands the node itself to the layer host once the animation
+//ends, so it keeps the modal's id from the start. A copy that will be thrown away - the
+//two halves of split - drops its id, so that only the one handed to the user carries it.
+function fillEffectBox(box, layer, live) {
     box.innerHTML = layer.sourceOuter;
     var copy = box.childNodes[0];
-    copy.removeAttribute("id");
+    if (live) {
+        layer.liveCopy = copy;
+    } else {
+        copy.removeAttribute("id");
+    }
     copy.style["display"] = "block";
+    return copy;
+}
+
+//Moves the displayed modal back into an animation box for the closing effect, so the
+//exit plays with what the user sees - typed and autofilled values included - instead
+//of a fresh copy of the markup with every field emptied.
+function reclaimLiveCopy(box, layer) {
+    var live = layer.liveCopy;
+    if (live == null) return fillEffectBox(box, layer);
+    if (live.parentNode !== box) {
+        box.innerHTML = "";
+        box.appendChild(live);
+    }
+    return live;
+}
+
+//Fills one half of the split effect with a whole copy of the modal, anchored to that
+//half's outer edge so the left half shows the modal's left side and the right half
+//its right side. The copy sits in a wrapper as wide as the host it ends up in, so it
+//lays out (and wraps) exactly as the displayed modal does.
+//The halves are two separate copies of the form, and the browser autofills only one
+//of them - the left half showed filled, autofill-coloured fields beside empty ones on
+//the right. Autofill state cannot be read or copied by script, so neither copy is
+//left fillable: read-only fields are skipped by autofill, and inert keeps the
+//decorative copies out of focus and interaction while they move.
+function fillSplitHalf(half, layer, side) {
+    var wrap = $$.ce("DIV");
+    wrap.setAttribute("style", "position:absolute; top:0; " + side + ":0; width:" + layer.width + "px;");
+    wrap.setAttribute("inert", "");
+    half.innerHTML = "";
+    half.appendChild(wrap);
+    var copy = fillEffectBox(wrap, layer);
+    var fields = copy.querySelectorAll("input, textarea, select");
+    for (var x = 0; x < fields.length; x++) {
+        fields[x].setAttribute("readonly", "");
+        fields[x].setAttribute("autocomplete", "off");
+    }
     return copy;
 }
 
@@ -225,13 +434,28 @@ function completeOpen(layer) {
     if (layer.opened) return; //the box effect transitions two properties, so transitionend fires twice
     layer.opened = true;
 
-    layer.host.innerHTML = layer.sourceOuter;
-    layer.host.style["height"] = layer.height + "px";
+    //The node that animated in is moved, not rebuilt from markup. A rebuilt copy is a new
+    //set of form fields: their typed values are gone and the browser re-applies autofill a
+    //few frames late, which showed as the modal content blinking as the effect ended.
+    if (layer.liveCopy != null) {
+        layer.host.appendChild(layer.liveCopy);
+    } else {
+        layer.host.innerHTML = layer.sourceOuter;
+    }
+    if (layer.dock != null) {
+        //full height panel: the modal grows to fill it, and past it when its content is taller
+        layer.host.style["display"] = "flex";
+        layer.host.style["flex-direction"] = "column";
+        layer.host.style["min-height"] = "100vh";
+    } else {
+        layer.host.style["height"] = layer.height + "px";
+    }
 
     var content = layer.host.childNodes[0];
     if (content != null) {
         content.style["display"] = "block";
         content.style["width"] = "100%";
+        if (layer.dock != null) content.style["flex"] = "1 0 auto";
     }
     //the animation boxes are kept, hidden, because the closing effect replays through them
     if (layer.effectsCon != null) layer.effectsCon.style["display"] = "none";
@@ -298,6 +522,7 @@ function openLayer(settings, source) {
         sourceOuter: "",
         backgroundColor: $$.sm(source).cssStyle("background-color"),
         effect: settings.effect,
+        dock: dockSides[settings.effect] || null,
         widths: settings.widths,
         brkpoints: settings.brkpoints,
         exitOnAway: settings.exitOnAway,
@@ -308,14 +533,11 @@ function openLayer(settings, source) {
         overlayStyle: settings.overlayStyle,
         pageContainer: settings.pageContainer,
         effectsCon: null,
+        liveCopy: null,
         opened: false,
         closing: false,
         destroyed: false
     };
-
-    var dimension = getDimensionOfHidden(source);
-    layer.height = dimension["height"];
-    layer.width = dimension["width"];
 
     freezePage(); //no-op for every layer after the first
 
@@ -347,11 +569,16 @@ function openLayer(settings, source) {
 
     modalStack.push(layer);
     applyWidths(layer);
-    positionLayer(layer);
+    measureLayer(layer);
+    if (layer.dock != null) {
+        dockLayer(layer);
+    } else {
+        positionLayer(layer);
+    }
 
     //The displayed copy keeps the modal's id and the source gives it up, so that
     //getElementById() while a modal is open resolves to what the user can see.
-    source.style["width"] = layer.effect == "split" ? layer.width + "px" : "100%";
+    source.style["width"] = "100%"; //split sizes its copies through fillSplitHalf()'s wrapper
     layer.sourceOuter = source.outerHTML;
     source.removeAttribute("id");
     source.classList.add("vOld");

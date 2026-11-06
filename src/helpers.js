@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2021-07-19=T22:30Z
  */
@@ -42,6 +42,8 @@ window.vModel = {
                 "formComponents.js",
                 "formValidator.js",
                 "listScroller.js",
+                "marquee.js",
+                "messageBox.js",
                 "modalDisplayer.js",
                 "progressIndicator.js",
                 "resizer.js",
@@ -119,7 +121,7 @@ window.vModel = {
                             });
                         }else if(config[0] == "positionProperty"){
                             validateString(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object['positionProperty'] property must be a string");
-                            if (config[1] != "right" && config[1] != "left") throw new Error(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.positionProperty property value must either be 'right' or 'left'");
+                            if (config[1] != "right" && config[1] != "left") throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.positionProperty property value must either be 'right' or 'left', not '"+config[1]+"'"); //the message used to be only the bad value
                             //Continue here
                         }
                     }
@@ -128,12 +130,12 @@ window.vModel = {
                 if(configs.use != undefined){
                     if(configs.use.toLowerCase() == "position"){
                         if(configs.positions != undefined){
-                            if(direction == "toLeft" && direction == "toRight"){
+                            if(direction == "toLeft" || direction == "toRight"){ //was &&, so the check never ran
                                 if(configs.positions.x == undefined){
                                     throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.x property must be set");
                                 }
                             }
-                            if(direction == "toTop" && direction == "toBottom"){
+                            if(direction == "toTop" || direction == "toBottom"){
                                 if(configs.positions.y == undefined){
                                     throw new Error("$$.sm(.).slide."+direction+"(x.) argument 1 object.positions.y property must be set");
                                 }
@@ -181,7 +183,7 @@ window.vModel = {
                 }else if(axis == "y"){
                     axisValue = "0, 1, 0";
                 }else if (axis == "z"){
-                    axisValue = "0, 0, z";
+                    axisValue = "0, 0, 1"; //was "0, 0, z", an invalid transform
                 }
 
                 return "rotate3d("+axisValue+", "+angle+")";
@@ -315,7 +317,7 @@ export function runGroupStyler(element, StyleObject){
 }
 
 export function camelToCSSstandard(cameledName) {
-    return cameledName.replace(/[A-Z]/g, function (m){"-" + m.toLowerCase()});
+    return cameledName.replace(/[A-Z]/g, function (m){return "-" + m.toLowerCase()}); //the callback returned nothing, so each capital became "undefined"
 }
 
 export function hyphenatedToCamel(hyphenatedName) {
@@ -787,7 +789,7 @@ export function validateSelectField(groupCollection) {
     return status;
 }
 
-export function validatePhoneNumber() {
+export function validatePhoneNumber(input) { //the parameter was missing, so every call threw a ReferenceError
     var input_filter = /^(\+|[0-9])[0-9]+$/.test(input); //matches phone number pattern
     return input_filter;
 }
@@ -815,45 +817,40 @@ export function isHTMLObject(NodeList){
 }
 
 export function checkBrowser(id = null){
+    //keys are "<word before the second-to-last '/'>-<word before the last '/'>" of the user agent
     var browserIds={
         "Safari-Edg": {id:"Safari-Edg", label:"Microsoft Edge", name:"edge"},
         "Chrome-Safari":{id:"Chrome-Safari", label:"Chrome or Chromium Based", name:"chrome"},
+        "HeadlessChrome-Safari":{id:"HeadlessChrome-Safari", label:"Chrome or Chromium Based", name:"chrome"},
         "Mozilla-Trident": {id:"Mozilla-Trident", label:"Internet Explorer", name:"iexplorer"},
         "Gecko-Firefox":{id:"Gecko-Firefox", label:"Mozilla Firefox", name:"firefox"},
         "Safari-Opr":{id:"Safari-Opr", label:"Opera", name:"opera"},
+        "Safari-OPR":{id:"Safari-OPR", label:"Opera", name:"opera"},
         "UBrowser-Safari":{id:"UBrowser-Safari", label:"ucbrowser", name:"ucbrowser"},
-        "Safari-main":{id:"Safari-main", label:"Safari", name:"safari"}
+        //Safari's agent ends "Version/17.0 Safari/605.1.15" (desktop) or "Version/17.0 Mobile/15E148 Safari/604.1" (iOS);
+        //the old "Safari-main" key matched neither, so Safari was never recognised
+        "Version-Safari":{id:"Version-Safari", label:"Safari", name:"safari"},
+        "Mobile-Safari":{id:"Mobile-Safari", label:"Safari", name:"safari"}
     }
 
     var idSegments = navigator.userAgent.split("/");
     var totalSegment = idSegments.length;
-    var parentId = idSegments[totalSegment-3].split(" ");
-    var parsedParentId = parentId[parentId.length-1].trim();
-    var childId = idSegments[totalSegment-2].split(" ");
-    var parsedChildId = childId[childId.length-1].trim();
-    var browserId = parsedParentId+"-"+parsedChildId;
-    
+    var browserId = "";
+    if (totalSegment >= 3) {
+        var parentId = idSegments[totalSegment-3].split(" ");
+        var parsedParentId = parentId[parentId.length-1].trim();
+        var childId = idSegments[totalSegment-2].split(" ");
+        var parsedChildId = childId[childId.length-1].trim();
+        browserId = parsedParentId+"-"+parsedChildId;
+    }
+    var match = browserIds[browserId];
+
     if(id != null){
-        switch (id) {
-            case "edge":
-                return browserIds["Safari-Edg"].id == browserId;
-            case "chrome":
-                return browserIds["Chrome-Safari"].id == browserId;
-            case "iexplorer":
-                return browserIds["Mozilla-Trident"].id == browserId;
-            case "firefox":
-                return browserIds["Gecko-Firefox"].id == browserId;
-            case "safari":
-                return browserIds["Safari-main"].id == browserId;
-            case "ucbrowser":
-                return browserIds["UBrowser-Safari"].id == browserId;
-            case "opera":
-                return browserIds["Safari-Opr"].id == browserId;
-            default:
-                return false
-        }
+        return match != undefined && match.name == id;
     }else{
-        return {id:browserIds[browserId].id, label:browserIds[browserId].label, name:browserIds[browserId].name};
+        //an agent it does not know used to throw a TypeError; it now reports itself as unknown
+        if (match == undefined) return {id:browserId, label:"Unknown", name:"unknown"};
+        return {id:match.id, label:match.label, name:match.name};
     }
 }
 

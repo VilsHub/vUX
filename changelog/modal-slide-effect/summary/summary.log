@@ -1,0 +1,73 @@
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+SCOPE: add a "slide" open/close effect to ModalDisplayer, built on the core slide utility
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) is the only project changed. The change is additive:
+existing effects and the public API are untouched, so consumers (vGet, sketch-app,
+app.myinvitees.com) are unaffected unless they set config.effect = "slide".
+
+  - vUX-modalDisplayer.js      "slide" in openEffects/closeEffects, plus two helpers
+  - doc/modal-displayer.md     effect value, Effects table, completion note
+  - doc/README.md              effect count
+  - examples/modal/index.html  "slide" option in the effect select
+  - examples/modal/README.md   effect list
+  - ChangeLog.md               one bullet under v4.0.0-beta Added
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+config.effect = "slide" makes the modal slide down from above the viewport into
+place on open (500ms, ease-out) and slide back up on close (400ms, ease-in). The
+movement is done by the core utility, $$.sm(el).slide.toBottom()/toTop() in position
+mode, animating `top`. The effect completes on that utility's callback, not on
+transitionend.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+examples/modal/ was loaded in headless Chromium, with the effect select set to slide:
+  - open: the copy started at top -759px in the viewport and finished in place;
+    the host was filled, the animation box hidden, and openProcessor logged once
+  - Escape: it slid upward, then the overlay was removed and closeProcessor logged
+  - stacking: a modal opened from inside a displayed one reached depth 2 and unwound
+  - Escape during the opening slide: closed cleanly, no openProcessor, one close
+  - no page errors or console errors
+
+FOLLOW-UP (same day): slideLeft / slideRight
+  config.effect = "slideLeft" slides the modal in from the right edge and leaves it
+  docked on the right as a full height panel; "slideRight" mirrors it on the left.
+  Close slides it back out through the edge it came from. Driven by the core
+  $$.sm(el).slide.toLeft()/toRight() in position mode on the docked edge's property.
+  Verified in headless Chromium at 1200x800 with a 500px width: slideLeft went from
+  x 1200 to the 700-1200 position and slideRight from -500 to the 0-500 position,
+  0px from the top and 800px tall. An away click slid each back out and removed the
+  overlay. A tall modal grew to 1345px and scrolled. A nested layer docked over the
+  first. No horizontal page scroll and no errors.
+
+FOLLOW-UP: "slide" renamed to "drop"; exits fixed
+  The top-down effect is now config.effect = "drop" ("slide" throws). The close of
+  drop, slideLeft and slideRight used a steep ease-in that the core slide's timed
+  callback cut off with the modal still about half on screen. It now uses
+  cubic-bezier(.4,0,1,1) and the sideways exits aim 25% past the edge, so the
+  modal leaves view before removal. Re-verified in headless Chromium with
+  per-frame sampling: slideLeft exits right, slideRight left, drop upward.
+
+FOLLOW-UP: sideways exits continue forward
+  slideLeft now leaves by carrying on left across the screen and out of the left
+  edge (slideRight: right, out of the right edge) instead of reversing. Verified
+  per frame in headless Chromium; no horizontal scroll, tall and nested unchanged.
+
+FOLLOW-UP: exits reversed again; animation no longer depends on new core.css
+  Superseding the previous follow-up: slideLeft leaves back out to the right and
+  slideRight back out to the left. Both now move the panel by `left`, because the
+  committed core.css transitions only left/top. With `right`, slideLeft jumped
+  with no animation wherever that older core.css was loaded or cached. Verified
+  against both core.css versions.
+
+dist/ (minified build) was not regenerated; run ./minify.sh to refresh it.

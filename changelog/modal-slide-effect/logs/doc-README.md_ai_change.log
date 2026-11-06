@@ -1,0 +1,31 @@
+FILE: doc/README.md
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
+
+================================================================================
+CHANGE 1 — modal example link
+================================================================================
+
+OLD_SECTION
+exercising all four modal effects
+
+NEW_SECTION
+exercising all five modal effects
+
+REASON
+Count updated.
+
+================================================================================
+CHANGE 2 — count
+================================================================================
+
+OLD_SECTION
+exercising all five modal effects
+
+NEW_SECTION
+exercising all seven modal effects
+
+REASON
+Count updated.
+

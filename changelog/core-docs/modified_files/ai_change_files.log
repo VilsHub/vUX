@@ -1,0 +1,27 @@
+FEATURE: core-docs
+DATE: 2026-10-07
+
+Core
+  Modified:
+    (none, documentation and example only)
+
+Documentation
+  Added:
+    doc/core.md
+  Modified:
+    doc/README.md
+
+Examples
+  Added:
+    examples/core/index.html
+    examples/core/main.js
+    examples/core/README.md
+
+  Depends on (unmodified):
+    examples/shared/example.css
+    assets/css/core.css
+    vUX-core.js
+
+Release record
+  Modified:
+    ChangeLog.md

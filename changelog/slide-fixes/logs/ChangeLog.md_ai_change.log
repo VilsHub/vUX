@@ -1,0 +1,35 @@
+File: ChangeLog.md
+Feature: slide-fixes
+
+=======================================================================
+Section 1
+OLD_SECTION
+- SPAEngine protected routes now work: ... instead of the route's `authURL`
+
+## Removed
+
+NEW_SECTION
+- SPAEngine protected routes now work: ... instead of the route's `authURL`
+- Slide with `use: "position"` now animates `right` and `bottom` as well as `left` and `top` ...
+- `slide.toRight()` now honours `positionProperty`, as `toLeft()` does ...
+- `slide.toRight()` now applies the same defaults as `toLeft()` ...
+- `slide.toRight()` with `use: "dimension"` and no end width now opens to the content's width ...
+- `slide.toLeft()` and `slide.toRight()` with `use` left out now animate the width ...
+
+## Removed
+
+REASON
+Release-facing record: five Fixed bullets for the slide utility, appended at the end of the
+v4.0.0-beta Fixed list.
+
+=======================================================================
+Section 2
+OLD_SECTION
+- `slide.toLeft()` and `slide.toRight()` with `use` left out now animate the width ...
+
+NEW_SECTION
+- `slide.toLeft()` and `slide.toRight()` with `use` left out now animate the width ...
+- Position slides now start from `positions.x[0]` every time ...
+
+REASON
+Release-facing bullet for the start-position fix, appended.

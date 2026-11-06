@@ -1,0 +1,19 @@
+FILE: examples/core/index.html
+FEATURE: core-docs
+DATE: 2026-10-07
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file)
+
+NEW_SECTION
+A hero (gradient headline via fill() + animate(), tweened counters, a flip card) and seven
+sections on the shared design system: select and manipulate, motion, layout helpers,
+delegated events, data/time/environment, built-in extensions, bad input and known defects.
+
+REASON
+CLAUDE.md requires a designed example page for every module. Page-specific CSS is the
+fix for three things the core leaves to the consumer, each commented in place: the
+explicit height a width slide needs because .vSlide.dim sets height:0, left:0 and
+overflow:hidden for the overlay, and the minmax(0,1fr) column so the nowrap code line
+does not widen the hero on a phone.

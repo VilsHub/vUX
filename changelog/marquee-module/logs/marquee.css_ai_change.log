@@ -1,0 +1,18 @@
+FILE: assets/css/marquee.css
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+NEW FILE. Base styles for the container (.vMarquee: relative, overflow hidden), the track
+(.vMarqueeTrack: nowrap flex row, max-content width) and the items (no shrink, no wrap), so
+one set always measures the same. The module also sets the structural ones inline, because
+this sheet arrives after the first measurement.
+
+OLD_SECTION
+(none, new file)
+
+NEW_SECTION
+.vMarquee { position: relative; overflow: hidden; }
+.vMarqueeTrack { display: flex; flex-wrap: nowrap; width: max-content; align-items: center; }
+.vMarqueeTrack > * { flex-shrink: 0; white-space: nowrap; }

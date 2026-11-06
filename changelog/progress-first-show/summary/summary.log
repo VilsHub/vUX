@@ -1,0 +1,13 @@
+Feature: progress-first-show
+Target module: ProgressIndicator
+
+- Fix: the first linear bar shown in a page jumped straight to its first stop without
+  animating, and a style 3 bar then stayed there (no transitionend, so no slow or crawl
+  phase). setTemplate() now flushes styles after inserting a new bar, as the reuse branch
+  already did.
+
+Why: found by the features-validator on Apps/vilshub.net's route loading bar (a visitor's first
+navigation always showed a static bar).
+
+Verified: headless Chromium on vilshub.net with a 3s fragment delay: first bar 0% -> 34% at
+400ms -> 65% halted at 1.2s -> 75% at 2.5s, completed on mount.

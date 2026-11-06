@@ -1,0 +1,14 @@
+FEATURE: border-color-cycle
+DATE: 2026-10-11
+
+<CShapes>
+  Modified:
+    vUX-cShapes.js              (strokeStyle set per frame; CRLF kept)
+
+<Core>
+  Modified:
+    src/vUX-core-4.0.0-beta.js  ($$.sm().animate() clamps a negative first time fraction; CRLF kept)
+
+<Documentation>
+  Modified:
+    ChangeLog.md

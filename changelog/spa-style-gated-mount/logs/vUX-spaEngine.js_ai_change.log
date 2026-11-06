@@ -1,0 +1,843 @@
+File: vUX-spaEngine.js
+
+=======================================================================
+Section 1 (old lines 34-38, new lines 34-43)
+OLD_SECTION
+    //to true after a successful sign-in, and to false on sign-out.
+    var loggedIn = false;
+    var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+        cache:"",
+
+NEW_SECTION
+    //to true after a successful sign-in, and to false on sign-out.
+    var loggedIn = false;
+    //Style-gated mounting: a fragment is parsed off-screen and mounted only once the stylesheets it
+    //carries have loaded (or styleTimeout ms have passed), so nothing paints unstyled. Each
+    //navigation takes a token, and a staged fragment whose navigation was superseded is dropped.
+    //stagedLinks holds the stylesheet links a staged fragment is waiting on or keeping.
+    var styleTimeout = 3000, navigationToken = 0, activeStages = [], stagedLinks = new WeakSet(), pendingContent = null;
+var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+        cache:"",
+
+REASON
+State for style-gated mounting: the timeout, the navigation token that lets a newer navigation supersede an older one, the stages still waiting, the links staged fragments are loading or keeping, and the content load in flight (so a double click on a pending link is ignored).
+
+=======================================================================
+Section 2 (old lines 79-82, new lines 84-90)
+OLD_SECTION
+        clearTimeout(cacheBuilderTimer);
+        cacheBuilderTimer = null;
+
+        cacheBuilderTracker = {};
+
+NEW_SECTION
+        clearTimeout(cacheBuilderTimer);
+        cacheBuilderTimer = null;
+
+        //Fragments still waiting on their stylesheets are never mounted
+        beginNavigation();
+
+        cacheBuilderTracker = {};
+
+REASON
+destroy() drops any fragment still waiting on its stylesheets, so nothing is mounted after teardown.
+
+=======================================================================
+Section 3 (old lines 202-220, new lines 210-231)
+OLD_SECTION
+                //Set page title
+                $$.ss("title").innerText = title;
+  
+                // Notify outgoing route, then set contents
+                fireExitCallback();
+                contentNode.innerHTML = parsedData.contents;
+                activeRoute = {name: routeName, data: routeProperties.data};
+       
+                // Set page sections
+                loadPageSections(routeProperties, routeName);
+                
+                // Flush other page section content
+                flushElements(routeProperties.properties.flush);
+
+                // Call history Callback  
+                // Work on progress object inclusion  
+                if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey, routeProperties.data)}, 200);
+
+            }
+
+NEW_SECTION
+                //Set page title
+                $$.ss("title").innerText = title;
+
+                //Mount the stored content and the route's sections together, once their stylesheets apply
+                let token           = beginNavigation();
+                let route           = {name: routeName, data: routeProperties.data};
+                let contentStage    = stageHtml(contentNode, parsedData.contents, true);
+
+                mountWhenStyled(token, stagePageSections(routeProperties, routeName), contentStage, routeProperties.properties.flush, route).then(function(mounted){
+                    if (!mounted) return;
+
+                    //The node now shows a history entry, not the last clicked link's content, so
+                    //clicking that link again loads it
+                    delete contentNode.dataset.link;
+                    contentNode.dataset.state = "received";
+
+                    // Call history Callback
+                    // Work on progress object inclusion
+                    if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey, routeProperties.data)}, 200);
+                });
+
+            }
+
+REASON
+Back/forward used to set innerHTML at once and mount sections afterwards, so the content and the sections painted before their stylesheets loaded. It now stages both and mounts them together once styled; the history callback runs after that mount. The content node's link mapping is cleared, because the node now shows a history entry and re-clicking the last link must load it again.
+
+=======================================================================
+Section 4 (old lines 278-285, new lines 289-298)
+OLD_SECTION
+    }
+
+    function fetchData(container=null, element=null, cache=null) {
+  
+        var urlTarget   = routeProperties.properties["target"];
+        var routeName   = routeProperties.name;
+
+        if (preClickCallback != null) preClickCallback(element);
+
+NEW_SECTION
+    }
+
+    function fetchData(container=null, element=null, cache=null, show=null) {
+        //show(html) mounts the content for the navigation that asked for it (see getLinkContent)
+
+        var urlTarget   = routeProperties.properties["target"];
+        var routeName   = routeProperties.name;
+        var routeData   = routeProperties.data;
+
+        if (preClickCallback != null) preClickCallback(element);
+
+REASON
+fetchData() takes show(html), the navigation's mount function, instead of inserting the content itself; the click callback, the received state and the history entry follow the mount, and are skipped when a newer navigation took over.
+
+=======================================================================
+Section 5 (old lines 340-352, new lines 353-367)
+OLD_SECTION
+                        }
+        
+                        insertContent(container, xhr.responseText, element);
+
+                        // Pass: element, routeid, callbackKey
+                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
+
+                        container.dataset.state = "received";  
+                        
+                        saveState(xhr.responseText, element.id);
+        
+                    }
+
+
+NEW_SECTION
+                        }
+        
+                        show(xhr.responseText).then(function(mounted){
+                            if (!mounted) return; //a newer navigation took over
+
+                            // Pass: element, routeid, callbackKey
+                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeData)}, 200): null;
+
+                            container.dataset.state = "received";
+
+                            saveState(xhr.responseText, element.id);
+                        });
+
+                    }
+
+
+REASON
+fetchData() takes show(html), the navigation's mount function, instead of inserting the content itself; the click callback, the received state and the history entry follow the mount, and are skipped when a newer navigation took over.
+
+=======================================================================
+Section 6 (old lines 381-398, new lines 396-530)
+OLD_SECTION
+    }
+
+    function insertContent(container, content, element){
+        if (element != null){
+            if(element.dataset.link == container.dataset.link){//content for the last element clicked
+                //set Content
+                fireExitCallback();
+                container.innerHTML = content;
+                activeRoute = {name: routeProperties.name, data: routeProperties.data};
+            }
+        }else{
+            //set Content
+            fireExitCallback();
+            container.innerHTML = content;
+            activeRoute = {name: routeProperties.name, data: routeProperties.data};
+        }
+    }
+
+
+NEW_SECTION
+    }
+
+    function isStylesheet(node){
+        return node.nodeName == "LINK" && node.relList.contains("stylesheet") && !node.relList.contains("alternate");
+    }
+
+    function sameStylesheet(mounted, link){
+        //mounted is live in the document, link is still in a template, so resolve its href by hand
+        let href = new URL(link.getAttribute("href") || "", document.baseURI).href;
+        return mounted.href == href && (mounted.getAttribute("media") || "") == (link.getAttribute("media") || "");
+    }
+
+    function waitForStylesheet(link){
+        //Settles when the stylesheet has loaded or failed, or after styleTimeout ms, so a slow or
+        //broken stylesheet delays a route by at most that long instead of blocking it
+        return new Promise(function(resolve){
+            let timer = setTimeout(done, styleTimeout);
+            function done(){
+                clearTimeout(timer);
+                link.removeEventListener("load", done);
+                link.removeEventListener("error", done);
+                resolve();
+            }
+            link.addEventListener("load", done);
+            link.addEventListener("error", done);
+        });
+    }
+
+    function stageHtml(mountPoint, html, replace, hold=true){
+        //Parses a fragment off-screen and starts loading the stylesheets it carries, without showing
+        //it. Mounting with innerHTML paints the markup before those stylesheets arrive, so until
+        //they do it shows unstyled (an image with no size of its own fills the screen).
+        //The fragment's top-level stylesheet links go into the mount point at once. With hold they
+        //sit behind media="not all", so they load without restyling the route still on screen;
+        //at boot nothing is on screen yet, so they apply as they arrive (a held stylesheet is also
+        //fetched at the lowest priority). commit() takes the old content out, switches the links
+        //on and inserts the rest, in one task. Only links whose media matches are waited for.
+        //A link already mounted there with the same href and media is kept instead of fetched
+        //again, as long as that leaves the new links in their written order.
+        let template        = document.createElement("template");
+        template.innerHTML  = html;
+
+        let newLinks    = Array.from(template.content.children).filter(isStylesheet);
+        let oldLinks    = replace ? Array.from(mountPoint.children).filter(function(node){ return isStylesheet(node) && !stagedLinks.has(node); }) : [];
+        let kept        = [];
+        let lastIndex   = -1;
+
+        //Reuse a leading run of the new links, in order, from the links already mounted
+        for (let x = 0; x < newLinks.length; x++){
+            let index = oldLinks.findIndex(function(old, i){ return i > lastIndex && sameStylesheet(old, newLinks[x]); });
+            if (index == -1) break;
+            kept.push(oldLinks[index]);
+            lastIndex = index;
+            newLinks[x].remove();
+        }
+
+        let added       = newLinks.slice(kept.length);
+        let media       = added.map(function(link){ return link.getAttribute("media"); });
+        let settled     = false;
+
+        kept.forEach(function(link){ stagedLinks.add(link); });
+        let ready = Promise.all(added.map(function(link, i){
+            let loaded = media[i] == null || matchMedia(media[i]).matches ? waitForStylesheet(link) : null;
+            if (hold) link.setAttribute("media", "not all");
+            stagedLinks.add(link);
+            mountPoint.appendChild(link);
+            return loaded;
+        }));
+
+        function release(){
+            settled = true;
+            kept.concat(added).forEach(function(link){ stagedLinks.delete(link); });
+        }
+
+        let stage = {
+            ready: ready,
+            commit: function(){
+                if (settled) return;
+                if (replace){
+                    //Links staged by another fragment stay: that fragment commits or cancels them
+                    Array.from(mountPoint.childNodes).forEach(function(node){
+                        if (!stagedLinks.has(node)) node.remove();
+                    });
+                }
+                added.forEach(function(link, i){
+                    media[i] == null ? link.removeAttribute("media") : link.setAttribute("media", media[i]);
+                });
+                let before = kept.concat(added).find(function(link){ return link.parentNode == mountPoint; });
+                mountPoint.insertBefore(template.content, before || null);
+                release();
+            },
+            cancel: function(){
+                if (settled) return;
+                added.forEach(function(link){ link.remove(); });
+                release();
+            }
+        };
+        activeStages.push(stage);
+        return stage;
+    }
+
+    function beginNavigation(){
+        //A newer navigation supersedes every fragment still waiting on its stylesheets
+        activeStages.forEach(function(stage){ stage.cancel(); });
+        activeStages = [];
+        return ++navigationToken;
+    }
+
+    async function mountWhenStyled(token, sectionStages, contentStage, flush, route){
+        //Waits for the stylesheets of every staged fragment, then mounts them all in one task, so a
+        //route's content and sections appear together and already styled. Resolves false, mounting
+        //nothing, when a newer navigation began in the meantime.
+        let stages = (await sectionStages).slice();
+        if (contentStage != null) stages.push(contentStage);
+
+        await Promise.all(stages.map(function(stage){ return stage.ready; }));
+
+        activeStages = activeStages.filter(function(stage){ return stages.indexOf(stage) == -1; });
+        if (token != navigationToken){
+            stages.forEach(function(stage){ stage.cancel(); });
+            return false;
+        }
+
+        if (flush != undefined) flushElements(flush);
+        if (contentStage != null){
+            fireExitCallback();
+            contentStage.commit();
+            activeRoute = route;
+        }
+        stages.forEach(function(stage){
+            if (stage != contentStage) stage.commit();
+        });
+        return true;
+    }
+
+
+REASON
+insertContent() is replaced by the staging helpers. stageHtml() parses a fragment in a template, puts its top-level stylesheet links in the mount point (behind media="not all" while navigating, so the leaving route is not restyled), waits for those whose media matches, and commit()s the swap in one task; matching links already mounted are kept instead of refetched when order allows. beginNavigation() cancels stale stages; mountWhenStyled() waits for every stage of a navigation, then flushes, fires the exit callback, and mounts content and sections together.
+
+=======================================================================
+Section 7 (old lines 429-433, new lines 561-565)
+OLD_SECTION
+    }
+
+    function loadPageContents(){
+
+        let route = location.pathname;
+
+NEW_SECTION
+    }
+
+    function loadPageContents(token, sectionStages, uncloak){
+
+        let route = location.pathname;
+
+REASON
+Boot content is staged and mounted with the boot sections once all are styled; the boot cloak is lifted on every outcome (mounted, superseded, redirect, or error). A null content (redirect) no longer throws on content.then.
+
+=======================================================================
+Section 8 (old lines 464-482, new lines 596-622)
+OLD_SECTION
+        }
+
+        content.then(function(data){
+            if(data.status){
+                if(defaultContentNode != null){
+                    insertContent(defaultContentNode, data.content, null);
+
+                    // Set page title
+                    setPageTitle(null);
+
+                    //store page details in history state 
+                    saveState(data.content, null);
+
+                    if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
+                }
+            }
+        })            
+    }
+
+
+NEW_SECTION
+        }
+
+        if (content == null) return uncloak(); //sent to the auth page
+
+        content.then(function(data){
+            let contentStage    = data.status && defaultContentNode != null ? stageHtml(defaultContentNode, data.content, true, false) : null;
+            let route           = {name: routeProperties.name, data: routeProperties.data};
+
+            //The sections and the content appear together, once their stylesheets apply
+            return mountWhenStyled(token, sectionStages, contentStage, undefined, route).then(function(mounted){
+                uncloak();
+                if (!mounted || contentStage == null) return;
+
+                // Set page title
+                setPageTitle(null);
+
+                //store page details in history state
+                saveState(data.content, null);
+
+                if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
+            });
+        }).catch(function(error){
+            uncloak();
+            throw error;
+        })
+    }
+
+
+REASON
+End of loadPageContents(): the boot callback, title and history entry run after the styled mount, and a failed content fetch lifts the boot cloak before the error propagates, so the page is never left hidden.
+
+=======================================================================
+Section 9 (old lines 496-499, new lines 636-642)
+OLD_SECTION
+
+        var routeName   = routeProperties.name;
+
+        // Load links contents
+
+NEW_SECTION
+
+        var routeName   = routeProperties.name;
+        var route       = {name: routeName, data: routeProperties.data};
+        var flush       = routeProperties.properties.flush;
+        var token       = null;
+
+        // Load links contents
+
+REASON
+Click navigation: begins a navigation, stages the route's page sections, and mounts the content (from cache or server) with them once styled. Flush moves to mount time so the header doesn't blank while the route loads. A second click on a link still loading is ignored, and a link whose content is already shown reloads only the sections.
+
+=======================================================================
+Section 10 (old lines 531-538, new lines 674-693)
+OLD_SECTION
+            cache = cache == null ? true : parseBooleanAttribute(cache); //The default is set to true, and content loaded will be cached
+
+            if(contentNode.dataset.link != dataLink){
+                contentNode.dataset.state = "receiving";
+                contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
+                
+                if(cache) { //Attempt load from storage
+
+
+NEW_SECTION
+            cache = cache == null ? true : parseBooleanAttribute(cache); //The default is set to true, and content loaded will be cached
+
+            //Clicking again a link whose content is still on its way changes nothing
+            if (pendingContent != null && pendingContent.node == contentNode && pendingContent.link == dataLink && pendingContent.token == navigationToken) return;
+
+            token = beginNavigation();
+            var sectionStages = stagePageSections(routeProperties, routeName);
+
+            if(contentNode.dataset.link != dataLink){
+                contentNode.dataset.state = "receiving";
+                contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
+                pendingContent = {node: contentNode, link: dataLink, token: token};
+
+                //Mounts the content with the route's sections, once their stylesheets apply
+                var show = function(html){
+                    return mountWhenStyled(token, sectionStages, stageHtml(contentNode, html, true), flush, route);
+                };
+
+                if(cache) { //Attempt load from storage
+
+
+REASON
+Click navigation: begins a navigation, stages the route's page sections, and mounts the content (from cache or server) with them once styled. Flush moves to mount time so the header doesn't blank while the route loads. A second click on a link still loading is ignored, and a link whose content is already shown reloads only the sections.
+
+=======================================================================
+Section 11 (old lines 550-579, new lines 705-737)
+OLD_SECTION
+
+                    if (existingLinksContents[routeName] != undefined) { //link exist, so get content from cache
+                        insertContent(contentNode, existingLinksContents[routeName] , element);           
+
+                        saveState(existingLinksContents[routeName], element.id);
+
+                        contentNode.dataset.state = "received";
+                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
+
+                    } else { //link does not exist, get from server
+                        fetchData(contentNode, element, cache);
+                    }
+
+                }else{
+                     //ignore cache storage and Load from server
+                    fetchData(contentNode, element, cache);
+                }
+            }
+
+        }else { //just get only content
+            fetchData(null, element, cache);
+        }
+
+        // Load page sections
+        loadPageSections(routeProperties, routeName);
+
+        // Flush other page section content
+        flushElements(routeProperties.properties.flush);
+
+        // Set Page title
+
+NEW_SECTION
+
+                    if (existingLinksContents[routeName] != undefined) { //link exist, so get content from cache
+                        let html = existingLinksContents[routeName];
+
+                        show(html).then(function(mounted){
+                            if (!mounted) return; //a newer navigation took over
+
+                            saveState(html, element.id);
+
+                            contentNode.dataset.state = "received";
+                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, route.data)}, 200): null;
+                        });
+
+                    } else { //link does not exist, get from server
+                        fetchData(contentNode, element, cache, show);
+                    }
+
+                }else{
+                     //ignore cache storage and Load from server
+                    fetchData(contentNode, element, cache, show);
+                }
+            }else{
+                //The node already holds this link's content: only the sections are reloaded
+                mountWhenStyled(token, sectionStages, null, flush, route);
+            }
+
+        }else { //just get only content
+            token = beginNavigation();
+            fetchData(null, element, cache);
+            mountWhenStyled(token, stagePageSections(routeProperties, routeName), null, flush, route);
+        }
+
+        // Set Page title
+
+REASON
+Click navigation from the link cache: mounts through show() and runs saveState and the click callback after the styled mount.
+
+=======================================================================
+Section 12 (old lines 581-638, new lines 739-754)
+OLD_SECTION
+    }
+
+    async function loadPageSections(targetRouteProperties, routeName){
+
+         // Load page sections
+         let pageSections           = null;
+         pageSections               = Object.entries(targetRouteProperties.properties.pageSections);
+         let totalPageSections      = pageSections.length;
+         
+         for (let z = 0; z < totalPageSections; z++) {
+ 
+             let sectionId           = routeName+"-"+pageSections[z][0];
+             let mountPoint          = pageSections[z][1].mountPoint;
+             let replace             = pageSections[z][1].replaceOld;
+             let cachedPageSections  = sessionStorage.pageSections != undefined ? sessionStorage.getIterable("pageSections") : {};
+ 
+             if(cachedPageSections[sectionId] != undefined){ //get from cache and mount
+
+                 let targetSection = cachedPageSections[sectionId];
+                 if(replace){
+                     $$.ss(mountPoint).innerHTML = targetSection;
+                 }else{
+                     $$.ss(mountPoint).insertAdjacentHTML('beforeend', targetSection);
+                 }
+             }else{ //get from server mount and cache
+
+                 let url = pageSections[z][1].source;
+ 
+                 const response = await fetch(url);
+                 let content = await response.text();
+                 
+                 if (response.ok){
+                     if (response.headers.get('X-Fallback') === 'true') {
+                         // Handle invalid route
+                         throw new Error('404: File '+url+' not found');
+                     }else{
+                         // Mount, as the cached branch does, then save
+                         if(replace){
+                             $$.ss(mountPoint).innerHTML = content;
+                         }else{
+                             $$.ss(mountPoint).insertAdjacentHTML('beforeend', content);
+                         }
+
+                         if(!savedPageSection[sectionId]){
+                            saveSectionData("pageSections", sectionId, content);
+                            savedPageSection[sectionId] = true;
+                         }
+                         
+                     }
+                     
+                 }else{
+                     console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+                 }
+             }
+             
+         }
+    }
+
+
+NEW_SECTION
+    }
+
+    function stagePageSections(targetRouteProperties, routeName, atBoot=false){
+        //Stages every page section of a route, fetching the uncached ones in parallel. Resolves to
+        //the stages, leaving out sections that could not be fetched.
+        //An omitted replaceOld replaces at boot and appends on navigation, as it always has.
+        let pageSections = Object.entries(targetRouteProperties.properties.pageSections || {});
+
+        return Promise.all(pageSections.map(function(section){
+            let replace = section[1].replaceOld === undefined ? atBoot : section[1].replaceOld;
+            return stageSection("pageSections", routeName+"-"+section[0], section[1].source, section[1].mountPoint, replace, !atBoot);
+        })).then(function(stages){
+            return stages.filter(function(stage){ return stage != null; });
+        });
+    }
+
+
+REASON
+loadPageSections() (sequential fetch, immediate innerHTML) becomes stagePageSections(): parallel fetch, each section staged, resolving to the stages. An omitted replaceOld keeps its old meaning per path (replace at boot, append on navigation).
+
+=======================================================================
+Section 13 (old lines 814-884, new lines 930-962)
+OLD_SECTION
+
+    function renderContent(){
+        // load all block sections
+        let contentBlockSections    = routeConfigs.blockSections;
+
+        // Block sections
+        let allBlockSections        = Object.entries(contentBlockSections);
+        let totalBlockSections      = allBlockSections.length;      
+
+       
+        var  sectionPromises = [];
+
+        if (totalBlockSections > 0){
+
+            // store all block section promises in the sectionPromises array
+            sectionPromises = allBlockSections.map((element) => {
+                let name        = element[0];
+                let url         = element[1].source;
+                let mountPoint  = element[1].mountPoint;
+                let replace     = element[1].replaceOld;
+                
+                // Returns a promise
+                return getSectionContents("blockSections", name, url, mountPoint, replace);
+            });
+
+        }
+
+        // load all page sections
+        if (routeProperties.properties.pageSections != undefined){
+  
+            // Page sections
+            let contentPageSections     = routeProperties.properties.pageSections;
+            var allPageSections         = Object.entries(contentPageSections);
+            let totalPageSections       = allPageSections.length;
+            let routeName               = routeProperties.name;
+
+
+            if(totalPageSections > 0){
+                
+                // store all page section promises in the sectionPromises array
+                var tmpSectionPromises = allPageSections.map((element) => {
+
+                    let name        = routeName+"-"+element[0];
+                    let url         = element[1].source;
+                    let mountPoint  = element[1].mountPoint;
+                    let replace     = element[1].replaceOld;
+
+                    // Assuming getSectionContents is a function that returns a promise
+                    return getSectionContents("pageSections", name, url, mountPoint, replace);
+                });
+                    
+
+                // Concatenate page section to block section if possible
+                if(tmpSectionPromises !== undefined && tmpSectionPromises.length > 0){
+                    sectionPromises = sectionPromises.concat(tmpSectionPromises);
+                }
+            }
+
+        }
+        
+        // Use Promise.all to wait for all promises then load page content
+        Promise.all(sectionPromises)
+        .then((results) => {
+            loadPageContents();
+        })
+        .catch((error) => {
+            console.error("Error processing sections:", error);
+        });
+        
+    }
+
+
+NEW_SECTION
+
+    function renderContent(){
+        //Stage the block sections and the entry route's page sections; loadPageContents() mounts
+        //them with the route's content once all their stylesheets apply.
+        //The shell around the mount points is often styled by those same fragments' stylesheets,
+        //so the page is hidden until then rather than painted half-styled.
+        let uncloak         = cloakPage();
+        let token           = beginNavigation();
+        let blockSections   = Object.entries(routeConfigs.blockSections || {});
+
+        let blockStages     = blockSections.map(function(section){
+            return stageSection("blockSections", section[0], section[1].source, section[1].mountPoint, section[1].replaceOld, false);
+        });
+        let sectionStages   = Promise.all(blockStages.concat([stagePageSections(routeProperties, routeProperties.name, true)]))
+            .then(function(stages){
+                return stages.flat().filter(function(stage){ return stage != null; });
+            });
+
+        loadPageContents(token, sectionStages, uncloak);
+    }
+
+    function cloakPage(){
+        //Hides the whole page and returns the function that shows it again
+        let root        = document.documentElement;
+        let previous    = root.style.visibility;
+        let hadStyle    = root.hasAttribute("style");
+        root.style.visibility = "hidden";
+        return function(){
+            root.style.visibility = previous;
+            if (!hadStyle && root.getAttribute("style") == "") root.removeAttribute("style");
+        };
+    }
+
+
+REASON
+renderContent() stages the block sections and the entry route's page sections (applying their stylesheets as they arrive, since nothing is on screen at boot) and hides the page until loadPageContents() mounts everything, so the shell is not painted half-styled. cloakPage() hides <html> and restores its previous inline visibility.
+
+=======================================================================
+Section 14 (old lines 938-942, new lines 1016-1023)
+OLD_SECTION
+    function flushElements(flushElements){
+        flushElements.forEach(element => {
+            $$.ss(element).innerHTML = "";
+        });
+    }
+
+NEW_SECTION
+    function flushElements(flushElements){
+        flushElements.forEach(element => {
+            //Keeps the stylesheets a staged fragment is loading or keeping in the element
+            Array.from($$.ss(element).childNodes).forEach(node => {
+                if (!stagedLinks.has(node)) node.remove();
+            });
+        });
+    }
+
+REASON
+flushElements() keeps the links a staged fragment is loading or keeping, so a flushed mount point doesn't lose the next route's stylesheets.
+
+=======================================================================
+Section 15 (old lines 947-977, new lines 1028-1057)
+OLD_SECTION
+    }
+
+    async function getSectionContents(sectionType, name, url, mountPoint, replace=true) {
+        let  html = "";
+
+        // check if its cached
+        const section = sectionDataExist(sectionType, name);
+
+        if(section){
+            // get saved data
+            let blockSections = sessionStorage.getIterable(sectionType);
+            html = blockSections[name];
+
+        }else{
+            const response = await fetch(url);
+            html = await response.text();
+
+            // Save the data
+            saveSectionData(sectionType, name, html);
+        }
+
+        if(replace){
+            $$.ss(mountPoint).innerHTML = "";
+            $$.ss(mountPoint).innerHTML = html;
+        }else{
+            // Append 
+            $$.ss(mountPoint).insertAdjacentHTML('beforeend', html);
+        }
+        
+    }
+
+
+NEW_SECTION
+    }
+
+    async function stageSection(sectionType, name, url, mountPoint, replace=true, hold=true) {
+        //Gets a section's HTML from the cache, or from the server (and caches it), and stages it in
+        //its mount point. Resolves null when it can't be fetched, so the route still mounts.
+        let html = null;
+
+        if(sectionDataExist(sectionType, name)){
+            html = sessionStorage.getIterable(sectionType)[name];
+        }else{
+            try{
+                const response  = await fetch(url);
+                const content   = await response.text();
+
+                if (!response.ok){
+                    console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+                }else if (response.headers.get('X-Fallback') === 'true'){
+                    console.error('404: File '+url+' not found');
+                }else{
+                    html = content;
+                    saveSectionData(sectionType, name, html);
+                }
+            }catch(error){
+                console.error("Could not fetch "+url, error);
+            }
+        }
+
+        return html == null ? null : stageHtml($$.ss(mountPoint), html, replace, hold);
+    }
+
+
+REASON
+getSectionContents() becomes stageSection(): it stages instead of mounting, checks the response (a failed or fallback response is logged and not cached), catches network errors, and resolves null for a section it couldn't get so the rest of the route still mounts.
+
+=======================================================================
+Section 16 (old lines 1142-1145, new lines 1222-1238)
+OLD_SECTION
+                return cacheVersion;
+            }
+        }
+    })
+
+NEW_SECTION
+                return cacheVersion;
+            }
+        },
+        styleTimeout: {
+            set: function(value){
+                //How long, in ms, a fragment waits for its stylesheets before it is mounted anyway.
+                //0 mounts as soon as the HTML is in, without waiting.
+                if (typeof value != "number" || !isFinite(value) || value < 0) {
+                    throw new TypeError("config.styleTimeout property value must be a finite number of milliseconds, 0 or more");
+                }
+                styleTimeout = value;
+            },
+            get: function(){
+                return styleTimeout;
+            }
+        }
+    })
+
+REASON
+New config.styleTimeout property: the most a fragment waits for its stylesheets before it is mounted anyway (default 3000ms, 0 = no wait). Validated as a finite number >= 0.
+

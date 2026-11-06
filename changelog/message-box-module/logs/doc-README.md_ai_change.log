@@ -1,0 +1,18 @@
+FILE: doc/README.md
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+Guide row for MessageBox (before Modal Displayer) and an example entry under Other
+references (before Core example).
+
+OLD_SECTION
+| [Modal Displayer](modal-displayer.md) | ...
+- [Core example](../examples/core/README.md) — ...
+
+NEW_SECTION
+| [MessageBox](message-box.md) | `vUX-messageBox.js` | Notification messages that drop in from the top or slide in from an edge, aligned left, centre or right, with a display time that pauses while read |
+| [Modal Displayer](modal-displayer.md) | ...
+- [MessageBox example](../examples/messagebox/README.md) — runnable example opening with a dropped-in message: ...
+- [Core example](../examples/core/README.md) — ...

@@ -1,0 +1,34 @@
+FILE: vUX-cShapes.js
+FEATURE: border-color-cycle
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'cshapes-rectangle-fixes' (uncommitted at the time)
+
+REASON
+vilshub.com fades its contact-form border through five colours, 2s per colour, by tweening
+config.lineColor. animatedRectangle() read lineColor only at the start of each cycle (every
+duration ms), so a mid-cycle change waited up to a full cycle and a tween could not show. The
+strokeStyle is now set every frame from the current value, like lineWidth already was.
+
+OLD_SECTION
+                function startCycle() {
+                    ...
+                    canObj.setLineDash(ARsegment);
+                    canObj.strokeStyle = ARlinecolor;
+                    ...
+                function frame() {
+                    ...
+                    canObj.lineDashOffset = (ARclockWise ? -1 : 1) * progress * distance;
+                    canObj.clearRect(0, 0, size.width, size.height);
+
+NEW_SECTION
+                function startCycle() {
+                    ...
+                    canObj.setLineDash(ARsegment);
+                    ...
+                function frame() {
+                    ...
+                    canObj.lineDashOffset = (ARclockWise ? -1 : 1) * progress * distance;
+                    //read every frame, like lineWidth, so config.lineColor can be changed (or tweened)
+                    //while the rectangle runs and shows on the next frame, not the next cycle
+                    canObj.strokeStyle = ARlinecolor;
+                    canObj.clearRect(0, 0, size.width, size.height);

@@ -1,0 +1,85 @@
+/* ============================================================================
+   vUX MessageBox.
+   Everything is scoped under .vmb-lane or .vmb-msg, so nothing here touches a
+   page with no message up. Colours are custom properties on .vmb-msg: override
+   them in your own sheet, per type or per theme, to restyle every message.
+   Rules a page's own global button styles would otherwise beat are written two
+   classes deep.
+   ========================================================================== */
+
+.vmb-lane{
+    position:fixed; left:0; right:0; z-index:100000;
+    display:flex; flex-direction:column;
+    box-sizing:border-box;
+    pointer-events:none;        /* the lane spans the window; only the messages take clicks */
+}
+.vmb-lane.vmb-left{align-items:flex-start}
+.vmb-lane.vmb-center{align-items:center}
+.vmb-lane.vmb-right{align-items:flex-end}
+
+.vmb-slot{max-width:100%}
+.vmb-gap{height:var(--vmb-gap,10px)}
+
+.vmb-msg{
+    --vmb-bg:#ffffff; --vmb-fg:#1c2330; --vmb-muted:#5d6878;
+    --vmb-accent:#2f7cf6; --vmb-icon-fg:#ffffff; --vmb-radius:10px;
+    --vmb-shadow:0 1px 2px rgba(16,24,40,.08), 0 10px 28px -6px rgba(16,24,40,.22);
+
+    position:relative; z-index:1; box-sizing:border-box; max-width:100%;
+    pointer-events:auto; overflow:hidden;
+    background:var(--vmb-bg); color:var(--vmb-fg);
+    border-radius:var(--vmb-radius); box-shadow:var(--vmb-shadow);
+    border-left:4px solid var(--vmb-accent);
+    font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    text-align:left;
+}
+.vmb-msg.vmb-success{--vmb-accent:#1f9d55}
+.vmb-msg.vmb-warning{--vmb-accent:#d98a00}
+.vmb-msg.vmb-error{--vmb-accent:#e0384a}
+
+.vmb-msg.vmb-dark{
+    --vmb-bg:#1a2130; --vmb-fg:#e6ebf2; --vmb-muted:#9aa6b8;
+    --vmb-accent:#5b9dff; --vmb-icon-fg:#0d1320;
+    --vmb-shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 30px -6px rgba(0,0,0,.6);
+}
+.vmb-msg.vmb-dark.vmb-success{--vmb-accent:#4cd187}
+.vmb-msg.vmb-dark.vmb-warning{--vmb-accent:#ffb84d}
+.vmb-msg.vmb-dark.vmb-error{--vmb-accent:#ff6b7c}
+
+.vmb-msg .vmb-body{display:flex; align-items:flex-start; gap:12px; padding:13px 12px 14px 14px}
+.vmb-msg .vmb-icon{
+    flex:none; width:22px; height:22px; margin-top:-1px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--vmb-accent); color:var(--vmb-icon-fg);
+}
+.vmb-msg .vmb-icon svg{display:block}
+.vmb-msg .vmb-text{flex:1; min-width:0; overflow-wrap:anywhere}
+.vmb-msg .vmb-title{display:block; font-weight:650; margin-bottom:2px}
+.vmb-msg .vmb-title + .vmb-content{color:var(--vmb-muted)}
+
+.vmb-msg .vmb-close{
+    flex:none; width:26px; height:26px; margin:-3px -2px 0 0; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent; color:inherit; border:0; border-radius:6px;
+    opacity:.5; cursor:pointer; transform:none; box-shadow:none;
+    transition:opacity .15s, background-color .15s;
+}
+.vmb-msg .vmb-close:hover{opacity:1; background:rgba(127,127,127,.16); border:0}
+.vmb-msg .vmb-close:focus-visible{opacity:1; outline:2px solid var(--vmb-accent); outline-offset:1px}
+
+/* the countdown: drains over the display time, and holds while the timer is paused */
+.vmb-msg .vmb-bar{position:absolute; left:0; right:0; bottom:0; height:3px}
+.vmb-msg .vmb-bar i{
+    display:block; height:100%; background:var(--vmb-accent); opacity:.55;
+    transform-origin:left center; transform:scaleX(1);
+}
+.vmb-msg.vmb-run .vmb-bar i{animation:vmb-countdown linear forwards}
+.vmb-msg.vmb-paused .vmb-bar i{animation-play-state:paused}
+@keyframes vmb-countdown{from{transform:scaleX(1)} to{transform:scaleX(0)}}
+
+/* the fade effect, and what the others fall back to under reduced motion */
+.vmb-msg.vmb-fade{opacity:0; transform:translateY(-6px); transition-property:opacity, transform; transition-timing-function:ease}
+.vmb-msg.vmb-fade.vmb-in{opacity:1; transform:none}
+
+/* a message on its way out passes behind the ones that stay, never over them */
+.vmb-msg.vmb-leaving{pointer-events:none; z-index:0}

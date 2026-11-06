@@ -1,0 +1,11 @@
+FEATURE: spa-scroll-restoration
+DATE: 2026-11-06
+
+<SPAEngine>
+  Modified:
+    vUX-spaEngine.js            (config.restoreScroll and scroll restoration; boot entry via replaceState keeping query/hash; failed-fragment handling: console.error, link released for retry)
+
+<Documentation>
+  Modified:
+    doc/spa-engine.md
+    ChangeLog.md

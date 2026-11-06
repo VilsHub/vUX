@@ -1,0 +1,637 @@
+FILE: vUX-cShapes.js
+FEATURE: cshapes-rectangle-fixes
+DATE: 2026-10-11
+PRIOR STATE: as last committed (no uncommitted changes to this file before this feature)
+
+REASON
+Found while using animatedRectangle() as the animated border of the vilshub.com contact form.
+The fixedRectangle() and animatedRectangle() sections are rewritten around two shared helpers
+(prepareCanvas, strokeRectangle); the public API is unchanged apart from the new config.radius.
+
+Fixed:
+  1. iterationCount = <number> threw ReferenceError: it called validateinteger(), which does not
+     exist. Now validateInteger().
+  2. No beginPath() per frame: each frame added a rect to the path and re-stroked all of them,
+     so the work per frame grew through every cycle. strokeRectangle() begins a path each time.
+  3. Canvas drawn at CSS-pixel resolution, so blurry on high-density screens. prepareCanvas()
+     sizes the backing store by devicePixelRatio and scales the context; drawing stays in CSS px.
+  4. Restart: the loop identified itself by the canvas id, so draw() during a run started a
+     second loop (double speed), and the progress == 1 branch restarted even after stop(). A run
+     token (bumped by draw, stop, destroy) now ends any older loop on its next frame. The id
+     requirement is dropped.
+  5. Seamless loops: the dash offset moved 100px per cycle, which only loops cleanly when the
+     dash period divides 100 (the default [10, 2] jumped). It now moves the whole number of
+     periods nearest 100px (default: 96px; ProgressIndicator's [12, 5]: 102px).
+  6. Cycle end was detected with eased progress == 1, so an easing not ending on exactly 1 never
+     finished; and duration 0 produced NaN progress and stopped without the callback. Cycle end
+     now uses the time fraction, and duration 0 counts as complete.
+  7. clearRect() was offset by the origin, leaving a strip uncleared with a non-zero origin. The
+     whole canvas is cleared.
+
+Added:
+  - config.radius (both shapes, number >= 0). A rounded path cannot sit on the canvas edge like
+    the square one (its corners bend inward and would show the full width while the edges show
+    half), so it is stroked at half the width, inset by a quarter: same visible thickness as the
+    square case, all the way round. Square rectangles keep the original edge stroke, so their
+    output is unchanged.
+  - draw() paints the first frame synchronously, so stop() straight after draw() still leaves a
+    still rectangle (needed because a stopped run no longer paints its pending frame).
+  - destroy() is now listed as non-writable alongside draw and stop.
+
+Verified headless (Chromium, deviceScaleFactor 2): numeric iterationCount 3 -> 3 callbacks then
+stops; two extra draw() calls keep one loop (rAF count unchanged); canvas 400x240 for 200x120 CSS;
+radius leaves corners clear and edges drawn; stop() keeps the frame, destroy() clears it;
+duration 0 with 2 iterations -> 2 callbacks; validation errors for 2.5, -1, "4px"; canvas without
+id draws. ProgressIndicator grid type still paints and moves. vilshub.com border correct at 1440
+and 390 px, follows resizes, still under reduced motion. Not verified: Safari, Firefox.
+
+OLD_SECTION
+    /*******************fixed dashed rectangle starts********************/
+    this.fixedRectangle = function() {
+        var FRlinecolor = "black", FRlinewidth = 5,FRsegment = [10, 2],FROrigin = [0, 0];
+        var body = {
+            config: {},
+            draw: function(canvasElement) {
+                validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+                canvasElement.width = canvasElement.scrollWidth;
+                canvasElement.height = canvasElement.scrollHeight;
+                var canObj = canvasElement.getContext("2d");
+
+                //Segment
+                canObj.setLineDash(FRsegment);
+
+                //lineColor
+                canObj.strokeStyle = FRlinecolor;
+
+                //lineWidth
+                canObj.lineWidth = FRlinewidth;
+
+                //origin
+                var xOrigin = FROrigin[0];
+                var yOrigin = FROrigin[1]
+                canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+                canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+                canObj.stroke();
+            }
+        }
+
+        Object.defineProperties(body.config, {
+            lineColor: {
+                set: function(value) {
+                    if (validateString(value)) {
+                        FRlinecolor = value;
+                    }
+                }
+            },
+            lineWidth: {
+                set: function(value) {
+                    if (validateNumber(value)) {
+                        if (value > 0) {
+                            FRlinewidth = value;
+                        } else {
+                            FRlinewidth = 1;
+                        }
+                    }
+                }
+            },
+            segment: {
+                set: function(value) {
+                    var temp = "fixedRectangle.config.segment property value must be an array ";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    if (value[0] > 0 && value[1] > 0) {
+                        FRsegment = value;
+                    } else {
+                        throw new Error("Array members for 'segment' property value must all be positive integers");
+                    }
+                }
+            },
+            origin: {
+                set: function(value) {
+                    var temp = "fixedRectangle.config.origin property value must be an array";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    FROrigin = value;
+                }
+            },
+        });
+        Object.defineProperties(body, {
+            config: { writable: false },
+            draw: { writable: false }
+        })
+
+        return body;
+    };
+    /*******************************************************************/
+
+    /*******************animated dashed rectangle starts********************/
+    this.animatedRectangle = function() {
+        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARactive = "",ARstop = 0,animationCount = 1,cycle = 0,callback = null;
+        var ARtarget = null;   //the canvas last drawn on, so destroy() can clear it
+
+        var body = {
+            config: {},
+            draw: function(canvasElement) {
+                validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+                if (canvasElement.getAttribute("id") == null) {
+                    throw new Error("Canvas element must have an ID set");
+                }
+                //Set ID
+                ARactive = canvasElement.id;
+                ARtarget = canvasElement;
+                ARstop = 0;
+
+                //Reset canvas size
+                canvasElement.width = canvasElement.scrollWidth;
+                canvasElement.height = canvasElement.scrollHeight;
+                var canObj = canvasElement.getContext("2d");
+
+                //Segment
+                canObj.setLineDash(ARsegment);
+
+                //lineColor
+                canObj.strokeStyle = ARlinecolor;
+
+                //lineWidth
+                canObj.lineWidth = ARlinewidth;
+
+                //origin
+                var xOrigin = AROrigin[0];
+                var yOrigin = AROrigin[1];
+
+                //easing
+                var easing = AReasing;
+
+                //duration
+                var duration = ARduration;
+
+                //direction
+                var direction = ARclockWise; //clockwise
+
+                var animationStart = Date.now();
+                requestAnimationFrame(function animate() {
+                    var tf = timeFraction(animationStart, duration);
+                    var progress = timing[easing](tf);
+                    
+                    if (direction == true) { //clockwise
+                        canObj.lineDashOffset = -1 * (progress * 100);
+                    } else { //anti clockwise
+                        canObj.lineDashOffset = progress * 100;
+                    }
+                    
+                    canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+                    canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
+                    canObj.stroke();
+                    
+                    if (ARstop == 0 && ARactive == canvasElement.id && progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else if (progress == 1) {
+                        callback != null ? callback() : null;
+                        if (animationCount != "infinite") {
+                            cycle++;
+                            if (cycle < animationCount) {
+                                body.draw(canvasElement);
+                            } else {
+                                cycle = 0
+                            }
+                        } else {
+                            body.draw(canvasElement);
+                        }
+                    }
+                })
+            },
+            stop: function() {
+                ARstop = 1;
+            },
+            destroy: function() {
+                //stop() halts the requestAnimationFrame loop at the next frame; destroy() additionally
+                //wipes the canvas, so an animation torn down mid-cycle does not leave its last frame
+                //painted on a canvas the consumer is about to reuse.
+                ARstop = 1;
+                ARactive = "";
+                cycle = 0;
+                if (ARtarget != null){
+                    var ctx = ARtarget.getContext("2d");
+                    ctx.clearRect(0, 0, ARtarget.width, ARtarget.height);
+                    ARtarget = null;
+                }
+            }
+        }
+        Object.defineProperties(body.config, {
+            lineColor: {
+                set: function(value) {
+                    validateString(value, "'config.lineColor' property value must be a string");
+                    ARlinecolor = value;
+                }
+            },
+            lineWidth: {
+                set: function(value) {
+                    validateNumber(value);
+                    if (value > 0) {
+                        ARlinewidth = value;
+                    } else {
+                        ARlinewidth = 1;
+                    }
+                }
+            },
+            iterationCount: {
+                set: function(value) {
+                    if (typeof value == "number" || typeof value == "string") {
+                        if (typeof value == "number") {
+                            if (!validateinteger(value)) throw new Error("'iterationCount' property numeric value must be an integer")
+                            if (value < 0) {
+                                animationCount = 1;
+                            } else {
+                                animationCount = value;
+                            }
+                        } else if (typeof value == "string") {
+                            if (value.toLowerCase() == "infinite") {
+                                animationCount = value.toLowerCase();
+                            } else {
+                                throw new Error("'iterationCount' property string value can only be 'infinite'");
+                            }
+                        }
+                    } else {
+                        throw new Error("'iterationCount' property value must be a numeric or a string of value 'infinite'")
+                    }
+                }
+            },
+            segment: {
+                set: function(value) {
+                    var temp = "animatedRectangle.config.segment property value must be an array ";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    if (value[0] > 0 && value[1] > 0) {
+                        ARsegment = value;
+                    } else {
+                        throw new Error("Array members for 'segment' property value must all be positive integers");
+                    }
+                }
+            },
+            origin: {
+                set: function(value) {
+                    var temp = "animatedRectangle.config.origin property value must be an array";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    AROrigin = value;
+                }
+            },
+            easing: {
+                set: function(value) {
+                    validateString(value);
+                    validateObjectMember(timing, value);
+                    AReasing = value;
+                }
+            },
+            duration: {
+                set: function(value) {
+                    validateNumber(value);
+                    if (value > 0) {
+                        ARduration = value;
+                    } else {
+                        ARduration = 0;
+                    }
+                }
+            },
+            clockWise: {
+                set: function(value) {
+                    validateBoolean(value); 
+                    ARclockWise = value;
+                }
+            },
+            callback: {
+                set: function(value) {
+                    validateFunction(value, "'config.callback' property value must be a function");
+                    callback = value;
+                }
+            }
+        });
+        Object.defineProperties(body, {
+            config: { writable: false },
+            draw: { writable: false },
+            stop: { writable: false }
+        })
+
+        return body;
+    };
+    /*******************************************************************/
+
+
+NEW_SECTION
+    /*******************shared rectangle drawing********************/
+    //Sizes the canvas backing store by devicePixelRatio and scales the context, so the line stays
+    //sharp on high-density screens while every coordinate below stays in CSS pixels.
+    function prepareCanvas(canvasElement) {
+        var ratio = window.devicePixelRatio || 1;
+        var width = canvasElement.clientWidth || canvasElement.scrollWidth;
+        var height = canvasElement.clientHeight || canvasElement.scrollHeight;
+        canvasElement.width = Math.round(width * ratio);
+        canvasElement.height = Math.round(height * ratio);
+        var context = canvasElement.getContext("2d");
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        return {context: context, width: width, height: height};
+    }
+
+    //Strokes one closed rectangle, square or with rounded corners. beginPath() first, so a frame
+    //never re-strokes the paths of earlier frames.
+    //A square rectangle runs along the canvas edge with the full line width, as it always has, so
+    //the canvas clips the outer half and half of lineWidth shows. A rounded one cannot do that: its
+    //corners bend inward and would show the full width. It is drawn instead with half the width,
+    //inset by a quarter, which shows the same thickness everywhere and nothing is clipped.
+    function strokeRectangle(context, x, y, width, height, radius, lineWidth) {
+        context.beginPath();
+        if (radius <= 0) {
+            context.lineWidth = lineWidth;
+            context.rect(x, y, width, height);
+            context.stroke();
+            return;
+        }
+        var inset = lineWidth / 4;
+        x += inset; y += inset; width -= 2 * inset; height -= 2 * inset;
+        var r = Math.max(0, Math.min(radius - inset, width / 2, height / 2));
+        context.lineWidth = lineWidth / 2;
+        context.moveTo(x + r, y);
+        context.arcTo(x + width, y, x + width, y + height, r);
+        context.arcTo(x + width, y + height, x, y + height, r);
+        context.arcTo(x, y + height, x, y, r);
+        context.arcTo(x, y, x + width, y, r);
+        context.closePath();
+        context.stroke();
+    }
+
+    function validateRadius(value, owner) {
+        validateNumber(value, "'" + owner + ".config.radius' property value must be a number of pixels");
+        if (!isFinite(value) || value < 0) throw new Error("'" + owner + ".config.radius' property value must be 0 or more pixels");
+    }
+    /*******************************************************************/
+
+    /*******************fixed dashed rectangle starts********************/
+    this.fixedRectangle = function() {
+        var FRlinecolor = "black", FRlinewidth = 5,FRsegment = [10, 2],FROrigin = [0, 0],FRradius = 0;
+        var body = {
+            config: {},
+            draw: function(canvasElement) {
+                validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+                var canvas = prepareCanvas(canvasElement);
+                var canObj = canvas.context;
+
+                //Segment
+                canObj.setLineDash(FRsegment);
+
+                //lineColor
+                canObj.strokeStyle = FRlinecolor;
+
+                //origin
+                var xOrigin = FROrigin[0];
+                var yOrigin = FROrigin[1];
+                canObj.clearRect(0, 0, canvas.width, canvas.height);
+                strokeRectangle(canObj, xOrigin, yOrigin, canvas.width, canvas.height, FRradius, FRlinewidth);
+            }
+        }
+
+        Object.defineProperties(body.config, {
+            lineColor: {
+                set: function(value) {
+                    if (validateString(value)) {
+                        FRlinecolor = value;
+                    }
+                }
+            },
+            lineWidth: {
+                set: function(value) {
+                    if (validateNumber(value)) {
+                        if (value > 0) {
+                            FRlinewidth = value;
+                        } else {
+                            FRlinewidth = 1;
+                        }
+                    }
+                }
+            },
+            segment: {
+                set: function(value) {
+                    var temp = "fixedRectangle.config.segment property value must be an array ";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    if (value[0] > 0 && value[1] > 0) {
+                        FRsegment = value;
+                    } else {
+                        throw new Error("Array members for 'segment' property value must all be positive integers");
+                    }
+                }
+            },
+            origin: {
+                set: function(value) {
+                    var temp = "fixedRectangle.config.origin property value must be an array";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    FROrigin = value;
+                }
+            },
+            radius: {
+                set: function(value) {
+                    validateRadius(value, "fixedRectangle");
+                    FRradius = value;
+                }
+            }
+        });
+        Object.defineProperties(body, {
+            config: { writable: false },
+            draw: { writable: false }
+        })
+
+        return body;
+    };
+    /*******************************************************************/
+
+    /*******************animated dashed rectangle starts********************/
+    this.animatedRectangle = function() {
+        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARradius = 0,animationCount = 1,callback = null;
+        var ARtarget = null;   //the canvas last drawn on, so destroy() can clear it
+        var run = 0;           //bumped by draw(), stop() and destroy(); a frame from an older run exits
+
+        var body = {
+            config: {},
+            draw: function(canvasElement) {
+                validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+                //A new run token: the loop of any earlier draw() on this instance sees a different
+                //token on its next frame and exits, so calling draw() again restarts the animation
+                //instead of adding a second loop. The canvas no longer needs an id for this.
+                run++;
+                var token = run;
+                ARtarget = canvasElement;
+
+                var canObj, size, xOrigin, yOrigin, distance, cycle = 0, animationStart = 0;
+
+                //Read the configuration and size the canvas at the start of every cycle, so a cycle
+                //follows a resized canvas and config changes made since the last one.
+                function startCycle() {
+                    size = prepareCanvas(canvasElement);
+                    canObj = size.context;
+                    canObj.setLineDash(ARsegment);
+                    canObj.strokeStyle = ARlinecolor;
+                    xOrigin = AROrigin[0];
+                    yOrigin = AROrigin[1];
+                    //The dashes travel a whole number of dash periods per cycle (the nearest to 100px),
+                    //so a repeating animation starts each cycle on the frame it ended on, without a jump
+                    var period = ARsegment[0] + ARsegment[1];
+                    distance = period * Math.max(1, Math.round(100 / period));
+                    animationStart = Date.now();
+                }
+
+                function frame() {
+                    if (token != run) return;   //stopped, destroyed or replaced by a newer draw()
+                    var tf = ARduration > 0 ? timeFraction(animationStart, ARduration) : 1;
+                    var progress = timing[AReasing](tf);
+
+                    canObj.lineDashOffset = (ARclockWise ? -1 : 1) * progress * distance;
+                    canObj.clearRect(0, 0, size.width, size.height);
+                    strokeRectangle(canObj, xOrigin, yOrigin, size.width, size.height, ARradius, ARlinewidth);
+
+                    if (tf < 1) {
+                        requestAnimationFrame(frame);
+                        return;
+                    }
+                    if (callback != null) callback();
+                    if (token != run) return;   //the callback stopped or restarted it
+                    cycle++;
+                    if (animationCount == "infinite" || cycle < animationCount) {
+                        startCycle();
+                        requestAnimationFrame(frame);
+                    }
+                }
+
+                startCycle();
+                //the first frame is painted now, so stop() straight after draw() leaves a still rectangle
+                frame();
+            },
+            stop: function() {
+                //Leaves the last frame painted
+                run++;
+            },
+            destroy: function() {
+                //stop() halts the loop at the next frame; destroy() additionally wipes the canvas, so
+                //an animation torn down mid-cycle does not leave its last frame painted on a canvas
+                //the consumer is about to reuse.
+                run++;
+                if (ARtarget != null){
+                    var ctx = ARtarget.getContext("2d");
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.clearRect(0, 0, ARtarget.width, ARtarget.height);
+                    ARtarget = null;
+                }
+            }
+        }
+        Object.defineProperties(body.config, {
+            lineColor: {
+                set: function(value) {
+                    validateString(value, "'config.lineColor' property value must be a string");
+                    ARlinecolor = value;
+                }
+            },
+            lineWidth: {
+                set: function(value) {
+                    validateNumber(value);
+                    if (value > 0) {
+                        ARlinewidth = value;
+                    } else {
+                        ARlinewidth = 1;
+                    }
+                }
+            },
+            iterationCount: {
+                set: function(value) {
+                    if (typeof value == "number" || typeof value == "string") {
+                        if (typeof value == "number") {
+                            if (!validateInteger(value)) throw new Error("'iterationCount' property numeric value must be an integer")
+                            if (value < 0) {
+                                animationCount = 1;
+                            } else {
+                                animationCount = value;
+                            }
+                        } else if (typeof value == "string") {
+                            if (value.toLowerCase() == "infinite") {
+                                animationCount = value.toLowerCase();
+                            } else {
+                                throw new Error("'iterationCount' property string value can only be 'infinite'");
+                            }
+                        }
+                    } else {
+                        throw new Error("'iterationCount' property value must be a numeric or a string of value 'infinite'")
+                    }
+                }
+            },
+            segment: {
+                set: function(value) {
+                    var temp = "animatedRectangle.config.segment property value must be an array ";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    if (value[0] > 0 && value[1] > 0) {
+                        ARsegment = value;
+                    } else {
+                        throw new Error("Array members for 'segment' property value must all be positive integers");
+                    }
+                }
+            },
+            origin: {
+                set: function(value) {
+                    var temp = "animatedRectangle.config.origin property value must be an array";
+                    validateArray(value, temp);
+                    validateArrayLength(value, 2, temp + "of 2 Elements");
+                    validateArrayMembers(value, "number", temp + "of numeric elements");
+                    AROrigin = value;
+                }
+            },
+            radius: {
+                set: function(value) {
+                    validateRadius(value, "animatedRectangle");
+                    ARradius = value;
+                }
+            },
+            easing: {
+                set: function(value) {
+                    validateString(value);
+                    validateObjectMember(timing, value);
+                    AReasing = value;
+                }
+            },
+            duration: {
+                set: function(value) {
+                    validateNumber(value);
+                    if (value > 0) {
+                        ARduration = value;
+                    } else {
+                        ARduration = 0;
+                    }
+                }
+            },
+            clockWise: {
+                set: function(value) {
+                    validateBoolean(value);
+                    ARclockWise = value;
+                }
+            },
+            callback: {
+                set: function(value) {
+                    validateFunction(value, "'config.callback' property value must be a function");
+                    callback = value;
+                }
+            }
+        });
+        Object.defineProperties(body, {
+            config: { writable: false },
+            draw: { writable: false },
+            stop: { writable: false },
+            destroy: { writable: false }
+        })
+
+        return body;
+    };
+    /*******************************************************************/

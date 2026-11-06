@@ -1,0 +1,20 @@
+FILE: examples/core/main.js
+FEATURE: core-docs
+DATE: 2026-10-07
+PRIOR STATE: did not exist
+
+OLD_SECTION
+(no file)
+
+NEW_SECTION
+Imports vUX-core.js only and drives every section. Commented as documentation, mainly at
+the sharp edges: animate()'s value is a delta that is remembered per element, flip.card()
+is set up by its first call, slide options are written into by the core so each call gets
+a fresh object, dimension defaults apply when a key is missing, makeActive needs its
+parent, the filter pulse leaves a transition behind, scroll.y needs its argument,
+attachEventHandler only tests e.target, and getTimeSegments warns for a past time.
+
+REASON
+The page is how the core is evaluated, and main.js is meant to be read. The bad-input and
+known-defects buttons make the real calls and print what is thrown, so the page shows
+the current behaviour, not a description of it.

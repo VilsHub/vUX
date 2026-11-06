@@ -1,0 +1,26 @@
+FEATURE: message-box-module
+DATE: 2026-10-09
+
+<MessageBox (new module)>
+  Added:
+    vUX-messageBox.js
+    assets/css/messageBox.css
+
+<Core>
+  Modified:
+    src/helpers.js              (messageBox.js added to the module registry)
+
+<Documentation>
+  Added:
+    doc/message-box.md
+  Modified:
+    doc/README.md
+    README.md
+    ChangeLog.md
+    CLAUDE.md                   (build-on-core rule; MessageBox in constructor list)
+
+<Example>
+  Added:
+    examples/messagebox/index.html
+    examples/messagebox/main.js
+    examples/messagebox/README.md

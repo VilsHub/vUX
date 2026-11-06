@@ -1,0 +1,23 @@
+FEATURE: core-fixes
+DATE: 2026-10-07
+
+Core
+  Modified:
+    src/vUX-core-4.0.0-beta.js
+    src/helpers.js
+    assets/css/core.css
+
+Documentation
+  Modified:
+    doc/core.md
+    doc/README.md
+
+Examples
+  Modified:
+    examples/core/index.html
+    examples/core/main.js
+    examples/core/README.md
+
+Release record
+  Modified:
+    ChangeLog.md

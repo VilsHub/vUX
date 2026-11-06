@@ -1,0 +1,12 @@
+FEATURE: spa-example-scroll-state
+DATE: 2026-11-06
+
+<SPA example>
+  Modified:
+    examples/spa/index.html     (section 03 Back to where you were; scroll table styles)
+    examples/spa/main.js        (scroll state panel, restoreScroll toggle, openAtTop on link clicks)
+    examples/spa/README.md
+
+<Documentation>
+  Modified:
+    ChangeLog.md                (Added bullet; logs/ChangeLog.md_ai_change.log)

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX MessageBox example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- the alignment picker ----------
+       A miniature of the window: the three lanes a message can land in. */
+    .screen{
+        position:relative; height:118px; border-radius:10px; overflow:hidden;
+        background:linear-gradient(var(--panel-2),var(--ink)); border:1px solid var(--line);
+    }
+    .screen::before{
+        content:""; position:absolute; left:0; right:0; top:0; height:18px;
+        background:#0b111b; border-bottom:1px solid var(--line);
+    }
+    .lanes{position:absolute; inset:26px 8px auto; display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+    .lanes button{
+        height:30px; padding:0; border-radius:6px; border:1px dashed var(--line); background:transparent;
+        font-family:var(--mono); font-size:.7rem; color:var(--dim);
+    }
+    .lanes button.on{border:1px solid var(--amber); background:rgba(255,180,84,.12); color:var(--amber)}
+
+    .seg{display:flex; flex-wrap:wrap; gap:6px}
+    .seg button{padding:5px 10px; font-size:.78rem; font-family:var(--mono)}
+    .seg button.on{border-color:var(--amber); color:var(--amber); background:rgba(255,180,84,.08)}
+
+    .play{display:grid; grid-template-columns:minmax(0,360px) minmax(0,1fr); gap:22px; align-items:start}
+    .switches{display:grid; grid-template-columns:1fr 1fr; gap:10px 14px}
+    .switches .switch{font-size:.84rem}
+
+    /* hero buttons carry the colour of the type they post */
+    .hero-cta button{display:inline-flex; align-items:center; gap:9px}
+    .hero-cta button i{width:9px; height:9px; border-radius:50%; display:block}
+    .t-info i{background:#5b9dff} .t-success i{background:#4cd187}
+    .t-warning i{background:#ffb84d} .t-error i{background:#ff6b7c}
+
+    .card .sym{font-size:1.15rem}
+    .cards .card:nth-child(1) .sym{color:var(--amber)}
+    .cards .card:nth-child(2) .sym{color:var(--cyan)}
+    .cards .card:nth-child(3) .sym{color:var(--violet)}
+    .cards .card:nth-child(4) .sym{color:var(--green)}
+    .cards .card:nth-child(5) .sym{color:var(--muted)}
+
+    /* element content: the undo message carries a real button of the page's own */
+    .undo-row{display:flex; align-items:center; gap:12px; justify-content:space-between}
+    .vmb-msg .undo-btn{
+        flex:none; padding:4px 10px; font-size:.78rem; font-weight:600; border-radius:6px;
+        background:transparent; color:var(--vmb-accent); border:1px solid currentColor;
+    }
+    .vmb-msg .undo-btn:hover{background:rgba(127,127,127,.12); border-color:currentColor}
+
+    .log{height:168px}
+    .tasks{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px}
+
+    @media (max-width:860px){ .play{grid-template-columns:minmax(0,1fr)} }
+    @media (max-width:420px){ .switches{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> MessageBox <b>/</b> v4.0.0-beta</p>
+        <h1>Say it once.<br>Then get out of the way.</h1>
+        <p class="hero-sub">
+            Notifications that <b>drop in</b> from the top, stack without jumping, wait while
+            you read them, and leave on their own.
+        </p>
+        <div class="hero-cta">
+            <button class="t-info" data-hero="info"><i></i>info()</button>
+            <button class="t-success" data-hero="success"><i></i>success()</button>
+            <button class="t-warning" data-hero="warning"><i></i>warning()</button>
+            <button class="t-error" data-hero="error"><i></i>error()</button>
+        </div>
+        <div class="hero-src">box.success(<span class="d">"Changes saved"</span>, { title: <span class="d">"Done"</span> })</div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Every control below sets a <code>config</code> property on one live instance, so each message you post
+            uses what is set at that moment. Messages already on screen keep the settings they arrived with.
+        </p>
+
+        <div class="play">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>Where and how</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl">alignment <span class="val" id="alignV">right</span></label>
+                            <div class="screen">
+                                <div class="lanes" id="lanes">
+                                    <button data-align="left">left</button>
+                                    <button data-align="center">center</button>
+                                    <button data-align="right" class="on">right</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="lbl">effect</label>
+                            <div class="seg" id="effectSeg">
+                                <button data-effect="drop" class="on">drop</button>
+                                <button data-effect="slideLeft">slideLeft</button>
+                                <button data-effect="slideRight">slideRight</button>
+                                <button data-effect="fade">fade</button>
+                                <button data-effect="none">none</button>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="lbl">type</label>
+                            <div class="seg" id="typeSeg">
+                                <button data-type="info" class="on">info</button>
+                                <button data-type="success">success</button>
+                                <button data-type="warning">warning</button>
+                                <button data-type="error">error</button>
+                            </div>
+                        </div>
+                        <div class="field row" style="justify-content:space-between">
+                            <label class="lbl" style="margin:0">theme</label>
+                            <div class="seg" id="themeSeg">
+                                <button data-theme="light" class="on">light</button>
+                                <button data-theme="dark">dark</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Timing and size</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="duration">duration <span class="val" id="durationV">4000ms</span></label>
+                            <input type="range" id="duration" min="0" max="10000" step="250" value="4000">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="speed">speed <span class="val" id="speedV">450ms</span></label>
+                            <input type="range" id="speed" min="0" max="1500" step="50" value="450">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="width">width <span class="val" id="widthV">360px</span></label>
+                            <input type="range" id="width" min="220" max="560" step="10" value="360">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="offset">offset <span class="val" id="offsetV">16px</span></label>
+                            <input type="range" id="offset" min="0" max="80" step="2" value="16">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="maxVisible">maxVisible <span class="val" id="maxVisibleV">5</span></label>
+                            <input type="range" id="maxVisible" min="1" max="8" step="1" value="5">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Behaviour</span></div>
+                    <div class="panel-b switches">
+                        <label class="switch"><input type="checkbox" data-flag="closeButton" checked> closeButton</label>
+                        <label class="switch"><input type="checkbox" data-flag="pauseOnHover" checked> pauseOnHover</label>
+                        <label class="switch"><input type="checkbox" data-flag="closeOnClick"> closeOnClick</label>
+                        <label class="switch"><input type="checkbox" data-flag="showProgress" checked> showProgress</label>
+                        <label class="switch"><input type="checkbox" data-flag="newestOnTop" checked> newestOnTop</label>
+                        <label class="switch"><input type="checkbox" data-flag="respectReducedMotion" checked> respectReducedMotion</label>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>Message</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="title">title <span class="val">option</span></label>
+                            <input type="text" id="title" value="Upload complete">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="text">content</label>
+                            <textarea id="text" spellcheck="false">holiday-photos.zip (24 MB) is in your library.</textarea>
+                        </div>
+                        <div class="row">
+                            <button class="primary" id="post">show()</button>
+                            <button id="burst">Post five</button>
+                            <button class="ghost" id="closeAll">closeAll()</button>
+                        </div>
+                    </div>
+                    <div class="status" id="status"><span class="dot"></span><span id="statusText">0 open</span></div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="snippet"></pre>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>onShow / onClose</span><button class="tiny ghost" id="clearLog">clear</button></div>
+                    <div class="panel-b"><pre class="log" id="log"></pre></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Five ways in</h2>
+        <p class="lede">
+            <code>drop</code>, <code>slideLeft</code> and <code>slideRight</code> are driven by the core slide utility,
+            <code>$$.sm(el).slide</code>. Each leaves the way it came. The space a message takes in its lane opens and
+            closes with the same utility, which is why the others never jump.
+        </p>
+        <div class="cards">
+            <div class="card">
+                <div class="sym">drop</div>
+                <h3>Falls from above</h3>
+                <p>Starts just above the window and drops to its place in the lane. On close it rises back out. This is the default.</p>
+                <div class="row"><button class="tiny" data-try="drop:left">left</button><button class="tiny" data-try="drop:center">center</button><button class="tiny" data-try="drop:right">right</button></div>
+            </div>
+            <div class="card">
+                <div class="sym">slideLeft</div>
+                <h3>From the right edge</h3>
+                <p>Travels leftwards to wherever its alignment puts it. A centred one stops in the middle. It leaves back out to the right.</p>
+                <div class="row"><button class="tiny" data-try="slideLeft:right">right</button><button class="tiny" data-try="slideLeft:center">center</button></div>
+            </div>
+            <div class="card">
+                <div class="sym">slideRight</div>
+                <h3>From the left edge</h3>
+                <p>The mirror image of slideLeft: comes in from the left and leaves back out through it.</p>
+                <div class="row"><button class="tiny" data-try="slideRight:left">left</button><button class="tiny" data-try="slideRight:center">center</button></div>
+            </div>
+            <div class="card">
+                <div class="sym">fade</div>
+                <h3>Quiet</h3>
+                <p>A short fade and settle in place. Every other effect falls back to this one when the visitor asks for reduced motion.</p>
+                <div class="row"><button class="tiny" data-try="fade:center">center</button></div>
+            </div>
+            <div class="card">
+                <div class="sym">none</div>
+                <h3>Instant</h3>
+                <p>No animation at all. A <code>speed</code> of 0 means the same thing with any effect.</p>
+                <div class="row"><button class="tiny" data-try="none:right">right</button></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Messages you hold on to</h2>
+        <p class="lede">
+            <code>show()</code> returns a handle. Use it to close a message when you decide, rather than when the timer does.
+            Content can also be an element, so a message can carry your own controls.
+        </p>
+        <div class="tasks">
+            <div class="panel">
+                <div class="panel-h"><span>duration: 0 + handle.close()</span></div>
+                <div class="panel-b">
+                    <p class="note" style="margin:0 0 14px">A sticky "Saving…" message that stays up until the work it reports on
+                        finishes, then gives way to the result.</p>
+                    <button class="primary" id="save">Save document</button>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>element content</span></div>
+                <div class="panel-b">
+                    <p class="note" style="margin:0 0 14px">The message body is a node of the page's own, with an Undo button wired
+                        by the page. Pressing it closes the message through the handle.</p>
+                    <div class="row">
+                        <button class="danger" id="del">Delete 3 files</button>
+                        <span id="files" style="font-family:var(--mono); font-size:.82rem; color:var(--dim)">3 files</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
+        <p class="lede">
+            Every config property and every per-call option is checked when it is set, by the same rule, so a typo
+            throws to your code instead of producing a message that silently ignores it.
+        </p>
+        <div class="row">
+            <button data-bad="align">config.alignment = "top"</button>
+            <button data-bad="content">show(42)</button>
+            <button data-bad="option">show("a", { colour: "red" })</button>
+            <button data-bad="duration">config.duration = -1</button>
+            <button data-bad="width">config.width = "wide"</button>
+            <button data-bad="init">show() before initialize()</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet. Press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/message-box.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The playground instance is on <span class="kbd">window</span> as <span class="kbd">box</span>.
+            Try <span class="kbd">box.warning("From the console", { duration: 0 })</span>.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

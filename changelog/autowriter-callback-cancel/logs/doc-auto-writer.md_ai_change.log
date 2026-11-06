@@ -1,0 +1,12 @@
+File: doc/auto-writer.md
+
+=======================================================================
+Section 1 (stop() section)
+OLD_SECTION
+`stop()` does not run the callback, and does not clear text already typed.
+
+NEW_SECTION
+`stop()` does not run the callback, and does not clear text already typed. That includes a callback whose run has already finished but is still waiting out `callBackDelay`: `stop()` cancels it. `destroy()` does the same, and also removes the spans the writer added, so a callback that would have called a destroyed writer never runs. Starting a new `writeText()` or `deleteText()` leaves an earlier run's pending callback alone.
+
+REASON
+States the cancellation rule, including the case that used to slip through (a callback inside its delay) and the case that deliberately does not cancel (a new run).

@@ -1,0 +1,14 @@
+FEATURE: modal-content-blink
+DATE: 2026-10-08
+
+ModalDisplayer
+  Modified:
+    vUX-modalDisplayer.js
+
+Release changelog
+  Modified:
+    ChangeLog.md
+
+Change logs
+  Added:
+    changelog/modal-content-blink/

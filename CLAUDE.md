@@ -22,11 +22,17 @@ At import time `src/helpers.js` runs `processAssetPath()`, which scans the DOM f
 
 1. `src/helpers.js` — pure exported functions: a large family of `validateX()` argument-checkers (each throws a descriptive `Error` naming the offending method/argument), CSS/DOM utilities, string/number/date helpers. Also defines `window.vModel` (internal data model: asset path, module registry) and triggers asset-path bootstrap on import.
 2. `src/vUX-core-4.0.0-beta.js` — imports all of `helpers.js` and **promotes every helper export to a global** (`for (let name in vUxHelpers) window[name] = vUxHelpers[name]`). Defines `window.$$`, the core utility namespace (`$$.ss` select-single, `$$.sa` select-all, `$$.sm` select-and-manipulate, `$$.ce` create-element, `$$.attachEventHandler`, `$$.styleElement`, etc.). Also monkey-patches built-ins (`String.prototype.xTrim/trimChar/toUpperCaseFirst`, `Array.prototype.has`, `Storage.prototype.set/getIterable`, `Date.prototype.isValid`, `RegExp.parseChars`) and exposes the `window.vUxModules` console getter.
-3. `vUX-*.js` (repo root) — one component per file, each exporting a **single constructor function** (`Carousel`, `FormValidator`, `SPAEngine`, `ModalDisplayer`, `ListScroller`, `ProgressIndicator`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `SketchPad`, `FormComponents`). Every one begins with `import "./src/vUX-core-4.0.0-beta.js"` so that importing any component transitively boots the whole core + globals.
+3. `vUX-*.js` (repo root): one component per file, each exporting a **single constructor function** (`Carousel`, `FormValidator`, `SPAEngine`, `ModalDisplayer`, `ListScroller`, `ProgressIndicator`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `SketchPad`, `FormComponents`, `MessageBox`, `Marquee`). Every one begins with `import "./src/vUX-core-4.0.0-beta.js"` so that importing any component transitively boots the whole core + globals.
 
 `vUX-core.js` is just a thin re-export shim that imports `./src/vUX-core-4.0.0-beta.js`.
 
 **Global-by-design:** because helpers and `$$` are attached to `window`, component code calls helpers like `validateElement(...)`, `hyphenatedToCamel(...)`, `$$.ss(...)` unqualified, relying on the core having been imported first. When adding a shared utility, export it from `helpers.js` — it becomes globally available automatically.
+
+## Build new modules on the core (required)
+
+A new module **always uses the vUX core utilities** wherever one exists for the job, instead of re-implementing it by hand: `$$.ce()` to create elements, `$$.sm(el).class.add/remove` for classes, `$$.sm(el).slide` / `.flip` / `.animate` for motion, `$$.attachEventHandler()` for delegated events, the `validateX()` helpers for argument checks, and so on (see `doc/core.md`). Read the core first, before writing a manual operation.
+
+When a module needs a **manual operation that other modules could use too**, such as a pausable timer, a reduced-motion check, or a "jump to the start position without a transition" step, write it locally for now and **tell the user about it** in your report: name the operation, show where it lives, and say which other modules would use it. Also add it to the list in `../../.claude/projects/vUX/potentialUtilities.md` (the workspace's `.claude/`) with status `proposed`. The user decides whether it becomes part of the vUX core. Do not add it to the core, or to `helpers.js`, on your own initiative.
 
 ## Component usage convention
 
@@ -38,7 +44,7 @@ Two patterns coexist: (a) static stylesheets in `assets/css/*.css`, linked at ru
 
 ## Versioning
 
-The version is baked into filenames (`vUX-core-4.0.0-beta.js`) and into the absolute CDN import URLs shown in the README (`http://library.vilshub.com/lib/vUX/<version>/vUX-*.js`). Bumping a version touches filenames, the import in `vUX-core.js`, and the module registry list in `vModel.core.data.modules` (`src/helpers.js`).
+The version is baked into filenames (`vUX-core-4.0.0-beta.js`) and into the absolute CDN import URLs shown in the README (`http://library.vilshub.net/lib/vUX/<version>/vUX-*.js`). Bumping a version touches filenames, the import in `vUX-core.js`, and the module registry list in `vModel.core.data.modules` (`src/helpers.js`).
 
 ## Example pages (required for every module)
 

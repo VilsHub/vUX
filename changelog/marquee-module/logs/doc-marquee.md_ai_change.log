@@ -1,0 +1,16 @@
+FILE: doc/marquee.md
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+NEW FILE. The Marquee guide: how it works (items written once, measured loop, self
+rebuild, Web Animations), quick start, configuration, methods and getters, adding items,
+accessibility of clones, styling and the fade-masks-background note, generated markup,
+limits (horizontal only, hidden strips, listeners not cloned) and the full error table.
+
+OLD_SECTION
+(none, new file)
+
+NEW_SECTION
+(whole file)

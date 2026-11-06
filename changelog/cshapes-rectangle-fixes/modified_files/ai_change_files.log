@@ -1,0 +1,10 @@
+FEATURE: cshapes-rectangle-fixes
+DATE: 2026-10-11
+
+<CShapes>
+  Modified:
+    vUX-cShapes.js              (fixedRectangle + animatedRectangle sections; CRLF kept)
+
+<Documentation>
+  Modified:
+    ChangeLog.md

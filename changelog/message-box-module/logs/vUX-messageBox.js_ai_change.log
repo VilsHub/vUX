@@ -1,0 +1,57 @@
+FILE: vUX-messageBox.js
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+NEW FILE. The MessageBox module: notification messages at the top of the window.
+
+Design points worth recording:
+
+  - Lanes. One position:fixed column per alignment (left/center/right) and offset,
+    shared by every instance at module level, so two instances aligned the same way
+    stack instead of overlapping. Below 600px every message uses the centre lane,
+    because three full-width lanes would overlap.
+
+  - Slots. Each message sits in a slot. The slot opens with
+    $$.sm(slot).slide.toBottom() in dimension mode (no end size, so it opens to the
+    content height) and closes with toTop(), so neighbours move aside smoothly.
+    The core's .vSlide.dim class clips (overflow hidden), so the slot's overflow is
+    set back to visible inline straight after the call. Otherwise a message
+    travelling in from outside the slot would be hidden.
+
+  - Effects use the core slide utility in position mode: drop = toBottom/toTop on
+    "top"; slideLeft/slideRight = toLeft/toRight on "left" (never "right": an older
+    cached core.css does not transition "right"). Every end of animation comes from
+    the core's callback.
+
+  - drop jumps to its start position (transition-property none + reflow) before
+    toBottom. toBottom has no such step, and the message has just been measured, so
+    it would otherwise transition from its resting place to the start and barely
+    move. fade adds its class at build time for the same reason.
+
+  - Exits aim 25% past the edge, because the core callback is a timer that can fire
+    a frame before the transition ends (same finding as ModalDisplayer).
+
+  - A close requested while a message is entering is deferred until it lands.
+    Otherwise the slot's pending toBottom timer would set height:auto again and
+    reopen a collapsing slot.
+
+  - The timer counts from landing and pauses on hover/focus-within (remaining time
+    kept), with the CSS countdown bar paused alongside.
+
+  - Strings are set with textContent, never as markup.
+
+  - Uses the core wherever it covers the job: $$.ce, $$.sm().class, $$.sm().slide,
+    and the validateX/matchString helpers. The stylesheet is linked at import, as
+    Skeleton's is, because linkStyleSheet waits 300ms.
+
+================================================================================
+CHANGE 1
+================================================================================
+
+OLD_SECTION
+(file did not exist)
+
+NEW_SECTION
+(whole file, see vUX-messageBox.js)

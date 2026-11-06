@@ -1,0 +1,23 @@
+FILE: src/vUX-core-4.0.0-beta.js
+FEATURE: border-color-cycle
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'core-fixes' (uncommitted at the time)
+
+REASON
+$$.sm(el).animate() takes start = performance.now() when called, then measures each frame from
+the requestAnimationFrame timestamp. The first frame's timestamp is the frame's start time and
+can be earlier than that call, so timeFrac was negative and the first value drawn was below the
+start value (and stored as the element's remembered value). Found when vilshub.com used
+animate() to tween a colour index: the negative value indexed position -1, the draw function
+threw, and that run died. Clamped to 0, as it was already clamped to 1 at the other end. CRLF kept.
+
+OLD_SECTION
+                    var timeFrac = (time - start) / options.duration;
+                    if (timeFrac > 1) timeFrac = 1;
+
+NEW_SECTION
+                    var timeFrac = (time - start) / options.duration;
+                    if (timeFrac > 1) timeFrac = 1;
+                    //the first frame's timestamp can be earlier than performance.now() taken above, which
+                    //made the first value fall below the start value
+                    if (timeFrac < 0) timeFrac = 0;

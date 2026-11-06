@@ -1,0 +1,175 @@
+File: examples/spa/main.js
+Feature: spa-example-scroll-state
+(Quoted unchanged context below has its U+2014 dashes shown as ' : ', per the workspace no-em-dash rule.)
+
+=======================================================================
+Section 1
+OLD_SECTION
+    });
+    document.querySelector("#urlPath").textContent = location.pathname;
+}
+
+
+NEW_SECTION
+    });
+    document.querySelector("#urlPath").textContent = location.pathname;
+}
+
+// The engine restores scroll on back/forward and reload, but never scrolls on a link click: where a
+// new route opens is the app's call. This page opens it at the top, like a fresh page would, so the
+// restore in section 03 has somewhere to come back from.
+function openAtTop(){
+    window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+
+REASON
+openAtTop(): the engine never scrolls on a link click, so the example opens each new route at the top, giving section 03's restore somewhere to come back from.
+
+=======================================================================
+Section 2
+OLD_SECTION
+                        completeLoadProgress();
+                        markNav();
+                        reportParamRecovery("clickLoadCallback 'showUser'", element, routeName, callbackKey, params);
+                    }
+
+NEW_SECTION
+                        completeLoadProgress();
+                        markNav();
+                        openAtTop();
+                        reportParamRecovery("clickLoadCallback 'showUser'", element, routeName, callbackKey, params);
+                    }
+
+REASON
+The user route's click callback opens the route at the top.
+
+=======================================================================
+Section 3
+OLD_SECTION
+                        completeLoadProgress();
+                        markNav();
+                        tablePage.mount();
+                    }
+
+NEW_SECTION
+                        completeLoadProgress();
+                        markNav();
+                        openAtTop();
+                        tablePage.mount();
+                    }
+
+REASON
+The table route's click callback opens the route at the top.
+
+=======================================================================
+Section 4
+OLD_SECTION
+        completeLoadProgress();
+        markNav();
+    };
+    spa.config.exitCallback = function(routeName, params){
+
+NEW_SECTION
+        completeLoadProgress();
+        markNav();
+        openAtTop();
+    };
+    spa.config.exitCallback = function(routeName, params){
+
+REASON
+The fallback click callback (Home link) opens the route at the top.
+
+=======================================================================
+Section 5
+OLD_SECTION
+    // route from the cache, so a version set afterwards would clear only after one stale
+    // render. A cache built under a different (or no) version is emptied right here.
+    var build = await fetchBuild();
+    if (build != null) spa.config.cacheVersion = build;
+
+NEW_SECTION
+    // route from the cache, so a version set afterwards would clear only after one stale
+    // render. A cache built under a different (or no) version is emptied right here.
+    // config.restoreScroll is applied at initialize() (setting it later throws), so the section 03
+    // toggle reloads the page with ?restoreScroll=0 and the value is read here, before initialize()
+    if (new URLSearchParams(location.search).get("restoreScroll") === "0") spa.config.restoreScroll = false;
+
+    var build = await fetchBuild();
+    if (build != null) spa.config.cacheVersion = build;
+
+REASON
+?restoreScroll=0 sets config.restoreScroll = false before initialize(); the setting cannot change on a running engine, so the checkbox works by reloading.
+
+=======================================================================
+Section 6
+OLD_SECTION
+    });
+
+    // ---- validation: each button builds a THROWAWAY engine, so the live one is
+    // untouched. Both initialize() guards run before the engine attaches anything.
+
+NEW_SECTION
+    });
+
+    // ---- scroll state: what the engine keeps for back/forward and reload
+    // The engine stores each entry's position as a scrollY field of its history state (a JSON
+    // string). This panel only READS it: writing history.state would compete with the engine.
+    function savedScrollOf(state){
+        try { return typeof state == "string" ? JSON.parse(state).scrollY : undefined; } catch (e) { return undefined; }
+    }
+    function renderScrollState(){
+        var saved = savedScrollOf(history.state);
+        document.querySelector("#ssNow").textContent = Math.round(window.scrollY);
+        document.querySelector("#ssSaved").textContent = saved == null ? "unset" : saved;
+        document.querySelector("#ssLength").textContent = history.length;
+        document.querySelector("#ssEnabled").textContent = String(spa.config.restoreScroll);
+    }
+    // The engine scrolls right after it mounts the entry (and again after a history callback,
+    // which runs ~200ms later), so the landing spot is read once that has settled.
+    function reportRestore(kind, saved){
+        setTimeout(function(){
+            var landed = Math.round(window.scrollY);
+            var row = document.querySelector("#ssLastRow");
+            document.querySelector("#ssLast").textContent = saved == null ? "nothing saved" : saved + " → " + landed;
+            document.querySelector("#ssLastNote").textContent = saved == null
+                ? kind + ": this entry had no position, so the page stays where the browser put it"
+                : kind + ": saved " + saved + ", landed at " + landed + (Math.abs(saved - landed) <= 1 ? " (restored)" : " (the page is shorter now, so the browser stopped at its end)");
+            row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
+            demoLog("[scroll] " + kind + " → saved " + saved + ", landed at " + landed);
+            renderScrollState();
+        }, 450);
+    }
+    addEventListener("popstate", function(e){ reportRestore("back/forward", savedScrollOf(e.state)); });
+    // a reload keeps the entry's state: report the restore the boot just did
+    if (performance.getEntriesByType("navigation")[0]?.type === "reload") reportRestore("reload", savedScrollOf(history.state));
+
+    var scrollPaint = 0;
+    addEventListener("scroll", function(){
+        if (scrollPaint) return;
+        scrollPaint = requestAnimationFrame(function(){ scrollPaint = 0; renderScrollState(); });
+    }, { passive: true });
+    // history.state.scrollY is written ~100ms after scrolling stops, so it is polled, like the cache table
+    setInterval(renderScrollState, 250);
+    renderScrollState();
+
+    var restoreToggle = document.querySelector("#restoreToggle");
+    restoreToggle.checked = spa.config.restoreScroll;
+    restoreToggle.addEventListener("change", function(){
+        var params = new URLSearchParams(location.search);
+        if (restoreToggle.checked) params.delete("restoreScroll"); else params.set("restoreScroll", "0");
+        var query = params.toString();
+        location.assign(location.pathname + (query ? "?" + query : "") + location.hash);
+    });
+
+    // Clicking the SPA link from code keeps the current scroll position, which is the point: the
+    // entry being left records exactly where this button was when you pressed it.
+    document.querySelector("#btnLeaveHere").addEventListener("click", function(){
+        document.querySelector("#userLink").click();
+    });
+
+    // ---- validation: each button builds a THROWAWAY engine, so the live one is
+    // untouched. Both initialize() guards run before the engine attaches anything.
+
+REASON
+Scroll state panel: reads (never writes) the engine's scrollY from history.state; renders on scroll (one frame at a time) and on a 250ms poll, since the engine saves about 100ms after scrolling stops; reports each back/forward or reload restore 450ms later (after the engine's post-mount and post-callback scrolls) as saved vs landed, in the table and as a [scroll] log line; wires the checkbox and the 'Open User 7 from here' button.

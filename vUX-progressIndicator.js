@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2022-05-17=T09:20Z
  * 
@@ -306,6 +306,10 @@ export function ProgressIndicator(defaultProgressSpace=null) {
             }
             
             spaceEle.innerHTML   += template;
+            //flush styles so the bar's first width change animates from its 0% start; without it the
+            //browser first sees the target width, no transition runs and a style 3 bar never moves on
+            //to its slow and crawl phases
+            void spaceEle.offsetWidth;
         }else{
             exist.classList.remove("done");
 

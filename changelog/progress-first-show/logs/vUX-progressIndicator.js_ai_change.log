@@ -1,0 +1,23 @@
+File: vUX-progressIndicator.js
+Feature: progress-first-show
+
+=======================================================================
+Section 1
+OLD_SECTION
+            
+            spaceEle.innerHTML   += template;
+        }else{
+            exist.classList.remove("done");
+
+NEW_SECTION
+            
+            spaceEle.innerHTML   += template;
+            //flush styles so the bar's first width change animates from its 0% start; without it the
+            //browser first sees the target width, no transition runs and a style 3 bar never moves on
+            //to its slow and crawl phases
+            void spaceEle.offsetWidth;
+        }else{
+            exist.classList.remove("done");
+
+REASON
+setTemplate() inserts a new bar with innerHTML at width 0%, and showProgress sets its first target width in the next microtask with no style computation in between, so the browser first sees the target width: no transition runs, no transitionend fires, and a style 3 bar never moved on to its slow and crawl phases. Reading offsetWidth after inserting forces that computation, the same flush the reuse branch already does, so the first bar animates like later ones.

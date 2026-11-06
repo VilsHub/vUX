@@ -1,0 +1,17 @@
+/* Marquee. The structural styles (overflow, track flex row) are also set inline by the module, so the
+   first measurement is right before this sheet arrives. This sheet adds what can wait. */
+.vMarquee {
+    position: relative;
+    overflow: hidden;
+}
+.vMarqueeTrack {
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+    align-items: center;
+}
+/* items never shrink or wrap: one set's width must be the same every time it is measured */
+.vMarqueeTrack > * {
+    flex-shrink: 0;
+    white-space: nowrap;
+}

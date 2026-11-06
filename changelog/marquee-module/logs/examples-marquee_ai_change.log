@@ -1,0 +1,21 @@
+FILES: examples/marquee/index.html, examples/marquee/main.js, examples/marquee/README.md
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+NEW FILES. The required runnable example, on examples/shared/example.css:
+  - Hero: two huge rotated rows in opposite directions (pauseOnHover off, decoration).
+  - 01 Playground: live controls for every config property, pause()/play(), add item +
+    refresh(), destroy()/rebuild, status line and equivalent-code panel.
+  - 02 Linked cards: clones out of the tab order but clickable.
+  - 03 Bad input: nine cases printing the thrown errors.
+Verified headless at 1280 and 390 px: no page errors, no horizontal overflow (the code
+panel's grid column needed minmax(0,1fr) on phones), refresh adds one item, destroy
+restores the plain list, Tab reaches 4 of 12 rendered links.
+
+OLD_SECTION
+(none, new files)
+
+NEW_SECTION
+(whole files)

@@ -1,0 +1,36 @@
+Feature: slide-fixes
+Target module: core ($$.sm(el).slide)
+
+- .vSlide.pos now transitions right and bottom as well as left and top, so positionProperty:
+  "right" slides instead of jumping.
+- slide.toRight honours positionProperty (it hard-coded left).
+- slide.toRight applies the same defaults as toLeft (use, positions, dimensions,
+  positionProperty); with use omitted it used to throw a TypeError.
+- slide.toRight with use: "dimension" and no end width opens to scrollWidth instead of
+  throwing a ReferenceError on an undeclared `width`.
+- slide.toLeft / toRight choose the CSS class after defaulting use, so an omitted use gets
+  .vSlide.dim like an explicit "dimension" (it got .vSlide.pos and the width didn't animate).
+
+- Position slides (toLeft / toRight) jump to positions.x[0] with transitions off, then
+  animate to x[1]. Before, an element not already at x[0] (one just unhidden) animated toward
+  x[0] and was turned straight back, so a slide-in appeared without moving.
+
+Why: app.myinvitees.com slides its right-anchored My quota panel with positionProperty:
+"right". It needed an app-side CSS override for the transition, and used toLeft for both
+directions because toRight ignored positionProperty.
+
+Verified: the slide object was cut out of the core and run in Node against a stub element,
+before and after the change. Before: toRight with positionProperty "right" moved left, and
+use omitted / no end width threw TypeError / ReferenceError. toLeft with use omitted got the
+pos class. After: right moves -340 -> 0 and 0 -> -340, toRight without positionProperty
+still moves left, use omitted runs the dimension branch with the dim class, and no end width
+opens to scrollWidth. Start-position fix verified in headless Chromium in real time (over the DevTools protocol)
+with the card tool's sequence (unhide, read offsetWidth, slide right -340 -> 0, close, reopen).
+Before: both opens sat at the open position from the first frame, and only the close moved.
+After: open, close and reopen all move across the 500ms. (Virtual-time headless runs showed
+later transitions frozen, an artifact of virtual time and not of the code.)
+
+Affected projects: app.myinvitees.com is the only caller of slide in VilsHub, and it passes
+use explicitly. Behaviour changes only for calls that omit use, call toRight with
+positionProperty "right", or slide by right/bottom. Calls that pass use, and toRight calls
+without positionProperty, behave as before. dist/ (git-ignored) is rebuilt by ./minify.sh.

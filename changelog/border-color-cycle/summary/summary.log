@@ -1,0 +1,27 @@
+FEATURE: border-color-cycle
+DATE: 2026-10-11
+SCOPE: let animatedRectangle's colour be tweened; fix animate()'s first frame
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX: two small backwards-compatible changes.
+  - animatedRectangle(): lineColor applies on the next frame instead of the next cycle. Code that
+    set lineColor mid-run expecting the old delay now sees the colour sooner; nothing else changes.
+  - $$.sm().animate(): the first value is never below the start value. Every consumer of animate()
+    (core slides do not use it) gets the same curve without the tiny initial dip.
+
+Apps/vilshub.com: the contact-form border fades through #00ffde, #00ff80, #00ff22, #83ff00, #edff00
+and back, 2s per colour, using $$.sm(canvas).animate() to tween the colour into
+formBorder.config.lineColor. Still single colour under reduced motion.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Headless Chromium on vilshub.com, stroke colour logged per frame for 17s with the form on screen:
+reaches #edff00 at ~7.3s and #00ffde again at ~15.7s (four 2s legs each way, 16s round trip),
+largest change between consecutive frames 16 per channel, no page errors. Before the core fix the
+same run threw "Cannot read properties of undefined" five times and stayed on #00ffde for ~8s.
+Not verified: Safari, Firefox.

@@ -1,0 +1,18 @@
+FILE: ChangeLog.md
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+Four bullets under v4.0.0-beta / Added, after the MessageBox entries: the module, its
+config, its methods/getters and clone accessibility, and the guide plus example.
+
+OLD_SECTION
+- MessageBox guide (doc/message-box.md) and runnable example (examples/messagebox/)
+
+NEW_SECTION
+- MessageBox guide (doc/message-box.md) and runnable example (examples/messagebox/)
+- Marquee module (vUX-marquee.js): an endless scrolling strip ...
+- Marquee config: `speed` in pixels per second, `direction` ...
+- Marquee `pause()`, `play()`, `refresh()` and `destroy()`, plus `paused` and `moving` getters ...
+- Marquee guide (doc/marquee.md) and runnable example (examples/marquee/)

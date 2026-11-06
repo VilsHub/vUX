@@ -1,0 +1,23 @@
+File: examples/spa/README.md
+Feature: spa-example-scroll-state
+(Quoted unchanged context below has its U+2014 dashes shown as ' : ', per the workspace no-em-dash rule.)
+
+=======================================================================
+Section 1
+OLD_SECTION
+
+- **Shipping a new release**  :  section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+- **Validation**  :  the buttons in section 03 build throwaway engines to show how `initialize()` refuses an incomplete setup, how `dataAttributeNames`/`classes` reject unknown keys, and how `cacheVersion` rejects an empty value.
+
+Everything a callback receives is printed to the diagnostics panel at the bottom of the page.
+
+NEW_SECTION
+
+- **Shipping a new release**  :  section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+- **Scroll restoration**: section 03 shows what `config.restoreScroll` keeps: a live table of `window.scrollY`, the `scrollY` the engine saved in the current history entry, `history.length` and the last restore (saved position against where the page landed, also logged as `[scroll]`). **Open User 7 from here** leaves from the current position; Back, Forward or a reload then bring it back. The `config.restoreScroll` checkbox reloads the page with `?restoreScroll=0` (the setting is applied at `initialize()`) to compare against the engine leaving scroll alone. The example's click callbacks open each new route at the top (`openAtTop()`), because the engine itself never scrolls on a link click.
+- **Validation**: the buttons in section 04 build throwaway engines to show how `initialize()` refuses an incomplete setup, how `dataAttributeNames`/`classes` reject unknown keys, and how `cacheVersion` rejects an empty value.
+
+Everything a callback receives is printed to the diagnostics panel at the bottom of the page.
+
+REASON
+Lists the new scroll restoration section and its checkbox, and renumbers Validation to section 04; the edited lines drop their em dashes per the workspace rule.

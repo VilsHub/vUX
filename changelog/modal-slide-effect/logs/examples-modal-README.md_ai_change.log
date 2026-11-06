@@ -1,0 +1,44 @@
+FILE: examples/modal/README.md
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
+
+================================================================================
+CHANGE 1 — demonstrated effects
+================================================================================
+
+OLD_SECTION
+- All four effects (`none`, `split`, `flip`, `box`), switchable at runtime.
+
+NEW_SECTION
+- All five effects (`none`, `split`, `flip`, `box`, `slide`), switchable at runtime.
+
+REASON
+Count and list updated.
+
+================================================================================
+CHANGE 2 — seven effects
+================================================================================
+
+OLD_SECTION
+- All five effects (`none`, `split`, `flip`, `box`, `slide`), switchable at runtime.
+
+NEW_SECTION
+- All seven effects (`none`, `split`, `flip`, `box`, `slide`, `slideLeft`, `slideRight`), switchable at runtime. `slideLeft` and `slideRight` dock the modal to the right or left edge as a full height panel instead of centring it.
+
+REASON
+List updated.
+
+================================================================================
+CHANGE 3 — rename
+================================================================================
+
+OLD_SECTION
+`box`, `slide`, `slideLeft`
+
+NEW_SECTION
+`box`, `drop`, `slideLeft`
+
+REASON
+Rename.
+

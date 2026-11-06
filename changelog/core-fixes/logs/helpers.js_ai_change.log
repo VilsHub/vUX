@@ -1,0 +1,167 @@
+FILE: src/helpers.js
+FEATURE: core-fixes
+DATE: 2026-10-07
+LINE ENDINGS: CRLF, preserved
+
+--------------------------------------------------------------------------------
+CHANGE 1
+
+OLD_SECTION
+                            if(direction == "toLeft" && direction == "toRight"){
+
+NEW_SECTION
+                            if(direction == "toLeft" || direction == "toRight"){ //was &&, so the check never ran
+
+REASON
+The positions.x check required direction to equal both toLeft and toRight at once, so it never ran.
+
+--------------------------------------------------------------------------------
+CHANGE 2
+
+OLD_SECTION
+                            if(direction == "toTop" && direction == "toBottom"){
+
+NEW_SECTION
+                            if(direction == "toTop" || direction == "toBottom"){
+
+REASON
+Same for positions.y with toTop/toBottom.
+
+--------------------------------------------------------------------------------
+CHANGE 3
+
+OLD_SECTION
+if (config[1] != "right" && config[1] != "left") throw new Error(config[1], "$$.sm(.).slide."+direction+"(.x) argument 1 object.positionProperty property value must either be 'right' or 'left'");
+
+NEW_SECTION
+if (config[1] != "right" && config[1] != "left") throw new Error("$$.sm(.).slide."+direction+"(.x) argument 1 object.positionProperty property value must either be 'right' or 'left', not '"+config[1]+"'"); //the message used to be only the bad value
+
+REASON
+new Error(value, message) made the message just the bad value (e.g. "top"). The message now names the property and the value.
+
+--------------------------------------------------------------------------------
+CHANGE 4
+
+OLD_SECTION
+                    axisValue = "0, 0, z";
+
+NEW_SECTION
+                    axisValue = "0, 0, 1"; //was "0, 0, z", an invalid transform
+
+REASON
+flipValue wrote "0, 0, z" for the z axis, an invalid rotate3d.
+
+--------------------------------------------------------------------------------
+CHANGE 5
+
+OLD_SECTION
+    return cameledName.replace(/[A-Z]/g, function (m){"-" + m.toLowerCase()});
+
+NEW_SECTION
+    return cameledName.replace(/[A-Z]/g, function (m){return "-" + m.toLowerCase()}); //the callback returned nothing, so each capital became "undefined"
+
+REASON
+camelToCSSstandard's replace callback had no return, so every capital became "undefined".
+
+--------------------------------------------------------------------------------
+CHANGE 6
+
+OLD_SECTION
+export function validatePhoneNumber() {
+
+NEW_SECTION
+export function validatePhoneNumber(input) { //the parameter was missing, so every call threw a ReferenceError
+
+REASON
+validatePhoneNumber had no parameter and read an undefined `input`, so every call threw a ReferenceError.
+
+--------------------------------------------------------------------------------
+CHANGE 7
+
+OLD_SECTION
+export function checkBrowser(id = null){
+    var browserIds={
+        "Safari-Edg": {id:"Safari-Edg", label:"Microsoft Edge", name:"edge"},
+        "Chrome-Safari":{id:"Chrome-Safari", label:"Chrome or Chromium Based", name:"chrome"},
+        "Mozilla-Trident": {id:"Mozilla-Trident", label:"Internet Explorer", name:"iexplorer"},
+        "Gecko-Firefox":{id:"Gecko-Firefox", label:"Mozilla Firefox", name:"firefox"},
+        "Safari-Opr":{id:"Safari-Opr", label:"Opera", name:"opera"},
+        "UBrowser-Safari":{id:"UBrowser-Safari", label:"ucbrowser", name:"ucbrowser"},
+        "Safari-main":{id:"Safari-main", label:"Safari", name:"safari"}
+    }
+
+    var idSegments = navigator.userAgent.split("/");
+    var totalSegment = idSegments.length;
+    var parentId = idSegments[totalSegment-3].split(" ");
+    var parsedParentId = parentId[parentId.length-1].trim();
+    var childId = idSegments[totalSegment-2].split(" ");
+    var parsedChildId = childId[childId.length-1].trim();
+    var browserId = parsedParentId+"-"+parsedChildId;
+    
+    if(id != null){
+        switch (id) {
+            case "edge":
+                return browserIds["Safari-Edg"].id == browserId;
+            case "chrome":
+                return browserIds["Chrome-Safari"].id == browserId;
+            case "iexplorer":
+                return browserIds["Mozilla-Trident"].id == browserId;
+            case "firefox":
+                return browserIds["Gecko-Firefox"].id == browserId;
+            case "safari":
+                return browserIds["Safari-main"].id == browserId;
+            case "ucbrowser":
+                return browserIds["UBrowser-Safari"].id == browserId;
+            case "opera":
+                return browserIds["Safari-Opr"].id == browserId;
+            default:
+                return false
+        }
+    }else{
+        return {id:browserIds[browserId].id, label:browserIds[browserId].label, name:browserIds[browserId].name};
+    }
+}
+
+
+NEW_SECTION
+export function checkBrowser(id = null){
+    //keys are "<word before the second-to-last '/'>-<word before the last '/'>" of the user agent
+    var browserIds={
+        "Safari-Edg": {id:"Safari-Edg", label:"Microsoft Edge", name:"edge"},
+        "Chrome-Safari":{id:"Chrome-Safari", label:"Chrome or Chromium Based", name:"chrome"},
+        "HeadlessChrome-Safari":{id:"HeadlessChrome-Safari", label:"Chrome or Chromium Based", name:"chrome"},
+        "Mozilla-Trident": {id:"Mozilla-Trident", label:"Internet Explorer", name:"iexplorer"},
+        "Gecko-Firefox":{id:"Gecko-Firefox", label:"Mozilla Firefox", name:"firefox"},
+        "Safari-Opr":{id:"Safari-Opr", label:"Opera", name:"opera"},
+        "Safari-OPR":{id:"Safari-OPR", label:"Opera", name:"opera"},
+        "UBrowser-Safari":{id:"UBrowser-Safari", label:"ucbrowser", name:"ucbrowser"},
+        //Safari's agent ends "Version/17.0 Safari/605.1.15" (desktop) or "Version/17.0 Mobile/15E148 Safari/604.1" (iOS);
+        //the old "Safari-main" key matched neither, so Safari was never recognised
+        "Version-Safari":{id:"Version-Safari", label:"Safari", name:"safari"},
+        "Mobile-Safari":{id:"Mobile-Safari", label:"Safari", name:"safari"}
+    }
+
+    var idSegments = navigator.userAgent.split("/");
+    var totalSegment = idSegments.length;
+    var browserId = "";
+    if (totalSegment >= 3) {
+        var parentId = idSegments[totalSegment-3].split(" ");
+        var parsedParentId = parentId[parentId.length-1].trim();
+        var childId = idSegments[totalSegment-2].split(" ");
+        var parsedChildId = childId[childId.length-1].trim();
+        browserId = parsedParentId+"-"+parsedChildId;
+    }
+    var match = browserIds[browserId];
+
+    if(id != null){
+        return match != undefined && match.name == id;
+    }else{
+        //an agent it does not know used to throw a TypeError; it now reports itself as unknown
+        if (match == undefined) return {id:browserId, label:"Unknown", name:"unknown"};
+        return {id:match.id, label:match.label, name:match.name};
+    }
+}
+
+
+REASON
+The Safari key ("Safari-main") could never be produced from a real agent, so Safari was unrecognised; Opera's agent says OPR, not Opr; headless Chrome was unknown. With no argument, an unknown agent threw a TypeError reading browserIds[undefined].id. Added Version-Safari, Mobile-Safari, Safari-OPR and HeadlessChrome-Safari, guard short agents, compare names when a name is given, and return name "unknown" instead of throwing.

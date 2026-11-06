@@ -79,7 +79,7 @@ All settings are **write-only** properties on `.config`; each validates its valu
 | `className` | string | — (**required**) | Class marking trigger elements |
 | `formIdAttribute` | string | — (**required**) | Attribute on a trigger holding the modal content's `id` |
 | `closeButtonClass` | string | `""` | Class marking close buttons; clicking one closes the modal |
-| `effect` | string | `"none"` | Open/close animation: `"none"`, `"split"`, `"flip"`, `"box"` |
+| `effect` | string | `"none"` | Open/close animation: `"none"`, `"split"`, `"flip"`, `"box"`, `"drop"`, `"slideLeft"`, `"slideRight"` |
 | `exitOnAway` | boolean | `true` | Whether clicking the overlay closes the modal |
 | `overlayBackgroundType` | string | `"color"` | `"color"` tints the overlay; `"blur"` blurs `pageContainer` instead |
 | `overlayStyle` | string | `hsla(0, 0%, 100%, 0.48)` | Any CSS `background` value; used when type is `"color"` |
@@ -151,8 +151,13 @@ There is no public `show()` method — opening is driven by trigger clicks.
 | `split` | Two halves slide in from the left and right and meet |
 | `flip` | The modal flips in on the X axis over a coloured backing panel |
 | `box` | The modal scales out from the centre point |
+| `drop` | The modal drops from above the viewport into place and rises back up on close, driven by the core `$$.sm().slide` utility |
+| `slideLeft` | The modal slides in from the right edge, moving left, and stays docked on the right as a full height panel; on close it slides back out through the right edge |
+| `slideRight` | The modal slides in from the left edge, moving right, and stays docked on the left as a full height panel; on close it slides back out through the left edge |
 
-The three animated effects complete on `transitionend`, so `openProcessor` fires after the animation. `flip` reads the modal's `background-color` for its backing panel — give your modal content an explicit background or the flip shows through.
+The animated effects complete when their animation ends (`split`, `flip` and `box` on `transitionend`, `drop`, `slideLeft` and `slideRight` on the core slide's callback), so `openProcessor` fires after the animation. `flip` reads the modal's `background-color` for its backing panel — give your modal content an explicit background or the flip shows through.
+
+`slideLeft` and `slideRight` are not centred: the modal is docked to its edge, at least as tall as the viewport, and stretched to fill that height (taller content scrolls the overlay as usual). Its width still comes from `modalWidths` / `modalWidthsAttribute`. Style the modal as a side panel if you use them; rounded corners or a margin on the docked side will show against the screen edge.
 
 ## Tall modals
 
@@ -185,7 +190,7 @@ For backward compatibility the **first** layer also carries the pre-stacking mar
 
 ## Complete example
 
-See [`examples/modal/`](../examples/modal/) — seven modals covering all four effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+See [`examples/modal/`](../examples/modal/) — seven modals covering all seven effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
 
 ```bash
 python3 -m http.server 8000

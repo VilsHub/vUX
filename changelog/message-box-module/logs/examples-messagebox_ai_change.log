@@ -1,0 +1,19 @@
+FILES: examples/messagebox/index.html, main.js, README.md
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+NEW FILES. Runnable example built on examples/shared/example.css: a hero that opens
+with a dropped message plus the four typed shorthands, a playground over every
+config property (with equivalent code and an onShow/onClose reason log), effect
+cards per alignment, a sticky message closed through its handle, element content
+with an Undo button, and the validation errors. The narrow-screen grid uses
+minmax(0,1fr), because a plain 1fr let the code snippet's long line widen the page
+to 752px on a 390px phone.
+
+OLD_SECTION
+(files did not exist)
+
+NEW_SECTION
+(whole files)

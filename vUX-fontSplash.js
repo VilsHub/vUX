@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2026-10-06
  *

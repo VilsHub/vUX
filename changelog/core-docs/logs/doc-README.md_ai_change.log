@@ -1,0 +1,21 @@
+FILE: doc/README.md
+FEATURE: core-docs
+DATE: 2026-10-07
+
+OLD_SECTION
+| Guide | Module | Description |
+|---|---|---|
+| [SPA Engine — setup & routing](spa-engine.md) | ...
+
+NEW_SECTION
+| Guide | Module | Description |
+|---|---|---|
+| [Core utilities](core.md) | `vUX-core.js` | `$$` and the `$$.sm()` manipulators: ... |
+| [SPA Engine — setup & routing](spa-engine.md) | ...
+
+and, under "Other references", before the README link:
+- [Core example](../examples/core/README.md) — runnable example of every core utility: ...
+
+REASON
+The index lists each guide and each runnable example. Core goes first because every
+other module stands on it.

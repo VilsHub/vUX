@@ -141,7 +141,7 @@ writer.stop();
 
 Call it whenever the element being typed into is about to disappear — an SPA route change, a closing modal, a component teardown. Nothing else cancels the pending timers, and a run whose target has been removed from the document keeps typing into a detached node until it completes.
 
-`stop()` does not run the callback, and does not clear text already typed.
+`stop()` does not run the callback, and does not clear text already typed. That includes a callback whose run has already finished but is still waiting out `callBackDelay`: `stop()` cancels it. `destroy()` does the same, and also removes the spans the writer added, so a callback that would have called a destroyed writer never runs. Starting a new `writeText()` or `deleteText()` leaves an earlier run's pending callback alone.
 
 ## Errors
 

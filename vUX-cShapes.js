@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2021-07-19=T22:30Z
  * 
@@ -15,16 +15,62 @@ import "./src/vUX-core-4.0.0-beta.js";
 
 /***********************Canvas Shapes**********************/
 export function CShapes() {
+    /*******************shared rectangle drawing********************/
+    //Sizes the canvas backing store by devicePixelRatio and scales the context, so the line stays
+    //sharp on high-density screens while every coordinate below stays in CSS pixels.
+    function prepareCanvas(canvasElement) {
+        var ratio = window.devicePixelRatio || 1;
+        var width = canvasElement.clientWidth || canvasElement.scrollWidth;
+        var height = canvasElement.clientHeight || canvasElement.scrollHeight;
+        canvasElement.width = Math.round(width * ratio);
+        canvasElement.height = Math.round(height * ratio);
+        var context = canvasElement.getContext("2d");
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        return {context: context, width: width, height: height};
+    }
+
+    //Strokes one closed rectangle, square or with rounded corners. beginPath() first, so a frame
+    //never re-strokes the paths of earlier frames.
+    //A square rectangle runs along the canvas edge with the full line width, as it always has, so
+    //the canvas clips the outer half and half of lineWidth shows. A rounded one cannot do that: its
+    //corners bend inward and would show the full width. It is drawn instead with half the width,
+    //inset by a quarter, which shows the same thickness everywhere and nothing is clipped.
+    function strokeRectangle(context, x, y, width, height, radius, lineWidth) {
+        context.beginPath();
+        if (radius <= 0) {
+            context.lineWidth = lineWidth;
+            context.rect(x, y, width, height);
+            context.stroke();
+            return;
+        }
+        var inset = lineWidth / 4;
+        x += inset; y += inset; width -= 2 * inset; height -= 2 * inset;
+        var r = Math.max(0, Math.min(radius - inset, width / 2, height / 2));
+        context.lineWidth = lineWidth / 2;
+        context.moveTo(x + r, y);
+        context.arcTo(x + width, y, x + width, y + height, r);
+        context.arcTo(x + width, y + height, x, y + height, r);
+        context.arcTo(x, y + height, x, y, r);
+        context.arcTo(x, y, x + width, y, r);
+        context.closePath();
+        context.stroke();
+    }
+
+    function validateRadius(value, owner) {
+        validateNumber(value, "'" + owner + ".config.radius' property value must be a number of pixels");
+        if (!isFinite(value) || value < 0) throw new Error("'" + owner + ".config.radius' property value must be 0 or more pixels");
+    }
+    /*******************************************************************/
+
     /*******************fixed dashed rectangle starts********************/
     this.fixedRectangle = function() {
-        var FRlinecolor = "black", FRlinewidth = 5,FRsegment = [10, 2],FROrigin = [0, 0];
+        var FRlinecolor = "black", FRlinewidth = 5,FRsegment = [10, 2],FROrigin = [0, 0],FRradius = 0;
         var body = {
             config: {},
             draw: function(canvasElement) {
                 validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
-                canvasElement.width = canvasElement.scrollWidth;
-                canvasElement.height = canvasElement.scrollHeight;
-                var canObj = canvasElement.getContext("2d");
+                var canvas = prepareCanvas(canvasElement);
+                var canObj = canvas.context;
 
                 //Segment
                 canObj.setLineDash(FRsegment);
@@ -32,15 +78,11 @@ export function CShapes() {
                 //lineColor
                 canObj.strokeStyle = FRlinecolor;
 
-                //lineWidth
-                canObj.lineWidth = FRlinewidth;
-
                 //origin
                 var xOrigin = FROrigin[0];
-                var yOrigin = FROrigin[1]
-                canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-                canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-                canObj.stroke();
+                var yOrigin = FROrigin[1];
+                canObj.clearRect(0, 0, canvas.width, canvas.height);
+                strokeRectangle(canObj, xOrigin, yOrigin, canvas.width, canvas.height, FRradius, FRlinewidth);
             }
         }
 
@@ -85,6 +127,12 @@ export function CShapes() {
                     FROrigin = value;
                 }
             },
+            radius: {
+                set: function(value) {
+                    validateRadius(value, "fixedRectangle");
+                    FRradius = value;
+                }
+            }
         });
         Object.defineProperties(body, {
             config: { writable: false },
@@ -97,92 +145,79 @@ export function CShapes() {
 
     /*******************animated dashed rectangle starts********************/
     this.animatedRectangle = function() {
-        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARactive = "",ARstop = 0,animationCount = 1,cycle = 0,callback = null;
+        var ARlinecolor = "black",ARlinewidth = 5,ARsegment = [10, 2],AROrigin = [0, 0],ARclockWise = true,ARduration = 3000,AReasing = "linear",ARradius = 0,animationCount = 1,callback = null;
         var ARtarget = null;   //the canvas last drawn on, so destroy() can clear it
+        var run = 0;           //bumped by draw(), stop() and destroy(); a frame from an older run exits
 
         var body = {
             config: {},
             draw: function(canvasElement) {
                 validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
-                if (canvasElement.getAttribute("id") == null) {
-                    throw new Error("Canvas element must have an ID set");
-                }
-                //Set ID
-                ARactive = canvasElement.id;
+                //A new run token: the loop of any earlier draw() on this instance sees a different
+                //token on its next frame and exits, so calling draw() again restarts the animation
+                //instead of adding a second loop. The canvas no longer needs an id for this.
+                run++;
+                var token = run;
                 ARtarget = canvasElement;
-                ARstop = 0;
 
-                //Reset canvas size
-                canvasElement.width = canvasElement.scrollWidth;
-                canvasElement.height = canvasElement.scrollHeight;
-                var canObj = canvasElement.getContext("2d");
+                var canObj, size, xOrigin, yOrigin, distance, cycle = 0, animationStart = 0;
 
-                //Segment
-                canObj.setLineDash(ARsegment);
+                //Read the configuration and size the canvas at the start of every cycle, so a cycle
+                //follows a resized canvas and config changes made since the last one.
+                function startCycle() {
+                    size = prepareCanvas(canvasElement);
+                    canObj = size.context;
+                    canObj.setLineDash(ARsegment);
+                    xOrigin = AROrigin[0];
+                    yOrigin = AROrigin[1];
+                    //The dashes travel a whole number of dash periods per cycle (the nearest to 100px),
+                    //so a repeating animation starts each cycle on the frame it ended on, without a jump
+                    var period = ARsegment[0] + ARsegment[1];
+                    distance = period * Math.max(1, Math.round(100 / period));
+                    animationStart = Date.now();
+                }
 
-                //lineColor
-                canObj.strokeStyle = ARlinecolor;
+                function frame() {
+                    if (token != run) return;   //stopped, destroyed or replaced by a newer draw()
+                    var tf = ARduration > 0 ? timeFraction(animationStart, ARduration) : 1;
+                    var progress = timing[AReasing](tf);
 
-                //lineWidth
-                canObj.lineWidth = ARlinewidth;
+                    canObj.lineDashOffset = (ARclockWise ? -1 : 1) * progress * distance;
+                    //read every frame, like lineWidth, so config.lineColor can be changed (or tweened)
+                    //while the rectangle runs and shows on the next frame, not the next cycle
+                    canObj.strokeStyle = ARlinecolor;
+                    canObj.clearRect(0, 0, size.width, size.height);
+                    strokeRectangle(canObj, xOrigin, yOrigin, size.width, size.height, ARradius, ARlinewidth);
 
-                //origin
-                var xOrigin = AROrigin[0];
-                var yOrigin = AROrigin[1];
-
-                //easing
-                var easing = AReasing;
-
-                //duration
-                var duration = ARduration;
-
-                //direction
-                var direction = ARclockWise; //clockwise
-
-                var animationStart = Date.now();
-                requestAnimationFrame(function animate() {
-                    var tf = timeFraction(animationStart, duration);
-                    var progress = timing[easing](tf);
-                    
-                    if (direction == true) { //clockwise
-                        canObj.lineDashOffset = -1 * (progress * 100);
-                    } else { //anti clockwise
-                        canObj.lineDashOffset = progress * 100;
+                    if (tf < 1) {
+                        requestAnimationFrame(frame);
+                        return;
                     }
-                    
-                    canObj.clearRect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-                    canObj.rect(xOrigin, yOrigin, canvasElement.width, canvasElement.height);
-                    canObj.stroke();
-                    
-                    if (ARstop == 0 && ARactive == canvasElement.id && progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else if (progress == 1) {
-                        callback != null ? callback() : null;
-                        if (animationCount != "infinite") {
-                            cycle++;
-                            if (cycle < animationCount) {
-                                body.draw(canvasElement);
-                            } else {
-                                cycle = 0
-                            }
-                        } else {
-                            body.draw(canvasElement);
-                        }
+                    if (callback != null) callback();
+                    if (token != run) return;   //the callback stopped or restarted it
+                    cycle++;
+                    if (animationCount == "infinite" || cycle < animationCount) {
+                        startCycle();
+                        requestAnimationFrame(frame);
                     }
-                })
+                }
+
+                startCycle();
+                //the first frame is painted now, so stop() straight after draw() leaves a still rectangle
+                frame();
             },
             stop: function() {
-                ARstop = 1;
+                //Leaves the last frame painted
+                run++;
             },
             destroy: function() {
-                //stop() halts the requestAnimationFrame loop at the next frame; destroy() additionally
-                //wipes the canvas, so an animation torn down mid-cycle does not leave its last frame
-                //painted on a canvas the consumer is about to reuse.
-                ARstop = 1;
-                ARactive = "";
-                cycle = 0;
+                //stop() halts the loop at the next frame; destroy() additionally wipes the canvas, so
+                //an animation torn down mid-cycle does not leave its last frame painted on a canvas
+                //the consumer is about to reuse.
+                run++;
                 if (ARtarget != null){
                     var ctx = ARtarget.getContext("2d");
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, ARtarget.width, ARtarget.height);
                     ARtarget = null;
                 }
@@ -209,7 +244,7 @@ export function CShapes() {
                 set: function(value) {
                     if (typeof value == "number" || typeof value == "string") {
                         if (typeof value == "number") {
-                            if (!validateinteger(value)) throw new Error("'iterationCount' property numeric value must be an integer")
+                            if (!validateInteger(value)) throw new Error("'iterationCount' property numeric value must be an integer")
                             if (value < 0) {
                                 animationCount = 1;
                             } else {
@@ -249,6 +284,12 @@ export function CShapes() {
                     AROrigin = value;
                 }
             },
+            radius: {
+                set: function(value) {
+                    validateRadius(value, "animatedRectangle");
+                    ARradius = value;
+                }
+            },
             easing: {
                 set: function(value) {
                     validateString(value);
@@ -268,7 +309,7 @@ export function CShapes() {
             },
             clockWise: {
                 set: function(value) {
-                    validateBoolean(value); 
+                    validateBoolean(value);
                     ARclockWise = value;
                 }
             },
@@ -282,7 +323,8 @@ export function CShapes() {
         Object.defineProperties(body, {
             config: { writable: false },
             draw: { writable: false },
-            stop: { writable: false }
+            stop: { writable: false },
+            destroy: { writable: false }
         })
 
         return body;

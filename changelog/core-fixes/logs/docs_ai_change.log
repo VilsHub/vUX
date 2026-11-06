@@ -1,0 +1,21 @@
+FILES: doc/core.md, doc/README.md
+FEATURE: core-fixes
+DATE: 2026-10-07
+
+OLD_SECTION
+doc/core.md described each defect as current behaviour (makeActive needs a parent,
+scroll.x/y need true, overlay needs left:0, toTop/toBottom need use, only toLeft throws,
+axis z invalid, filter pulse leaves its transition, callBack blocks, ajax needs a type,
+ScreenBreakPoint needs both keys, browserType throws on Safari, the Error: Error: prefix)
+and ended with a "Known defects" table. doc/README.md's index row mentioned "the known
+defects of this release".
+
+NEW_SECTION
+Each passage describes the repaired behaviour; the filter options are a table; the
+error list covers the new throws; browserResizeProperty and $$.scroll.direction() are
+documented under Environment; the "Known defects" table is replaced by "Not
+implemented" (the declared stubs: $$.scroll.lock/x, IO.download/upload,
+clipboard.clear/paste, Array.prototype.unique).
+
+REASON
+The guide must describe the library as it now behaves.

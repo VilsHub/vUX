@@ -1,0 +1,24 @@
+FILE: ChangeLog.md
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+Six MessageBox bullets appended at the end of v4.0.0-beta "## Added" (module,
+effects, alignment, timer/behaviour, handles, guide + example).
+
+OLD_SECTION
+- ModalDisplayer "slideLeft" and "slideRight" effects — ...
+
+## Fixed
+
+NEW_SECTION
+- ModalDisplayer "slideLeft" and "slideRight" effects — ...
+- MessageBox module (vUX-messageBox.js) — ...
+- MessageBox effects — ...
+- MessageBox alignment — ...
+- MessageBox timer pauses while ...
+- MessageBox handles — ...
+- MessageBox guide (doc/message-box.md) and runnable example (examples/messagebox/)
+
+## Fixed

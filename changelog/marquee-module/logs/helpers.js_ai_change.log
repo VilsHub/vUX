@@ -1,0 +1,17 @@
+FILE: src/helpers.js
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+marquee.js added to the module registry (vModel.core.data.modules), so that
+window.vUxModules lists it. The line keeps the file's CRLF ending.
+
+OLD_SECTION
+                "listScroller.js",
+                "messageBox.js",
+
+NEW_SECTION
+                "listScroller.js",
+                "marquee.js",
+                "messageBox.js",

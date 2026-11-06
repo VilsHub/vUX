@@ -19,16 +19,16 @@ To use vUX you import it using ES6 native import, with 2 additional data attribu
 
 3. And finally add another data attribute of **library-root** to the target script element, with value set to the the root of library root. The path could be relative or absolute. This also vital as it helps vUx to load in all dependency assets automatically. Example
 
-    `<script type= "module" src="js/main.js" data-id="vUX" data-library-root="http://library.vilshub.com/lib/vUX/4.0.0/"></script>`
+    `<script type= "module" src="js/main.js" data-id="vUX" data-library-root="http://library.vilshub.net/lib/vUX/4.0.0/"></script>`
 
 
 4. Then start making use of the vUx module first by first importing using ES6 native import in the target script file, using the file name pattern **vUX-modulefile.js**. Example is shown below:
   
     **main.js**
 
-    `import {FormComponents} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-formComponents.js"`
+    `import {FormComponents} from "http://library.vilshub.net/lib/vUX/4.0.0/vUX-formComponents.js"`
 
-    `import {ListScroller} from "http://library.vilshub.com/lib/vUX/4.0.0/vUX-listScroller.js"`
+    `import {ListScroller} from "http://library.vilshub.net/lib/vUX/4.0.0/vUX-listScroller.js"`
 
 
 **Note**
@@ -48,6 +48,8 @@ The beta version (**v4.0.0-beta** ) has the following features added:
 - Skeleton module (`vUX-skeleton.js`), for placeholder screens derived from the template you already wrote, with a delay and minimum duration so they never flash or flicker
 - FontSplash module (`vUX-fontSplash.js`), a splash screen whose loader is a word in your own font, with a gradient flowing through the letters as they fade in a wave; full-screen or over one element, determinate or not, and never shown in the wrong font
 - SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface — rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images — with selection, move/resize, undo/redo, pan/zoom and PNG export
+- Marquee module (`vUX-marquee.js`), an endless scrolling strip built from items written once in the HTML: cloned to cover any width without a seam, measured speed in pixels per second, left or right, pause on hover and keyboard focus, an optional edge fade, and stillness under reduced motion
+- MessageBox module (`vUX-messageBox.js`), notification messages that drop in from the top or slide in from either edge, aligned left, centre or right, with a display duration that pauses while the message is read, a countdown bar, a close button, stacking without jumps and typed shorthands (`info()`, `success()`, `warning()`, `error()`)
 
 See the [ChangeLog](ChangeLog.md) for the complete list of additions, fixes and renames in this release, and the [documentation index](doc/README.md) for the usage guides.
 

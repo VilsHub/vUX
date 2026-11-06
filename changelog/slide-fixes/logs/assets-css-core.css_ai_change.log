@@ -1,0 +1,17 @@
+File: assets/css/core.css
+Feature: slide-fixes
+
+=======================================================================
+Section 1
+OLD_SECTION
+.vSlide.pos{
+    transition: left 0.2s linear, top 0.2s linear;
+
+NEW_SECTION
+.vSlide.pos{
+    transition: left 0.2s linear, top 0.2s linear, right 0.2s linear, bottom 0.2s linear;
+
+REASON
+slide accepts positionProperty: "right", but .vSlide.pos only transitioned left and top, so an
+element slid by its right edge jumped to the end position. right and bottom are now
+transitioned too. The duration is still overridden inline by the slide's speed.

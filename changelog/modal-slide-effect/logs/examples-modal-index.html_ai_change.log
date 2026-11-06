@@ -1,0 +1,47 @@
+FILE: examples/modal/index.html
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
+
+================================================================================
+CHANGE 1 — effect select
+================================================================================
+
+OLD_SECTION
+                            <option value="box" selected>box</option>
+
+NEW_SECTION
+                            <option value="box" selected>box</option>
+                            <option value="slide">slide</option>
+
+REASON
+The playground can now switch to the slide effect; main.js already applies whatever value the select holds.
+
+================================================================================
+CHANGE 2 — docked options
+================================================================================
+
+OLD_SECTION
+                            <option value="slide">slide</option>
+
+NEW_SECTION
+                            <option value="slide">slide</option>
+                            <option value="slideLeft">slideLeft — docks right</option>
+                            <option value="slideRight">slideRight — docks left</option>
+
+REASON
+Playground can switch to both docked slides.
+
+================================================================================
+CHANGE 3 — rename
+================================================================================
+
+OLD_SECTION
+<option value="slide">slide</option>
+
+NEW_SECTION
+<option value="drop">drop</option>
+
+REASON
+Rename.
+

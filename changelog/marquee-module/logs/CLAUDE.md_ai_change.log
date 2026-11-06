@@ -1,0 +1,14 @@
+FILE: CLAUDE.md
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+Marquee added to the list of component constructors. The em dash on the edited line was
+replaced with a colon (workspace rule: em dashes go from any line that is edited).
+
+OLD_SECTION
+3. `vUX-*.js` (repo root) <em dash> one component per file, ... `FormComponents`, `MessageBox`). ...
+
+NEW_SECTION
+3. `vUX-*.js` (repo root): one component per file, ... `FormComponents`, `MessageBox`, `Marquee`). ...

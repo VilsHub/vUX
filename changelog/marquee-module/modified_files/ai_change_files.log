@@ -1,0 +1,26 @@
+FEATURE: marquee-module
+DATE: 2026-10-11
+
+<Marquee (new module)>
+  Added:
+    vUX-marquee.js
+    assets/css/marquee.css
+
+<Core>
+  Modified:
+    src/helpers.js              (marquee.js added to the module registry)
+
+<Documentation>
+  Added:
+    doc/marquee.md
+  Modified:
+    doc/README.md
+    README.md
+    ChangeLog.md
+    CLAUDE.md                   (Marquee in constructor list)
+
+<Example>
+  Added:
+    examples/marquee/index.html
+    examples/marquee/main.js
+    examples/marquee/README.md

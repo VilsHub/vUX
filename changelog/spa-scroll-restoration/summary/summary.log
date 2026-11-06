@@ -1,0 +1,31 @@
+Feature: spa-scroll-restoration
+Target module: SPAEngine
+
+- Scroll restoration (config.restoreScroll, default true): the engine sets
+  history.scrollRestoration = "manual" and stores each of its entries' scroll position as a
+  scrollY field of the entry's JSON state, saved while scrolling (debounced 100ms) and
+  synchronously on an SPA link click. Back/forward scroll to it after the entry's content is
+  mounted and again after its history callback; a reload scrolls to it after the boot callback.
+  destroy() removes the listener and restores the browser setting.
+- Fix: at boot the entry page was pushed as a second history entry for the same page, so the
+  first Back press appeared to do nothing; it now replaces the browser's entry and keeps the
+  URL as typed (query and hash included, previously dropped).
+- Each pushed entry starts with the position the new route opened at; the second restore
+  after a history callback is skipped if the visitor has scrolled; config.restoreScroll throws
+  when set after initialize() (it is applied there).
+- Fix: a failed route fragment threw a ReferenceError (undefined `url`) while building a blocking
+  alert and left its link stuck in "receiving"; it is now a console.error and the node is
+  released, so clicking the link again refetches. A request with no response (offline, DNS,
+  abort) is released the same way through the XHR error/timeout/abort events.
+
+Why: Apps/vilshub.net had implemented scroll restoration and the boot replaceState in its own
+main.js; the user asked for it to live in the engine, so every SPAEngine app gets it.
+
+Affected consumers: every app on SPAEngine (vilshub.net, app.myinvitees.com, examples/spa).
+Back/forward now restores scroll instead of keeping the previous route's position, and the
+boot no longer adds a history entry. Apps that scroll on popstate themselves can set
+config.restoreScroll = false. vilshub.net's main.js workarounds were removed in the same change.
+
+Verified: headless Chromium on vilshub.net (history.length 2 after boot; Back restores y 3000,
+Forward 900, reload 900; hash deep links and link navigations unchanged; no console errors)
+and on examples/spa (?autorun clean; scroll 600, User 7, Back restores 600).

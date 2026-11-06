@@ -1,0 +1,70 @@
+FILE: ChangeLog.md
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
+
+================================================================================
+CHANGE 1 — v4.0.0-beta Added
+================================================================================
+
+OLD_SECTION
+(last Added bullet: Runnable core utilities example ...)
+
+NEW_SECTION
+- ModalDisplayer "slide" effect — the modal slides down from above the viewport into place and slides back up on close; set `config.effect = "slide"`
+
+REASON
+Release-facing record of the new effect.
+
+================================================================================
+CHANGE 2 — v4.0.0-beta Added
+================================================================================
+
+OLD_SECTION
+(after the "slide" bullet)
+
+NEW_SECTION
+- ModalDisplayer "slideLeft" and "slideRight" effects — the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right and docks right, slideRight enters from the left and docks left
+
+REASON
+Release-facing record.
+
+================================================================================
+CHANGE 3 — rename in the unreleased bullet
+================================================================================
+
+OLD_SECTION
+- ModalDisplayer "slide" effect — the modal slides down from above the viewport into place and slides back up on close; set `config.effect = "slide"`
+
+NEW_SECTION
+- ModalDisplayer "drop" effect — the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
+
+REASON
+Edited in place rather than appended: the bullet was added in this same unreleased change, so a "slide" effect never shipped and a second bullet would describe an effect that does not exist.
+
+================================================================================
+CHANGE 4 — exit direction in the unreleased bullet
+================================================================================
+
+OLD_SECTION
+slideLeft enters from the right and docks right, slideRight enters from the left and docks left
+
+NEW_SECTION
+slideLeft enters from the right, docks right and leaves by continuing left off the screen; slideRight mirrors it
+
+REASON
+Edited in place; same unreleased change.
+
+================================================================================
+CHANGE 5 — exit direction in the unreleased bullet
+================================================================================
+
+OLD_SECTION
+slideLeft enters from the right, docks right and leaves by continuing left off the screen; slideRight mirrors it
+
+NEW_SECTION
+slideLeft enters from the right, docks right and leaves back out to the right; slideRight mirrors it on the left
+
+REASON
+Edited in place; same unreleased change.
+

@@ -1,0 +1,22 @@
+FILES: examples/core/index.html, examples/core/main.js, examples/core/README.md
+FEATURE: core-fixes
+DATE: 2026-10-07
+PRIOR STATE: as added by core-docs
+
+OLD_SECTION
+Section 07 "Bad input, and known defects": twelve throwing calls plus nine broken calls
+shown failing. Page-side workarounds: #shot .mOverlay{left:0} and overflow:hidden on the
+overlay host; clearing poster.style.transition after a filter pulse; try/catch around
+browserType(); comments saying scroll.y() must be given true and makeActive must be
+given a parent.
+
+NEW_SECTION
+Section 07 "Bad input, and repaired calls": fifteen throwing calls ($$.sav("li"),
+slide.toRight({ colour }) and $$.randomString(2.5) now throw descriptive errors) and a
+"Repaired in this release" row showing what the nine formerly broken calls return now
+(IO.save downloads vux-demo.json). Workarounds removed; the filter pulse now uses
+callBack to reset its sliders. README "techniques" section reduced to what the library
+still leaves to the consumer.
+
+REASON
+The page demonstrated the defects this feature fixes; it now demonstrates the fixes.

@@ -1,0 +1,20 @@
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+
+ModalDisplayer
+  Modified:
+    vUX-modalDisplayer.js
+
+Documentation
+  Modified:
+    doc/modal-displayer.md
+    doc/README.md
+
+Examples
+  Modified:
+    examples/modal/index.html
+    examples/modal/README.md
+
+Release changelog
+  Modified:
+    ChangeLog.md

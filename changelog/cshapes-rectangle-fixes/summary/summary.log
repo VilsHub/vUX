@@ -1,0 +1,28 @@
+FEATURE: cshapes-rectangle-fixes
+DATE: 2026-10-11
+SCOPE: bug fixes in CShapes fixedRectangle()/animatedRectangle(), plus config.radius
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX: vUX-cShapes.js. Backwards compatible: the same config and methods, plus config.radius.
+Square rectangles render as before (now sharp on retina); repeating animations with a dash period
+that does not divide 100px move a few percent faster or slower so they loop without a jump.
+
+vUX ProgressIndicator (grid type) uses animatedRectangle(): still paints and animates, checked.
+
+Apps/vilshub.com: contact-form border uses radius 14; its stop-and-wait resize workaround and the
+note about the numeric iterationCount bug are removed.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+Fixed: numeric iterationCount ReferenceError; path accumulation per frame; blurry canvas on
+high-density screens; draw() during a run doubling the loop and stop() ignored on a cycle's last
+frame; jump between cycles; easings not ending on 1 and duration 0 never completing; partial clear
+with a non-zero origin; canvas id requirement.
+Added: config.radius on both shapes; first frame painted synchronously in draw().
+
+See logs/vUX-cShapes.js_ai_change.log for the verification run.

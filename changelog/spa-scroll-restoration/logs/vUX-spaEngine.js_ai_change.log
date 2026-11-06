@@ -1,0 +1,388 @@
+File: vUX-spaEngine.js
+Feature: spa-scroll-restoration
+(Quoted unchanged context below has its U+2014 dashes shown as ' : ', per the workspace no-em-dash rule.)
+
+=======================================================================
+Section 1
+OLD_SECTION
+    //stagedLinks holds the stylesheet links a staged fragment is waiting on or keeping.
+    var styleTimeout = 3000, navigationToken = 0, activeStages = [], stagedLinks = new WeakSet(), pendingContent = null;
+var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+
+NEW_SECTION
+    //stagedLinks holds the stylesheet links a staged fragment is waiting on or keeping.
+    var styleTimeout = 3000, navigationToken = 0, activeStages = [], stagedLinks = new WeakSet(), pendingContent = null;
+    //Scroll restoration: the engine swaps content in place, so the browser cannot put back the scroll
+    //position of a history entry. Each entry the engine owns stores its own scrollY in its state;
+    //back/forward and reload scroll back to it. scrollSaveTimer debounces saving while scrolling,
+    //handleScroll is the listener (held for destroy()), and previousScrollRestoration is the
+    //browser setting put back on destroy().
+    var restoreScroll = true, scrollSaveTimer = null, handleScroll = null, previousScrollRestoration = null;
+var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+        contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
+
+REASON
+New instance state for scroll restoration: the restoreScroll flag (config.restoreScroll), the debounce timer for saving while scrolling, the scroll listener held so destroy() can remove it, and the browser's own history.scrollRestoration value to put back on destroy().
+
+=======================================================================
+Section 2
+OLD_SECTION
+            removeEventListener("popstate", handlePopState, false);
+            handlePopState = null;
+        }
+        clearTimeout(cacheBuilderTimer);
+
+NEW_SECTION
+            removeEventListener("popstate", handlePopState, false);
+            handlePopState = null;
+        }
+        if (handleScroll != null){
+            removeEventListener("scroll", handleScroll, false);
+            handleScroll = null;
+        }
+        clearTimeout(scrollSaveTimer);
+        scrollSaveTimer = null;
+        if (previousScrollRestoration != null){
+            history.scrollRestoration = previousScrollRestoration;
+            previousScrollRestoration = null;
+        }
+        clearTimeout(cacheBuilderTimer);
+
+REASON
+destroy() detaches the scroll listener, cancels a pending save and restores history.scrollRestoration, so a torn-down engine leaves nothing bound and hands scroll handling back to the browser.
+
+=======================================================================
+Section 3
+OLD_SECTION
+        })
+
+
+        handlePopState = function(e){
+            if(e.state != null){
+
+                let parsedData          = JSON.parse(e.state);
+                let routeProperties     = parsedData.routeProperties;
+                let routeName           = routeProperties.name;
+
+NEW_SECTION
+        })
+
+        if (restoreScroll){
+            //The browser's own restoration would scroll the old content before the entry's content
+            //is mounted, so the engine takes it over
+            if ("scrollRestoration" in history){
+                previousScrollRestoration = history.scrollRestoration;
+                history.scrollRestoration = "manual";
+            }
+            handleScroll = function(){
+                clearTimeout(scrollSaveTimer);
+                scrollSaveTimer = setTimeout(rememberScroll, 100);
+            };
+            addEventListener("scroll", handleScroll, {passive: true});
+        }
+
+
+        handlePopState = function(e){
+            //a save still pending belongs to the entry being left, and history.state is already the
+            //new entry, so it is dropped rather than written into the wrong one
+            clearTimeout(scrollSaveTimer);
+
+            if(e.state != null){
+
+                let parsedData          = JSON.parse(e.state);
+                let savedScroll         = typeof parsedData.scrollY == "number" ? parsedData.scrollY : null;
+                let routeProperties     = parsedData.routeProperties;
+                let routeName           = routeProperties.name;
+
+REASON
+startRouter() takes scroll restoration over from the browser (scrollRestoration = manual: the browser would restore against the old content before the entry's content is mounted) and saves the position into the current entry, debounced to 100ms. The popstate handler drops a pending save (history.state is already the new entry, so it would be written into the wrong one) and takes the new entry's saved scrollY from the state it already parsed.
+
+=======================================================================
+Section 4
+OLD_SECTION
+                    contentNode.dataset.state = "received";
+
+                    // Call history Callback
+                    // Work on progress object inclusion
+                    if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey, routeProperties.data)}, 200);
+                });
+
+
+NEW_SECTION
+                    contentNode.dataset.state = "received";
+
+                    //back where the visitor left this entry; again after the history callback, in case
+                    //it renders content that the position depends on, but only if the visitor has not
+                    //scrolled since (a moved position is theirs, not the callback's)
+                    scrollToSaved(savedScroll);
+                    let restoredAt = Math.round(window.scrollY);
+
+                    // Call history Callback
+                    // Work on progress object inclusion
+                    if (usedHistoryCallback != null )  setTimeout(function(){
+                        usedHistoryCallback(element, routeName, callbackKey, routeProperties.data);
+                        if (Math.round(window.scrollY) == restoredAt) scrollToSaved(savedScroll);
+                    }, 200);
+                });
+
+
+REASON
+After back/forward mounts the entry's content, the engine scrolls to the entry's saved position, and again after the history callback runs, because that callback may render content the position depends on; the second scroll is skipped if the visitor has scrolled since the first.
+
+=======================================================================
+Section 5
+OLD_SECTION
+    }
+
+    function saveState(contents, elementId){
+
+        if (!addToHistory) return; //link opted out of history via the addToHistory data attribute
+
+        var routeName   = routeProperties.name;
+
+NEW_SECTION
+    }
+
+    function saveState(contents, elementId, boot=false, scrollY=null){
+        //boot: record the entry page in the history entry the browser already made for it
+        //(replaceState, keeping the URL as typed, query and hash included) instead of pushing a
+        //second entry for the same page, which made the first Back press appear to do nothing.
+
+        if (!addToHistory && !boot) return; //link opted out of history via the addToHistory data attribute
+
+        var routeName   = routeProperties.name;
+
+REASON
+saveState() gains a boot mode: the entry page is recorded with replaceState in the history entry the browser already made, with the URL as typed (query and hash kept). The old pushState created a second entry for the same page, so the first Back press appeared to do nothing, and it dropped the hash. It also accepts a scrollY to carry over into the replaced state.
+
+=======================================================================
+Section 6
+OLD_SECTION
+            elementId: elementId
+        }
+
+        //push the actual requested route so dynamic URLs (e.g "/user/7") survive in the address bar
+
+NEW_SECTION
+            elementId: elementId
+        }
+        //a pushed entry starts with the position the new route opened at (the app has placed it by
+        //now), so it has one to return to even if the visitor never scrolls on it
+        if (scrollY == null && !boot && restoreScroll) scrollY = Math.round(window.scrollY);
+        if (scrollY != null) historyData.scrollY = scrollY;
+
+        //push the actual requested route so dynamic URLs (e.g "/user/7") survive in the address bar
+
+REASON
+A pushed entry starts with the position the new route opened at (the app's placement has already run when saveState is called), so an entry the visitor never scrolls on still has a position to return to; the value is stored as a scrollY field of the entry's JSON state.
+
+=======================================================================
+Section 7
+OLD_SECTION
+        let title = routeConfigs.routes[routeName].pageTitle;
+
+        //store page details in history state                
+        history.pushState(JSON.stringify(historyData), title, path);
+    }
+
+
+NEW_SECTION
+        let title = routeConfigs.routes[routeName].pageTitle;
+
+        //store page details in history state
+        if (boot) history.replaceState(JSON.stringify(historyData), title, location.pathname + location.search + location.hash);
+        else history.pushState(JSON.stringify(historyData), title, path);
+    }
+
+    function readSavedScroll(state){
+        //The scrollY an engine history entry recorded, or null
+        try {
+            let data = typeof state == "string" ? JSON.parse(state) : null;
+            return data != null && typeof data.scrollY == "number" ? data.scrollY : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function rememberScroll(){
+        //Writes the current scroll position into the history entry on screen, if the engine owns it
+        if (!restoreScroll || typeof history.state != "string") return;
+        try {
+            let data = JSON.parse(history.state);
+            if (data == null || data.routeProperties == undefined) return;
+            data.scrollY = Math.round(window.scrollY);
+            history.replaceState(JSON.stringify(data), "", location.href);
+        } catch (error) {
+            //not the engine's state, or the browser is rate-limiting replaceState: skip this save
+        }
+    }
+
+    function scrollToSaved(scrollY){
+        //"instant", not "auto": a page with scroll-behavior: smooth would otherwise glide there
+        if (!restoreScroll || scrollY == null) return;
+        window.scrollTo({top: scrollY, left: 0, behavior: "instant"});
+    }
+
+
+REASON
+replaceState for the boot entry, pushState for link navigations. Added readSavedScroll(), rememberScroll() (writes the current position into the engine's entry, skipping foreign state and swallowing replaceState rate-limit errors) and scrollToSaved() (behavior instant, so scroll-behavior: smooth does not glide).
+
+=======================================================================
+Section 8
+OLD_SECTION
+        if (preClickCallback != null) preClickCallback(element);
+
+        var xhr = $$.ajax({method:"GET", url:urlTarget}, "html");       
+        
+
+NEW_SECTION
+        if (preClickCallback != null) preClickCallback(element);
+
+        //the link this request is for; a newer click changes the node's link, not this one
+        var requestedLink = container != null ? container.dataset.link : null;
+        var xhr = $$.ajax({method:"GET", url:urlTarget}, "html");       
+        
+
+REASON
+fetchData records which link the request is for, so a failure releases only that request's node state, not a newer click's.
+
+=======================================================================
+Section 9
+OLD_SECTION
+                }
+            }else{
+                //message box to show error
+                alert("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+            }
+        });
+        
+
+NEW_SECTION
+                }
+            }else{
+                releaseFailed("404 not found\nThe resource URL "+urlTarget+ " cannot be found on this server");
+            }
+        });
+
+        //Reported in the console, as a failed page or section fetch is; a blocking alert is no way to
+        //tell a visitor. The node is released so clicking the link again refetches. A request with
+        //no response at all (offline, DNS, aborted) never fires "load", so those end here too.
+        function releaseFailed(message){
+            console.error(message);
+            if (container != null && container.dataset.link == requestedLink){
+                container.dataset.state = "received";
+                delete container.dataset.link;
+            }
+            if (pendingContent != null && pendingContent.link == requestedLink) pendingContent = null;
+        }
+        ["error", "timeout", "abort"].forEach(function(type){
+            xhr.addEventListener(type, function(){
+                releaseFailed("The resource URL "+urlTarget+" could not be loaded ("+type+")");
+            });
+        });
+        
+
+REASON
+Failed fragment fetch: the message was built from an undefined variable `url` (ReferenceError) for a blocking alert(), and the content node stayed in 'receiving' with pendingContent set, so the link could not be clicked again. It is now a console.error with the requested URL (as failed page and section fetches already are), and the node and pending request are released so a second click refetches. A request with no response at all (offline, DNS failure, abort) never fires the XHR 'load' event, so 'error', 'timeout' and 'abort' listeners run the same release (releaseFailed).
+
+=======================================================================
+Section 10
+OLD_SECTION
+        let route = location.pathname;
+        var content = null;
+
+        if(routeConfigs.routes.default.pattern == route){
+
+NEW_SECTION
+        let route = location.pathname;
+        var content = null;
+        //a reload keeps the entry's state, so the position the visitor had is still in it
+        let savedScroll = readSavedScroll(history.state);
+
+        if(routeConfigs.routes.default.pattern == route){
+
+REASON
+Boot reads the saved position from history.state before anything replaces it: a reload keeps the entry's state, so the position the visitor had is still there.
+
+=======================================================================
+Section 11
+OLD_SECTION
+                setPageTitle(null);
+
+                //store page details in history state
+                saveState(data.content, null);
+
+                if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
+            });
+        }).catch(function(error){
+
+NEW_SECTION
+                setPageTitle(null);
+
+                //store page details in the entry page's own history entry
+                saveState(data.content, null, true, savedScroll);
+
+                if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
+                scrollToSaved(savedScroll);
+            });
+        }).catch(function(error){
+
+REASON
+Boot records the entry with the new boot mode of saveState (carrying the saved scrollY over) and, after the boot callback has rendered, scrolls back to it.
+
+=======================================================================
+Section 12
+OLD_SECTION
+        if (element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)] != undefined){
+            addToHistory = parseBooleanAttribute(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
+        }
+
+
+NEW_SECTION
+        if (element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)] != undefined){
+            addToHistory = parseBooleanAttribute(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
+        }
+
+        //The entry being left keeps where the visitor was, for when Back returns to it. Saved now,
+        //before the new content (and any scroll the app does for it) changes the position.
+        if (addToHistory && loadIntoNode){
+            clearTimeout(scrollSaveTimer);
+            rememberScroll();
+        }
+
+
+REASON
+On an SPA link click the position of the entry being left is saved synchronously, before the new content (or any scroll the app does for it) changes it; a pending debounced save is cancelled first. Only when the click adds a history entry and loads into a node.
+
+=======================================================================
+Section 13
+OLD_SECTION
+            }
+        },
+        styleTimeout: {
+            set: function(value){
+
+NEW_SECTION
+            }
+        },
+        restoreScroll: {
+            set: function(value){
+                //Whether back/forward and reload return to the scroll position each history entry had.
+                //Applied at initialize() (the scroll listener and the browser setting), so it is
+                //fixed from then on.
+                if (typeof value != "boolean") {
+                    throw new TypeError("config.restoreScroll property value must be a boolean");
+                }
+                if (initialize) throw new Error("config.restoreScroll must be set before initialize()");
+                restoreScroll = value;
+            },
+            get: function(){
+                return restoreScroll;
+            }
+        },
+        styleTimeout: {
+            set: function(value){
+
+REASON
+New config.restoreScroll property (boolean, default true, TypeError otherwise). It is applied at initialize() (scroll listener and browser setting), so setting it afterwards throws instead of half-applying.

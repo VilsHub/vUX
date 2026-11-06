@@ -1,0 +1,45 @@
+FEATURE: message-box-module
+DATE: 2026-10-09
+SCOPE: new MessageBox notification module, built on the core slide utility
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+Only the vUX library is changed. The change is additive: a new module, plus one
+line in the module registry. Consumers (vGet, sketch-app, app.myinvitees.com) are
+unaffected unless they import vUX-messageBox.js.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+new MessageBox(); config; initialize(); then show(content, options) or
+info/success/warning/error(). Effects: drop (default, from the top), slideLeft,
+slideRight, fade, none. Alignment: left/center/right. duration (0 = sticky),
+speed, type, theme, width, offset, maxVisible, closeButton, pauseOnHover,
+closeOnClick, showProgress, newestOnTop, respectReducedMotion, onShow, onClose
+(with a reason). show() returns a handle with close(), element and state.
+CLAUDE.md gains the rule that new modules use the core and that reusable manual
+operations are reported to the user.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Headless Chromium (playwright-core over the cached chrome-headless-shell),
+1200x800, per-frame sampling:
+  - drop/right: top -70 -> 16, out to -121; slideLeft/center: x 1224 -> 420, out
+    to 1425; slideRight/left: x -384 -> 16, out to -484; fade: opacity 0 -> 1 -> 0;
+    none: instant. onShow then onClose:timeout for each; the lane is removed when empty
+  - stacking: three messages at 16/76/136; maxVisible 2 closed the two oldest with
+    reason overflow
+  - hover pause kept a 800ms message open for 1.5s; it closed after the pointer left
+  - close during entry deferred until landing (reason api, no onShow); close
+    button -> reason button
+  - every validation error thrown with its message
+  - a leaving message rises behind the one above it (screenshot)
+  - example page at 1280 and 390 wide: no horizontal scroll, no console errors;
+    Save (sticky + handle.close) and Undo (element content) work
+
+dist/ (minified build) was not regenerated; run ./minify.sh to refresh it.

@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2021-07-19=T22:30Z
  * 
@@ -33,7 +33,18 @@ export function SPAEngine(defaultContentNode=null) {
     //its own: the app sets spa.loggedIn before initialize() on every page load (it lives in memory),
     //to true after a successful sign-in, and to false on sign-out.
     var loggedIn = false;
-    var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
+    //Style-gated mounting: a fragment is parsed off-screen and mounted only once the stylesheets it
+    //carries have loaded (or styleTimeout ms have passed), so nothing paints unstyled. Each
+    //navigation takes a token, and a staged fragment whose navigation was superseded is dropped.
+    //stagedLinks holds the stylesheet links a staged fragment is waiting on or keeping.
+    var styleTimeout = 3000, navigationToken = 0, activeStages = [], stagedLinks = new WeakSet(), pendingContent = null;
+    //Scroll restoration: the engine swaps content in place, so the browser cannot put back the scroll
+    //position of a history entry. Each entry the engine owns stores its own scrollY in its state;
+    //back/forward and reload scroll back to it. scrollSaveTimer debounces saving while scrolling,
+    //handleScroll is the listener (held for destroy()), and previousScrollRestoration is the
+    //browser setting put back on destroy().
+    var restoreScroll = true, scrollSaveTimer = null, handleScroll = null, previousScrollRestoration = null;
+var dataAttributes = { //data attributes name should be specified without the data- prefix. only plain words or hyphenated words is allowed
         contentNodeId:"", //The element to hold the return data, only ID name, if not the default content node is used
         cache:"",
         addToHistory:"", // attribute to set if to use history or not, default = true
@@ -76,8 +87,21 @@ export function SPAEngine(defaultContentNode=null) {
             removeEventListener("popstate", handlePopState, false);
             handlePopState = null;
         }
+        if (handleScroll != null){
+            removeEventListener("scroll", handleScroll, false);
+            handleScroll = null;
+        }
+        clearTimeout(scrollSaveTimer);
+        scrollSaveTimer = null;
+        if (previousScrollRestoration != null){
+            history.scrollRestoration = previousScrollRestoration;
+            previousScrollRestoration = null;
+        }
         clearTimeout(cacheBuilderTimer);
         cacheBuilderTimer = null;
+
+        //Fragments still waiting on their stylesheets are never mounted
+        beginNavigation();
 
         cacheBuilderTracker = {};
         savedPageSection = {};
@@ -159,11 +183,30 @@ export function SPAEngine(defaultContentNode=null) {
             loadFrom(e.target);
         })
 
+        if (restoreScroll){
+            //The browser's own restoration would scroll the old content before the entry's content
+            //is mounted, so the engine takes it over
+            if ("scrollRestoration" in history){
+                previousScrollRestoration = history.scrollRestoration;
+                history.scrollRestoration = "manual";
+            }
+            handleScroll = function(){
+                clearTimeout(scrollSaveTimer);
+                scrollSaveTimer = setTimeout(rememberScroll, 100);
+            };
+            addEventListener("scroll", handleScroll, {passive: true});
+        }
+
 
         handlePopState = function(e){
+            //a save still pending belongs to the entry being left, and history.state is already the
+            //new entry, so it is dropped rather than written into the wrong one
+            clearTimeout(scrollSaveTimer);
+
             if(e.state != null){
 
                 let parsedData          = JSON.parse(e.state);
+                let savedScroll         = typeof parsedData.scrollY == "number" ? parsedData.scrollY : null;
                 let routeProperties     = parsedData.routeProperties;
                 let routeName           = routeProperties.name;
                 let ele                 = parsedData.elementId; //Element must have an ID
@@ -201,21 +244,33 @@ export function SPAEngine(defaultContentNode=null) {
 
                 //Set page title
                 $$.ss("title").innerText = title;
-  
-                // Notify outgoing route, then set contents
-                fireExitCallback();
-                contentNode.innerHTML = parsedData.contents;
-                activeRoute = {name: routeName, data: routeProperties.data};
-       
-                // Set page sections
-                loadPageSections(routeProperties, routeName);
-                
-                // Flush other page section content
-                flushElements(routeProperties.properties.flush);
 
-                // Call history Callback  
-                // Work on progress object inclusion  
-                if (usedHistoryCallback != null )  setTimeout(function(){usedHistoryCallback(element, routeName, callbackKey, routeProperties.data)}, 200);
+                //Mount the stored content and the route's sections together, once their stylesheets apply
+                let token           = beginNavigation();
+                let route           = {name: routeName, data: routeProperties.data};
+                let contentStage    = stageHtml(contentNode, parsedData.contents, true);
+
+                mountWhenStyled(token, stagePageSections(routeProperties, routeName), contentStage, routeProperties.properties.flush, route).then(function(mounted){
+                    if (!mounted) return;
+
+                    //The node now shows a history entry, not the last clicked link's content, so
+                    //clicking that link again loads it
+                    delete contentNode.dataset.link;
+                    contentNode.dataset.state = "received";
+
+                    //back where the visitor left this entry; again after the history callback, in case
+                    //it renders content that the position depends on, but only if the visitor has not
+                    //scrolled since (a moved position is theirs, not the callback's)
+                    scrollToSaved(savedScroll);
+                    let restoredAt = Math.round(window.scrollY);
+
+                    // Call history Callback
+                    // Work on progress object inclusion
+                    if (usedHistoryCallback != null )  setTimeout(function(){
+                        usedHistoryCallback(element, routeName, callbackKey, routeProperties.data);
+                        if (Math.round(window.scrollY) == restoredAt) scrollToSaved(savedScroll);
+                    }, 200);
+                });
 
             }
         };
@@ -224,9 +279,12 @@ export function SPAEngine(defaultContentNode=null) {
 
     }
 
-    function saveState(contents, elementId){
+    function saveState(contents, elementId, boot=false, scrollY=null){
+        //boot: record the entry page in the history entry the browser already made for it
+        //(replaceState, keeping the URL as typed, query and hash included) instead of pushing a
+        //second entry for the same page, which made the first Back press appear to do nothing.
 
-        if (!addToHistory) return; //link opted out of history via the addToHistory data attribute
+        if (!addToHistory && !boot) return; //link opted out of history via the addToHistory data attribute
 
         var routeName   = routeProperties.name;
         let historyData = {
@@ -234,13 +292,47 @@ export function SPAEngine(defaultContentNode=null) {
             contents: contents,
             elementId: elementId
         }
+        //a pushed entry starts with the position the new route opened at (the app has placed it by
+        //now), so it has one to return to even if the visitor never scrolls on it
+        if (scrollY == null && !boot && restoreScroll) scrollY = Math.round(window.scrollY);
+        if (scrollY != null) historyData.scrollY = scrollY;
 
         //push the actual requested route so dynamic URLs (e.g "/user/7") survive in the address bar
         let path = routeProperties.route != undefined ? routeProperties.route : routeConfigs.routes[routeName].path;
         let title = routeConfigs.routes[routeName].pageTitle;
 
-        //store page details in history state                
-        history.pushState(JSON.stringify(historyData), title, path);
+        //store page details in history state
+        if (boot) history.replaceState(JSON.stringify(historyData), title, location.pathname + location.search + location.hash);
+        else history.pushState(JSON.stringify(historyData), title, path);
+    }
+
+    function readSavedScroll(state){
+        //The scrollY an engine history entry recorded, or null
+        try {
+            let data = typeof state == "string" ? JSON.parse(state) : null;
+            return data != null && typeof data.scrollY == "number" ? data.scrollY : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function rememberScroll(){
+        //Writes the current scroll position into the history entry on screen, if the engine owns it
+        if (!restoreScroll || typeof history.state != "string") return;
+        try {
+            let data = JSON.parse(history.state);
+            if (data == null || data.routeProperties == undefined) return;
+            data.scrollY = Math.round(window.scrollY);
+            history.replaceState(JSON.stringify(data), "", location.href);
+        } catch (error) {
+            //not the engine's state, or the browser is rate-limiting replaceState: skip this save
+        }
+    }
+
+    function scrollToSaved(scrollY){
+        //"instant", not "auto": a page with scroll-behavior: smooth would otherwise glide there
+        if (!restoreScroll || scrollY == null) return;
+        window.scrollTo({top: scrollY, left: 0, behavior: "instant"});
     }
 
     function setPageTitle(element){
@@ -277,13 +369,17 @@ export function SPAEngine(defaultContentNode=null) {
         return !(value === "false" || value === "0");
     }
 
-    function fetchData(container=null, element=null, cache=null) {
-  
+    function fetchData(container=null, element=null, cache=null, show=null) {
+        //show(html) mounts the content for the navigation that asked for it (see getLinkContent)
+
         var urlTarget   = routeProperties.properties["target"];
         var routeName   = routeProperties.name;
+        var routeData   = routeProperties.data;
 
         if (preClickCallback != null) preClickCallback(element);
 
+        //the link this request is for; a newer click changes the node's link, not this one
+        var requestedLink = container != null ? container.dataset.link : null;
         var xhr = $$.ajax({method:"GET", url:urlTarget}, "html");       
         
         xhr.addEventListener("load", function() {
@@ -339,15 +435,17 @@ export function SPAEngine(defaultContentNode=null) {
                             }
                         }
         
-                        insertContent(container, xhr.responseText, element);
+                        show(xhr.responseText).then(function(mounted){
+                            if (!mounted) return; //a newer navigation took over
 
-                        // Pass: element, routeid, callbackKey
-                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
+                            // Pass: element, routeid, callbackKey
+                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeData)}, 200): null;
 
-                        container.dataset.state = "received";  
-                        
-                        saveState(xhr.responseText, element.id);
-        
+                            container.dataset.state = "received";
+
+                            saveState(xhr.responseText, element.id);
+                        });
+
                     }
 
                 }else{//get and return only content
@@ -355,9 +453,25 @@ export function SPAEngine(defaultContentNode=null) {
                      usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
                 }
             }else{
-                //message box to show error
-                alert("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+                releaseFailed("404 not found\nThe resource URL "+urlTarget+ " cannot be found on this server");
             }
+        });
+
+        //Reported in the console, as a failed page or section fetch is; a blocking alert is no way to
+        //tell a visitor. The node is released so clicking the link again refetches. A request with
+        //no response at all (offline, DNS, aborted) never fires "load", so those end here too.
+        function releaseFailed(message){
+            console.error(message);
+            if (container != null && container.dataset.link == requestedLink){
+                container.dataset.state = "received";
+                delete container.dataset.link;
+            }
+            if (pendingContent != null && pendingContent.link == requestedLink) pendingContent = null;
+        }
+        ["error", "timeout", "abort"].forEach(function(type){
+            xhr.addEventListener(type, function(){
+                releaseFailed("The resource URL "+urlTarget+" could not be loaded ("+type+")");
+            });
         });
         
         xhr.send(); //auto load its content
@@ -380,20 +494,137 @@ export function SPAEngine(defaultContentNode=null) {
         if (usedExitCallback != null) usedExitCallback(activeRoute.name, activeRoute.data);
     }
 
-    function insertContent(container, content, element){
-        if (element != null){
-            if(element.dataset.link == container.dataset.link){//content for the last element clicked
-                //set Content
-                fireExitCallback();
-                container.innerHTML = content;
-                activeRoute = {name: routeProperties.name, data: routeProperties.data};
+    function isStylesheet(node){
+        return node.nodeName == "LINK" && node.relList.contains("stylesheet") && !node.relList.contains("alternate");
+    }
+
+    function sameStylesheet(mounted, link){
+        //mounted is live in the document, link is still in a template, so resolve its href by hand
+        let href = new URL(link.getAttribute("href") || "", document.baseURI).href;
+        return mounted.href == href && (mounted.getAttribute("media") || "") == (link.getAttribute("media") || "");
+    }
+
+    function waitForStylesheet(link){
+        //Settles when the stylesheet has loaded or failed, or after styleTimeout ms, so a slow or
+        //broken stylesheet delays a route by at most that long instead of blocking it
+        return new Promise(function(resolve){
+            let timer = setTimeout(done, styleTimeout);
+            function done(){
+                clearTimeout(timer);
+                link.removeEventListener("load", done);
+                link.removeEventListener("error", done);
+                resolve();
             }
-        }else{
-            //set Content
-            fireExitCallback();
-            container.innerHTML = content;
-            activeRoute = {name: routeProperties.name, data: routeProperties.data};
+            link.addEventListener("load", done);
+            link.addEventListener("error", done);
+        });
+    }
+
+    function stageHtml(mountPoint, html, replace, hold=true){
+        //Parses a fragment off-screen and starts loading the stylesheets it carries, without showing
+        //it. Mounting with innerHTML paints the markup before those stylesheets arrive, so until
+        //they do it shows unstyled (an image with no size of its own fills the screen).
+        //The fragment's top-level stylesheet links go into the mount point at once. With hold they
+        //sit behind media="not all", so they load without restyling the route still on screen;
+        //at boot nothing is on screen yet, so they apply as they arrive (a held stylesheet is also
+        //fetched at the lowest priority). commit() takes the old content out, switches the links
+        //on and inserts the rest, in one task. Only links whose media matches are waited for.
+        //A link already mounted there with the same href and media is kept instead of fetched
+        //again, as long as that leaves the new links in their written order.
+        let template        = document.createElement("template");
+        template.innerHTML  = html;
+
+        let newLinks    = Array.from(template.content.children).filter(isStylesheet);
+        let oldLinks    = replace ? Array.from(mountPoint.children).filter(function(node){ return isStylesheet(node) && !stagedLinks.has(node); }) : [];
+        let kept        = [];
+        let lastIndex   = -1;
+
+        //Reuse a leading run of the new links, in order, from the links already mounted
+        for (let x = 0; x < newLinks.length; x++){
+            let index = oldLinks.findIndex(function(old, i){ return i > lastIndex && sameStylesheet(old, newLinks[x]); });
+            if (index == -1) break;
+            kept.push(oldLinks[index]);
+            lastIndex = index;
+            newLinks[x].remove();
         }
+
+        let added       = newLinks.slice(kept.length);
+        let media       = added.map(function(link){ return link.getAttribute("media"); });
+        let settled     = false;
+
+        kept.forEach(function(link){ stagedLinks.add(link); });
+        let ready = Promise.all(added.map(function(link, i){
+            let loaded = media[i] == null || matchMedia(media[i]).matches ? waitForStylesheet(link) : null;
+            if (hold) link.setAttribute("media", "not all");
+            stagedLinks.add(link);
+            mountPoint.appendChild(link);
+            return loaded;
+        }));
+
+        function release(){
+            settled = true;
+            kept.concat(added).forEach(function(link){ stagedLinks.delete(link); });
+        }
+
+        let stage = {
+            ready: ready,
+            commit: function(){
+                if (settled) return;
+                if (replace){
+                    //Links staged by another fragment stay: that fragment commits or cancels them
+                    Array.from(mountPoint.childNodes).forEach(function(node){
+                        if (!stagedLinks.has(node)) node.remove();
+                    });
+                }
+                added.forEach(function(link, i){
+                    media[i] == null ? link.removeAttribute("media") : link.setAttribute("media", media[i]);
+                });
+                let before = kept.concat(added).find(function(link){ return link.parentNode == mountPoint; });
+                mountPoint.insertBefore(template.content, before || null);
+                release();
+            },
+            cancel: function(){
+                if (settled) return;
+                added.forEach(function(link){ link.remove(); });
+                release();
+            }
+        };
+        activeStages.push(stage);
+        return stage;
+    }
+
+    function beginNavigation(){
+        //A newer navigation supersedes every fragment still waiting on its stylesheets
+        activeStages.forEach(function(stage){ stage.cancel(); });
+        activeStages = [];
+        return ++navigationToken;
+    }
+
+    async function mountWhenStyled(token, sectionStages, contentStage, flush, route){
+        //Waits for the stylesheets of every staged fragment, then mounts them all in one task, so a
+        //route's content and sections appear together and already styled. Resolves false, mounting
+        //nothing, when a newer navigation began in the meantime.
+        let stages = (await sectionStages).slice();
+        if (contentStage != null) stages.push(contentStage);
+
+        await Promise.all(stages.map(function(stage){ return stage.ready; }));
+
+        activeStages = activeStages.filter(function(stage){ return stages.indexOf(stage) == -1; });
+        if (token != navigationToken){
+            stages.forEach(function(stage){ stage.cancel(); });
+            return false;
+        }
+
+        if (flush != undefined) flushElements(flush);
+        if (contentStage != null){
+            fireExitCallback();
+            contentStage.commit();
+            activeRoute = route;
+        }
+        stages.forEach(function(stage){
+            if (stage != contentStage) stage.commit();
+        });
+        return true;
     }
 
     function boot(){
@@ -428,10 +659,12 @@ export function SPAEngine(defaultContentNode=null) {
 
     }
 
-    function loadPageContents(){
+    function loadPageContents(token, sectionStages, uncloak){
 
         let route = location.pathname;
         var content = null;
+        //a reload keeps the entry's state, so the position the visitor had is still in it
+        let savedScroll = readSavedScroll(history.state);
 
         if(routeConfigs.routes.default.pattern == route){
 
@@ -463,21 +696,30 @@ export function SPAEngine(defaultContentNode=null) {
             }
         }
 
+        if (content == null) return uncloak(); //sent to the auth page
+
         content.then(function(data){
-            if(data.status){
-                if(defaultContentNode != null){
-                    insertContent(defaultContentNode, data.content, null);
+            let contentStage    = data.status && defaultContentNode != null ? stageHtml(defaultContentNode, data.content, true, false) : null;
+            let route           = {name: routeProperties.name, data: routeProperties.data};
 
-                    // Set page title
-                    setPageTitle(null);
+            //The sections and the content appear together, once their stylesheets apply
+            return mountWhenStyled(token, sectionStages, contentStage, undefined, route).then(function(mounted){
+                uncloak();
+                if (!mounted || contentStage == null) return;
 
-                    //store page details in history state 
-                    saveState(data.content, null);
+                // Set page title
+                setPageTitle(null);
 
-                    if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
-                }
-            }
-        })            
+                //store page details in the entry page's own history entry
+                saveState(data.content, null, true, savedScroll);
+
+                if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
+                scrollToSaved(savedScroll);
+            });
+        }).catch(function(error){
+            uncloak();
+            throw error;
+        })
     }
 
     async function getLinkContent(element){
@@ -494,7 +736,17 @@ export function SPAEngine(defaultContentNode=null) {
             addToHistory = parseBooleanAttribute(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
         }
 
+        //The entry being left keeps where the visitor was, for when Back returns to it. Saved now,
+        //before the new content (and any scroll the app does for it) changes the position.
+        if (addToHistory && loadIntoNode){
+            clearTimeout(scrollSaveTimer);
+            rememberScroll();
+        }
+
         var routeName   = routeProperties.name;
+        var route       = {name: routeName, data: routeProperties.data};
+        var flush       = routeProperties.properties.flush;
+        var token       = null;
 
         // Load links contents
         if(loadIntoNode){ //Load content into node
@@ -530,10 +782,22 @@ export function SPAEngine(defaultContentNode=null) {
             
             cache = cache == null ? true : parseBooleanAttribute(cache); //The default is set to true, and content loaded will be cached
 
+            //Clicking again a link whose content is still on its way changes nothing
+            if (pendingContent != null && pendingContent.node == contentNode && pendingContent.link == dataLink && pendingContent.token == navigationToken) return;
+
+            token = beginNavigation();
+            var sectionStages = stagePageSections(routeProperties, routeName);
+
             if(contentNode.dataset.link != dataLink){
                 contentNode.dataset.state = "receiving";
                 contentNode.dataset.link = dataLink; //content node linked to the last click link (this is to avoid later overiding by already previously clicked link)
-                
+                pendingContent = {node: contentNode, link: dataLink, token: token};
+
+                //Mounts the content with the route's sections, once their stylesheets apply
+                var show = function(html){
+                    return mountWhenStyled(token, sectionStages, stageHtml(contentNode, html, true), flush, route);
+                };
+
                 if(cache) { //Attempt load from storage
 
                     var existingLinksContents = {};
@@ -549,91 +813,52 @@ export function SPAEngine(defaultContentNode=null) {
                     }
 
                     if (existingLinksContents[routeName] != undefined) { //link exist, so get content from cache
-                        insertContent(contentNode, existingLinksContents[routeName] , element);           
+                        let html = existingLinksContents[routeName];
 
-                        saveState(existingLinksContents[routeName], element.id);
+                        show(html).then(function(mounted){
+                            if (!mounted) return; //a newer navigation took over
 
-                        contentNode.dataset.state = "received";
-                        usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
+                            saveState(html, element.id);
+
+                            contentNode.dataset.state = "received";
+                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, route.data)}, 200): null;
+                        });
 
                     } else { //link does not exist, get from server
-                        fetchData(contentNode, element, cache);
+                        fetchData(contentNode, element, cache, show);
                     }
 
                 }else{
                      //ignore cache storage and Load from server
-                    fetchData(contentNode, element, cache);
+                    fetchData(contentNode, element, cache, show);
                 }
+            }else{
+                //The node already holds this link's content: only the sections are reloaded
+                mountWhenStyled(token, sectionStages, null, flush, route);
             }
 
         }else { //just get only content
+            token = beginNavigation();
             fetchData(null, element, cache);
+            mountWhenStyled(token, stagePageSections(routeProperties, routeName), null, flush, route);
         }
-
-        // Load page sections
-        loadPageSections(routeProperties, routeName);
-
-        // Flush other page section content
-        flushElements(routeProperties.properties.flush);
 
         // Set Page title
         setPageTitle(element);
     }
 
-    async function loadPageSections(targetRouteProperties, routeName){
+    function stagePageSections(targetRouteProperties, routeName, atBoot=false){
+        //Stages every page section of a route, fetching the uncached ones in parallel. Resolves to
+        //the stages, leaving out sections that could not be fetched.
+        //An omitted replaceOld replaces at boot and appends on navigation, as it always has.
+        let pageSections = Object.entries(targetRouteProperties.properties.pageSections || {});
 
-         // Load page sections
-         let pageSections           = null;
-         pageSections               = Object.entries(targetRouteProperties.properties.pageSections);
-         let totalPageSections      = pageSections.length;
-         
-         for (let z = 0; z < totalPageSections; z++) {
- 
-             let sectionId           = routeName+"-"+pageSections[z][0];
-             let mountPoint          = pageSections[z][1].mountPoint;
-             let replace             = pageSections[z][1].replaceOld;
-             let cachedPageSections  = sessionStorage.pageSections != undefined ? sessionStorage.getIterable("pageSections") : {};
- 
-             if(cachedPageSections[sectionId] != undefined){ //get from cache and mount
-
-                 let targetSection = cachedPageSections[sectionId];
-                 if(replace){
-                     $$.ss(mountPoint).innerHTML = targetSection;
-                 }else{
-                     $$.ss(mountPoint).insertAdjacentHTML('beforeend', targetSection);
-                 }
-             }else{ //get from server mount and cache
-
-                 let url = pageSections[z][1].source;
- 
-                 const response = await fetch(url);
-                 let content = await response.text();
-                 
-                 if (response.ok){
-                     if (response.headers.get('X-Fallback') === 'true') {
-                         // Handle invalid route
-                         throw new Error('404: File '+url+' not found');
-                     }else{
-                         // Mount, as the cached branch does, then save
-                         if(replace){
-                             $$.ss(mountPoint).innerHTML = content;
-                         }else{
-                             $$.ss(mountPoint).insertAdjacentHTML('beforeend', content);
-                         }
-
-                         if(!savedPageSection[sectionId]){
-                            saveSectionData("pageSections", sectionId, content);
-                            savedPageSection[sectionId] = true;
-                         }
-                         
-                     }
-                     
-                 }else{
-                     console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
-                 }
-             }
-             
-         }
+        return Promise.all(pageSections.map(function(section){
+            let replace = section[1].replaceOld === undefined ? atBoot : section[1].replaceOld;
+            return stageSection("pageSections", routeName+"-"+section[0], section[1].source, section[1].mountPoint, replace, !atBoot);
+        })).then(function(stages){
+            return stages.filter(function(stage){ return stage != null; });
+        });
     }
 
     async function getPageContent(name, url){
@@ -813,73 +1038,35 @@ export function SPAEngine(defaultContentNode=null) {
     }
 
     function renderContent(){
-        // load all block sections
-        let contentBlockSections    = routeConfigs.blockSections;
+        //Stage the block sections and the entry route's page sections; loadPageContents() mounts
+        //them with the route's content once all their stylesheets apply.
+        //The shell around the mount points is often styled by those same fragments' stylesheets,
+        //so the page is hidden until then rather than painted half-styled.
+        let uncloak         = cloakPage();
+        let token           = beginNavigation();
+        let blockSections   = Object.entries(routeConfigs.blockSections || {});
 
-        // Block sections
-        let allBlockSections        = Object.entries(contentBlockSections);
-        let totalBlockSections      = allBlockSections.length;      
-
-       
-        var  sectionPromises = [];
-
-        if (totalBlockSections > 0){
-
-            // store all block section promises in the sectionPromises array
-            sectionPromises = allBlockSections.map((element) => {
-                let name        = element[0];
-                let url         = element[1].source;
-                let mountPoint  = element[1].mountPoint;
-                let replace     = element[1].replaceOld;
-                
-                // Returns a promise
-                return getSectionContents("blockSections", name, url, mountPoint, replace);
+        let blockStages     = blockSections.map(function(section){
+            return stageSection("blockSections", section[0], section[1].source, section[1].mountPoint, section[1].replaceOld, false);
+        });
+        let sectionStages   = Promise.all(blockStages.concat([stagePageSections(routeProperties, routeProperties.name, true)]))
+            .then(function(stages){
+                return stages.flat().filter(function(stage){ return stage != null; });
             });
 
-        }
+        loadPageContents(token, sectionStages, uncloak);
+    }
 
-        // load all page sections
-        if (routeProperties.properties.pageSections != undefined){
-  
-            // Page sections
-            let contentPageSections     = routeProperties.properties.pageSections;
-            var allPageSections         = Object.entries(contentPageSections);
-            let totalPageSections       = allPageSections.length;
-            let routeName               = routeProperties.name;
-
-
-            if(totalPageSections > 0){
-                
-                // store all page section promises in the sectionPromises array
-                var tmpSectionPromises = allPageSections.map((element) => {
-
-                    let name        = routeName+"-"+element[0];
-                    let url         = element[1].source;
-                    let mountPoint  = element[1].mountPoint;
-                    let replace     = element[1].replaceOld;
-
-                    // Assuming getSectionContents is a function that returns a promise
-                    return getSectionContents("pageSections", name, url, mountPoint, replace);
-                });
-                    
-
-                // Concatenate page section to block section if possible
-                if(tmpSectionPromises !== undefined && tmpSectionPromises.length > 0){
-                    sectionPromises = sectionPromises.concat(tmpSectionPromises);
-                }
-            }
-
-        }
-        
-        // Use Promise.all to wait for all promises then load page content
-        Promise.all(sectionPromises)
-        .then((results) => {
-            loadPageContents();
-        })
-        .catch((error) => {
-            console.error("Error processing sections:", error);
-        });
-        
+    function cloakPage(){
+        //Hides the whole page and returns the function that shows it again
+        let root        = document.documentElement;
+        let previous    = root.style.visibility;
+        let hadStyle    = root.hasAttribute("style");
+        root.style.visibility = "hidden";
+        return function(){
+            root.style.visibility = previous;
+            if (!hadStyle && root.getAttribute("style") == "") root.removeAttribute("style");
+        };
     }
 
     function saveSectionData(sectionType, key, data){
@@ -937,7 +1124,10 @@ export function SPAEngine(defaultContentNode=null) {
 
     function flushElements(flushElements){
         flushElements.forEach(element => {
-            $$.ss(element).innerHTML = "";
+            //Keeps the stylesheets a staged fragment is loading or keeping in the element
+            Array.from($$.ss(element).childNodes).forEach(node => {
+                if (!stagedLinks.has(node)) node.remove();
+            });
         });
     }
 
@@ -946,33 +1136,32 @@ export function SPAEngine(defaultContentNode=null) {
         return await response.text();
     }
 
-    async function getSectionContents(sectionType, name, url, mountPoint, replace=true) {
-        let  html = "";
+    async function stageSection(sectionType, name, url, mountPoint, replace=true, hold=true) {
+        //Gets a section's HTML from the cache, or from the server (and caches it), and stages it in
+        //its mount point. Resolves null when it can't be fetched, so the route still mounts.
+        let html = null;
 
-        // check if its cached
-        const section = sectionDataExist(sectionType, name);
-
-        if(section){
-            // get saved data
-            let blockSections = sessionStorage.getIterable(sectionType);
-            html = blockSections[name];
-
+        if(sectionDataExist(sectionType, name)){
+            html = sessionStorage.getIterable(sectionType)[name];
         }else{
-            const response = await fetch(url);
-            html = await response.text();
+            try{
+                const response  = await fetch(url);
+                const content   = await response.text();
 
-            // Save the data
-            saveSectionData(sectionType, name, html);
+                if (!response.ok){
+                    console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+                }else if (response.headers.get('X-Fallback') === 'true'){
+                    console.error('404: File '+url+' not found');
+                }else{
+                    html = content;
+                    saveSectionData(sectionType, name, html);
+                }
+            }catch(error){
+                console.error("Could not fetch "+url, error);
+            }
         }
 
-        if(replace){
-            $$.ss(mountPoint).innerHTML = "";
-            $$.ss(mountPoint).innerHTML = html;
-        }else{
-            // Append 
-            $$.ss(mountPoint).insertAdjacentHTML('beforeend', html);
-        }
-        
+        return html == null ? null : stageHtml($$.ss(mountPoint), html, replace, hold);
     }
 
     async function preloadStyles(data){
@@ -1140,6 +1329,34 @@ export function SPAEngine(defaultContentNode=null) {
             },
             get: function(){
                 return cacheVersion;
+            }
+        },
+        restoreScroll: {
+            set: function(value){
+                //Whether back/forward and reload return to the scroll position each history entry had.
+                //Applied at initialize() (the scroll listener and the browser setting), so it is
+                //fixed from then on.
+                if (typeof value != "boolean") {
+                    throw new TypeError("config.restoreScroll property value must be a boolean");
+                }
+                if (initialize) throw new Error("config.restoreScroll must be set before initialize()");
+                restoreScroll = value;
+            },
+            get: function(){
+                return restoreScroll;
+            }
+        },
+        styleTimeout: {
+            set: function(value){
+                //How long, in ms, a fragment waits for its stylesheets before it is mounted anyway.
+                //0 mounts as soon as the HTML is in, without waiting.
+                if (typeof value != "number" || !isFinite(value) || value < 0) {
+                    throw new TypeError("config.styleTimeout property value must be a finite number of milliseconds, 0 or more");
+                }
+                styleTimeout = value;
+            },
+            get: function(){
+                return styleTimeout;
             }
         }
     })

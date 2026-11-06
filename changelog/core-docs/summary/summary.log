@@ -1,0 +1,49 @@
+FEATURE: core-docs
+DATE: 2026-10-07
+SCOPE: guide and runnable example for the vUX core ($$, $$.sm(), helpers, extensions)
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) only. No library code changed. Consumers (app.myinvitees.com,
+vGet, sketch-app) are unaffected.
+
+  - doc/core.md                 new guide
+  - doc/README.md               index row + example link
+  - examples/core/              new page: index.html, main.js, README.md
+  - ChangeLog.md                two bullets under v4.0.0-beta ## Added
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Served the repository root with python3 -m http.server and drove the page in headless
+Chromium (chrome-headless-shell over the DevTools protocol), at 1280px and 390px:
+
+  - every section exercised: board operations, makeActive tabs, drawer, reveal,
+    accordion, easing lab, filter sliders and pulse, centring, overlay, scroll lock,
+    tag removal / exclusion / array form / Enter constraint / detach, countdown,
+    breakpoints, random, IO.get (3 files, progress 100%, status true), all 12 bad-input
+    buttons and all 9 defect buttons
+  - no console errors on load; the only console output during the run is the expected
+    console.error from the slide.toRight({ colour }) defect button
+  - no horizontal overflow at 390px (scrollWidth == innerWidth)
+  - screenshots checked for the hero, motion, layout, events and data sections
+
+Not checked: a real (non-headless) browser, clipboard.copy (needs a real user gesture),
+and browserType() in Chrome proper. Headless Chrome's user agent is not recognised and
+throws, which the page catches and shows.
+
+--------------------------------------------------------------------------------
+DEFECTS FOUND, RECORDED NOT FIXED
+--------------------------------------------------------------------------------
+
+See doc/core.md "Known defects". Main ones: scroll.x()/y() without true throws;
+makeActive without a parent never clears the previous element; $$.scroll.direction(),
+$$.IO.save(), browserResizeProperty getters and validatePhoneNumber throw;
+camelToCSSstandard returns "undefined" in place of capitals; randomString can drop
+characters; ScreenBreakPoint requires both keys despite having defaults; core.css overlay
+rule lacks left:0 and matches every child div; $$.delay is a busy-wait; filter() with
+options leaves its transition and listener behind; toRight/toTop/toBottom log invalid
+options instead of throwing.

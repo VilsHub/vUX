@@ -1,0 +1,40 @@
+FEATURE: marquee-module
+DATE: 2026-10-11
+SCOPE: new Marquee module, an endless seamless scrolling strip
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX: additive, a new module plus one line in the module registry. Existing consumers
+(vGet, sketch-app, app.myinvitees.com) are unaffected.
+
+Apps/vilshub.com: its technology strip now uses Marquee instead of a hand-doubled list
+and a CSS keyframes loop (separate repo-less app; recorded here because it motivated
+the module).
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+new Marquee(container); config speed, direction, gap, pauseOnHover, fade,
+respectReducedMotion (all live); initialize(); pause(); play(); refresh(); destroy();
+getters paused and moving. Items are written once; clones fill any width, are hidden
+from assistive tech and the tab order, lose their ids and stay clickable.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Headless Chromium (playwright over the cached chrome-headless-shell):
+  - vilshub.com at 1440 and 390 px: 18 items + 36 clones, track covers container plus
+    one set, moved 22-23 px in 500 ms at speed 45, paused on mouseenter and resumed on
+    mouseleave, clones aria-hidden, fade mask applied, no page errors.
+  - examples/marquee at 1280 and 390 px: refresh() adopts an added item and clones it,
+    pause() reflected in the status, destroy() leaves 11 plain children with no track,
+    class or inline style left behind, rebuild animates again, 4 of 12 rendered links
+    tabbable, all nine error cases throw the documented messages, no page errors, no
+    horizontal overflow.
+  - Reduced motion, emulated live on vilshub.com: the animation stops (0 running) when
+    the preference turns on and resumes when it turns off, clones untouched.
+  Not verified: Safari and Firefox.

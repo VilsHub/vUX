@@ -1,0 +1,18 @@
+Feature: autowriter-callback-cancel
+Target module: AutoWriter
+
+Problem: a finished run's callback was scheduled with a bare setTimeout(fn, callBackDelay)
+that stop() and destroy() could not cancel. On app.myinvitees.com the home page runs
+deleteText(3, box, typeName) with callBackDelay 1100; navigating away and back inside that
+window re-runs Home.write(), whose reset() destroys the writer, and typeName then called
+writeText() on it: "writeTextObj.writeText() called on a destroyed AutoWriter".
+
+Change: pending callback timers are tracked; stop() and destroy() cancel them. A new
+writeText()/deleteText() does not, since that callback belongs to a run that already finished.
+
+Verified in headless Chrome: a normal callback still runs; stop() and destroy() inside the
+delay cancel it; a new run keeps an earlier run's pending callback; a callback that would call
+a destroyed writer no longer runs. The myinvitees home -> card tool -> Back sequence that threw
+now runs with no page errors.
+
+Affected projects: app.myinvitees.com (home page). No API change.

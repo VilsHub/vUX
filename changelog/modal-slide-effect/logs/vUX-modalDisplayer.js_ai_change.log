@@ -1,0 +1,330 @@
+FILE: vUX-modalDisplayer.js
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
+
+================================================================================
+CHANGE 1 — openEffects gains "slide"
+================================================================================
+
+OLD_SECTION
+    box: function(layer) { ... }
+};  (box was the last open effect)
+
+NEW_SECTION
+    box: function(layer) {
+        var effectsCon = $$.ce("DIV");
+        var box = $$.ce("DIV");
+
+        effectsCon.setAttribute("style", "position:relative; width:" + layer.width + "px; height:" + layer.height + "px;");
+        effectsCon.setAttribute("class", "vEffects trans_in box");
+
+        box.setAttribute("class", "vEffectBox vBoxForm");
+        box.setAttribute("style", "position:absolute; transition:all .3s linear 0s; width:0%; height:0%; top:50%; left:50%; transform:translateX(-50%) translateY(-50%); overflow:hidden;");
+
+        effectsCon.appendChild(box);
+        layer.space.appendChild(effectsCon);
+        layer.effectsCon = effectsCon;
+
+        fillEffectBox(box, layer);
+
+        layer.overlay.classList.add("show");
+        box.scrollHeight;
+        box.style["width"] = "100%";
+        box.style["height"] = "100%";
+    },
+    slide: function(layer) {
+        var effectsCon = $$.ce("DIV");
+        var slider = $$.ce("DIV");
+
+        effectsCon.setAttribute("style", "position:relative; width:" + layer.width + "px; height:" + layer.height + "px;");
+        effectsCon.setAttribute("class", "vEffects trans_in slide");
+
+        //Not a vEffectBox: the core slide utility drives this one and reports the end through its
+        //own callback, so the shared transitionend handler must leave it alone.
+        slider.setAttribute("class", "vSlideForm");
+        slider.setAttribute("style", "position:absolute; left:0; width:100%; height:100%;");
+
+        effectsCon.appendChild(slider);
+        layer.space.appendChild(effectsCon);
+        layer.effectsCon = effectsCon;
+
+        fillEffectBox(slider, layer);
+
+        //shown first, because a transition does not run inside a display:none overlay
+        layer.overlay.classList.add("show");
+        $$.sm(slider).slide.toBottom(slideConfigs([slideOffset(layer), 0], 500, "cubic-bezier(.16,1,.3,1)"), function() {
+            if (!layer.closing) completeOpen(layer); //closed mid slide: the close owns the boxes now
+        });
+    }
+};
+
+
+REASON
+Adds the slide-in open effect. The motion is done by the core slide utility, $$.sm(el).slide.toBottom() in position mode (top: offscreen -> 0), not by a hand-written transition. Completion comes from the utility's callback, so the slider is not a vEffectBox and the shared transitionend handler ignores it. A layer that started closing during the slide does not complete its open, so the close animation keeps the boxes and openProcessor does not fire for a modal that never finished opening.
+
+================================================================================
+CHANGE 2 — closeEffects gains "slide"
+================================================================================
+
+OLD_SECTION
+    box: function(layer) { ... }
+};  (box was the last close effect)
+
+NEW_SECTION
+    box: function(layer) {
+        var box = startCloseTransition(layer, ".vBoxForm");
+        fillEffectBox(box, layer);
+        box.scrollWidth;
+        box.style["width"] = "0%";
+        box.style["height"] = "0%";
+    },
+    slide: function(layer) {
+        var slider = startCloseTransition(layer, ".vSlideForm");
+        fillEffectBox(slider, layer);
+        $$.sm(slider).slide.toTop(slideConfigs([slideOffset(layer)], 400, "cubic-bezier(.7,0,.84,0)"), function() {
+            completeClose(layer);
+        });
+    }
+};
+
+
+REASON
+The matching close: $$.sm(el).slide.toTop() moves the copy back above the viewport and its callback runs completeClose().
+
+================================================================================
+CHANGE 3 — slide helpers
+================================================================================
+
+OLD_SECTION
+(none)
+
+NEW_SECTION
+//The slide effect's off screen start: a full viewport plus the modal's own height above
+//where it lands, so even a tall modal pinned near the top starts entirely out of view.
+function slideOffset(layer) {
+    return -(window.innerHeight + layer.height);
+}
+
+//A fresh object per call, because the core slide writes its defaults into the one it is given.
+function slideConfigs(y, speed, timingFunction) {
+    return { use: "position", positions: { y: y }, speed: speed, timingFunction: timingFunction };
+}
+
+
+REASON
+slideOffset() puts the start a viewport plus the modal height above its resting place, so tall modals pinned at 50px also start out of view. slideConfigs() builds a fresh object each call, because the core slide writes its defaults into the object it receives. config.effect accepts "slide" automatically, since it validates against the openEffects keys.
+
+================================================================================
+CHANGE 4 — slideLeft / slideRight effects (docked)
+================================================================================
+
+OLD_SECTION
+    slide: function(layer) { ... }
+};   (in both openEffects and closeEffects; nothing after them)
+
+NEW_SECTION
+    slideLeft: function(layer) {
+        openDocked(layer);
+    },
+    slideRight: function(layer) {
+        openDocked(layer);
+    }
+};
+
+...
+    slideLeft: function(layer) {
+        closeDocked(layer);
+    },
+    slideRight: function(layer) {
+        closeDocked(layer);
+    }
+};
+
+//The edge each sideways slide ends up docked to. A slide to the left travels in from
+//the right edge and stays there; a slide to the right travels in from the left edge.
+var dockSides = { slideLeft: "right", slideRight: "left" };
+
+//A docked modal is a full height panel against its edge rather than a centred box: the
+//space is taken off the centring transform and stretched to at least the viewport.
+function dockLayer(layer) {
+    var style = layer.space.style;
+    style["top"] = "0px";
+    style["left"] = layer.dock == "left" ? "0px" : "auto";
+    style["right"] = layer.dock == "right" ? "0px" : "auto";
+    style["transform"] = "none";
+    style["min-height"] = "100%";
+}
+
+function openDocked(layer) {
+    var effectsCon = $$.ce("DIV");
+    var slider = $$.ce("DIV");
+    var filler = $$.ce("DIV");
+
+    //clipped, so the part of the panel still off its edge never shows or scrolls the overlay
+    effectsCon.setAttribute("style", "position:relative; width:100%; height:" + Math.max(layer.height, window.innerHeight) + "px; overflow:hidden;");
+    effectsCon.setAttribute("class", "vEffects trans_in " + layer.effect);
+
+    //The core slide sets display:block on what it moves, so the column that stretches
+    //the modal to the panel's height sits one level in, on the filler.
+    slider.setAttribute("class", "vSlideForm");
+    slider.setAttribute("style", "position:absolute; top:0; width:100%; height:100%;");
+    filler.setAttribute("class", "vDockFill");
+    filler.setAttribute("style", "display:flex; flex-direction:column; height:100%;");
+
+    slider.appendChild(filler);
+    effectsCon.appendChild(slider);
+    layer.space.appendChild(effectsCon);
+    layer.effectsCon = effectsCon;
+
+    fillEffectBox(filler, layer)["style"]["flex"] = "1 0 auto";
+
+    layer.overlay.classList.add("show");
+    var travel = effectsCon.offsetWidth; //the panel's own width takes it fully past its edge
+    var direction = layer.dock == "right" ? "toLeft" : "toRight";
+    $$.sm(slider).slide[direction](dockConfigs(layer, [-travel, 0], 500, "cubic-bezier(.16,1,.3,1)"), function() {
+        if (!layer.closing) completeOpen(layer);
+    });
+}
+
+function closeDocked(layer) {
+    var slider = startCloseTransition(layer, ".vSlideForm");
+    fillEffectBox(slider.querySelector(".vDockFill"), layer)["style"]["flex"] = "1 0 auto";
+
+    var travel = layer.effectsCon.offsetWidth;
+    var direction = layer.dock == "right" ? "toRight" : "toLeft"; //back out the way it came
+    $$.sm(slider).slide[direction](dockConfigs(layer, [0, -travel], 400, "cubic-bezier(.7,0,.84,0)"), function() {
+        completeClose(layer);
+    });
+}
+
+//Position mode on the docked edge's own property, so the same numbers work for either side.
+function dockConfigs( ... }
+
+REASON
+Requested follow-up: sideways slides must not end centred. slideLeft travels in from the right edge and stays docked right; slideRight travels in from the left edge and stays docked left. Both use the core slide in position mode with positionProperty set to the docked edge, so toLeft/toRight move right/left from -panelWidth to 0 and back. The effects container clips the off-edge part so the overlay never scrolls sideways. The stretch to full height lives on an inner flex column (vDockFill) because the core slide forces display:block on the element it moves.
+
+================================================================================
+CHANGE 5 — completeOpen fills a docked panel
+================================================================================
+
+OLD_SECTION
+    layer.host.innerHTML = layer.sourceOuter;
+    layer.host.style["height"] = layer.height + "px";
+    ...
+        content.style["width"] = "100%";
+    }
+
+NEW_SECTION
+    layer.host.innerHTML = layer.sourceOuter;
+    if (layer.dock != null) {
+        //full height panel: the modal grows to fill it, and past it when its content is taller
+        layer.host.style["display"] = "flex";
+        layer.host.style["flex-direction"] = "column";
+        layer.host.style["min-height"] = "100vh";
+    } else {
+        layer.host.style["height"] = layer.height + "px";
+    }
+
+    var content = layer.host.childNodes[0];
+    if (content != null) {
+        content.style["display"] = "block";
+        content.style["width"] = "100%";
+        if (layer.dock != null) content.style["flex"] = "1 0 auto";
+    }
+
+
+REASON
+A docked modal is a full height panel: the host becomes a min-height:100vh column and the modal grows to fill it, rather than being fixed at the measured height.
+
+================================================================================
+CHANGE 6 — openLayer records the dock side and places the space
+================================================================================
+
+OLD_SECTION
+        effect: settings.effect,
+...
+    positionLayer(layer);
+
+NEW_SECTION
+        effect: settings.effect,
+        dock: dockSides[settings.effect] || null,
+...
+    if (layer.dock != null) {
+        dockLayer(layer);
+    } else {
+        positionLayer(layer);
+    }
+
+REASON
+Docked layers skip the centring/tall-modal positioning and are pinned to their edge at top 0 by dockLayer().
+
+================================================================================
+CHANGE 7 — "slide" renamed to "drop"
+================================================================================
+
+OLD_SECTION
+    slide: function(layer) { ... }   (openEffects and closeEffects)
+    effectsCon class "vEffects trans_in slide"
+function slideOffset(layer) / function slideConfigs(...)
+
+NEW_SECTION
+    drop: function(layer) { ... }    (openEffects and closeEffects)
+    effectsCon class "vEffects trans_in drop"
+function dropOffset(layer) / function dropConfigs(...)
+
+REASON
+Requested rename: the top-down effect is "drop", leaving "slide" to the sideways slideLeft/slideRight. config.effect = "slide" now throws the usual invalid-effect error. The shared mover class vSlideForm is unchanged.
+
+================================================================================
+CHANGE 8 — exits run to completion
+================================================================================
+
+OLD_SECTION
+closeDocked: travel = effectsCon.offsetWidth, curve "cubic-bezier(.7,0,.84,0)"
+drop close:  curve "cubic-bezier(.7,0,.84,0)"
+
+NEW_SECTION
+var EXIT_CURVE = "cubic-bezier(.4,0,1,1)";
+closeDocked: travel = Math.ceil(effectsCon.offsetWidth * 1.25), curve EXIT_CURVE
+drop close:  curve EXIT_CURVE
+
+REASON
+Reported: slideLeft was not visibly exiting back out the way it came. Frame sampling showed the steep ease-in left the panel nearly still (48px in 267ms) and the core slide's timed callback removed it at 400ms while it was still about half on screen, so it vanished instead of sliding out. A steady accelerate curve plus a target a quarter past the edge now takes it fully off screen before removal: slideLeft by ~340ms (moving right), slideRight by ~345ms (moving left), drop by ~260ms (moving up).
+
+================================================================================
+CHANGE 9 — sideways exits continue through the far edge
+================================================================================
+
+OLD_SECTION
+    var travel = Math.ceil(layer.effectsCon.offsetWidth * 1.25);
+    var direction = layer.dock == "right" ? "toRight" : "toLeft"; //back out the way it came
+    $$.sm(slider).slide[direction](dockConfigs(layer, [0, -travel], 400, EXIT_CURVE), ...
+
+NEW_SECTION
+    layer.effectsCon.style["overflow"] = "visible";
+    var travel = Math.ceil(window.innerWidth * 1.25);
+    var direction = layer.dock == "right" ? "toLeft" : "toRight"; //the way it was already moving
+    $$.sm(slider).slide[direction](dockConfigs(layer, [0, travel], 500, EXIT_CURVE), ...
+
+REASON
+Clarified requirement: slideLeft must leave by continuing left (across the screen and out of the left edge), not by reversing back to the right; slideRight mirrors it. The container stops clipping on close so the panel can cross the viewport; the overlay already hides horizontal overflow. Travel is the viewport width (plus the 25% timer margin) measured from the docked edge, over 500ms. Verified: slideLeft right edge past x=0 and slideRight left edge past x=1200 by ~450ms, no horizontal page scroll.
+
+================================================================================
+CHANGE 10 — exits reverse again; both sides move by "left"
+================================================================================
+
+OLD_SECTION
+closeDocked: effectsCon overflow visible; travel = innerWidth * 1.25; direction = same as entry; [0, travel]
+dockConfigs(layer, x, ...) -> positionProperty: layer.dock   ("right" for slideLeft)
+
+NEW_SECTION
+closeDocked: clipping kept; travel = panel width * 1.25; direction = back out the way it came;
+             [0, offEdge(layer, travel)], 400ms, EXIT_CURVE
+openDocked:  [offEdge(layer, travel), 0]
+dockConfigs(x, ...) -> positionProperty: "left" always
+function offEdge(layer, travel) { return layer.dock == "right" ? travel : -travel; }
+
+REASON
+The user reported no animation and that slideRight left to the right. The intended behaviour is the panel leaving back through its own edge (slideLeft exits right, slideRight exits left), so CHANGE 9 is reverted. The missing animation: slideLeft moved the panel with "right", and only the uncommitted core.css lists "right" in .vSlide.pos's transition; the committed core.css (or a cached copy) lists only left and top, so the panel jumped. Both sides now move by "left" (offset +width for the right dock, -width for the left), which every core.css version transitions. Verified in headless Chromium against both the working-tree and the committed core.css: slideLeft in 1200->700, out 700->1325; slideRight in -500->0, out 0->-583; no errors.
+

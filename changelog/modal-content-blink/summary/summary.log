@@ -1,0 +1,100 @@
+FEATURE: modal-content-blink
+DATE: 2026-10-08
+SCOPE: stop the modal content blinking when an open effect ends
+FOLLOWS: changelog/modal-slide-effect (uncommitted at the time of this change)
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository) is the only project affected. No public API changed,
+and consumers need no code changes. Apps that symlink vUX (vGet,
+app.myinvitees.com, sketch-app) get the fix through their links.
+
+  - vUX-modalDisplayer.js   the animated copy is handed to the host, not rebuilt
+  - ChangeLog.md            Fixed bullet
+
+--------------------------------------------------------------------------------
+DEFECT
+--------------------------------------------------------------------------------
+
+Reported with a screen recording (modal-blink.mp4) of the modal example using
+slideRight. Looked at frame by frame at 30fps: once the slide ended, the sign-in
+fields went from autofilled to empty placeholders for about 3 frames (~100ms), then
+filled again. The modal's cyan top border appeared at that same moment.
+
+Two causes, both in completeOpen():
+
+  1. When the effect ended, the host was filled with
+     `host.innerHTML = layer.sourceOuter`, a new copy built from the markup, and the
+     copy that had just animated was hidden. The new copy's inputs were new
+     elements: anything typed during the animation was lost, and the browser
+     re-applied autofill a few frames later. That was the blink.
+  2. The animated copy had its id removed (fillEffectBox), so id-based styles
+     (the example's `#loginModal { border-top-color }`) applied only once the
+     copy reached the host.
+
+--------------------------------------------------------------------------------
+FIX
+--------------------------------------------------------------------------------
+
+Every effect that animates one whole copy (flip, box, drop, slideLeft,
+slideRight) now keeps that copy as layer.liveCopy, with the modal's id on it from
+the start. completeOpen() moves that node into the host instead of rebuilding it.
+The source has already given up its id before the effect starts, so only one
+element in the document has the id at any time.
+
+The closing effects for the same five effects move the displayed node back into
+their animation box (reclaimLiveCopy) instead of filling the box with a new copy.
+Before this change, the exit animation showed the form with every field empty.
+
+Effects left unchanged:
+  - none: no animated copy, so there is nothing to swap.
+  - split: animates two half copies that are cleared as they land, so there is no
+    single node to hand over. It still rebuilds from markup.
+
+--------------------------------------------------------------------------------
+FOLLOW-UP: SIZE SNAP AT THE END OF THE EFFECT
+--------------------------------------------------------------------------------
+
+Reported with modal-shrink-and-grow.mp4: once the blink was gone, flip and drop
+visibly animated at one width and snapped to another when the effect ended. A
+first-layer modal got wider and a nested one got narrower.
+
+The animation box was sized from getDimensionOfHidden(source), which returns the
+hidden modal's shrink-to-fit width. The host shows the modal at the configured
+width (500px by default). openLayer() now measures the modal inside its own host at
+that width (measureLayer), so the effect and the displayed modal are the same size.
+The mismatch existed before this feature. The blink hid it.
+
+--------------------------------------------------------------------------------
+FOLLOW-UP: SPLIT HALVES SHOWING THE SAME SIDE
+--------------------------------------------------------------------------------
+
+Reported with modal-wrong-split.mp4: during split, both halves showed the modal's
+left side. Each half's copy was in normal flow, so it was aligned to that half's
+left edge. The code set left/right:0 on the copies to anchor them, but that has no
+effect on an unpositioned element. Each copy now sits in an absolutely positioned
+wrapper anchored to its half's outer edge and as wide as the displayed modal
+(fillSplitHalf).
+
+--------------------------------------------------------------------------------
+FOLLOW-UP: SPLIT HALVES WITH DIFFERENT AUTOFILL
+--------------------------------------------------------------------------------
+
+The halves still did not match: the left half's inputs were white (browser
+autofill) and the right half's were not. The browser autofilled only one of the two
+copies of the form. Script cannot copy autofill state, so both copies are now made
+non-fillable (fields readonly with autocomplete=off, wrapper inert). Split still
+rebuilds the displayed modal from markup, so autofill fills it shortly after
+landing. This affects split only.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+`node --check` passes. Not verified in a browser: the Playwright headless shell
+in ~/.cache is missing system libraries (libnspr4, needs sudo to install), WSL
+interop is off so Windows Chrome cannot be launched, and jsdom does not run
+module scripts. Re-check examples/modal with each effect, with autofilled or
+typed fields, in a real browser.

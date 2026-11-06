@@ -95,6 +95,18 @@
     #cacheTable td{border-top:1px solid var(--line); padding:8px 8px 8px 0; vertical-align:top; color:var(--fg); overflow-wrap:anywhere}
     #cacheTable td:nth-child(2){color:var(--amber); white-space:nowrap}
     #cacheTable td:nth-child(3){color:var(--muted)}
+
+    /* scroll state table: same look as the cache table, value column in amber */
+    #scrollTable{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:.8rem}
+    #scrollTable th{text-align:left; color:var(--dim); font-weight:500; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; padding:0 8px 8px 0}
+    #scrollTable td{border-top:1px solid var(--line); padding:8px 8px 8px 0; vertical-align:top; overflow-wrap:anywhere}
+    #scrollTable td:first-child{color:var(--fg); white-space:nowrap}
+    @media (max-width:720px){ #scrollTable td:first-child{white-space:normal} }
+    #scrollTable td:nth-child(2){color:var(--amber); white-space:nowrap}
+    #scrollTable td:nth-child(3){color:var(--muted)}
+    /* a restore that landed is good news: green, not the red of the cache table's drop flash */
+    #scrollTable tr.flash td{animation:restored 1.2s ease-out}
+    @keyframes restored{from{background:rgba(80,220,140,.18)} to{background:transparent}}
     #cacheTable tr.flash td{animation:flash .9s ease-out}
     @keyframes flash{from{background:rgba(255,107,127,.18)} to{background:transparent}}
     @media (max-width:820px){ .release-grid{grid-template-columns:minmax(0,1fr)} }
@@ -262,9 +274,81 @@ spa.config.cacheVersion = newBuild;</pre>
     </div>
 </section>
 
+<section id="scrollSection">
+    <div class="wrap">
+        <h2><span class="num">03</span>Back to where you were</h2>
+        <p class="lede">
+            The engine swaps content in place, so the browser cannot restore a history entry's scroll
+            position by itself. <code>config.restoreScroll</code> (on by default) has the engine keep it:
+            each entry it owns stores a <code>scrollY</code> in its state, saved as you scroll and at the
+            moment a link is clicked. Back, forward and reload scroll back to it once the entry's content
+            is mounted.
+        </p>
+        <div class="release-grid">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>try it</span></div>
+                    <div class="panel-b">
+                        <ol class="steps">
+                            <li>Scroll this page so this section sits somewhere you will recognise.</li>
+                            <li>Press <b>Open User 7 from here</b>, or use the nav above. The entry you leave
+                                keeps its position.</li>
+                            <li>Press the browser's <b>Back</b>: the home route is mounted again and the page
+                                returns to the same spot. <b>Forward</b> does the same for User 7.</li>
+                            <li><b>Reload</b>: the entry's state survives it, so you land where you were.</li>
+                        </ol>
+                        <div class="row" style="margin-top:14px">
+                            <button class="primary" id="btnLeaveHere">Open User 7 from here</button>
+                            <label class="lbl" style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer">
+                                <input type="checkbox" id="restoreToggle" checked> config.restoreScroll
+                            </label>
+                        </div>
+                        <p class="note" style="margin:10px 0 0">The setting is applied at <code>initialize()</code>, so
+                            toggling it reloads the page with <code>?restoreScroll=0</code>. Off, Back lands wherever the
+                            previous route left the page.</p>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-h"><span>in your app</span></div>
+                    <pre class="snip">// on by default; read at initialize()
+spa.config.restoreScroll = true;
+
+// a page that places scroll itself on back/forward:
+spa.config.restoreScroll = false;
+
+// the engine never scrolls on a link click: open the new
+// route at the top (or a #section) in your click callback
+window.scrollTo({ top: 0, behavior: "instant" });</pre>
+                </div>
+            </div>
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>scroll state, live</span></div>
+                    <div class="panel-b">
+                        <table id="scrollTable">
+                            <thead><tr><th>reading</th><th>value</th><th>what it is</th></tr></thead>
+                            <tbody>
+                                <tr><td>window.scrollY</td><td id="ssNow">0</td><td>where the page is now</td></tr>
+                                <tr><td>history.state.scrollY</td><td id="ssSaved">unset</td><td>what the engine saved for this entry; follows the page about 100ms after scrolling stops</td></tr>
+                                <tr><td>history.length</td><td id="ssLength">1</td><td>one entry per route visited; the page you opened adds no second one</td></tr>
+                                <tr><td>config.restoreScroll</td><td id="ssEnabled">true</td><td>read once, at <code>initialize()</code></td></tr>
+                                <tr id="ssLastRow"><td>last restore</td><td id="ssLast">none yet</td><td id="ssLastNote">press Back or Forward, or reload</td></tr>
+                            </tbody>
+                        </table>
+                        <p class="note" style="margin-top:12px">
+                            The User 8 link uses <code>data-add-to-history="false"</code>: it pushes no entry,
+                            so it saves no position either, and Back skips over it.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section>
     <div class="wrap">
-        <h2><span class="num">03</span>Bad input fails immediately</h2>
+        <h2><span class="num">04</span>Bad input fails immediately</h2>
         <p class="lede">
             <code>initialize()</code> refuses an incomplete setup, and the two object-valued config
             properties reject unknown keys rather than ignoring them. Each button builds a throwaway

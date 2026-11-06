@@ -1,0 +1,108 @@
+File: vUX-core-4.0.0-beta.js
+Feature: slide-fixes
+
+=======================================================================
+Section 1
+OLD_SECTION
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = ...
+                    configs.dimensions = ...
+                    configs.positionProperty = ...
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+
+NEW_SECTION
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = ...
+                    configs.dimensions = ...
+                    configs.positionProperty = ...
+                    //after the defaults, so an omitted use gets the class of the default (dimension)
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+
+REASON
+$$.sm().slide.toLeft: the CSS class was chosen from configs.use before use was defaulted. With
+use omitted the element ran the dimension branch (the default) but carried .vSlide.pos, whose
+transition doesn't cover width, so the width change jumped. The class is now chosen after the
+defaults, so an omitted use behaves exactly like an explicit use: "dimension".
+
+=======================================================================
+Section 2
+OLD_SECTION
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+
+NEW_SECTION
+                    //the same defaults as toLeft: toRight used to read configs.use, positions and dimensions as given
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = configs.positions == undefined? vModel.slide.data.effectConfigs.positions : configs.positions;
+                    configs.dimensions = configs.dimensions == undefined? vModel.slide.data.effectConfigs.dimensions : configs.dimensions;
+                    configs.positionProperty = configs.positionProperty == undefined? vModel.slide.data.effectConfigs.positionProperty : configs.positionProperty;
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    var speed = vModel.slide.functions.miliToSeconds(configs.speed);
+
+REASON
+$$.sm().slide.toRight only defaulted speed. With use omitted it took the position branch and
+read configs.positions.x of undefined (TypeError). It now applies the same defaults as toLeft,
+and picks the class after them.
+
+=======================================================================
+Section 3
+OLD_SECTION
+                        if(configs.dimensions.x[1] == null){
+                            element.style["width"] = width+"px";
+
+NEW_SECTION
+                        if(configs.dimensions.x[1] == null){
+                            element.style["width"] = element.scrollWidth+"px"; //no end width: open to the content's width
+
+REASON
+toRight, use: "dimension" with no end width (dimensions.x[1] null) referenced an undeclared
+`width` (ReferenceError in a module). It now opens to the element's content width, the
+counterpart of toTop reading scrollHeight.
+
+=======================================================================
+Section 4
+OLD_SECTION
+                        element.style["left"] = configs.positions.x[0]+"px";
+                        vModel.slide.functions.slideOn(element);
+                        element.style["left"] = configs.positions.x[1]+"px";
+
+NEW_SECTION
+                        element.style[configs.positionProperty] = configs.positions.x[0]+"px";
+                        vModel.slide.functions.slideOn(element);
+                        element.style[configs.positionProperty] = configs.positions.x[1]+"px";
+
+REASON
+toRight's position branch hard-coded `left`, ignoring positionProperty (validated as
+"left" | "right" and honoured by toLeft). A right-anchored element (positionProperty: "right")
+couldn't be slid with toRight. It now moves configs.positionProperty, defaulting to left as
+before, so existing calls without positionProperty are unchanged.
+
+=======================================================================
+Section 5
+OLD_SECTION
+                        element.style["display"] = "block";
+                        (toLeft: x[0] or 0px | toRight: x[0]) -> element.style[configs.positionProperty]
+                        vModel.slide.functions.slideOn(element);
+                        element.style[configs.positionProperty] = configs.positions.x[1]+"px";
+
+NEW_SECTION
+                        element.style["display"] = "block";
+                        element.style["transition-property"] = "none"; //jump to the start position, don't animate to it
+                        (toLeft: x[0] or 0px | toRight: x[0]) -> element.style[configs.positionProperty]
+                        vModel.slide.functions.slideOn(element);
+                        element.style["transition-property"] = "";
+                        element.style[configs.positionProperty] = configs.positions.x[1]+"px";
+
+REASON
+The .vSlide class (which carries the transition) is added before the start position is set.
+When the element's current position isn't x[0] (an element just unhidden sits at its CSS
+position, e.g. right: 0), setting x[0] started a transition toward x[0], and setting x[1]
+right after turned it back, so a slide-in barely moved and looked like it just appeared.
+Transitions are now off while x[0] is set and committed by slideOn's reflow, and back on for
+x[1]. Both toLeft and toRight's position branches.

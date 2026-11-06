@@ -1,0 +1,51 @@
+FILE: vUX-marquee.js
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+NEW FILE. The Marquee module: an endless, seamless scrolling strip. Requested so the
+technology strip on vilshub.com (Apps/vilshub.com), written there by hand with a doubled
+list and a -50% CSS loop, becomes a reusable vUX component.
+
+Design points worth recording:
+
+  - Items written once. initialize() moves the container's element children into a
+    track ($$.ce("div", {class:"vMarqueeTrack"})) and appends clone sets until the track
+    covers the container width plus one set. A hand-doubled list breaks on screens wider
+    than one copy; this does not.
+
+  - Measured loop. The distance per loop is clones[0].offsetLeft - items[0].offsetLeft,
+    so it includes config.gap and any item margins, and the end frame matches the start.
+
+  - Web Animations API (track.animate) rather than a keyframes rule in marquee.css, so
+    the strip is right before the stylesheet arrives (it is linked about 300ms after
+    load). The structural styles the measurement depends on are inline for the same
+    reason. Speed, direction, gap and reduced-motion changes restart the animation at
+    the same progress, so a running strip never jumps; direction mirrors the progress.
+
+  - ResizeObserver on the container and the track rebuilds when the container width or
+    the set width changes (fonts arriving, edits). A rebuild that only adds clones does
+    not change either value, so it does not trigger itself.
+
+  - Clones: aria-hidden, ids stripped, tabindex="-1" on anything focusable. Not inert:
+    inert also blocks clicks, and about half the visible items are clones. Found while
+    writing the example's linked-cards section.
+
+  - pauseOnHover covers keyboard focus too (focusin/focusout), so a link can be read
+    before it scrolls away.
+
+  - destroy() puts the items back in order, removes track and clones, and restores the
+    container's own classes and inline styles (saved per property on first write).
+
+MANUAL OPERATION REPORTED TO THE USER
+  reducedMotion(): the same matchMedia check MessageBox has locally (potential utility #2).
+  Added Marquee to that row in .claude/projects/vUX/potentialUtilities.md.
+
+OLD_SECTION
+(none, new file)
+
+NEW_SECTION
+(whole file, 339 lines: constructor Marquee(container); config speed, direction, gap,
+pauseOnHover, fade, respectReducedMotion; methods initialize, pause, play, refresh,
+destroy; getters paused, moving)

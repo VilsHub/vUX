@@ -1,0 +1,19 @@
+Feature: spa-example-scroll-state
+Target module: SPAEngine example (examples/spa)
+
+- New section 03 "Back to where you were" showing config.restoreScroll at work: a live table
+  of window.scrollY, the scrollY the engine saved in the current history entry,
+  history.length, config.restoreScroll and the last restore (saved vs landed, also logged as
+  [scroll] in the diagnostics); an "Open User 7 from here" button; and a config.restoreScroll
+  checkbox that reloads with ?restoreScroll=0, since the setting is applied at initialize().
+- The example's click callbacks now open each new route at the top (openAtTop()): the engine
+  never scrolls on a link click, and without it Back had nothing visible to restore from.
+- "Bad input fails immediately" is now section 04.
+
+Why: the user asked for the scroll state to be shown in the SPA example after scroll
+restoration moved into SPAEngine (spa-scroll-restoration).
+
+Verified: headless Chromium on python3 server.py (port 8931): scrolled to the section (2314),
+Open User 7 (lands at 0, history.length +1), Back restores 2314 with the row flashing
+"restored", reload stays at 2314; toggle off reloads with ?restoreScroll=0 (value false,
+history.scrollRestoration back to auto), toggle on removes it; ?autorun clean; no errors.

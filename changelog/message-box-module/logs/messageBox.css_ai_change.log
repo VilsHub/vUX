@@ -1,0 +1,17 @@
+FILE: assets/css/messageBox.css
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+NEW FILE. Styles for lanes, slots and messages. Colours are custom properties on
+.vmb-msg (per type and per theme). The close button rules are two classes deep, so a
+page's global button:hover cannot beat them. A leaving message gets z-index 0
+(staying ones 1), so it passes behind the messages above it as it rises, not over
+them. The countdown bar is a CSS animation paused by .vmb-paused.
+
+OLD_SECTION
+(file did not exist)
+
+NEW_SECTION
+(whole file, see assets/css/messageBox.css)

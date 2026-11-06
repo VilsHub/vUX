@@ -1,0 +1,65 @@
+FEATURE: core-fixes
+DATE: 2026-10-07
+SCOPE: repair the core defects recorded by core-docs
+FOLLOWS: changelog/core-docs (and sits on the uncommitted changelog/slide-fixes work)
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library: src/vUX-core-4.0.0-beta.js, src/helpers.js, assets/css/core.css, plus the
+core guide, its example and ChangeLog.md.
+
+Consumers, checked by grep across Apps/:
+  - app.myinvitees.com / api.myinvitees.com: makeActive (always with a parent, so the
+    behaviour is unchanged), addOverlay("first") on #page (now covers from the left
+    edge; no app CSS relied on ".xOverlay > div"), one slide call with valid options
+    (unaffected by slides now throwing on invalid options).
+  - In-library callers: ModalDisplayer's ScreenBreakPoint (always passed both keys
+    before, still works), SPAEngine's $$.randomString() (now always 8 characters).
+  - validateInteger was deliberately left reporting, not throwing: ModalDisplayer,
+    CShapes, AutoWriter and FormComponents all use it as a boolean.
+
+--------------------------------------------------------------------------------
+BEHAVIOUR CHANGES A CALLER COULD NOTICE
+--------------------------------------------------------------------------------
+
+  - slide.toRight/toTop/toBottom now throw on invalid options instead of logging.
+  - $$.randomString/$$.randomInteger now throw for non-integer arguments.
+  - filter() with a single unsupported name now throws.
+  - makeActive without a parent now clears matches across the whole document.
+  - browserType() returns name "unknown" rather than throwing.
+
+--------------------------------------------------------------------------------
+LEFT AS IS
+--------------------------------------------------------------------------------
+
+  - $$.delay stays a synchronous busy-wait: that is what the function is, and a timer
+    would change when code after the call runs. Nothing in the library or the apps
+    calls it any more (filter's callBack now uses setTimeout). Documented.
+  - Stubs that were never implemented ($$.scroll.lock/x, IO.download/upload,
+    clipboard.clear/paste, Array.prototype.unique) are listed as "Not implemented",
+    not invented.
+  - Documented sharp edges that are design, not defects: trimChar removes every
+    occurrence, the prototype patches are enumerable, delegation tests e.target only,
+    .vSlide.dim sets height 0, animate() deltas.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Headless Chromium (chrome-headless-shell over DevTools), repository root served by
+python3 -m http.server:
+  - every fix exercised directly: scroll.x() → "scroll x"; scroll.direction() returns
+    state; browserResizeProperty reports "shrinked", 380 after a 1280→900 viewport
+    change; camelToCSSstandard → "background-color"; validatePhoneNumber true/false;
+    randomString(4) × 5000 → only length 4, all 62 characters seen; ScreenBreakPoint()
+    and with one key work; browserType for spoofed desktop Safari, iOS Safari, Opera,
+    Android Chrome, Firefox, Edge and an unknown agent; flip z transform; toRight/toTop
+    bad options throw; toTop without use works; toBottom opens to auto; filter pulse
+    ends with filter none, no transition, callBack at ~200ms and a later filter()
+    staying put; overlay child div stays static, overlay left 0 and radius inherited;
+    IO.save produces a blob download with the given name.
+  - examples/core driven end to end with no console errors.
+  - CRLF preserved in all three core files (git diff --stat shows no whole-file churn).
+Not checked: a real Safari or Opera, real file download in a headed browser.

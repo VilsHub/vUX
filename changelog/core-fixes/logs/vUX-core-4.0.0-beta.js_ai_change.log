@@ -1,0 +1,593 @@
+FILE: src/vUX-core-4.0.0-beta.js
+FEATURE: core-fixes
+DATE: 2026-10-07
+PRIOR STATE: working tree including the uncommitted slide-fixes changes
+LINE ENDINGS: CRLF, preserved
+
+--------------------------------------------------------------------------------
+CHANGE 1
+
+OLD_SECTION
+        validateString(selector, "$$.sav(x.) method argument 1 must be a string");
+        var allElements
+
+NEW_SECTION
+        validateString(selector, "$$.sav(x.) method argument 1 must be a string");
+        if (typeof visibiltyType != "string" || ["visible", "hidden"].indexOf(visibiltyType.toLowerCase()) == -1) throw new TypeError("$$.sav(.x) method argument 2 must be either 'visible' or 'hidden'");
+        var allElements
+
+REASON
+$$.sav() called toLowerCase() on a missing second argument and threw a bare TypeError. It now throws a descriptive error naming the two allowed values.
+
+--------------------------------------------------------------------------------
+CHANGE 2
+
+OLD_SECTION
+                if (ntimes != null) validateInteger(ntimes, "$$.sm(.).hasParent(.x) method argument 2 must be an integer");
+
+NEW_SECTION
+                if (ntimes != null && !validateInteger(ntimes)) throw new TypeError("$$.sm(.).hasParent(.x) method argument 2 must be an integer");
+                parentId = parentId.replace(/^[.#]/, ""); //".menu" and "#menu" mean "menu", as in getParent
+
+REASON
+hasParent(".menu") built the selector "..menu" and threw a SyntaxError; ntimes was checked with validateInteger, which reports and never throws. A leading . or # is now stripped and the integer check throws.
+
+--------------------------------------------------------------------------------
+CHANGE 3
+
+OLD_SECTION
+                    var id = parentIDorLevel.replace(".", "");
+
+NEW_SECTION
+                    var id = parentIDorLevel.replace(/^[.#]/, ""); //a leading # used to be kept, so an id given as "#x" never matched
+
+REASON
+getParent() stripped only the first "." anywhere in the string, so an id given as "#menu" never matched. A leading . or # is now stripped.
+
+--------------------------------------------------------------------------------
+CHANGE 4
+
+OLD_SECTION
+console.warn("Travesing finished!, and the specified dept level '"+id+"' is higher above the DOM root (HTML)")
+
+NEW_SECTION
+console.warn("Travesing finished!, and the specified dept level '"+parentIDorLevel+"' is higher above the DOM root (HTML)")
+
+REASON
+The level warning interpolated `id`, which is undefined in the numeric branch.
+
+--------------------------------------------------------------------------------
+CHANGE 5
+
+OLD_SECTION
+var currentElements = (parent != null)?parent.querySelectorAll("."+className):document.querySelector("."+className);
+
+NEW_SECTION
+var currentElements = (parent != null)?parent.querySelectorAll("."+className):document.querySelectorAll("."+className); //a list either way: querySelector returned one element, whose missing length skipped the clearing loop
+
+REASON
+Without a parent, makeActive used querySelector, which returns one element with no length, so the clearing loop never ran and every element made active stayed active.
+
+--------------------------------------------------------------------------------
+CHANGE 6
+
+OLD_SECTION
+                (position != "last" && position != "first") ? "last": "first";
+
+NEW_SECTION
+                position = position == "first" ? "first" : "last";
+
+REASON
+The position check was an expression statement with no effect; any value other than "first" now means "last" explicitly.
+
+--------------------------------------------------------------------------------
+CHANGE 7
+
+OLD_SECTION
+                    }else{// is string
+                        prop = setValue(type, value);
+                    }
+                    function setValue(filterType, val){
+                        switch (filterType) {
+
+NEW_SECTION
+                    }else{// is string
+                        checkSupport(type); //an unsupported name used to be ignored silently
+                        prop = setValue(type, value);
+                        if(options != null && options.init != null) initProp = setValue(type, options.init);
+                    }
+                    function setValue(filterType, val){
+                        switch (filterType.toLowerCase()) {
+
+REASON
+filter(): an unsupported single filter name was silently ignored (setValue returned undefined); options.init only applied to the array form; names were not lower-cased consistently.
+
+--------------------------------------------------------------------------------
+CHANGE 8
+
+OLD_SECTION
+                    function checkSupport(t){
+                        if(supportedFilters
+
+NEW_SECTION
+                    function checkSupport(t){
+                        validateString(t, "$$.sm(.).filter(x..) filter names must be strings");
+                        if(supportedFilters
+
+REASON
+checkSupport() now validates that the name is a string before lower-casing it.
+
+--------------------------------------------------------------------------------
+CHANGE 9
+
+OLD_SECTION
+                        defaultOptions.init = options.init;
+                        defaultOptions.duration = options.duration;
+                        
+                        cEle.style["transition"] = "filter "+defaultOptions.duration+" "+defaultOptions.effect;
+                        cEle.addEventListener("transitionend", function(e){
+                            if(e.target.classList.contains("vFilter")){
+                                e.target.style["filter"] = "none";
+                                e.target.classList.remove("vFilter")
+                            }
+                        }, false) 
+                        cEle.style["filter"] = initProp;
+                        cEle.scrollHeight;
+                    }
+                    cEle.classList.add("vFilter");
+                    
+                    cEle.style["filter"] = prop;
+                    if(defaultOptions.callBack != null){
+                        $$.delay(parseInt(defaultOptions.duration), function(){
+                            defaultOptions.callBack()
+                        });
+                    };
+
+NEW_SECTION
+                        defaultOptions.init = options.init;
+                        if (options.duration != null) {
+                            validateString(options.duration, "obj.filter(..x) method argument 3 property 'duration' must be a CSS time string, e.g. '300ms'");
+                            defaultOptions.duration = options.duration;
+                        } //left out, it keeps the 200ms default instead of writing an invalid transition
+                        
+                        cEle.style["transition"] = "filter "+defaultOptions.duration+" "+defaultOptions.effect;
+                        //one-shot: when the pulse ends, clear the filter and take the transition and this listener off
+                        //again. Both used to stay, so every later filter() on the element was transitioned and reset too.
+                        var onEnd = function(e){
+                            if(e.target != cEle || e.propertyName != "filter") return;
+                            cEle.removeEventListener("transitionend", onEnd, false);
+                            cEle.style["filter"] = "none";
+                            cEle.style["transition"] = "";
+                            cEle.classList.remove("vFilter");
+                        };
+                        cEle.addEventListener("transitionend", onEnd, false);
+                        cEle.style["filter"] = initProp;
+                        cEle.scrollHeight;
+                    }
+                    cEle.classList.add("vFilter");
+                    
+                    cEle.style["filter"] = prop;
+                    if(defaultOptions.callBack != null){
+                        //a timer, not $$.delay: $$.delay busy-waits and froze the page for the whole pulse
+                        var d = String(defaultOptions.duration);
+                        var ms = /ms$/i.test(d) ? parseFloat(d) : parseFloat(d) * 1000;
+                        setTimeout(function(){
+                            defaultOptions.callBack()
+                        }, ms);
+                    };
+
+REASON
+filter() with options left its transition and a transitionend listener on the element for good, so every later filter() was transitioned and reset to none; a missing duration wrote an invalid transition; callBack ran through $$.delay, a busy-wait that froze the page. The listener is now one-shot and cleans up, duration keeps its 200ms default, and callBack runs on setTimeout.
+
+--------------------------------------------------------------------------------
+CHANGE 10
+
+OLD_SECTION
+                x:function (hideBar=false){
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    var hide = hideBar?"bar-hide":"";
+                    element.classList.add("scroll", hide, "x");
+                },
+
+NEW_SECTION
+                x:function (hideBar=false){
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    element.classList.add("scroll", "x");
+                    if(hideBar) element.classList.add("bar-hide"); //added separately: an empty class name made classList.add throw
+                },
+
+REASON
+scroll.x(false) and scroll.x() called classList.add with an empty string, which throws. bar-hide is now added only when requested.
+
+--------------------------------------------------------------------------------
+CHANGE 11
+
+OLD_SECTION
+                y:function (hideBar=false){
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    var hide = hideBar?"bar-hide":"";
+                    element.classList.add("scroll", hide, "y");
+                },
+
+NEW_SECTION
+                y:function (hideBar=false){
+                    var element = (selector instanceof Element)?selector:ele.single;
+                    element.classList.add("scroll", "y");
+                    if(hideBar) element.classList.add("bar-hide"); //added separately: an empty class name made classList.add throw
+                },
+
+REASON
+scroll.y(): same fix as scroll.x().
+
+--------------------------------------------------------------------------------
+CHANGE 12
+
+OLD_SECTION
+                    try {
+                        vModel.slide.functions.validateConfigs(configs, "toLeft"); 
+                    } catch (error) {
+                        throw new Error(error);
+                    }
+
+NEW_SECTION
+                    vModel.slide.functions.validateConfigs(configs, "toLeft"); //throws as is: re-wrapping it doubled the "Error: " prefix
+
+REASON
+toLeft wrapped the validation error in a new Error, doubling the "Error: " prefix. It now rethrows the original.
+
+--------------------------------------------------------------------------------
+CHANGE 13
+
+OLD_SECTION
+                    try {
+                        vModel.slide.functions.validateConfigs(configs, "toRight"); 
+                    } catch (error) {
+                        console.error(error)
+                    }
+
+NEW_SECTION
+                    vModel.slide.functions.validateConfigs(configs, "toRight"); //throws, as toLeft does: it used to log and carry on
+
+REASON
+toRight logged validation errors and carried on with invalid options; it now throws like toLeft.
+
+--------------------------------------------------------------------------------
+CHANGE 14
+
+OLD_SECTION
+                    try {
+                        vModel.slide.functions.validateConfigs(configs, "toTop"); 
+                    } catch (error) {
+                        console.error(error)
+                    }
+
+NEW_SECTION
+                    vModel.slide.functions.validateConfigs(configs, "toTop"); //throws, as toLeft does: it used to log and carry on
+
+REASON
+toTop: same as toRight.
+
+--------------------------------------------------------------------------------
+CHANGE 15
+
+OLD_SECTION
+                    try {
+                        vModel.slide.functions.validateConfigs(configs, "toBottom"); 
+                    } catch (error) {
+                        console.error(error)
+                    }
+
+NEW_SECTION
+                    vModel.slide.functions.validateConfigs(configs, "toBottom"); //throws, as toLeft does: it used to log and carry on
+
+REASON
+toBottom: same as toRight.
+
+--------------------------------------------------------------------------------
+CHANGE 16
+
+OLD_SECTION
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    var speed
+
+NEW_SECTION
+                    configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    //use and positions default as in toLeft/toRight (use was read as given, so leaving it out threw);
+                    //dimensions do not, because toBottom without them opens to the content's height
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = configs.positions == undefined? vModel.slide.data.effectConfigs.positions : configs.positions;
+                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    var speed
+
+REASON
+toTop/toBottom read configs.use as given, so leaving it out took the position branch with no positions and threw. They now default use and positions like toLeft/toRight. dimensions is deliberately not defaulted: toBottom without it opens to the content height.
+
+--------------------------------------------------------------------------------
+CHANGE 17
+
+OLD_SECTION
+                                }else{
+                                    element.style["height"] = height;
+                                    newSize = height;
+                                }
+                            }else{
+                                element.style["height"] = height;
+                                newSize = height;
+                            }
+
+NEW_SECTION
+                                }else{
+                                    element.style["height"] = height+"px"; //unitless, it was ignored and nothing opened
+                                    newSize = height;
+                                }
+                            }else{
+                                element.style["height"] = height+"px";
+                                newSize = height;
+                            }
+
+REASON
+toBottom with dimensions but no end height wrote a unitless height, which the browser ignores.
+
+--------------------------------------------------------------------------------
+CHANGE 18
+
+OLD_SECTION
+                            if (option.frontClass != null) validateString(option.perspective, " frontClass property must be a string");
+
+NEW_SECTION
+                            if (option.frontClass != null) validateString(option.frontClass, " frontClass property must be a string");
+
+REASON
+flip.card validated option.perspective in place of frontClass.
+
+--------------------------------------------------------------------------------
+CHANGE 19
+
+OLD_SECTION
+                            if (option.backClass != null) validateString(option.perspective, " backClass property must be a string");
+
+NEW_SECTION
+                            if (option.backClass != null) validateString(option.backClass, " backClass property must be a string");
+
+REASON
+flip.card validated option.perspective in place of backClass.
+
+--------------------------------------------------------------------------------
+CHANGE 20
+
+OLD_SECTION
+                            if (option.axis != null) validateString(option.perspective, " axis property must be a string");
+
+NEW_SECTION
+                            if (option.axis != null) validateString(option.axis, " axis property must be a string");
+
+REASON
+flip.card validated option.perspective in place of axis.
+
+--------------------------------------------------------------------------------
+CHANGE 21
+
+OLD_SECTION
+throw new Error(temp+" axis property value must be one of these: 'x' or 'y'");
+
+NEW_SECTION
+throw new Error(temp+" axis property value must be one of these: 'x', 'y' or 'z'");
+
+REASON
+The axis error message omitted z, which is accepted (and now works, see helpers.js).
+
+--------------------------------------------------------------------------------
+CHANGE 22
+
+OLD_SECTION
+            validateString(returnDataType, "$$.ajax(.x) method argument 2, must be a string");
+
+NEW_SECTION
+            if (returnDataType != null) validateString(returnDataType, "$$.ajax(.x) method argument 2, must be a string or null"); //optional: left out, Accept is */*
+
+REASON
+$$.ajax validated returnDataType even when null, so a call with options but no type threw. The type is now optional.
+
+--------------------------------------------------------------------------------
+CHANGE 23
+
+OLD_SECTION
+        save: function(data, options){
+            validateObjectLiteral(urls, "IO.save(.x) static method argument 1, must be a literal object");
+        
+            var type = "";
+            if(options.type.toLowerCase == "json"){
+                type = "text/json";
+            }else if(options.type.toLowerCase == "csv"){
+                type = "text/csv";
+            }else{
+                type = "text/html";
+            }
+            var data = new Blob([urlOrData], {type:type})
+            var url = window.URL.createObjectURL(data);
+
+NEW_SECTION
+        save: function(data, options){
+            //rewritten: it validated and saved variables that did not exist (urls, urlOrData), so every call threw
+            validateObjectLiteral(options, "$$.IO.save(.x) static method argument 2, must be a literal object with a 'name' and an optional 'type'");
+            validateString(options.name, "$$.IO.save(.x) static method argument 2 object 'name' property must be a string");
+            var kind = options.type == undefined ? "html" : String(options.type).toLowerCase();
+        
+            var type = "";
+            if(kind == "json"){
+                type = "application/json";
+                if(typeof data != "string") data = JSON.stringify(data);
+            }else if(kind == "csv"){
+                type = "text/csv";
+            }else if(kind == "text" || kind == "txt"){
+                type = "text/plain";
+            }else{
+                type = "text/html";
+            }
+            var blob = new Blob([typeof data == "string" ? data : String(data)], {type:type})
+            var url = window.URL.createObjectURL(blob);
+
+REASON
+IO.save validated and saved variables that did not exist (urls, urlOrData) and compared against an unexecuted toLowerCase, so every call threw a ReferenceError. Rewritten to validate options, serialise JSON and save the given data.
+
+--------------------------------------------------------------------------------
+CHANGE 24
+
+OLD_SECTION
+            link.click();
+            document.body.removeChild(link);
+        },
+
+NEW_SECTION
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(function(){ window.URL.revokeObjectURL(url); }, 1000);
+        },
+
+REASON
+Revoke the object URL after the download starts.
+
+--------------------------------------------------------------------------------
+CHANGE 25
+
+OLD_SECTION
+        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+        if (length != 8) validateInteger(length, "$$.randomString(x) argument 1 must be an integer");
+        var randomstring = '';
+        for (var i=0; i<length; i++) {
+            var rnum = this.randomInteger(0, chars.length);
+
+NEW_SECTION
+        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; //had T twice and no Y or j
+        //validateInteger() reports, it does not throw
+        if (!validateInteger(length) || length < 0) throw new TypeError("$$.randomString(x) argument 1 must be a non-negative integer");
+        var randomstring = '';
+        for (var i=0; i<length; i++) {
+            //the last valid index is length - 1: drawing up to length sometimes picked past the end and dropped a character
+            var rnum = $$.randomInteger(0, chars.length - 1);
+
+REASON
+randomString drew an index up to chars.length inclusive, so roughly one character in 62 came out empty; the alphabet had T twice and no Y or j; the integer check never threw. Fixed all three, and it calls $$.randomInteger so it works detached from $$.
+
+--------------------------------------------------------------------------------
+CHANGE 26
+
+OLD_SECTION
+        validateInteger(min, "$$.randomInteger(x.) argument 1 must be an integer");
+        validateInteger(max, "$$.randomInteger(.x) argument 2 must be an integer");
+
+NEW_SECTION
+        if (!validateInteger(min)) throw new TypeError("$$.randomInteger(x.) argument 1 must be an integer");
+        if (!validateInteger(max)) throw new TypeError("$$.randomInteger(.x) argument 2 must be an integer");
+
+REASON
+randomInteger's integer checks used validateInteger, which reports and never throws; they now throw as their messages say.
+
+--------------------------------------------------------------------------------
+CHANGE 27
+
+OLD_SECTION
+            return vUxHelpers.vModel.scroll.data.state;
+
+NEW_SECTION
+            return vModel.scroll.data.state; //vModel is a global, not an export of helpers.js
+
+REASON
+$$.scroll.direction() read vUxHelpers.vModel, but vModel is a window global, not an export of helpers.js, so it threw a TypeError.
+
+--------------------------------------------------------------------------------
+CHANGE 28
+
+OLD_SECTION
+window.ScreenBreakPoint = function(breakPoints) {
+    validateObjectLiteral(breakPoints);
+
+NEW_SECTION
+window.ScreenBreakPoint = function(breakPoints = {}) {
+    validateObjectLiteral(breakPoints, "ScreenBreakPoint(x) argument 1 must be an object literal");
+
+REASON
+ScreenBreakPoint required an argument and both keys (validateNumber(undefined) threw), despite having defaults. The argument and each key are now optional; a non-number names the key in its message.
+
+--------------------------------------------------------------------------------
+CHANGE 29
+
+OLD_SECTION
+    if (validateNumber(breakPoints["largeStart"])) {
+        baseBeakPoints.largeStart = breakPoints["largeStart"];
+    }
+    if (validateNumber(breakPoints["mediumStart"])) {
+
+NEW_SECTION
+    //each key is optional: a missing one keeps its default instead of failing validateNumber
+    if (breakPoints["largeStart"] !== undefined && validateNumber(breakPoints["largeStart"], "ScreenBreakPoint(x) argument 1 object 'largeStart' property must be a number")) {
+        baseBeakPoints.largeStart = breakPoints["largeStart"];
+    }
+    if (breakPoints["mediumStart"] !== undefined && validateNumber(breakPoints["mediumStart"], "ScreenBreakPoint(x) argument 1 object 'mediumStart' property must be a number")) {
+
+REASON
+ScreenBreakPoint: second half of the same change.
+
+--------------------------------------------------------------------------------
+CHANGE 30
+
+OLD_SECTION
+window.browserResizeProperty = function(){
+    var currentSize = window.innerWidth,alter = 0,mode = "null";
+    window.addEventListener("resize", function() {
+        if (window.innerWidth > currentSize) {
+            var diff = window.innerWidth - currentSize;
+            alter = diff;
+            currentSize = window.innerWidth;
+            mode = "expanded";
+        } else {
+            var diff = currentSize - window.innerWidth;
+            alter = diff;
+            currentSize = window.innerWidth;
+            mode = "shrinked";
+        }
+    }, false);
+},  
+Object.defineProperties(browserResizeProperty, {
+    mode: {
+        get: function() {
+            return mode;
+        }
+    },
+    change: {
+        get: function() {
+            return alter;
+        }
+    }
+})
+
+NEW_SECTION
+//The state lives outside the function: the getters below used to read variables private to it, and threw.
+var resizeState = {listening:false, size:window.innerWidth, change:0, mode:"null"};
+window.browserResizeProperty = function(){
+    if (resizeState.listening) return; //one listener, however many times it is called
+    resizeState.listening = true;
+    resizeState.size = window.innerWidth;
+    window.addEventListener("resize", function() {
+        var now = window.innerWidth;
+        resizeState.change = Math.abs(now - resizeState.size);
+        resizeState.mode = now > resizeState.size ? "expanded" : "shrinked";
+        resizeState.size = now;
+    }, false);
+};
+Object.defineProperties(browserResizeProperty, {
+    mode: {
+        get: function() {
+            return resizeState.mode;
+        }
+    },
+    change: {
+        get: function() {
+            return resizeState.change;
+        }
+    }
+})
+
+REASON
+The getters read mode and alter, which were local to the function, so reading browserResizeProperty.mode or .change threw a ReferenceError. The function was also joined to Object.defineProperties by a comma operator. State now lives in module scope, the getters read it, and repeated calls add no second listener.

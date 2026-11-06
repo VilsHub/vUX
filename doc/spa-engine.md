@@ -142,6 +142,8 @@ new SPAEngine(defaultContentNode)
 | `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback` — see [Callbacks](#callbacks). |
 | `config.preClickCallback` | no | Function called just before a link's content is fetched from the server — e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
 | `config.cacheVersion` | no | A string or number identifying the release the cache belongs to, e.g. a build id. When it differs from the version the cache was built under, the cache is emptied: at `initialize()` if set before it, at once if set on a running engine. Throws a `TypeError` for anything other than a non-empty string or a finite number. Reading it returns the value as a string. See [New releases](#new-releases). |
+| `config.styleTimeout` | no | How long, in milliseconds, a fragment waits for its stylesheets before it is mounted anyway. Default `3000`. `0` mounts as soon as the HTML is in. Throws a `TypeError` for anything other than a finite number of 0 or more. See [Stylesheets in fragments](#stylesheets-in-fragments). |
+| `config.restoreScroll` | no | Whether back/forward and a reload return to the scroll position each history entry had. Default `true`. Applied at `initialize()`: setting it afterwards throws an `Error`. Throws a `TypeError` for a non-boolean. See [History and scroll position](#history-and-scroll-position). |
 | `config.functions` | no | Reserved. Accepted and validated, but not currently consulted — dedicated callbacks are looked up in each route's `clickLoadCallbacks` / `historyCallbacks` objects instead. |
 
 ## Route properties
@@ -244,6 +246,28 @@ sections: {
     }
 }
 ```
+
+### Stylesheets in fragments
+
+A fragment may carry its own `<link rel="stylesheet">` tags, usually a route's links section mounted into the page's head area. The engine never paints a fragment before those stylesheets apply:
+
+- Each fragment is parsed off-screen. Its top-level stylesheet links go into the mount point straight away, and the engine waits for each one to load or fail, or for `config.styleTimeout` to pass. Links whose `media` does not match the screen are not waited for.
+- A route's content and all of its sections are then mounted together in one step, after its `flush` selectors are emptied. Until then the previous route stays on screen as it was: while navigating, the new links sit behind `media="not all"`, so they load without restyling the route that is leaving.
+- At boot nothing is on screen yet, so the whole page is hidden (`visibility: hidden` on `<html>`) until the block sections, the entry route's sections and its content are mounted. The links apply as they arrive. This also covers markup in the page shell outside every mount point, such as a logo, that is styled by a fragment's stylesheet. The shell can still be painted unstyled in the moments before your module script runs, so keep the shell's own critical styles in the page itself.
+- With `replaceOld: true`, a stylesheet that is already in the mount point with the same `href` and `media` is kept rather than fetched again, when that keeps the new links in their written order.
+- If another navigation starts while one is waiting, the waiting one is dropped and its links are removed.
+
+Click, history and boot callbacks run after this mount, so they always see the new markup.
+
+## History and scroll position
+
+The engine owns the history entries of the routes it shows:
+
+- **Boot.** The entry page is recorded in the history entry the browser already made for it (`replaceState`), with the URL left as it was typed, query and `#hash` included. There is one entry per page visited, so the first Back press leaves the page instead of appearing to do nothing.
+- **Link navigation.** Each SPA link click pushes one entry with the requested URL (see `addToHistory` to opt a link out). The engine does not scroll on a link navigation: where the new route opens (the top, or a `#section`) is the app's choice, made in its click callback or when it renders the route.
+- **Scroll position** (`config.restoreScroll`, on by default). Swapping content in place means the browser cannot restore an entry's scroll position itself, so the engine sets `history.scrollRestoration = "manual"` and keeps the position in each entry's state as `scrollY`: saved while the visitor scrolls (debounced) and at the moment a link is clicked, before the new content changes it. A newly pushed entry starts with the position the app opened the route at, so it has one to return to even if the visitor never scrolls on it. Back/forward scrolls to it right after the entry's content is mounted, and again after its history callback runs (unless the visitor has scrolled in between), in case that callback renders content the position depends on. A reload scrolls to it after the boot callback. An entry with no saved position is left where the browser put it. `destroy()` puts the browser's own setting back.
+
+Scrolling uses `behavior: "instant"`, so a page with `scroll-behavior: smooth` does not glide to the restored position. The saved value is a plain field in the entry's state, which the engine stores as a JSON string; apps that read `history.state` should not rely on its shape.
 
 ## Caching
 

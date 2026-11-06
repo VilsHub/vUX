@@ -1,0 +1,18 @@
+FILE: doc/README.md
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+Marquee listed in the usage-guides table (before ListScroller) and its example in
+"Other references" (before MessageBox).
+
+OLD_SECTION
+| [ListScroller](list-scroller.md) | ...
+- [MessageBox example](../examples/messagebox/README.md) ...
+
+NEW_SECTION
+| [Marquee](marquee.md) | `vUX-marquee.js` | An endless, seamless scrolling strip from items written once: cloned to fit any width, pause on hover and focus, edge fade, reduced motion respected |
+| [ListScroller](list-scroller.md) | ...
+- [Marquee example](../examples/marquee/README.md): runnable example with two opposing hero rows, a live playground over every config property, a strip of linked cards showing how clones stay out of the tab order, and the validation errors.
+- [MessageBox example](../examples/messagebox/README.md) ...

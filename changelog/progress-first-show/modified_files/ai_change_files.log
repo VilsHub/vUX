@@ -1,0 +1,10 @@
+FEATURE: progress-first-show
+DATE: 2026-11-06
+
+<ProgressIndicator>
+  Modified:
+    vUX-progressIndicator.js    (style flush after inserting a new bar)
+
+<Documentation>
+  Modified:
+    ChangeLog.md                (Fixed bullet; logs/ChangeLog.md_ai_change.log)

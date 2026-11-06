@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2021-07-19=T22:30Z
  * 
@@ -19,7 +19,8 @@ export function AutoWriter() {
     cursorStyle = {style:"solid", width:"1px", color:"green"}, showCursor = false,
     timers = {write:null, blink:null, erase:null, directive:null},
     boxes = null, texts = null, boxIndex = 0, conE = null, currentText = "", cursorIndex = 0,
-    destroyed = false, managedBoxes = [];   //every element written into, so destroy() can clear the spans it added
+    destroyed = false, managedBoxes = [],   //every element written into, so destroy() can clear the spans it added
+    callbackTimers = [];                    //callbacks waiting out callBackDelay, so stop() and destroy() can cancel them
 
     // |    => line break
     // *n*  => backspace n times
@@ -38,7 +39,19 @@ export function AutoWriter() {
     function runCallBack(fn){
         // 'fn' is optional throughout the public API, and a null timer handler is not a no-op:
         // browsers coerce it to the string "null" and evaluate it (blocked under CSP), Node throws.
-        if (fn != null) setTimeout(fn, callBackDelay);
+        //The timer is kept so stop() and destroy() can cancel it: a callback that fired after the
+        //writer was destroyed would typically call the writer again, which throws. A new run
+        //leaves it alone, since that callback belongs to the run that already finished.
+        if (fn == null) return;
+        var id = setTimeout(function(){
+            callbackTimers.splice(callbackTimers.indexOf(id), 1);
+            fn();
+        }, callBackDelay);
+        callbackTimers.push(id);
+    }
+    function cancelCallBacks(){
+        callbackTimers.forEach(clearTimeout);
+        callbackTimers = [];
     }
     // Reads a '*n*' or '~n~' directive opened at 'startPoint'. Bounded by the string length so a
     // malformed directive raises a descriptive error instead of scanning past the end for ever.
@@ -308,6 +321,7 @@ export function AutoWriter() {
     }
     this.stop = function() {
         reset();
+        cancelCallBacks();
     }
     this.destroy = function(){
         //stop() already clears the timers; destroy() additionally removes the '.vAutoWriter' text span
@@ -316,6 +330,7 @@ export function AutoWriter() {
         if (destroyed) return;
 
         reset();
+        cancelCallBacks();
 
         for (var x = 0; x < managedBoxes.length; x++){
             var con = managedBoxes[x];

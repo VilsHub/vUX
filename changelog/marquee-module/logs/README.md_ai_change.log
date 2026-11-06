@@ -1,0 +1,14 @@
+FILE: README.md
+FEATURE: marquee-module
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'message-box-module' (uncommitted at the time)
+
+REASON
+Marquee added to the v4 public feature list, before MessageBox. CRLF kept.
+
+OLD_SECTION
+- MessageBox module (`vUX-messageBox.js`), ...
+
+NEW_SECTION
+- Marquee module (`vUX-marquee.js`), an endless scrolling strip built from items written once in the HTML: cloned to cover any width without a seam, measured speed in pixels per second, left or right, pause on hover and keyboard focus, an optional edge fade, and stillness under reduced motion
+- MessageBox module (`vUX-messageBox.js`), ...

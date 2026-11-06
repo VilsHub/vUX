@@ -18,6 +18,13 @@ function markNav(){
     document.querySelector("#urlPath").textContent = location.pathname;
 }
 
+// The engine restores scroll on back/forward and reload, but never scrolls on a link click: where a
+// new route opens is the app's call. This page opens it at the top, like a fresh page would, so the
+// restore in section 03 has somewhere to come back from.
+function openAtTop(){
+    window.scrollTo({ top: 0, behavior: "instant" });
+}
+
 // A real document load increments this; a SPA navigation never does. If the counter
 // stays put while the address bar above it changes, nothing was re-fetched — which is
 // the whole claim the component makes. Reloading the page bumps it, on purpose.
@@ -157,6 +164,7 @@ async function run(){
                     showUser: function(element, routeName, callbackKey, params){
                         completeLoadProgress();
                         markNav();
+                        openAtTop();
                         reportParamRecovery("clickLoadCallback 'showUser'", element, routeName, callbackKey, params);
                     }
                 },
@@ -177,6 +185,7 @@ async function run(){
                     showTable: function(element, routeName, callbackKey, params){
                         completeLoadProgress();
                         markNav();
+                        openAtTop();
                         tablePage.mount();
                     }
                 },
@@ -204,6 +213,7 @@ async function run(){
         // fallback for links with no dedicated click-callback (e.g. the Home link)
         completeLoadProgress();
         markNav();
+        openAtTop();
     };
     spa.config.exitCallback = function(routeName, params){
         // fallback for routes with no dedicated exitCallback
@@ -221,6 +231,10 @@ async function run(){
     // Tie the cache to the release BEFORE initialize(): initialize() mounts the entry
     // route from the cache, so a version set afterwards would clear only after one stale
     // render. A cache built under a different (or no) version is emptied right here.
+    // config.restoreScroll is applied at initialize() (setting it later throws), so the section 03
+    // toggle reloads the page with ?restoreScroll=0 and the value is read here, before initialize()
+    if (new URLSearchParams(location.search).get("restoreScroll") === "0") spa.config.restoreScroll = false;
+
     var build = await fetchBuild();
     if (build != null) spa.config.cacheVersion = build;
     spa.initialize();
@@ -274,6 +288,62 @@ async function run(){
 
     document.querySelector("#clearLog").addEventListener("click", function(){
         document.querySelector("#log").textContent = "";
+    });
+
+    // ---- scroll state: what the engine keeps for back/forward and reload
+    // The engine stores each entry's position as a scrollY field of its history state (a JSON
+    // string). This panel only READS it: writing history.state would compete with the engine.
+    function savedScrollOf(state){
+        try { return typeof state == "string" ? JSON.parse(state).scrollY : undefined; } catch (e) { return undefined; }
+    }
+    function renderScrollState(){
+        var saved = savedScrollOf(history.state);
+        document.querySelector("#ssNow").textContent = Math.round(window.scrollY);
+        document.querySelector("#ssSaved").textContent = saved == null ? "unset" : saved;
+        document.querySelector("#ssLength").textContent = history.length;
+        document.querySelector("#ssEnabled").textContent = String(spa.config.restoreScroll);
+    }
+    // The engine scrolls right after it mounts the entry (and again after a history callback,
+    // which runs ~200ms later), so the landing spot is read once that has settled.
+    function reportRestore(kind, saved){
+        setTimeout(function(){
+            var landed = Math.round(window.scrollY);
+            var row = document.querySelector("#ssLastRow");
+            document.querySelector("#ssLast").textContent = saved == null ? "nothing saved" : saved + " → " + landed;
+            document.querySelector("#ssLastNote").textContent = saved == null
+                ? kind + ": this entry had no position, so the page stays where the browser put it"
+                : kind + ": saved " + saved + ", landed at " + landed + (Math.abs(saved - landed) <= 1 ? " (restored)" : " (the page is shorter now, so the browser stopped at its end)");
+            row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
+            demoLog("[scroll] " + kind + " → saved " + saved + ", landed at " + landed);
+            renderScrollState();
+        }, 450);
+    }
+    addEventListener("popstate", function(e){ reportRestore("back/forward", savedScrollOf(e.state)); });
+    // a reload keeps the entry's state: report the restore the boot just did
+    if (performance.getEntriesByType("navigation")[0]?.type === "reload") reportRestore("reload", savedScrollOf(history.state));
+
+    var scrollPaint = 0;
+    addEventListener("scroll", function(){
+        if (scrollPaint) return;
+        scrollPaint = requestAnimationFrame(function(){ scrollPaint = 0; renderScrollState(); });
+    }, { passive: true });
+    // history.state.scrollY is written ~100ms after scrolling stops, so it is polled, like the cache table
+    setInterval(renderScrollState, 250);
+    renderScrollState();
+
+    var restoreToggle = document.querySelector("#restoreToggle");
+    restoreToggle.checked = spa.config.restoreScroll;
+    restoreToggle.addEventListener("change", function(){
+        var params = new URLSearchParams(location.search);
+        if (restoreToggle.checked) params.delete("restoreScroll"); else params.set("restoreScroll", "0");
+        var query = params.toString();
+        location.assign(location.pathname + (query ? "?" + query : "") + location.hash);
+    });
+
+    // Clicking the SPA link from code keeps the current scroll position, which is the point: the
+    // entry being left records exactly where this button was when you pressed it.
+    document.querySelector("#btnLeaveHere").addEventListener("click", function(){
+        document.querySelector("#userLink").click();
     });
 
     // ---- validation: each button builds a THROWAWAY engine, so the live one is

@@ -38,7 +38,7 @@ Then open <http://localhost:8000/examples/modal/index.html>.
 
 ## What it demonstrates
 
-- All four effects (`none`, `split`, `flip`, `box`), switchable at runtime.
+- All seven effects (`none`, `split`, `flip`, `box`, `drop`, `slideLeft`, `slideRight`), switchable at runtime. `slideLeft` and `slideRight` dock the modal to the right or left edge as a full height panel instead of centring it.
 - **Both overlay background modes** — `color` tints the overlay, `blur` blurs `#page` behind it instead. Switch with the dropdown; it applies from the next open, since config is snapshotted per layer. Note the blur is held while any layer wants it and only lifts when the stack empties.
 - **Stacking** — Sign in → Forgot password → Terms is three layers deep. `Escape` pops one layer at a time, in reverse order. The live **Open layers** counter tracks `depth`.
 - **One stack across instances** — "Help" is opened by a second `ModalDisplayer` with its own trigger class and effect, yet it layers correctly on the profile modal and one `Escape` still pops exactly one layer.

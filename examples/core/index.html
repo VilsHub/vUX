@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX core utilities example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- hero ---------- */
+    .hero-grid{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:40px; align-items:center}
+    /* $$.sm(h1).fill() paints this; the colour is only what shows before core.css lands */
+    #heroTitle{color:var(--fg)}
+    .stats{display:flex; gap:28px; flex-wrap:wrap; margin-top:34px}
+    .stat b{display:block; font-family:var(--mono); font-size:2.2rem; line-height:1; color:var(--fg); font-variant-numeric:tabular-nums}
+    .stat span{font-size:.8rem; color:var(--dim); letter-spacing:.06em; text-transform:uppercase}
+
+    /* ---------- flip card ----------
+       flip.card() turns .flip-host into the 3D parent and positions both faces
+       absolutely, so the card needs a size of its own. */
+    .flip-host{width:250px; height:320px; cursor:pointer}
+    .flip-card{width:100%; height:100%; position:relative}
+    .flip-card > div{
+        inset:0; border-radius:16px; padding:24px; display:flex; flex-direction:column; justify-content:space-between;
+        border:1px solid var(--line);
+    }
+    .face-a{background:linear-gradient(150deg,#16263a 0%,#0f1520 60%)}
+    .face-b{background:linear-gradient(150deg,#3a2a12 0%,#0f1520 65%)}
+    .face-a .big,.face-b .big{font-family:var(--mono); font-size:2.1rem; font-weight:700; line-height:1}
+    .face-a .big{color:var(--cyan)} .face-b .big{color:var(--amber)}
+    .face-a p,.face-b p{margin:0; color:var(--muted); font-size:.9rem}
+    .face-tag{font-family:var(--mono); font-size:.7rem; letter-spacing:.18em; color:var(--dim); text-transform:uppercase}
+
+    /* ---------- 01 select ---------- */
+    .split{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:22px; align-items:start}
+    .board{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:16px; background:var(--ink); border-radius:0 0 12px 12px}
+    .tile{
+        aspect-ratio:1; border-radius:10px; display:flex; align-items:center; justify-content:center;
+        font-family:var(--mono); font-size:.8rem; color:#0b0f16; font-weight:700;
+        transition:outline-color .2s, transform .2s, background-color .3s;
+        outline:2px solid transparent; outline-offset:2px;
+    }
+    .tile.warm{background:var(--amber)} .tile.cool{background:var(--cyan)} .tile.mute{background:#2a3546; color:var(--muted)}
+    .tile.lit{transform:scale(.86) rotate(-4deg)}
+    .tile.hit{outline-color:var(--fg)}
+    .ops{display:flex; flex-wrap:wrap; gap:8px}
+    .ops button{font-family:var(--mono); font-size:.78rem; padding:6px 10px}
+    .result{
+        background:var(--ink); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-top:14px;
+        font-family:var(--mono); font-size:.8rem; line-height:1.7; min-height:84px; white-space:pre-wrap; word-break:break-word;
+    }
+    .result .call{color:var(--cyan)} .result .ret{color:var(--green)} .result .bad{color:var(--red)}
+
+    .tabs{display:flex; gap:6px; flex-wrap:wrap; padding:14px 16px; border-bottom:1px solid var(--line)}
+    .tabs button.active{background:var(--amber); border-color:var(--amber); color:#20160a}
+    .tab-body{padding:18px 16px; color:var(--muted); min-height:76px}
+
+    /* ---------- 02 motion ---------- */
+    .stage{position:relative; overflow:hidden; background:var(--ink); border-radius:0 0 12px 12px; height:230px}
+    .drawer{
+        position:absolute; top:0; bottom:0; right:-260px; width:260px; display:none;
+        background:var(--panel-2); border-left:1px solid var(--line); padding:18px;
+    }
+    /* .vSlide.pos (core.css) pins top:0; bottom keeps the drawer full height */
+    .drawer h3{color:var(--amber)} .drawer p{color:var(--muted); font-size:.88rem; margin:0}
+    .stage-copy{padding:20px; color:var(--dim); font-size:.9rem; max-width:52%}
+    .reveal{
+        /* .vSlide.dim (core.css) sets height:0 so it can drive height slides too; a width slide
+           needs a height stated more specifically than that, or the element collapses */
+        height:46px !important; width:0; display:none; white-space:nowrap; overflow:hidden;
+        background:linear-gradient(90deg,var(--amber),var(--violet)); color:#1a1020; border-radius:8px;
+        font-family:var(--mono); font-weight:700; line-height:46px; padding:0 16px; margin:20px;
+    }
+    .acc{border-bottom:1px solid var(--line)}
+    .acc:last-child{border-bottom:0}
+    .acc-h{
+        width:100%; text-align:left; border:0; border-radius:0; background:transparent; padding:14px 16px;
+        display:flex; justify-content:space-between; font-size:.92rem;
+    }
+    .acc-h::after{content:"+"; font-family:var(--mono); color:var(--amber)}
+    .acc.open .acc-h::after{content:"−"}
+    .acc-b{display:none; overflow:hidden}
+    .acc-b p{margin:0; padding:0 16px 16px; color:var(--muted); font-size:.88rem}
+
+    .lab{display:grid; grid-template-columns:minmax(0,300px) minmax(0,1fr); gap:22px; align-items:start}
+    #easeSel{max-width:170px}
+    canvas#curve{width:100%; height:auto; display:block; background:var(--ink); border-radius:0 0 12px 12px}
+    .track{position:relative; height:64px; background:var(--ink); border-radius:0 0 12px 12px; overflow:hidden}
+    .track::before{content:""; position:absolute; left:28px; right:28px; top:50%; height:1px; background:var(--line)}
+    .ball{position:absolute; top:16px; left:12px; width:32px; height:32px; border-radius:50%; background:var(--amber); box-shadow:0 0 18px rgba(255,180,84,.5)}
+
+    .poster{
+        height:220px; border-radius:0 0 12px 12px; position:relative; overflow:hidden;
+        background:
+            radial-gradient(circle at 72% 30%,#ffb454 0 46px,transparent 47px),
+            radial-gradient(circle at 72% 30%,rgba(255,180,84,.25) 0 90px,transparent 91px),
+            linear-gradient(180deg,#26385a 0%,#c8a2ff 60%,#ff6b7f 100%);
+    }
+    .poster::after{
+        content:""; position:absolute; left:-10%; right:-10%; bottom:-30px; height:120px;
+        background:#0f1520; border-radius:50% 50% 0 0;
+    }
+
+    /* ---------- 03 layout ---------- */
+    .frames{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px}
+    .frame{position:relative; height:150px; background:var(--ink); border:1px dashed var(--line); border-radius:10px}
+    .chip{
+        position:absolute; top:10px; left:10px; padding:6px 12px; border-radius:999px;
+        background:var(--violet); color:#1a1020; font-family:var(--mono); font-size:.78rem; font-weight:700;
+    }
+    .frame-l{position:absolute; bottom:8px; right:10px; font-family:var(--mono); font-size:.7rem; color:var(--dim)}
+    .shot{
+        height:200px; border-radius:12px; padding:22px; display:flex; flex-direction:column; justify-content:flex-end;
+        background:linear-gradient(135deg,#5ccfe6 0%,#a7e05f 50%,#ffb454 100%);
+    }
+    .shot h3{color:#fff; font-size:1.3rem; margin:0} .shot p{color:#fff; margin:4px 0 0; opacity:.9}
+    .scroller{height:180px; background:var(--ink); border-radius:0 0 12px 12px}
+    .scroller li{padding:9px 16px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.8rem; color:var(--muted)}
+    .scroller ul{list-style:none; margin:0; padding:0}
+
+    /* ---------- 04 events ---------- */
+    .chips{display:flex; flex-wrap:wrap; gap:8px; min-height:52px; padding:16px; background:var(--ink); border-radius:0 0 12px 12px}
+    .tag{
+        font-family:var(--mono); font-size:.8rem; padding:6px 12px; border-radius:999px; cursor:pointer;
+        background:var(--panel-2); border:1px solid var(--line); color:var(--fg); user-select:none;
+    }
+    .tag:hover{border-color:var(--red)}
+    .tag.pinned{border-color:var(--amber); color:var(--amber); cursor:default}
+    .tag b{color:var(--cyan); font-weight:700}
+
+    /* ---------- 05 data ---------- */
+    input[type=datetime-local]{
+        width:100%; background:var(--ink); color:var(--fg); color-scheme:dark;
+        border:1px solid var(--line); border-radius:8px; padding:9px 12px; font-family:var(--mono); font-size:.84rem;
+    }
+    .count{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:14px}
+    .count div{background:var(--ink); border:1px solid var(--line); border-radius:10px; padding:12px 6px; text-align:center}
+    .count b{display:block; font-family:var(--mono); font-size:1.9rem; line-height:1.1; font-variant-numeric:tabular-nums; color:var(--amber)}
+    .count span{font-size:.7rem; color:var(--dim); text-transform:uppercase; letter-spacing:.08em}
+    .bar{height:8px; background:var(--ink); border:1px solid var(--line); border-radius:999px; overflow:hidden; margin:12px 0}
+    .bar i{display:block; height:100%; width:0; background:var(--green); transition:width .2s}
+    .mode{font-family:var(--mono); font-size:1.8rem; font-weight:700; color:var(--cyan)}
+    .out{font-family:var(--mono); font-size:.82rem; color:var(--green); word-break:break-all}
+
+    /* ---------- 06 extensions ---------- */
+    .ext{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:.8rem}
+    .ext td{padding:9px 16px; border-bottom:1px solid var(--line); vertical-align:top; word-break:break-word}
+    .ext tr:last-child td{border-bottom:0}
+    .ext td:first-child{color:var(--cyan); width:52%}
+    .ext td:last-child{color:var(--green)}
+    .ext td.warn{color:var(--amber)}
+    .tbl-wrap{overflow-x:auto}
+
+    /* ---------- 07 errors ---------- */
+    .spinner{width:28px; height:28px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--amber); animation:spin .8s linear infinite; flex:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    h3.sub{margin-top:34px}
+
+    @media (max-width:900px){
+        .hero-grid,.split,.lab{grid-template-columns:minmax(0,1fr)}
+        .flip-host{justify-self:center}
+        .stage-copy{max-width:100%}
+    }
+    @media (max-width:620px){
+        .frames{grid-template-columns:1fr}
+        .board{grid-template-columns:repeat(3,1fr)}
+        .count b{font-size:1.4rem}
+        .wrap{padding:0 16px}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap hero-grid">
+        <div>
+            <p class="eyebrow">vUX <b>/</b> Core <b>/</b> v4.0.0-beta</p>
+            <h1 id="heroTitle">The small things,<br>done once.</h1>
+            <p class="hero-sub">
+                Importing any vUX module puts <b>$$</b> on <code>window</code>: selection, class and style
+                chores, slides, flips, tweens, delegated events, a countdown and a handful of built-in extensions.
+            </p>
+            <div class="stats">
+                <div class="stat"><b data-count="top">0</b><span>on $$</span></div>
+                <div class="stat"><b data-count="sm">0</b><span>on $$.sm()</span></div>
+                <div class="stat"><b data-count="ease">0</b><span>easing curves</span></div>
+            </div>
+            <div class="hero-src">$$.sm(h1).fill(<span class="d">"linear-gradient(…)"</span>) · $$.sm(n).animate(draw, 120)</div>
+        </div>
+
+        <div class="flip-host" id="flipHost" title="Click to flip">
+            <div class="flip-card" id="flipCard">
+                <div class="face-a">
+                    <span class="face-tag">face-a · shown first</span>
+                    <div class="big">$$.sm</div>
+                    <p>Wrap an element or a selector, then call one of nineteen manipulators on it. Click the card.</p>
+                </div>
+                <div class="face-b">
+                    <span class="face-tag">face-b · after the flip</span>
+                    <div class="big">flip.card</div>
+                    <p>Rotated by the core on the Y axis. The option object is passed on every call.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Select and manipulate</h2>
+        <p class="lede">
+            <code>$$.ss</code> and <code>$$.sa</code> are <code>querySelector</code> and <code>querySelectorAll</code>.
+            <code>$$.sm</code> wraps an element <em>or</em> a selector: given a selector, <code>hide</code>,
+            <code>unHide</code> and the <code>class</code> methods act on <strong>every</strong> match, while
+            <code>index</code>, <code>cssStyle</code> and <code>class.has</code> read the first.
+        </p>
+
+        <div class="split">
+            <div class="panel">
+                <div class="panel-h"><span>Board · 12 tiles</span><button class="tiny ghost" id="boardReset">Reset</button></div>
+                <div class="board" id="board"></div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>Selector</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <input type="text" id="sel" value="#board .warm" spellcheck="false" aria-label="CSS selector">
+                        </div>
+                        <div class="field row">
+                            <button class="tiny ghost" data-sel="#board .warm">.warm</button>
+                            <button class="tiny ghost" data-sel="#board .cool">.cool</button>
+                            <button class="tiny ghost" data-sel="#board .tile:nth-child(odd)">:nth-child(odd)</button>
+                            <button class="tiny ghost" data-sel="#board .tile">all</button>
+                        </div>
+                        <div class="ops" id="ops">
+                            <button data-op="ss">$$.ss</button>
+                            <button data-op="sa">$$.sa</button>
+                            <button data-op="savV">$$.sav visible</button>
+                            <button data-op="savH">$$.sav hidden</button>
+                            <button data-op="hide">hide()</button>
+                            <button data-op="unHide">unHide("flex")</button>
+                            <button data-op="add">class.add("lit")</button>
+                            <button data-op="remove">class.remove("lit")</button>
+                            <button data-op="swap">class.swap([warm,cool])</button>
+                            <button data-op="xSwap">class.xSwap</button>
+                            <button data-op="has">class.has("warm")</button>
+                            <button data-op="index">index()</button>
+                            <button data-op="css">cssStyle("background-color")</button>
+                            <button data-op="style">$$.styleElement</button>
+                        </div>
+                        <div class="result" id="selOut">Pick an operation.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-top:22px">
+            <div class="panel-h"><span>makeActive(className, parent)</span><span id="tabNote">pass the parent</span></div>
+            <nav class="tabs" id="tabs">
+                <button class="tiny" data-tab="0">Selection</button>
+                <button class="tiny" data-tab="1">Motion</button>
+                <button class="tiny" data-tab="2">Events</button>
+                <button class="tiny" data-tab="3">Data</button>
+            </nav>
+            <div class="tab-body" id="tabBody"></div>
+        </div>
+        <p class="note">
+            The active tab gets <code>active</code> and <code>cOff</code>, and being a <code>&lt;button&gt;</code> it is also
+            <code>disabled</code> — clicking it again does nothing. The parent scopes the clearing; without one,
+            every element in the document with that class is cleared.
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Motion</h2>
+        <p class="lede">
+            Slides are CSS transitions the core sets up for you: it adds <code>.vSlide</code>, writes a start value,
+            forces a reflow and writes the end value. In position mode the direction is in the numbers —
+            <code>toLeft</code> and <code>toRight</code> both move <code>x[0]</code> → <code>x[1]</code>.
+        </p>
+
+        <div class="panel" style="margin-bottom:18px">
+            <div class="panel-h"><span>Shared slide settings</span></div>
+            <div class="panel-b row" style="gap:22px">
+                <div style="flex:1; min-width:200px">
+                    <label class="lbl" for="slSpeed">speed <span class="val" id="slSpeedV">450</span></label>
+                    <input type="range" id="slSpeed" min="0" max="1500" step="50" value="450">
+                </div>
+                <div>
+                    <label class="lbl" for="slTiming">timingFunction</label>
+                    <select id="slTiming">
+                        <option>linear</option>
+                        <option>ease-out</option>
+                        <option selected>cubic-bezier(.2,.8,.2,1)</option>
+                        <option>ease-in-out</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Drawer · position</h3>
+                <p>A right-anchored panel, slid by its <code>right</code> with <code>positionProperty: "right"</code>.</p>
+                <div class="panel" style="margin-bottom:14px">
+                    <div class="stage">
+                        <div class="stage-copy">The drawer lives off the right edge at <code>right: -260px</code>.</div>
+                        <aside class="drawer" id="drawer">
+                            <h3>Drawer</h3>
+                            <p>Opened with <code>toLeft</code>, x: [-260, 0]. Closed with <code>toRight</code>, x: [0, -260].</p>
+                        </aside>
+                    </div>
+                </div>
+                <div class="row">
+                    <button class="primary tiny" id="drawerOpen">toLeft — open</button>
+                    <button class="tiny" id="drawerClose">toRight — close</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Reveal · dimension</h3>
+                <p><code>toRight</code> opens the width to the content's own width; <code>toLeft</code> takes it back to 0.</p>
+                <div class="panel" style="margin-bottom:14px">
+                    <div class="stage" style="height:auto; min-height:86px">
+                        <div class="reveal" id="reveal">width: 0 → scrollWidth</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <button class="primary tiny" id="revealOpen">toRight</button>
+                    <button class="tiny" id="revealClose">toLeft</button>
+                    <span class="out" id="revealOut"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-top:18px" id="accordion">
+            <div class="panel-h"><span>Accordion · toBottom / toTop</span><span>use: "dimension"</span></div>
+            <div class="acc">
+                <button class="acc-h">Why does toBottom end on height: auto?</button>
+                <div class="acc-b"><p>After the transition the core hands the height back to CSS, so content that grows later — a late image, a wrapped line on resize — is not clipped at the height measured at open time.</p></div>
+            </div>
+            <div class="acc">
+                <button class="acc-h">Why does toTop need use?</button>
+                <div class="acc-b"><p>toLeft and toRight fill in defaults for use, positions and dimensions. toTop and toBottom do not: leave use out and they take the position branch with no positions, and throw.</p></div>
+            </div>
+            <div class="acc">
+                <button class="acc-h">What does the callback get?</button>
+                <div class="acc-b"><p>The element and the end size — a number of pixels — once speed milliseconds have passed. It is a timer, not a transitionend listener, so it fires even when nothing actually moved.</p></div>
+            </div>
+        </div>
+
+        <h3 class="sub">animate(draw, value, options)</h3>
+        <p class="lede">
+            A <code>requestAnimationFrame</code> tween that hands each value to your <code>draw(element, value)</code>.
+            <code>value</code> is a <strong>change</strong>, not a target, and the core remembers where each element
+            ended — so <em>+300</em> then <em>−300</em> brings the ball home.
+        </p>
+        <div class="lab">
+            <div class="panel">
+                <div class="panel-h"><span>timingFunction</span><select id="easeSel" aria-label="timing function"></select></div>
+                <canvas id="curve" width="600" height="420"></canvas>
+            </div>
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>Ball</span><span id="ballV" class="out">0</span></div>
+                    <div class="track" id="track"><div class="ball" id="ball"></div></div>
+                </div>
+                <div class="row" style="margin-top:14px">
+                    <button class="primary" id="ballFwd">animate(draw, +distance)</button>
+                    <button id="ballBack">animate(draw, −distance)</button>
+                </div>
+                <div class="field" style="margin-top:16px">
+                    <label class="lbl" for="ballDur">duration <span class="val" id="ballDurV">900</span></label>
+                    <input type="range" id="ballDur" min="200" max="3000" step="100" value="900">
+                </div>
+                <p class="note">
+                    The seven curves are the core's own <code>timing</code> table, a global. Two
+                    <code>animate()</code> calls on one element run side by side, both writing — wait for one to finish.
+                </p>
+            </div>
+        </div>
+
+        <h3 class="sub">filter(type, value, options)</h3>
+        <div class="split">
+            <div class="panel">
+                <div class="panel-h"><span>grayscale · blur</span></div>
+                <div class="poster" id="poster"></div>
+            </div>
+            <div class="panel">
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="fGray">grayscale <span class="val" id="fGrayV">0</span></label>
+                        <input type="range" id="fGray" min="0" max="1" step=".05" value="0">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="fBlur">blur <span class="val" id="fBlurV">0px</span></label>
+                        <input type="range" id="fBlur" min="0" max="12" step="1" value="0">
+                    </div>
+                    <div class="field row">
+                        <button class="tiny" id="fPulse">Pulse with options</button>
+                        <button class="tiny ghost" id="fClear">Clear</button>
+                    </div>
+                    <div class="result" id="fOut" style="min-height:0"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Layout helpers</h2>
+        <p class="lede">
+            Each writes inline styles or classes and leaves the rest to CSS. <code>center*</code> on a positioned element
+            is <code>50%</code> plus a <code>translate</code>; on a static one it is auto margins, and the vertical part
+            adds a resize listener that is never removed.
+        </p>
+        <div class="frames">
+            <div class="frame"><span class="chip" id="cX">centerX()</span><span class="frame-l">left 50%</span></div>
+            <div class="frame"><span class="chip" id="cY">centerY()</span><span class="frame-l">top 50%</span></div>
+            <div class="frame"><span class="chip" id="cXY">center()</span><span class="frame-l">both</span></div>
+        </div>
+        <div class="row" style="margin-top:14px">
+            <button class="primary tiny" id="centerRun">Run all three</button>
+            <button class="tiny ghost" id="centerReset">Reset</button>
+        </div>
+
+        <div class="split" style="margin-top:34px">
+            <div>
+                <h3>addOverlay("first", id, css)</h3>
+                <p class="note" style="margin:0 0 14px">A gradient layer under the content. The CSS text is attached once under <code>id</code>.</p>
+                <div class="shot" id="shot"><h3>Generated art</h3><p>No image, just gradients.</p></div>
+                <div class="row" style="margin-top:14px">
+                    <button class="tiny" id="overlayAdd">addOverlay</button>
+                    <button class="tiny ghost" id="overlayRemove">Remove</button>
+                </div>
+            </div>
+            <div>
+                <h3>scroll.y(true) · lock · unlock</h3>
+                <p class="note" style="margin:0 0 14px">A vertical scroller with its bar hidden. Locking sets <code>overflow-y: hidden</code>.</p>
+                <div class="panel">
+                    <div class="scroller" id="scroller"><ul id="scrollList"></ul></div>
+                    <div class="status" id="scrollStatus"><span class="dot"></span><span>scrolls</span></div>
+                </div>
+                <div class="row" style="margin-top:14px">
+                    <button class="tiny" id="scrollLock">scroll.lock()</button>
+                    <button class="tiny" id="scrollUnlock">scroll.unlock()</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Delegated events</h2>
+        <p class="lede">
+            <code>$$.attachEventHandler(event, classes, fn)</code> puts one listener on <code>window</code> and calls
+            <code>fn</code> when the event's <strong>target</strong> carries the class. Tags added later work without
+            rebinding. <code>"tag, pinned"</code> means <em>tag but not pinned</em>; <code>"keyup:key=Enter"</code>
+            filters on the event's own properties.
+        </p>
+        <div class="split">
+            <div class="panel">
+                <div class="panel-h"><span>Click a tag to remove it</span><span id="tagCount"></span></div>
+                <div class="chips" id="chips"></div>
+                <div class="panel-b">
+                    <input type="text" class="tag-input" id="tagInput" placeholder="type a tag, press Enter" aria-label="New tag">
+                </div>
+            </div>
+            <div>
+                <pre class="log" id="evLog"></pre>
+                <div class="row" style="margin-top:14px">
+                    <button class="tiny" id="evDetach">detach() the click handler</button>
+                    <span class="pill on" id="evState">attached</span>
+                </div>
+                <p class="note">
+                    The tag with a bold word inside: click the <b style="color:var(--cyan)">bold part</b> and nothing
+                    happens — the target is the <code>&lt;b&gt;</code>, which does not carry <code>tag</code>.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>Data, time and the environment</h2>
+        <p class="lede">The utilities that are not about the DOM at all.</p>
+        <div class="cards">
+            <div class="card">
+                <h3>getTimeSegments(unixSeconds)</h3>
+                <p>Time left until a moment, broken into parts. <code>null</code> once it has passed.</p>
+                <input type="datetime-local" id="cdAt" aria-label="Count down to">
+                <div class="count" id="countdown">
+                    <div><b data-seg="days">0</b><span>days</span></div>
+                    <div><b data-seg="hours">0</b><span data-unit="hours">hrs</span></div>
+                    <div><b data-seg="minutes">0</b><span data-unit="minutes">mins</span></div>
+                    <div><b data-seg="seconds">0</b><span>sec</span></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>ScreenBreakPoint</h3>
+                <p>A getter over <code>innerWidth</code>, banded by your two breakpoints. Resize the window.</p>
+                <div class="mode" id="bpMode">—</div>
+                <div class="out" id="bpSize" style="color:var(--dim); margin-bottom:12px"></div>
+                <label class="lbl" for="bpMed">mediumStart <span class="val" id="bpMedV">600</span></label>
+                <input type="range" id="bpMed" min="320" max="900" step="20" value="600">
+                <label class="lbl" for="bpLg" style="margin-top:12px">largeStart <span class="val" id="bpLgV">1000</span></label>
+                <input type="range" id="bpLg" min="700" max="1600" step="20" value="1000">
+            </div>
+            <div class="card">
+                <h3>randomString · randomInteger</h3>
+                <p>From <code>Math.random()</code>: for ids and demo data, not for secrets.</p>
+                <label class="lbl" for="rsLen">length <span class="val" id="rsLenV">12</span></label>
+                <input type="range" id="rsLen" min="4" max="32" value="12">
+                <div class="result" id="rsOut" style="min-height:0"></div>
+                <div class="row" style="margin-top:12px">
+                    <button class="tiny primary" id="rsGo">Generate</button>
+                    <button class="tiny" id="rsCopy">clipboard.copy</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>IO.get(urls, fn)</h3>
+                <p>Parallel GETs; <code>fn</code> runs once per response with every body so far and the progress.</p>
+                <div class="bar"><i id="ioBar"></i></div>
+                <div class="result" id="ioOut" style="min-height:0">idle</div>
+                <div class="row" style="margin-top:12px"><button class="tiny primary" id="ioGo">Fetch three files</button></div>
+            </div>
+            <div class="card">
+                <h3>getURLParams · browserType</h3>
+                <p>A query value, and the browser read from the user agent.</p>
+                <div class="result" id="envOut" style="min-height:0"></div>
+                <div class="row" style="margin-top:12px"><a href="?name=Ada" class="pill">?name=Ada</a><a href="?" class="pill">clear</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">06</span>Built-in extensions and global helpers</h2>
+        <p class="lede">
+            The core patches a few built-ins and promotes every helper in <code>src/helpers.js</code> to a global.
+            Each row below is evaluated live on this page.
+        </p>
+        <div class="panel tbl-wrap"><table class="ext" id="extTable"></table></div>
+        <p class="note">
+            Rows in amber are where the result is not what the name suggests — <code>trimChar</code> strips every
+            occurrence, and <code>has</code>/<code>unique</code> show up in a <code>for…in</code> over any array.
+        </p>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">07</span>Bad input, and repaired calls</h2>
+        <p class="lede">
+            Most utilities check their arguments and throw an <code>Error</code> naming the method and the argument.
+            Each button makes the call and prints exactly what was thrown.
+        </p>
+        <div class="row" id="badRow"></div>
+        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+
+        <h3 class="sub">Repaired in this release</h3>
+        <p class="lede">
+            Each of these calls threw or returned the wrong thing earlier in v4.0.0-beta. The buttons show what
+            they return now. <code>IO.save</code> downloads a small JSON file.
+        </p>
+        <div class="row" id="defRow"></div>
+        <div class="err-out" id="defOut" style="border-left-color:var(--green)">Press one of the buttons above.</div>
+
+        <h3 class="sub">$$.delay blocks the page</h3>
+        <div class="row">
+            <span class="spinner"></span>
+            <button class="danger" id="freeze">$$.delay(1500)</button>
+            <span class="out" id="freezeOut" style="color:var(--dim)">The spinner stops: <code>$$.delay</code> is a synchronous wait by design. Use <code>setTimeout</code> for a timer.</span>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/core.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            <span class="kbd">$$</span> is on <span class="kbd">window</span> — try
+            <span class="kbd">$$.sm("#flipCard").class.has("flip")</span> or <span class="kbd">vUxModules</span> in the console.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

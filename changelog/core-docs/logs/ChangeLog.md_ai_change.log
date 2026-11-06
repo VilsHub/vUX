@@ -1,0 +1,19 @@
+FILE: ChangeLog.md
+FEATURE: core-docs
+DATE: 2026-10-07
+
+OLD_SECTION
+- Minified build: ./minify.sh writes a minified copy ... at that folder
+
+## Fixed
+
+NEW_SECTION
+- Minified build: ./minify.sh writes a minified copy ... at that folder
+- Core utilities guide (doc/core.md) — ...
+- Runnable core utilities example (examples/core/) — ...
+
+## Fixed
+
+REASON
+Release-facing record of the new guide and example, under v4.0.0-beta ## Added. The
+uncommitted slide-fixes bullets already under ## Fixed were left as they were.

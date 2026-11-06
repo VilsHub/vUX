@@ -1,0 +1,101 @@
+FILE: doc/modal-displayer.md
+FEATURE: modal-slide-effect
+DATE: 2026-10-08
+PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
+
+================================================================================
+CHANGE 1 — effect property row
+================================================================================
+
+OLD_SECTION
+`"none"`, `"split"`, `"flip"`, `"box"` |
+
+NEW_SECTION
+`"none"`, `"split"`, `"flip"`, `"box"`, `"slide"` |
+
+REASON
+List the new value.
+
+================================================================================
+CHANGE 2 — Effects table and completion note
+================================================================================
+
+OLD_SECTION
+| `box` | The modal scales out from the centre point |
+
+The three animated effects complete on `transitionend`, so `openProcessor` fires after the animation.
+
+NEW_SECTION
+| `box` | The modal scales out from the centre point |
+| `slide` | The modal slides down from above the viewport into place and slides back up on close, driven by the core `$$.sm().slide` utility |
+
+The four animated effects complete when their animation ends (`split`, `flip` and `box` on `transitionend`, `slide` on the core slide's callback), so `openProcessor` fires after the animation.
+
+REASON
+Document the effect and how it completes.
+
+================================================================================
+CHANGE 3 — example pointer
+================================================================================
+
+OLD_SECTION
+covering all four effects
+
+NEW_SECTION
+covering all five effects
+
+REASON
+Count updated.
+
+================================================================================
+CHANGE 4 — docked slide effects
+================================================================================
+
+OLD_SECTION
+effect values end at "slide"; Effects table ends at slide; completion note names "four animated effects"
+
+NEW_SECTION
+adds "slideLeft"/"slideRight" to the effect row and Effects table, makes the completion note count-free, and adds a paragraph on docking, full height, widths and side-panel styling; example pointer says seven effects
+
+REASON
+Document the docked sideways slides.
+
+================================================================================
+CHANGE 5 — rename slide to drop
+================================================================================
+
+OLD_SECTION
+`"slide"` in the effect row; `| slide | The modal slides down ... |`; "the three slides on the core slide's callback"
+
+NEW_SECTION
+`"drop"` in the effect row; `| drop | The modal drops from above the viewport into place and rises back up on close ... |`; "`drop`, `slideLeft` and `slideRight` on the core slide's callback"
+
+REASON
+Rename.
+
+================================================================================
+CHANGE 6 — sideways exit direction
+================================================================================
+
+OLD_SECTION
+...; it slides back out to the right on close |  /  ...; it slides back out to the left on close |
+
+NEW_SECTION
+...; on close it carries on left, across the screen and out of the left edge |  /  ...; on close it carries on right, across the screen and out of the right edge |
+
+REASON
+Exit now continues in the direction of entry.
+
+================================================================================
+CHANGE 7 — exit direction reverted
+================================================================================
+
+OLD_SECTION
+...on close it carries on left, across the screen and out of the left edge | / ...right edge |
+
+NEW_SECTION
+...on close it slides back out through the right edge | / ...left edge |
+
+REASON
+Exit leaves back through the docked edge.
+

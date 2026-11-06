@@ -1,0 +1,13 @@
+File: ChangeLog.md
+
+=======================================================================
+Section 1 (v4.0.0-beta, end of ## Fixed)
+OLD_SECTION
+- SPAEngine: a section that fails to fetch is logged and skipped, ...
+
+NEW_SECTION
+- SPAEngine: a section that fails to fetch is logged and skipped, ...
+- AutoWriter `stop()` and `destroy()` now cancel a callback that is waiting out `callBackDelay`; it used to run anyway, so a callback that called the writer again threw "called on a destroyed AutoWriter"
+
+REASON
+Release-facing record of the fix.

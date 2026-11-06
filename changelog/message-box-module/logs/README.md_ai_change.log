@@ -1,0 +1,14 @@
+FILE: README.md
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+MessageBox added to the v4.0.0-beta feature list. CRLF kept.
+
+OLD_SECTION
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface — ...
+
+NEW_SECTION
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface — ...
+- MessageBox module (`vUX-messageBox.js`), notification messages that drop in from the top or slide in from either edge, aligned left, centre or right, with a display duration that pauses while the message is read, a countdown bar, a close button, stacking without jumps and typed shorthands (`info()`, `success()`, `warning()`, `error()`)

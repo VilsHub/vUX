@@ -1,0 +1,11 @@
+FEATURE: slide-fixes
+DATE: 2026-10-07
+
+<Core / slide utility>
+  Modified:
+    src/vUX-core-4.0.0-beta.js  ($$.sm().slide.toLeft / toRight)
+    assets/css/core.css         (.vSlide.pos transition)
+
+<Documentation>
+  Modified:
+    ChangeLog.md

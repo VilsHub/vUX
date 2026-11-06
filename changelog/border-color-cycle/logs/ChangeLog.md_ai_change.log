@@ -1,0 +1,24 @@
+FILE: ChangeLog.md
+FEATURE: border-color-cycle
+DATE: 2026-10-11
+PRIOR STATE: as left by feature 'cshapes-rectangle-fixes' (uncommitted at the time)
+
+REASON
+One Fixed bullet (animate() negative first value) after the CShapes fixes, and one Changed bullet
+(lineColor applied per frame) at the end of the v4.0.0-beta Changed section.
+
+OLD_SECTION
+- `animatedRectangle().draw()` no longer requires the canvas to have an id
+...
+- ListScroller marks both buttons inactive at initialize(), until onScroller() arms them
+
+## Optimised
+
+NEW_SECTION
+- `animatedRectangle().draw()` no longer requires the canvas to have an id
+- `$$.sm(el).animate()` no longer starts below its start value: ...
+...
+- ListScroller marks both buttons inactive at initialize(), until onScroller() arms them
+- CShapes `animatedRectangle()` applies `config.lineColor` on every frame, ...
+
+## Optimised

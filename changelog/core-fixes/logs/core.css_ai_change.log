@@ -1,0 +1,40 @@
+FILE: assets/css/core.css
+FEATURE: core-fixes
+DATE: 2026-10-07
+LINE ENDINGS: CRLF, preserved
+
+OLD_SECTION
+/* Overlay */
+.xOverlay > div{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 0;
+    top:0;
+}
+.xOverlay > div::before{
+    content: '';
+
+NEW_SECTION
+/* Overlay
+   Scoped to .mOverlay: "> div" made every <div> child of the host absolute and full-size.
+   left:0 so a padded host is covered from its edge; border-radius:inherit follows a rounded host. */
+.xOverlay > .mOverlay{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 0;
+    top:0;
+    left:0;
+    border-radius: inherit;
+}
+.xOverlay > .mOverlay::before{
+    border-radius: inherit;
+    content: '';
+
+REASON
+Three overlay faults: the selector matched every <div> child of the host, so with
+addOverlay("last") the host's own content divs became full-size absolute layers; with no
+left, the overlay started after the host's padding; and it ignored a rounded host. The
+two app callers (app/api.myinvitees.com index pages) use "first" and only the overlay's
+own element, so scoping to .mOverlay changes nothing for them except the left edge.

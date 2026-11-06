@@ -1,0 +1,17 @@
+FILE: src/helpers.js
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+messageBox.js added to the module registry (vModel.core.data.modules), so that
+window.vUxModules lists it. The line keeps the file's CRLF ending.
+
+OLD_SECTION
+                "listScroller.js",
+                "modalDisplayer.js",
+
+NEW_SECTION
+                "listScroller.js",
+                "messageBox.js",
+                "modalDisplayer.js",

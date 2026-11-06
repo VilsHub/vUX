@@ -1,0 +1,31 @@
+File: doc/spa-engine.md
+
+=======================================================================
+Section 1 (Config properties table)
+OLD_SECTION
+| `config.cacheVersion` | no | ... See [New releases](#new-releases). |
+| `config.functions` | no | Reserved. ...
+
+NEW_SECTION
+| `config.cacheVersion` | no | ... See [New releases](#new-releases). |
+| `config.styleTimeout` | no | How long, in milliseconds, a fragment waits for its stylesheets before it is mounted anyway. Default `3000`. `0` mounts as soon as the HTML is in. Throws a `TypeError` for anything other than a finite number of 0 or more. See [Stylesheets in fragments](#stylesheets-in-fragments). |
+| `config.functions` | no | Reserved. ...
+
+REASON
+Documents the new config.styleTimeout property.
+
+=======================================================================
+Section 2 (new subsection under Sections, before Caching)
+OLD_SECTION
+(none: the Sections block ended with the section shape example, followed by "## Caching")
+
+NEW_SECTION
+### Stylesheets in fragments
+(how fragments are staged off-screen, which links are waited for, that content and sections
+mount together after flush, the media="not all" hold while navigating, the boot cloak and its
+limit before the module script runs, link reuse with replaceOld, superseded navigations, and
+that callbacks run after the mount)
+
+REASON
+Explains the new mounting contract a consumer relies on, including the one case the engine
+cannot cover (shell markup painted before any script runs).

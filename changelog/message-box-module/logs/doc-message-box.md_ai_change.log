@@ -1,0 +1,15 @@
+FILE: doc/message-box.md
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+NEW FILE. The MessageBox guide: how it works (lanes, slots on the core slide,
+timer from landing, config vs options), quick start, members, config, per-message
+options, the handle, effects, styling and markup, accessibility, limits, errors.
+
+OLD_SECTION
+(file did not exist)
+
+NEW_SECTION
+(whole file)

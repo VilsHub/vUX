@@ -1,0 +1,45 @@
+Feature: spa-style-gated-mount
+Target module: SPAEngine
+
+Problem: SPAEngine mounted every fragment with innerHTML the moment its HTML was in (cache
+or network). The stylesheets the fragment carried were only requested at that point, so the
+browser painted the markup unstyled until they arrived. Reported on app.myinvitees.com:
+going from login to the card tool showed the header logo (an SVG with no size of its own)
+filling the screen, and the tool menu unstyled, until the route's CSS loaded.
+
+Change:
+- Fragments are staged: parsed in a <template>, their top-level stylesheet links put in the
+  mount point at once, then mounted in one task after those links load or fail, or after
+  config.styleTimeout (default 3000ms). Links whose media doesn't match are not waited for.
+- A route's content and sections mount together (flush first, then the exit callback, then
+  the swap). While navigating, staged links sit behind media="not all" so the leaving route
+  isn't restyled; at boot they apply as they arrive.
+- Boot hides <html> (visibility) until the block sections, the entry route's sections and
+  its content are mounted, so shell markup styled by fragment CSS (the logo) isn't painted
+  half-styled. It is lifted on every outcome, including errors and redirects.
+- With replaceOld, an identical stylesheet already in the mount point is kept, not refetched,
+  when the new links' order allows.
+- A navigation token supersedes stale navigations; their staged links are removed.
+- Callbacks (boot, click, history) run after the styled mount.
+- Fixes on the way: flush no longer blanks the header at click time; re-clicking the last
+  link after back/forward reloads it; a double click on a loading link is ignored; a failed
+  section is logged and skipped, not cached, and doesn't block the route.
+- New: config.styleTimeout.
+
+Verified: headless Chrome against app.myinvitees.com through a test server that delays every
+stylesheet and samples each animation frame, with the original and the new engine side by side.
+At 800ms per stylesheet:
+  boot /card-writer: old 97 frames of unstyled menu, 57 frames of a 1369px logo; new 0 and 7
+    (the 7 are the shell painted before any script runs, which vUX can't reach).
+  click / -> /card-writer: old 95 frames unstyled menu, 97 unstyled content; new 0 and 0,
+    the styled home page stays up until the styled tool page replaces it. Back mounts home.
+At 80ms per stylesheet the new engine reaches a styled tool page at 542ms vs 410ms (boot)
+and 608ms vs 551ms (click), against old pages that painted unstyled first.
+vUX examples/spa: boot on /, /table, /user/7, then clicks, a repeated click, back, back,
+forward and home all mount the right page, title and URL with no page errors.
+Not exercised in a browser: reuse of an identical stylesheet across two routes (neither app
+has a route pair that shares a links fragment).
+
+Affected projects: app.myinvitees.com, the only app that uses SPAEngine. No API removed. Visible differences: the page is hidden
+during boot until the first route is mounted, a route appears once styled instead of
+progressively, and flush happens at mount time.

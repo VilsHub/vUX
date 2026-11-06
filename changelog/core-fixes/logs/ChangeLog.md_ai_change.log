@@ -1,0 +1,18 @@
+FILE: ChangeLog.md
+FEATURE: core-fixes
+DATE: 2026-10-07
+
+OLD_SECTION
+## Fixed
+... (ends with the slide-fixes bullet "Position slides now start from positions.x[0] ...")
+
+NEW_SECTION
+## Fixed
+... the same, followed by nineteen bullets, one per consumer-visible fix: scroll.x/y,
+makeActive, hasParent/getParent, $$.scroll.direction, IO.save, browserResizeProperty,
+camelToCSSstandard, validatePhoneNumber, randomString/randomInteger, ScreenBreakPoint,
+browserType, flip.card, filter, slide validation, toTop/toBottom defaults, toBottom
+height, ajax, $$.sav, overlay CSS.
+
+REASON
+Release-facing record of each fix, from the consumer's point of view.

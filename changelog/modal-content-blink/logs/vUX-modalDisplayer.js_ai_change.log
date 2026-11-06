@@ -1,0 +1,291 @@
+FILE: vUX-modalDisplayer.js
+FEATURE: modal-content-blink
+DATE: 2026-10-08
+PRIOR STATE: as left by feature 'modal-slide-effect'
+
+================================================================================
+CHANGE 1 — fillEffectBox() keeps the animated copy; new reclaimLiveCopy()
+================================================================================
+
+OLD_SECTION
+//Copies the modal into an animation box. The copy drops its id so that only the
+//one finally handed to the user (in the layer host) carries it.
+function fillEffectBox(box, layer) {
+    box.innerHTML = layer.sourceOuter;
+    var copy = box.childNodes[0];
+    copy.removeAttribute("id");
+    copy.style["display"] = "block";
+    return copy;
+}
+
+NEW_SECTION
+//Copies the modal into an animation box. An effect that animates one whole copy keeps
+//that copy (liveCopy) and hands the node itself to the layer host once the animation
+//ends, so it keeps the modal's id from the start. A copy that will be thrown away - the
+//two halves of split - drops its id, so that only the one handed to the user carries it.
+function fillEffectBox(box, layer, live) {
+    box.innerHTML = layer.sourceOuter;
+    var copy = box.childNodes[0];
+    if (live) {
+        layer.liveCopy = copy;
+    } else {
+        copy.removeAttribute("id");
+    }
+    copy.style["display"] = "block";
+    return copy;
+}
+
+//Moves the displayed modal back into an animation box for the closing effect, so the
+//exit plays with what the user sees - typed and autofilled values included - instead
+//of a fresh copy of the markup with every field emptied.
+function reclaimLiveCopy(box, layer) {
+    var live = layer.liveCopy;
+    if (live == null) return fillEffectBox(box, layer);
+    if (live.parentNode !== box) {
+        box.innerHTML = "";
+        box.appendChild(live);
+    }
+    return live;
+}
+
+REASON
+Every copy used to be disposable, so none could carry the id or keep its form state
+once it reached the host. The copy a single-box effect animates is now the one the
+user ends up with. reclaimLiveCopy() falls back to a fresh copy when there is no
+live copy (split), and leaves the node where it is when the close starts during an
+unfinished drop or slide, because the live copy is still in that box.
+
+================================================================================
+CHANGE 2 — completeOpen() moves the live copy instead of rebuilding it
+================================================================================
+
+OLD_SECTION
+    layer.host.innerHTML = layer.sourceOuter;
+    if (layer.dock != null) {
+
+NEW_SECTION
+    //The node that animated in is moved, not rebuilt from markup. A rebuilt copy is a new
+    //set of form fields: their typed values are gone and the browser re-applies autofill a
+    //few frames late, which showed as the modal content blinking as the effect ended.
+    if (layer.liveCopy != null) {
+        layer.host.appendChild(layer.liveCopy);
+    } else {
+        layer.host.innerHTML = layer.sourceOuter;
+    }
+    if (layer.dock != null) {
+
+REASON
+This is the reported blink. Rebuilding swapped every input for a new, empty one just
+as the animation ended, and autofill came back a few frames later. The `none` and
+`split` effects have no live copy and keep the old path.
+
+================================================================================
+CHANGE 3 — open effects mark their single copy as live
+================================================================================
+
+OLD_SECTION
+        fillEffectBox(flipperFormElement, layer);          (flip)
+        fillEffectBox(box, layer);                         (box)
+        fillEffectBox(slider, layer);                      (drop)
+    fillEffectBox(filler, layer)["style"]["flex"] = "1 0 auto";   (openDocked)
+
+NEW_SECTION
+        fillEffectBox(flipperFormElement, layer, true);
+        fillEffectBox(box, layer, true);
+        fillEffectBox(slider, layer, true);
+    fillEffectBox(filler, layer, true)["style"]["flex"] = "1 0 auto";
+
+REASON
+These effects animate one whole copy, which becomes the displayed modal (Change 2).
+Split still passes nothing: its two halves are emptied as they land.
+
+================================================================================
+CHANGE 4 — close effects replay with the displayed modal
+================================================================================
+
+OLD_SECTION
+        fillEffectBox(flipperFormE, layer);                (flip)
+        fillEffectBox(box, layer);                         (box)
+        fillEffectBox(slider, layer);                      (drop)
+    fillEffectBox(slider.querySelector(".vDockFill"), layer)["style"]["flex"] = "1 0 auto";   (closeDocked)
+
+NEW_SECTION
+        reclaimLiveCopy(flipperFormE, layer);
+        reclaimLiveCopy(box, layer);
+        reclaimLiveCopy(slider, layer);
+    reclaimLiveCopy(slider.querySelector(".vDockFill"), layer)["style"]["flex"] = "1 0 auto";
+
+REASON
+The exit used to animate a fresh copy, so anything typed or autofilled disappeared as
+the modal started to leave. The displayed node now goes back into the box. It still
+has the id, which is correct: the source gets its id back only in completeClose().
+
+================================================================================
+CHANGE 5 — layer record gains liveCopy
+================================================================================
+
+OLD_SECTION
+        effectsCon: null,
+        opened: false,
+
+NEW_SECTION
+        effectsCon: null,
+        liveCopy: null,
+        opened: false,
+
+REASON
+Holds the node handed between the animation box and the host.
+
+================================================================================
+CHANGE 6 — measure the modal at its displayed size (follow-up report)
+================================================================================
+
+Reported with modal-shrink-and-grow.mp4 after Changes 1-5: with flip (and drop),
+the modal animated in at one width and snapped about 30px wider when the effect
+ended. The nested reset-password layer snapped narrower.
+
+OLD_SECTION
+    var dimension = getDimensionOfHidden(source);
+    layer.height = dimension["height"];
+    layer.width = dimension["width"];
+
+    freezePage(); //no-op for every layer after the first
+...
+    modalStack.push(layer);
+    applyWidths(layer);
+    if (layer.dock != null) {
+
+NEW_SECTION
+    freezePage(); //no-op for every layer after the first
+...
+    modalStack.push(layer);
+    applyWidths(layer);
+    measureLayer(layer);
+    if (layer.dock != null) {
+
+plus, before positionLayer():
+
+function measureLayer(layer) {
+    var overlay = layer.overlay;
+    overlay.style["visibility"] = "hidden";
+    overlay.classList.add("show");
+
+    layer.host.innerHTML = layer.source.outerHTML;
+    var probe = layer.host.childNodes[0];
+    probe.style["display"] = "block";
+    probe.style["width"] = "100%";
+    var box = probe.getBoundingClientRect();
+    layer.width = box.width;
+    layer.height = box.height;
+
+    layer.host.innerHTML = "";
+    overlay.classList.remove("show");
+    overlay.style["visibility"] = "";
+}
+
+REASON
+getDimensionOfHidden() measured the hidden source as position:absolute, which gives
+its shrink-to-fit width: the content's natural width, capped by the viewport. That
+has nothing to do with the width from config.modalWidths / data-widths, which is the
+width the host shows the modal at. The animation box (effectsCon) used the
+shrink-to-fit size and the host used the configured width, so the modal snapped to a
+new width when the effect ended. The text then rewrapped and the height changed too.
+Content narrower than the configured width grew (the sign-in form). Content wider
+than it shrank (the reset-password paragraph runs wider than 500px on one line).
+
+The mismatch is older than Changes 1-5. They make it more visible because the
+content no longer blinks at the same moment.
+
+The modal is now measured inside its own host, with the overlay shown but
+visibility:hidden, after applyWidths() and before positionLayer(), which reads
+layer.height. The probe keeps its id, so id-based styles count in the measurement.
+Two copies share the id only for this synchronous block.
+
+================================================================================
+CHANGE 7 — split halves anchored to their outer edge (follow-up report)
+================================================================================
+
+Reported with modal-wrong-split.mp4 after Change 6: during split, the halves did
+not form the modal. Each half showed the modal's left side ("Sign in" was visible in
+both halves).
+
+OLD_SECTION
+        fillEffectBox(leftEle, layer)["style"]["left"] = "0px";
+        fillEffectBox(rightEle, layer)["style"]["right"] = "0px";
+  (and the same two calls with leftE / rightE in closeEffects.split)
+...
+    source.style["width"] = layer.effect == "split" ? layer.width + "px" : "100%";
+
+NEW_SECTION
+        fillSplitHalf(leftEle, layer, "left");
+        fillSplitHalf(rightEle, layer, "right");
+  (and fillSplitHalf(leftE/rightE, ...) in closeEffects.split)
+...
+    source.style["width"] = "100%"; //split sizes its copies through fillSplitHalf()'s wrapper
+
+function fillSplitHalf(half, layer, side) {
+    var wrap = $$.ce("DIV");
+    wrap.setAttribute("style", "position:absolute; top:0; " + side + ":0; width:" + layer.width + "px;");
+    half.innerHTML = "";
+    half.appendChild(wrap);
+    return fillEffectBox(wrap, layer);
+}
+
+REASON
+Each half is 50% as wide as the modal, with overflow:hidden, and holds a copy of the
+whole modal. The copy was in normal flow, so it started at the half's left edge in
+both halves, and the right half showed the left side. The left/right:0 the old code
+set on each copy was meant to anchor it to its edge. It had no effect because the
+copy was never positioned.
+
+The copy now sits in an absolutely positioned wrapper anchored to the half's outer
+edge. The wrapper is as wide as the host (layer.width from Change 6), and the copy is
+100% of it, the same as in the host. So the halves line up with the displayed modal,
+and the copy's width no longer depends on its box-sizing. The source's
+split-specific pixel width is no longer needed.
+
+================================================================================
+CHANGE 8 — split halves are not autofillable (follow-up report)
+================================================================================
+
+Reported after Change 7: the split halves still did not match. The left half's
+inputs had a white background and the right half's did not.
+
+OLD_SECTION
+function fillSplitHalf(half, layer, side) {
+    var wrap = $$.ce("DIV");
+    wrap.setAttribute("style", "position:absolute; top:0; " + side + ":0; width:" + layer.width + "px;");
+    half.innerHTML = "";
+    half.appendChild(wrap);
+    return fillEffectBox(wrap, layer);
+}
+
+NEW_SECTION
+function fillSplitHalf(half, layer, side) {
+    var wrap = $$.ce("DIV");
+    wrap.setAttribute("style", "position:absolute; top:0; " + side + ":0; width:" + layer.width + "px;");
+    wrap.setAttribute("inert", "");
+    half.innerHTML = "";
+    half.appendChild(wrap);
+    var copy = fillEffectBox(wrap, layer);
+    var fields = copy.querySelectorAll("input, textarea, select");
+    for (var x = 0; x < fields.length; x++) {
+        fields[x].setAttribute("readonly", "");
+        fields[x].setAttribute("autocomplete", "off");
+    }
+    return copy;
+}
+
+REASON
+The white background is the browser's autofill style (:-webkit-autofill), not
+library or page CSS. The two halves are two separate copies of the same form, and
+Chrome autofilled only one of them (the left one). So one half showed filled,
+autofill-coloured fields and the other showed empty, dark ones. Script cannot read
+or copy autofill state, so neither copy is left fillable. Autofill skips read-only
+fields, and inert keeps the decorative copies unfocusable while they move. The
+copies are thrown away at the hand-off, so these attributes never reach the
+displayed modal.
+
+Trade-off: for split only, the modal still lands as a copy rebuilt from markup (the
+two halves cannot be handed over as one node), so autofill fills the displayed
+fields a moment after the effect ends.

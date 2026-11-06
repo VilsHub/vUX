@@ -1,0 +1,27 @@
+FILE: CLAUDE.md
+FEATURE: message-box-module
+DATE: 2026-10-09
+PRIOR STATE: as left by feature 'modal-slide-effect' (uncommitted at the time)
+
+REASON
+At the user's request: new modules must use the vUX core utilities, and any
+reusable manual operation must be reported to the user, who decides whether it
+joins the core. MessageBox was also added to the constructor list.
+
+CHANGE 1
+OLD_SECTION
+## Component usage convention
+
+NEW_SECTION
+## Build new modules on the core (required)
+(rule text: use $$.ce, $$.sm().class/slide/flip/animate, attachEventHandler,
+validateX; report reusable manual operations to the user; never add them to the
+core unasked)
+
+## Component usage convention
+
+CHANGE 2
+OLD_SECTION
+`CShapes`, `SketchPad`, `FormComponents`)
+NEW_SECTION
+`CShapes`, `SketchPad`, `FormComponents`, `MessageBox`)

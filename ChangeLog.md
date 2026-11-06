@@ -73,6 +73,25 @@
 - Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
 - SPAEngine `loggedIn` property — the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
 - Minified build: ./minify.sh writes a minified copy of the library (about 60% smaller JS) to dist/<version>/ with the same file layout, so a page switches to it by pointing data-library-root and its imports at that folder
+- Core utilities guide (doc/core.md) — `$$`, every `$$.sm()` manipulator, slide/flip/animate/filter in detail, delegated events, data, time and environment utilities, the global helpers and built-in extensions, the error list, and a table of the calls known to be broken in this release
+- Runnable core utilities example (examples/core/) — a gradient headline turned by `animate()`, a flip card, a selection board with every class and visibility method, slides, an easing lab, filters, overlays, delegated events, a live countdown, the built-in extensions evaluated on the page, and the validation errors and known defects triggered on demand
+- ModalDisplayer "drop" effect — the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
+- ModalDisplayer "slideLeft" and "slideRight" effects — the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right, docks right and leaves back out to the right; slideRight mirrors it on the left
+- MessageBox module (vUX-messageBox.js) — notification messages posted with `show()` or the typed shorthands `info()`, `success()`, `warning()` and `error()`; each stays for `config.duration` (0 keeps it until closed) and leaves on its own
+- MessageBox effects — `drop` (the default) falls from the top of the window and rises back out, `slideLeft`/`slideRight` slide in from an edge and leave through it, plus `fade` and `none`; the movement is the core slide utility's, and under reduced motion every effect becomes a fade
+- MessageBox alignment — `config.alignment` lands messages on the left, centre or right; messages stack without jumping, every instance on a page shares the same lanes, and on a narrow window all of them share the centre lane
+- MessageBox timer pauses while the pointer is over a message or focus is inside it, with a countdown bar that holds with it; plus a close button, close-on-click, `maxVisible`, light and dark themes, and `onShow`/`onClose` callbacks that report why a message closed
+- MessageBox handles — `show()` returns a handle whose `close()` removes the message when your code decides, and content may be an element carrying your own controls
+- MessageBox guide (doc/message-box.md) and runnable example (examples/messagebox/)
+- Marquee module (vUX-marquee.js): an endless scrolling strip from a container whose items are written once; it clones them until any width is covered, measures one loop to the pixel so the seam never shows, and rebuilds on resize or when `refresh()` adopts new items
+- Marquee config: `speed` in pixels per second, `direction` (`left` or `right`, reversing in place), `gap`, `fade` for a masked edge fade, `pauseOnHover` (keyboard focus counts too) and `respectReducedMotion`; every setting applies to a running strip without restarting its loop
+- Marquee `pause()`, `play()`, `refresh()` and `destroy()`, plus `paused` and `moving` getters; clones are hidden from screen readers and the tab order and carry no ids, but stay clickable
+- Marquee guide (doc/marquee.md) and runnable example (examples/marquee/)
+- CShapes rectangles take `config.radius` for rounded corners, on both `fixedRectangle()` and `animatedRectangle()`; the line keeps one even thickness all the way round
+- SPAEngine mounts a route only once the stylesheets its fragments carry have loaded: the content and every section appear together, already styled, while the previous route stays on screen untouched until then; at boot the page stays hidden until the first route is mounted
+- SPAEngine `config.styleTimeout`: the longest, in milliseconds, a fragment waits for its stylesheets before it is mounted anyway (default 3000, 0 to not wait)
+- SPAEngine scroll restoration (`config.restoreScroll`, on by default): back/forward and a reload return to the scroll position each history entry had, instead of keeping whatever position the previous route left
+- SPA example section "Back to where you were": a live view of the engine's scroll state (current position, the position saved in the history entry, history length, the last restore) and a button to leave from the current spot and come back with Back
 
 ## Fixed
 - modal multiple display bug
@@ -169,6 +188,52 @@
 - Component sync() without config.onMount now returns the instances it mounted, and instances() and destroyAll() reach rows it mounted; before, sync() returned undefined for each new row and destroyAll() left those rows in the page
 - SPAEngine page sections that were not yet cached now load: the first visit to a route whose page sections had not been prefetched threw instead of fetching them, and when it got further it fetched the wrong URL and never mounted the result
 - SPAEngine protected routes now work: the login check never returned a value, so every protected route redirected even for a signed-in user, and the redirect went to `/undefined` instead of the route's `authURL`
+- Slide with `use: "position"` now animates `right` and `bottom` as well as `left` and `top`: an element slid by its `right` (`positionProperty: "right"`) used to jump to its end position instead of sliding
+- `slide.toRight()` now honours `positionProperty`, as `toLeft()` does: it always moved `left`, so a right-anchored element couldn't be slid with it
+- `slide.toRight()` now applies the same defaults as `toLeft()` when `use`, `positions`, `dimensions` or `positionProperty` is left out; before, leaving `use` out ran the position branch with no positions and threw
+- `slide.toRight()` with `use: "dimension"` and no end width now opens to the content's width instead of throwing a ReferenceError
+- `slide.toLeft()` and `slide.toRight()` with `use` left out now animate the width: the element was given the position class before `use` defaulted to `"dimension"`, so the width change wasn't transitioned
+- Position slides now start from `positions.x[0]` every time: an element that wasn't already there, such as one just unhidden, animated to the start position instead of jumping to it, so a slide-in appeared without moving
+- `$$.sm(el).scroll.x()` and `scroll.y()` without an argument now work and keep the scrollbar; they used to throw unless given `true`
+- `$$.sm(el).makeActive(className)` without a parent now clears the previously active element; before, every element ever made active stayed active
+- `$$.sm(el).hasParent()` and `getParent()` accept a name with a leading `.` or `#`; `hasParent(".menu")` used to throw and `getParent("#menu")` never matched
+- `$$.scroll.direction()` now returns the last scroll direction and distance instead of throwing a TypeError
+- `$$.IO.save(data, { name, type })` now downloads the file; every call used to throw a ReferenceError. JSON data that isn't a string is serialised for you
+- `browserResizeProperty.mode` and `.change` now report the last resize instead of throwing a ReferenceError, and calling `browserResizeProperty()` again adds no second listener
+- `camelToCSSstandard("fontSize")` now returns `"font-size"` instead of `"fontundefinedize"`
+- `validatePhoneNumber(value)` now checks the value it is given; it used to throw a ReferenceError
+- `$$.randomString(n)` now always returns `n` characters drawn from all 62 letters and digits; it sometimes returned fewer, repeated `T` and never produced `j` or `Y`. It and `$$.randomInteger()` now throw for non-integer arguments, as their messages always said
+- `ScreenBreakPoint` now accepts either breakpoint on its own, or no argument, using the defaults for what is left out; leaving one out used to throw
+- `$$.browserType()` now recognises desktop and iOS Safari, Opera's `OPR` agent and headless Chrome, and reports `name: "unknown"` for an agent it doesn't know instead of throwing
+- `flip.card()` with `axis: "z"` now turns the card; it wrote an invalid transform. `frontClass`, `backClass` and `axis` are now each checked as strings
+- `filter()` with options now cleans up after its pulse: the transition and listener it added are removed, so later `filter()` calls on the element are no longer transitioned and reset to `none`. `callBack` runs on a timer instead of freezing the page, `duration` defaults to 200ms when left out, `init` works with a single filter name, and an unsupported single name now throws instead of being ignored
+- `slide.toRight()`, `toTop()` and `toBottom()` now throw on invalid options, as `toLeft()` does, instead of logging the error and running anyway. `toLeft()` errors no longer carry a doubled `Error: Error:` prefix, an invalid `positionProperty` is named in a full message, and `positions` without the axis a direction needs is now rejected
+- `slide.toTop()` and `slide.toBottom()` now default `use` and `positions` as the other directions do; leaving `use` out used to throw
+- `slide.toBottom()` with `dimensions` but no end height now opens to the content's height; the unitless height it wrote was ignored
+- `$$.ajax(options)` no longer requires a return type; left out, it sends `Accept: */*`
+- `$$.sav(selector)` without `"visible"` or `"hidden"` now throws a descriptive error instead of a bare TypeError
+- The overlay from `addOverlay()` now covers a padded host from its edge and follows its `border-radius`, and `core.css` no longer turns every `<div>` child of the host into a full-size absolute layer
+- ModalDisplayer content no longer blinks as the flip, box, drop, slideLeft and slideRight effects finish: the modal that animated in is the one left on screen, so typed and autofilled form values and id-based styles stay put instead of dropping out for a few frames, and the closing effect plays with those values too
+- ModalDisplayer no longer snaps wider or narrower as the flip, box, drop and split effects finish: the effect is now sized to the width the modal is shown at (its configured width) rather than the hidden modal's natural content width, so its height matches too
+- ModalDisplayer's split effect now shows the modal's right side in its right half; both halves used to show the left side, so the two halves never formed the modal until the effect ended
+- ModalDisplayer's split effect no longer shows browser-autofilled fields in one half and empty fields in the other; the halves' copies of the form are no longer autofilled while they move
+- CShapes `animatedRectangle()` accepts a numeric `iterationCount`; any number used to throw a ReferenceError, so only `"infinite"` worked
+- CShapes rectangles are sharp on high-density screens; the canvas is now sized by the device pixel ratio instead of drawn at CSS-pixel resolution and stretched
+- CShapes `animatedRectangle()` no longer re-strokes every earlier frame's rectangle on each frame, so a cycle no longer gets slower the longer it runs
+- Calling `draw()` again on a running `animatedRectangle()` restarts it; it used to start a second loop alongside the first, doubling the speed, and a `stop()` that landed on a cycle's last frame was ignored
+- A repeating `animatedRectangle()` no longer jumps at the start of each cycle when its dash pattern does not divide 100px (the default `[10, 2]` did); each cycle now moves a whole number of dash periods
+- `animatedRectangle()` with an easing that does not end on exactly 1 now finishes its cycle and runs its callback, and a `duration` of 0 completes its cycles instead of stopping without the callback
+- `animatedRectangle().draw()` no longer requires the canvas to have an id
+- `$$.sm(el).animate()` no longer starts below its start value: the first frame's time fraction could be negative, so the first value drawn was slightly under `startValue` (or under the remembered end of the previous run)
+- SPAEngine no longer paints a fragment before its stylesheets arrive: a section or content mounted on boot, click or back/forward used to show unstyled for as long as its CSS took to load, so an image with no size of its own (such as a header logo) could fill the screen
+- SPAEngine flush selectors are emptied when the new route is mounted, not as soon as the link is clicked, so a header no longer goes blank while the next route loads
+- SPAEngine: after back/forward, clicking the link that last loaded the content node loads its route again; it used to be ignored, leaving the history entry's content under the clicked route's sections
+- SPAEngine: when two clicks race, only the last one is mounted; a slower earlier one used to mount its sections over the later route's
+- SPAEngine: a section that fails to fetch is logged and skipped, and the rest of the route still mounts; a failed or fallback response is no longer cached as the section
+- AutoWriter `stop()` and `destroy()` now cancel a callback that is waiting out `callBackDelay`; it used to run anyway, so a callback that called the writer again threw "called on a destroyed AutoWriter"
+- SPAEngine no longer adds a second history entry for the entry page at boot, so the first Back press leaves the page instead of appearing to do nothing; the boot entry also keeps the URL's query and `#hash`, which used to be dropped
+- SPAEngine: a route fragment that fails to load is reported in the console (as a failed page or section already was) and its link can be clicked again; it used to throw a ReferenceError while building a blocking alert, and leave the link stuck
+- ProgressIndicator: the first linear bar shown in a page now animates; it used to jump straight to its first stop, and a style 3 bar then never moved on to its slow and crawl phases (later bars were fine)
 
 ## Removed
 - colorOverlayStyle in modalDisplayerObj
@@ -204,6 +269,7 @@
 - ListScroller sets the list's width to max-content and its paddings inline, instead of an item-count width and a left offset; listScroller.css no longer positions the list absolutely or forces the container's width
 - ListScroller button scrolls take config.scrollSpeed's default of 290ms instead of a fixed 200ms
 - ListScroller marks both buttons inactive at initialize(), until onScroller() arms them
+- CShapes `animatedRectangle()` applies `config.lineColor` on every frame, so a colour set while it runs shows on the next frame instead of the next cycle, and a colour can be tweened
 
 ## Optimised
 - Optimized $$.cssStyle() static method functionality

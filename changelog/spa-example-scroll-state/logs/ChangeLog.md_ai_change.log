@@ -1,0 +1,42 @@
+File: ChangeLog.md
+Feature: spa-example-scroll-state
+(Quoted unchanged context below has its U+2014 dashes shown as ' : ', per the workspace no-em-dash rule.)
+
+=======================================================================
+Section 1
+OLD_SECTION
+- SPAEngine mounts a route only once the stylesheets its fragments carry have loaded: the content and every section appear together, already styled, while the previous route stays on screen untouched until then; at boot the page stays hidden until the first route is mounted
+- SPAEngine `config.styleTimeout`: the longest, in milliseconds, a fragment waits for its stylesheets before it is mounted anyway (default 3000, 0 to not wait)
+
+## Fixed
+
+NEW_SECTION
+- SPAEngine mounts a route only once the stylesheets its fragments carry have loaded: the content and every section appear together, already styled, while the previous route stays on screen untouched until then; at boot the page stays hidden until the first route is mounted
+- SPAEngine `config.styleTimeout`: the longest, in milliseconds, a fragment waits for its stylesheets before it is mounted anyway (default 3000, 0 to not wait)
+- SPAEngine scroll restoration (`config.restoreScroll`, on by default): back/forward and a reload return to the scroll position each history entry had, instead of keeping whatever position the previous route left
+- SPA example section "Back to where you were": a live view of the engine's scroll state (current position, the position saved in the history entry, history length, the last restore) and a button to leave from the current spot and come back with Back
+
+## Fixed
+
+REASON
+Added: SPAEngine scroll restoration (config.restoreScroll), this feature; and the SPA example's scroll-state section (feature spa-example-scroll-state, adjacent bullet in the same hunk).
+
+=======================================================================
+Section 2
+OLD_SECTION
+- SPAEngine: a section that fails to fetch is logged and skipped, and the rest of the route still mounts; a failed or fallback response is no longer cached as the section
+- AutoWriter `stop()` and `destroy()` now cancel a callback that is waiting out `callBackDelay`; it used to run anyway, so a callback that called the writer again threw "called on a destroyed AutoWriter"
+
+## Removed
+
+NEW_SECTION
+- SPAEngine: a section that fails to fetch is logged and skipped, and the rest of the route still mounts; a failed or fallback response is no longer cached as the section
+- AutoWriter `stop()` and `destroy()` now cancel a callback that is waiting out `callBackDelay`; it used to run anyway, so a callback that called the writer again threw "called on a destroyed AutoWriter"
+- SPAEngine no longer adds a second history entry for the entry page at boot, so the first Back press leaves the page instead of appearing to do nothing; the boot entry also keeps the URL's query and `#hash`, which used to be dropped
+- SPAEngine: a route fragment that fails to load is reported in the console (as a failed page or section already was) and its link can be clicked again; it used to throw a ReferenceError while building a blocking alert, and leave the link stuck
+- ProgressIndicator: the first linear bar shown in a page now animates; it used to jump straight to its first stop, and a style 3 bar then never moved on to its slow and crawl phases (later bars were fine)
+
+## Removed
+
+REASON
+Fixed: the boot duplicate history entry and dropped query/hash, and the failed-fragment ReferenceError/alert/stuck link (this feature); the ProgressIndicator first-bar animation (feature progress-first-show, adjacent bullet in the same hunk).

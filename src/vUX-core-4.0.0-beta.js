@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.com/lib/vUX/
+ * https://library.vilshub.net/lib/vUX/
  *
  *
  * Released under the MIT license
- * https://library.vilshub.com/lib/vUX/license
+ * https://library.vilshub.net/lib/vUX/license
  *
  * Date: 2021-07-19=T22:30Z
  */
@@ -24,6 +24,7 @@ let $$ = {
     },
     sav:function (selector, visibiltyType){ //Select All Visible
         validateString(selector, "$$.sav(x.) method argument 1 must be a string");
+        if (typeof visibiltyType != "string" || ["visible", "hidden"].indexOf(visibiltyType.toLowerCase()) == -1) throw new TypeError("$$.sav(.x) method argument 2 must be either 'visible' or 'hidden'");
         var allElements = document.querySelectorAll(selector);
         visibiltyType = visibiltyType.toLowerCase();
         var matchElements = [];
@@ -199,7 +200,8 @@ let $$ = {
                 var status = false, n = 0;
                 //parentId => class name , if not exist, then id name
                 validateString(parentId, "$$.sm(.).hasParent(x.) method argument 1 must be a string");
-                if (ntimes != null) validateInteger(ntimes, "$$.sm(.).hasParent(.x) method argument 2 must be an integer");
+                if (ntimes != null && !validateInteger(ntimes)) throw new TypeError("$$.sm(.).hasParent(.x) method argument 2 must be an integer");
+                parentId = parentId.replace(/^[.#]/, ""); //".menu" and "#menu" mean "menu", as in getParent
                 var cEle = (selector instanceof Element)?selector:ele.single;
                 if(document.querySelector("." + parentId) != null) { //Has class
                     while (cEle) {
@@ -251,7 +253,7 @@ let $$ = {
                 }
                 
                 if (type == "string") {
-                    var id = parentIDorLevel.replace(".", "");
+                    var id = parentIDorLevel.replace(/^[.#]/, ""); //a leading # used to be kept, so an id given as "#x" never matched
                     while (cEle) {
                         cEle = cEle.parentNode;
                         if (cEle != null) {
@@ -277,7 +279,7 @@ let $$ = {
                             foundElement = cEle;
                         }
                         if(cEle.nodeName == "HTML"){
-                            console.warn("Travesing finished!, and the specified dept level '"+id+"' is higher above the DOM root (HTML)")
+                            console.warn("Travesing finished!, and the specified dept level '"+parentIDorLevel+"' is higher above the DOM root (HTML)")
                             break;
                         }
                     }
@@ -298,7 +300,7 @@ let $$ = {
                 var cEle = (selector instanceof Element)?selector:ele.single;
                 validateString(className, "$$.sm.makeActive(x.) method argument 1 must a string");
                 if(parent != null) validateElement(parent, "$$.sm.makeActive(.x) method argument 2 must a valid HTML Element");
-                var currentElements = (parent != null)?parent.querySelectorAll("."+className):document.querySelector("."+className);
+                var currentElements = (parent != null)?parent.querySelectorAll("."+className):document.querySelectorAll("."+className); //a list either way: querySelector returned one element, whose missing length skipped the clearing loop
                 if (currentElements != null) {
                     var total = currentElements.length;
                     for (var x=0; x < total; x++ ){
@@ -324,7 +326,7 @@ let $$ = {
                     validateString(overlayStyle, "$$.sm().addOverlay(x) argument 1 must be a string");
                     attachStyleSheet(id, overlayStyle);
                 }
-                (position != "last" && position != "first") ? "last": "first";
+                position = position == "first" ? "first" : "last";
                 
                 if (position == "last"){
                     cEle.appendChild(overlayEle)
@@ -352,10 +354,12 @@ let $$ = {
                             }
                         }
                     }else{// is string
+                        checkSupport(type); //an unsupported name used to be ignored silently
                         prop = setValue(type, value);
+                        if(options != null && options.init != null) initProp = setValue(type, options.init);
                     }
                     function setValue(filterType, val){
-                        switch (filterType) {
+                        switch (filterType.toLowerCase()) {
                             case 'grayscale':
                                 return "grayscale("+val+")";
                             case 'blur':
@@ -365,6 +369,7 @@ let $$ = {
                         }
                     }
                     function checkSupport(t){
+                        validateString(t, "$$.sm(.).filter(x..) filter names must be strings");
                         if(supportedFilters.indexOf(t.toLowerCase()) == -1){
                             throw new Error(t+" filter not supported, suported filters are: "+supportedFilters.join(", "));
                         }
@@ -391,15 +396,22 @@ let $$ = {
                             defaultOptions.callBack = options.callBack;
                         }
                         defaultOptions.init = options.init;
-                        defaultOptions.duration = options.duration;
+                        if (options.duration != null) {
+                            validateString(options.duration, "obj.filter(..x) method argument 3 property 'duration' must be a CSS time string, e.g. '300ms'");
+                            defaultOptions.duration = options.duration;
+                        } //left out, it keeps the 200ms default instead of writing an invalid transition
                         
                         cEle.style["transition"] = "filter "+defaultOptions.duration+" "+defaultOptions.effect;
-                        cEle.addEventListener("transitionend", function(e){
-                            if(e.target.classList.contains("vFilter")){
-                                e.target.style["filter"] = "none";
-                                e.target.classList.remove("vFilter")
-                            }
-                        }, false) 
+                        //one-shot: when the pulse ends, clear the filter and take the transition and this listener off
+                        //again. Both used to stay, so every later filter() on the element was transitioned and reset too.
+                        var onEnd = function(e){
+                            if(e.target != cEle || e.propertyName != "filter") return;
+                            cEle.removeEventListener("transitionend", onEnd, false);
+                            cEle.style["filter"] = "none";
+                            cEle.style["transition"] = "";
+                            cEle.classList.remove("vFilter");
+                        };
+                        cEle.addEventListener("transitionend", onEnd, false);
                         cEle.style["filter"] = initProp;
                         cEle.scrollHeight;
                     }
@@ -407,9 +419,12 @@ let $$ = {
                     
                     cEle.style["filter"] = prop;
                     if(defaultOptions.callBack != null){
-                        $$.delay(parseInt(defaultOptions.duration), function(){
+                        //a timer, not $$.delay: $$.delay busy-waits and froze the page for the whole pulse
+                        var d = String(defaultOptions.duration);
+                        var ms = /ms$/i.test(d) ? parseFloat(d) : parseFloat(d) * 1000;
+                        setTimeout(function(){
                             defaultOptions.callBack()
-                        });
+                        }, ms);
                     };
             }
             this.fill = function (backgroundImageValue){
@@ -424,13 +439,13 @@ let $$ = {
             this.scroll = {
                 x:function (hideBar=false){
                     var element = (selector instanceof Element)?selector:ele.single;
-                    var hide = hideBar?"bar-hide":"";
-                    element.classList.add("scroll", hide, "x");
+                    element.classList.add("scroll", "x");
+                    if(hideBar) element.classList.add("bar-hide"); //added separately: an empty class name made classList.add throw
                 },
                 y:function (hideBar=false){
                     var element = (selector instanceof Element)?selector:ele.single;
-                    var hide = hideBar?"bar-hide":"";
-                    element.classList.add("scroll", hide, "y");
+                    element.classList.add("scroll", "y");
+                    if(hideBar) element.classList.add("bar-hide"); //added separately: an empty class name made classList.add throw
                 },
                 lock: function (axis=null) {
                     var element = (selector instanceof Element)?selector:ele.single;
@@ -460,20 +475,17 @@ let $$ = {
             this.slide = {
                 toLeft:function(configs, callback=null){
                     var newSize=0;
-                    try {
-                        vModel.slide.functions.validateConfigs(configs, "toLeft"); 
-                    } catch (error) {
-                        throw new Error(error);
-                    }
+                    vModel.slide.functions.validateConfigs(configs, "toLeft"); //throws as is: re-wrapping it doubled the "Error: " prefix
                     
                     var element = (selector instanceof Element)?selector:ele.single; 
 
-                    var classes = configs.use == "dimension"? "dim" : "pos";
                     configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
                     configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
                     configs.positions = configs.positions == undefined? vModel.slide.data.effectConfigs.positions : configs.positions;
                     configs.dimensions = configs.dimensions == undefined? vModel.slide.data.effectConfigs.dimensions : configs.dimensions;
                     configs.positionProperty = configs.positionProperty == undefined? vModel.slide.data.effectConfigs.positionProperty : configs.positionProperty;
+                    //after the defaults, so an omitted use gets the class of the default (dimension)
+                    var classes = configs.use == "dimension"? "dim" : "pos";
                     var speed = vModel.slide.functions.miliToSeconds(configs.speed);
                   
                     element.classList.add("vSlide", classes);
@@ -492,6 +504,9 @@ let $$ = {
                         newSize = configs.dimensions.x[1];
                     }else{
                         element.style["display"] = "block";
+                        //jump to the start position, don't animate to it: an element that isn't there yet
+                        //(just shown, or left elsewhere) would otherwise slide to x[0] and barely move
+                        element.style["transition-property"] = "none";
                         
                         if(configs.positions.x[0] == null){
                             element.style[configs.positionProperty] = "0px"
@@ -500,6 +515,7 @@ let $$ = {
                         }
 
                         vModel.slide.functions.slideOn(element);
+                        element.style["transition-property"] = "";
                         element.style[configs.positionProperty] = configs.positions.x[1]+"px";
                         newSize = configs.positions.x[1];
                     }   
@@ -513,16 +529,17 @@ let $$ = {
                 },
                 toRight:function(configs, callback=null){
                     var newSize=0;
-                    try {
-                        vModel.slide.functions.validateConfigs(configs, "toRight"); 
-                    } catch (error) {
-                        console.error(error)
-                    }
+                    vModel.slide.functions.validateConfigs(configs, "toRight"); //throws, as toLeft does: it used to log and carry on
                     
                     var element = (selector instanceof Element)?selector:ele.single; 
 
-                    var classes = configs.use == "dimension"? "dim" : "pos";
+                    //the same defaults as toLeft: toRight used to read configs.use, positions and dimensions as given
                     configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = configs.positions == undefined? vModel.slide.data.effectConfigs.positions : configs.positions;
+                    configs.dimensions = configs.dimensions == undefined? vModel.slide.data.effectConfigs.dimensions : configs.dimensions;
+                    configs.positionProperty = configs.positionProperty == undefined? vModel.slide.data.effectConfigs.positionProperty : configs.positionProperty;
+                    var classes = configs.use == "dimension"? "dim" : "pos";
                     var speed = vModel.slide.functions.miliToSeconds(configs.speed);
                   
                     element.classList.add("vSlide", classes);
@@ -541,7 +558,7 @@ let $$ = {
                         vModel.slide.functions.slideOn(element);
                         
                         if(configs.dimensions.x[1] == null){
-                            element.style["width"] = width+"px";
+                            element.style["width"] = element.scrollWidth+"px"; //no end width: open to the content's width
                         }else{
                             element.style["width"] = configs.dimensions.x[1]+"px";
                         }
@@ -549,11 +566,13 @@ let $$ = {
                         newSize = configs.dimensions.x[1];
                     }else{
                         element.style["display"] = "block";
-                        element.style["left"] = configs.positions.x[0]+"px";
+                        element.style["transition-property"] = "none"; //jump to the start position, as in toLeft
+                        element.style[configs.positionProperty] = configs.positions.x[0]+"px";
 
                         vModel.slide.functions.slideOn(element);
 
-                        element.style["left"] = configs.positions.x[1]+"px";
+                        element.style["transition-property"] = "";
+                        element.style[configs.positionProperty] = configs.positions.x[1]+"px";
                         newSize = configs.positions.x[1];
                     }  
 
@@ -566,15 +585,15 @@ let $$ = {
                 },
                 toTop:function(configs, callback=null){
                     var newSize=0;
-                    try {
-                        vModel.slide.functions.validateConfigs(configs, "toTop"); 
-                    } catch (error) {
-                        console.error(error)
-                    }
+                    vModel.slide.functions.validateConfigs(configs, "toTop"); //throws, as toLeft does: it used to log and carry on
                     
                     var element = (selector instanceof Element)?selector:ele.single; 
-                    var classes = configs.use == "dimension"? "dim" : "pos";
                     configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    //use and positions default as in toLeft/toRight (use was read as given, so leaving it out threw);
+                    //dimensions do not, because toBottom without them opens to the content's height
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = configs.positions == undefined? vModel.slide.data.effectConfigs.positions : configs.positions;
+                    var classes = configs.use == "dimension"? "dim" : "pos";
                     var speed = vModel.slide.functions.miliToSeconds(configs.speed);
                   
                     element.classList.add("vSlide", classes);
@@ -604,15 +623,15 @@ let $$ = {
                 },
                 toBottom:function(configs, callback=null){
                     var newSize=0;
-                    try {
-                        vModel.slide.functions.validateConfigs(configs, "toBottom"); 
-                    } catch (error) {
-                        console.error(error)
-                    }
+                    vModel.slide.functions.validateConfigs(configs, "toBottom"); //throws, as toLeft does: it used to log and carry on
                     
                     var element = (selector instanceof Element)?selector:ele.single;
-                    var classes = configs.use == "dimension"? "dim" : "pos";
                     configs.speed = configs.speed == undefined? vModel.slide.data.effectConfigs.speed : configs.speed;
+                    //use and positions default as in toLeft/toRight (use was read as given, so leaving it out threw);
+                    //dimensions do not, because toBottom without them opens to the content's height
+                    configs.use = configs.use == undefined? vModel.slide.data.effectConfigs.use : configs.use;
+                    configs.positions = configs.positions == undefined? vModel.slide.data.effectConfigs.positions : configs.positions;
+                    var classes = configs.use == "dimension"? "dim" : "pos";
                     var speed = vModel.slide.functions.miliToSeconds(configs.speed);
                   
                     element.classList.add("vSlide", classes);
@@ -649,11 +668,11 @@ let $$ = {
                                     element.style["height"] = configs.dimensions.y[1]+"px";
                                     newSize = configs.dimensions.y[1];
                                 }else{
-                                    element.style["height"] = height;
+                                    element.style["height"] = height+"px"; //unitless, it was ignored and nothing opened
                                     newSize = height;
                                 }
                             }else{
-                                element.style["height"] = height;
+                                element.style["height"] = height+"px";
                                 newSize = height;
                             }
                         }
@@ -757,20 +776,20 @@ let $$ = {
                         if (option.frontClass == null){
                             throw new Error(temp+" frontClass property must be specified");
                         }else{
-                            if (option.frontClass != null) validateString(option.perspective, " frontClass property must be a string");
+                            if (option.frontClass != null) validateString(option.frontClass, " frontClass property must be a string");
                         }
                         if (option.backClass == null){
                             throw new Error(temp+" backClass property must be specified");
                         }else{
-                            if (option.backClass != null) validateString(option.perspective, " backClass property must be a string");
+                            if (option.backClass != null) validateString(option.backClass, " backClass property must be a string");
                         }
                         if (option.axis == null){
                             throw new Error(temp+" axis property must be specified");
                         }else{
-                            if (option.axis != null) validateString(option.perspective, " axis property must be a string");
+                            if (option.axis != null) validateString(option.axis, " axis property must be a string");
                             option.axis = option.axis.toLowerCase();
                             if (option.axis != "x" && option.axis != "y" && option.axis != "z"){
-                                throw new Error(temp+" axis property value must be one of these: 'x' or 'y'");
+                                throw new Error(temp+" axis property value must be one of these: 'x', 'y' or 'z'");
                             }
                         }
                         if (option.speed != null){
@@ -876,6 +895,9 @@ let $$ = {
                     // timeFraction goes from 0 to 1
                     var timeFrac = (time - start) / options.duration;
                     if (timeFrac > 1) timeFrac = 1;
+                    //the first frame's timestamp can be earlier than performance.now() taken above, which
+                    //made the first value fall below the start value
+                    if (timeFrac < 0) timeFrac = 0;
         
                     // calculate the current animation state
                     var progress = timing[options.timingFunction](timeFrac);
@@ -1006,7 +1028,7 @@ let $$ = {
 
         if (options != null ){  
             validateObjectLiteral(options, "$$.ajax(x.) method argument 1, must be an object with 2 properties 'url' and 'method'");
-            validateString(returnDataType, "$$.ajax(.x) method argument 2, must be a string");
+            if (returnDataType != null) validateString(returnDataType, "$$.ajax(.x) method argument 2, must be a string or null"); //optional: left out, Accept is */*
             if (returnDataType != null ) returnDataType  = returnDataType.toLowerCase();
             var dataType = null;
             if(returnDataType == "xml"){
@@ -1093,18 +1115,24 @@ let $$ = {
             }
         },
         save: function(data, options){
-            validateObjectLiteral(urls, "IO.save(.x) static method argument 1, must be a literal object");
+            //rewritten: it validated and saved variables that did not exist (urls, urlOrData), so every call threw
+            validateObjectLiteral(options, "$$.IO.save(.x) static method argument 2, must be a literal object with a 'name' and an optional 'type'");
+            validateString(options.name, "$$.IO.save(.x) static method argument 2 object 'name' property must be a string");
+            var kind = options.type == undefined ? "html" : String(options.type).toLowerCase();
         
             var type = "";
-            if(options.type.toLowerCase == "json"){
-                type = "text/json";
-            }else if(options.type.toLowerCase == "csv"){
+            if(kind == "json"){
+                type = "application/json";
+                if(typeof data != "string") data = JSON.stringify(data);
+            }else if(kind == "csv"){
                 type = "text/csv";
+            }else if(kind == "text" || kind == "txt"){
+                type = "text/plain";
             }else{
                 type = "text/html";
             }
-            var data = new Blob([urlOrData], {type:type})
-            var url = window.URL.createObjectURL(data);
+            var blob = new Blob([typeof data == "string" ? data : String(data)], {type:type})
+            var url = window.URL.createObjectURL(blob);
             var link = $$.ce("a");
             link.setAttribute("hidden", "");
             link.setAttribute("href", url);
@@ -1112,6 +1140,7 @@ let $$ = {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            setTimeout(function(){ window.URL.revokeObjectURL(url); }, 1000);
         },
         download: function(url, fn){
         
@@ -1121,18 +1150,20 @@ let $$ = {
         }
     },
     randomString:function(length = 8){
-        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-        if (length != 8) validateInteger(length, "$$.randomString(x) argument 1 must be an integer");
+        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; //had T twice and no Y or j
+        //validateInteger() reports, it does not throw
+        if (!validateInteger(length) || length < 0) throw new TypeError("$$.randomString(x) argument 1 must be a non-negative integer");
         var randomstring = '';
         for (var i=0; i<length; i++) {
-            var rnum = this.randomInteger(0, chars.length);
+            //the last valid index is length - 1: drawing up to length sometimes picked past the end and dropped a character
+            var rnum = $$.randomInteger(0, chars.length - 1);
             randomstring += chars.substring(rnum,rnum+1);
         }
         return randomstring;
     },
     randomInteger:function(min, max){
-        validateInteger(min, "$$.randomInteger(x.) argument 1 must be an integer");
-        validateInteger(max, "$$.randomInteger(.x) argument 2 must be an integer");
+        if (!validateInteger(min)) throw new TypeError("$$.randomInteger(x.) argument 1 must be an integer");
+        if (!validateInteger(max)) throw new TypeError("$$.randomInteger(.x) argument 2 must be an integer");
         return Math.floor(Math.random() * (max - min + 1)) + min;
     },
     scroll:{
@@ -1163,7 +1194,7 @@ let $$ = {
         },
         direction:function(){
             vModel.scroll.functions.init();
-            return vUxHelpers.vModel.scroll.data.state;
+            return vModel.scroll.data.state; //vModel is a global, not an export of helpers.js
         }
     },
     linkStyleSheet:function(url){
@@ -1280,8 +1311,8 @@ let $$ = {
     },
     fn: {}    
 }
-window.ScreenBreakPoint = function(breakPoints) {
-    validateObjectLiteral(breakPoints);
+window.ScreenBreakPoint = function(breakPoints = {}) {
+    validateObjectLiteral(breakPoints, "ScreenBreakPoint(x) argument 1 must be an object literal");
     var screenMode = "";
     var baseBeakPoints = {
         largeStart: 1000, //large start point
@@ -1289,10 +1320,11 @@ window.ScreenBreakPoint = function(breakPoints) {
     }
     validateObjectMembers(breakPoints, baseBeakPoints);
 
-    if (validateNumber(breakPoints["largeStart"])) {
+    //each key is optional: a missing one keeps its default instead of failing validateNumber
+    if (breakPoints["largeStart"] !== undefined && validateNumber(breakPoints["largeStart"], "ScreenBreakPoint(x) argument 1 object 'largeStart' property must be a number")) {
         baseBeakPoints.largeStart = breakPoints["largeStart"];
     }
-    if (validateNumber(breakPoints["mediumStart"])) {
+    if (breakPoints["mediumStart"] !== undefined && validateNumber(breakPoints["mediumStart"], "ScreenBreakPoint(x) argument 1 object 'mediumStart' property must be a number")) {
         baseBeakPoints.mediumStart = breakPoints["mediumStart"];
     }
 
@@ -1310,31 +1342,28 @@ window.ScreenBreakPoint = function(breakPoints) {
         }
     })
 } 
+//The state lives outside the function: the getters below used to read variables private to it, and threw.
+var resizeState = {listening:false, size:window.innerWidth, change:0, mode:"null"};
 window.browserResizeProperty = function(){
-    var currentSize = window.innerWidth,alter = 0,mode = "null";
+    if (resizeState.listening) return; //one listener, however many times it is called
+    resizeState.listening = true;
+    resizeState.size = window.innerWidth;
     window.addEventListener("resize", function() {
-        if (window.innerWidth > currentSize) {
-            var diff = window.innerWidth - currentSize;
-            alter = diff;
-            currentSize = window.innerWidth;
-            mode = "expanded";
-        } else {
-            var diff = currentSize - window.innerWidth;
-            alter = diff;
-            currentSize = window.innerWidth;
-            mode = "shrinked";
-        }
+        var now = window.innerWidth;
+        resizeState.change = Math.abs(now - resizeState.size);
+        resizeState.mode = now > resizeState.size ? "expanded" : "shrinked";
+        resizeState.size = now;
     }, false);
-},  
+};
 Object.defineProperties(browserResizeProperty, {
     mode: {
         get: function() {
-            return mode;
+            return resizeState.mode;
         }
     },
     change: {
         get: function() {
-            return alter;
+            return resizeState.change;
         }
     }
 })
