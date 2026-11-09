@@ -1,0 +1,90 @@
+/* ============================================================================
+   vUX Prompt.
+   Everything is scoped under .vpr-dialog, so nothing here touches a page with no
+   dialog up. Colours are custom properties on .vpr-dialog: override them in your
+   own sheet, per theme, to restyle every dialog. Rules a page's own global
+   button and input styles would otherwise beat are written two classes deep.
+   ========================================================================== */
+
+/* The native <dialog> spans the window and stays transparent: the overlay and the
+   box inside it are what show, so both can be animated (::backdrop cannot be,
+   reliably). Only an open dialog is laid out. */
+dialog.vpr-dialog{
+    --vpr-bg:#ffffff; --vpr-fg:#1c2330; --vpr-muted:#5d6878; --vpr-line:#d5dbe4;
+    --vpr-accent:#2f7cf6; --vpr-accent-fg:#ffffff; --vpr-danger:#d92d40; --vpr-danger-fg:#ffffff;
+    --vpr-cancel-bg:#eef1f5; --vpr-cancel-fg:#1c2330; --vpr-overlay:rgba(15,20,30,.45);
+    --vpr-radius:12px;
+    --vpr-shadow:0 2px 4px rgba(16,24,40,.08), 0 24px 48px -12px rgba(16,24,40,.35);
+
+    position:fixed; inset:0; width:100%; height:100%; max-width:none; max-height:none;
+    margin:0; padding:16px; border:0; box-sizing:border-box;
+    background:transparent; color:var(--vpr-fg); overflow:auto;
+    font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    text-align:left;
+}
+dialog.vpr-dialog[open]{display:flex; align-items:center; justify-content:center}
+dialog.vpr-dialog::backdrop{background:transparent}
+
+dialog.vpr-dialog.vpr-dark{
+    --vpr-bg:#1a2130; --vpr-fg:#e6ebf2; --vpr-muted:#9aa6b8; --vpr-line:#344056;
+    --vpr-accent:#5b9dff; --vpr-accent-fg:#0d1320; --vpr-danger:#ff6b7c; --vpr-danger-fg:#1a0b0e;
+    --vpr-cancel-bg:#2a3346; --vpr-cancel-fg:#e6ebf2; --vpr-overlay:rgba(0,0,0,.6);
+    --vpr-shadow:0 2px 4px rgba(0,0,0,.4), 0 24px 48px -12px rgba(0,0,0,.7);
+}
+
+.vpr-dialog .vpr-overlay{
+    position:fixed; inset:0; background:var(--vpr-overlay);
+    opacity:0; transition-property:opacity; transition-timing-function:ease;
+}
+
+.vpr-dialog .vpr-box{
+    position:relative; box-sizing:border-box; max-width:100%; margin:auto;
+    padding:22px 22px 18px;
+    background:var(--vpr-bg); color:var(--vpr-fg);
+    border-radius:var(--vpr-radius); box-shadow:var(--vpr-shadow);
+    opacity:0; transform:translateY(10px) scale(.97);
+    transition-property:opacity, transform; transition-timing-function:cubic-bezier(.16,1,.3,1);
+}
+.vpr-dialog.vpr-in .vpr-overlay{opacity:1}
+.vpr-dialog.vpr-in .vpr-box{opacity:1; transform:none}
+/* the way out is quicker to read as quicker: no bounce, straight fade */
+.vpr-dialog.vpr-leaving .vpr-box{transition-timing-function:ease-in; transform:scale(.98)}
+.vpr-dialog.vpr-leaving{pointer-events:none}
+/* reduced motion: fade only */
+.vpr-dialog.vpr-still .vpr-box, .vpr-dialog.vpr-still.vpr-leaving .vpr-box{transform:none}
+
+.vpr-dialog .vpr-title{margin:0 0 6px; padding:0; font-size:17px; line-height:1.35; font-weight:650; color:inherit}
+.vpr-dialog .vpr-message{display:block; margin:0; color:var(--vpr-fg); overflow-wrap:anywhere}
+.vpr-dialog .vpr-title + .vpr-message{color:var(--vpr-muted)}
+
+.vpr-dialog .vpr-input{
+    display:block; width:100%; box-sizing:border-box; margin:12px 0 0; padding:9px 11px;
+    font:inherit; color:var(--vpr-fg); background:var(--vpr-bg);
+    border:1px solid var(--vpr-line); border-radius:8px; outline:none; box-shadow:none;
+    transition:border-color .15s, box-shadow .15s;
+}
+.vpr-dialog .vpr-input:focus{border-color:var(--vpr-accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--vpr-accent) 25%, transparent)}
+.vpr-dialog .vpr-input[aria-invalid="true"]{border-color:var(--vpr-danger)}
+.vpr-dialog .vpr-error{min-height:1.4em; margin-top:4px; font-size:13px; color:var(--vpr-danger)}
+
+.vpr-dialog .vpr-actions{display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:20px}
+.vpr-dialog.vpr-kind-input .vpr-actions{margin-top:8px}
+
+.vpr-dialog .vpr-btn{
+    min-width:84px; margin:0; padding:8px 16px;
+    font:inherit; font-weight:600; line-height:1.3;
+    border:0; border-radius:8px; cursor:pointer; box-shadow:none; transform:none;
+    transition:filter .15s, background-color .15s;
+}
+.vpr-dialog .vpr-btn:focus-visible{outline:2px solid var(--vpr-accent); outline-offset:2px}
+.vpr-dialog .vpr-btn:disabled{opacity:.6; cursor:default}
+.vpr-dialog .vpr-ok{background:var(--vpr-accent); color:var(--vpr-accent-fg)}
+.vpr-dialog .vpr-cancel{background:var(--vpr-cancel-bg); color:var(--vpr-cancel-fg)}
+.vpr-dialog .vpr-btn:hover:not(:disabled){filter:brightness(1.08)}
+.vpr-dialog.vpr-danger .vpr-ok{background:var(--vpr-danger); color:var(--vpr-danger-fg)}
+.vpr-dialog.vpr-danger .vpr-ok:focus-visible{outline-color:var(--vpr-danger)}
+
+/* a phone: the buttons share the width */
+@media (max-width:420px){
+    .vpr-dialog .vpr-actions .vpr-btn{flex:1}
+}

@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.net/lib/vUX/
+ * https://github.com/VilsHub/vUX
  *
  *
  * Released under the MIT license
- * https://library.vilshub.net/lib/vUX/license
+ * https://github.com/VilsHub/vUX/blob/master/LICENSE
  *
  * Date: 2021-07-19=T22:30Z
  */
@@ -46,6 +46,7 @@ window.vModel = {
                 "messageBox.js",
                 "modalDisplayer.js",
                 "progressIndicator.js",
+                "prompt.js",
                 "resizer.js",
                 "skeleton.js",
                 "sketchPad.js",
@@ -719,7 +720,9 @@ export function alphaNumeric(input) {
 }
 
 export function validateEmailAddress(input) {
-    var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{1,}$/.test(input); //matches email address pattern
+    //local part: letters, digits and . _ % + - ; domain: one or more dot-separated labels (letters,
+    //digits, inner hyphens) and a last label of 2+ letters, so sub-domains and hyphenated domains pass
+    var email_filter = /^[A-Za-z0-9._%+\-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9\-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/.test(input);
     return email_filter;
 }
 

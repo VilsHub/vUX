@@ -1,27 +1,37 @@
+/* The tip is fixed to the window: ToolTip places it from the pointer's viewport position and keeps
+   it inside the window, so a positioned body or a scrolled page cannot offset it */
 .vToolTip {
   display:none;
   box-shadow:0 0 4px 0 #aba5a5;
   font-size:13px;
   background-color:#c08bc0;
   color:white;
-  position:absolute;
-  width:auto;
+  position:fixed;
+  width:max-content;
+  max-width:320px;
   height:auto;
   z-index:10000;
-  padding: 5px;
+  padding: 5px 8px;
   box-sizing: border-box;
   border-radius:5px;
   line-height: 19px;
+  overflow-wrap:anywhere;
+  pointer-events:none;
 }
 .vToolTip::before{
   position:absolute;
   content:'';
-}
-.vToolTipTop::before{
-  position:absolute;
-  content:'';
-  top:CALC(100%);
+  left:var(--vtt-arrow-left, 6px);
   border-left:5px solid transparent;
   border-right:5px solid transparent;
+}
+/* above the pointer: the arrow hangs from the bottom edge and points down */
+.vToolTipTop::before{
+  top:100%;
   border-top:10px solid #c08bc0;
+}
+/* flipped below the pointer near the top of the window: the arrow points up */
+.vToolTipBottom::before{
+  bottom:100%;
+  border-bottom:10px solid #c08bc0;
 }

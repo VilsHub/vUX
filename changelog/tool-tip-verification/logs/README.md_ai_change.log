@@ -1,0 +1,6 @@
+OLD_SECTION
+(v4.0.0 feature list ending at the Prompt module)
+NEW_SECTION
+- FormValidator and ToolTip verified and reworked: ... ToolTip stays inside the window, works from the keyboard and treats tips as text
+REASON
+Public feature list per release; the bullet is shared with form-validator-verification.

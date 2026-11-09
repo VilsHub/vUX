@@ -1,0 +1,13 @@
+Feature: release-4.0.0
+
+Affected projects:
+- Libraries/vUX: v4.0.0-beta promoted to the stable v4.0.0. The core file is renamed
+  src/vUX-core-4.0.0-beta.js -> src/vUX-core-4.0.0.js, and every import of it (vUX-core.js shim and
+  each vUX-*.js module) points at the new name. README, CLAUDE.md, doc/*.md and examples/* now say
+  v4.0.0. ChangeLog.md heading is "## v4.0.0" with a Changed bullet for the rename.
+  dist/4.0.0/ rebuilt with ./minify.sh. Historical changelog/<feature>/ logs keep the old name, as written.
+- Workspace .version: Libraries/vUX=v4.0.0 (major over the last tag v3.0.0).
+- Apps/myinvitees/app.myinvitees.com/CLAUDE.md: path to the core file updated (doc only).
+
+Consumer impact: pages that import src/vUX-core-4.0.0-beta.js directly must use src/vUX-core-4.0.0.js.
+Apps consuming vUX through the lib/vUX symlink and component modules need no change.

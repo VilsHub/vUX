@@ -173,7 +173,7 @@ board.config.onMount = (instance) => {
 board.config.onDestroy = (instance) => instance.tip.destroy();
 ```
 
-Every vUX component has a `destroy()` as of v4.0.0-beta, which is what makes this reliable. See the [ChangeLog](../ChangeLog.md) for the full list.
+Every vUX component has a `destroy()` as of v4.0.0, which is what makes this reliable. See the [ChangeLog](../ChangeLog.md) for the full list.
 
 ## Using it inside a custom element
 

@@ -1,0 +1,20 @@
+OLD_SECTION (line 11)
+Module: `vUX-core.js` (a shim over `src/vUX-core-4.0.0-beta.js`) · Stylesheet: `assets/css/core.css` (linked automatically) · Runnable example: [`examples/core/`](../examples/core/)
+NEW_SECTION (line 11)
+Module: `vUX-core.js` (a shim over `src/vUX-core-4.0.0.js`) · Stylesheet: `assets/css/core.css` (linked automatically) · Runnable example: [`examples/core/`](../examples/core/)
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.
+
+OLD_SECTION (line 15)
+**Any vUX import loads the core.** Every `vUX-*.js` module starts with `import "./src/vUX-core-4.0.0-beta.js"`, so `$$` is available as soon as one of them has loaded. To use the utilities without a component, import the shim:
+NEW_SECTION (line 15)
+**Any vUX import loads the core.** Every `vUX-*.js` module starts with `import "./src/vUX-core-4.0.0.js"`, so `$$` is available as soon as one of them has loaded. To use the utilities without a component, import the shim:
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.
+
+OLD_SECTION (line 425)
+These are declared but do nothing in v4.0.0-beta:
+NEW_SECTION (line 425)
+These are declared but do nothing in v4.0.0:
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.

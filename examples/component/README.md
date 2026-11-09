@@ -32,7 +32,7 @@ Then open <http://localhost:8000/examples/component/index.html>.
 - **`update()` writes only what moved.** The pill above the playground card reports what `update()` returned: the names of the fields that actually changed. Re-fire a control without changing its value and it reports `no change`, because no DOM write was needed.
 - **Keys buy you node identity.** Type into a row in section 03, then sort. The row moves and your text moves with it, because `sync()` re-appends the surviving node rather than building a new one. Press **rebuild (unkeyed)** and the same sort loses your typing — that contrast is the reason `config.key` exists.
 - **Nesting is ownership.** A child mounted with `instance.mount(child, ...)` is destroyed with its parent. Mounting with `child.mount(...)` directly would leave orphans behind when the parent goes.
-- **`onDestroy` is where nested vUX components are released.** Each board attaches a `ToolTip` in `onMount` and calls `tip.destroy()` in `onDestroy`. That method only exists across the library as of v4.0.0-beta, which is why this module was built after the teardown pass and not before.
+- **`onDestroy` is where nested vUX components are released.** Each board attaches a `ToolTip` in `onMount` and calls `tip.destroy()` in `onDestroy`. That method only exists across the library as of v4.0.0, which is why this module was built after the teardown pass and not before.
 - **Validation is up front and specific.** A template binding `click:doesNotExist` names both the event and the missing handler key. `ref("nope")` lists the refs the component *does* carry.
 
 ## Two things worth copying

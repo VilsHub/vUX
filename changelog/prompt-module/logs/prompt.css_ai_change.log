@@ -1,0 +1,9 @@
+FILE: assets/css/prompt.css
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+NEW FILE. Styles for Prompt, scoped under .vpr-dialog, colours as --vpr-* custom
+properties, light and dark themes, danger OK button, phone layout with full-width
+buttons. Button and field rules are two classes deep to beat page-global styles.

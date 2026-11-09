@@ -1,0 +1,90 @@
+FEATURE: form-validator-verification
+DATE: 2026-11-09
+SCOPE: verify the FormValidator module, fix what is broken, and document it
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library (this repository). No app in the workspace imports vUX-formValidator.js directly.
+FormComponents imports it for FormValidator.format.integerField (date picker hour/minute fields);
+re-checked: typing "1a2" still gives "12".
+
+Consumer-visible surface:
+  - vUX-formValidator.js        internals rebuilt; public API kept. validate() now returns a
+                                boolean; minSize/maxSize implemented; callBack gets the field.
+  - assets/css/formValidator.css message colour per type in CSS, default spinner, readable palette.
+  - src/helpers.js              validateEmailAddress() accepts sub-domains, hyphens and "+".
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+Headless Chromium (Playwright) over a test page and a small Node server (status-controlled echo
+endpoint), same suite against the original files (baseline copies) and the fixed ones.
+
+Baseline (original code):   8 passed, 66 failed
+After the fixes:            75 passed, 0 failed  (74-test suite plus one; baseline counted on 74)
+features-validator run 1: FAIL (High: two fields sharing a wrapper shared one error record, so
+one passing cleared the other and formOk() returned true; fixed by per-field records and box
+ownership, with tests). Medium/Low findings fixed: callBack on empty optional fields, feedback
+button label markup, minLength/maxLength value check.
+features-validator run 2: PASS WITH FINDINGS. Its Low (a radio in another wrapper than the
+group's first left the box showing) fixed: the wrapper is remembered per field key.
+Regression: examples/form (FormComponents) and the new examples/formvalidator load with no page
+errors; screenshots checked for bottom/left/right messages, loader and feedback box.
+
+--------------------------------------------------------------------------------
+DEFECTS FOUND AND FIXED
+--------------------------------------------------------------------------------
+
+ 1. required/minLength/maxLength/email failed every value in email, password, number, tel, url and
+    untyped inputs (only type="text" was recognised).
+ 2. A corrected field kept its error after re-validation (clearLastError compared an object's
+    .length, so it never cleared).
+ 3. write() straight after clear() put the message in the box being removed; it vanished.
+ 4. Text stayed transparent when no transition ran (colour was only set on transitionend).
+ 5. Changing a field's message type or side kept the old box.
+ 6. Warning and success messages blocked formOk().
+ 7. Document-wide listeners: a click in one form cleared another form's messages and deleted the
+    wrong error-log entry; colours came from whichever form's listener ran; feedback boxes and
+    loaders of other forms were emptied or removed.
+ 8. submit(): any status other than 200/404/405/419/500, or a network error, left the overlay up
+    forever; headers argument ignored; GET dropped the fields; no in-flight guard; arguments
+    checked after the form was locked.
+ 9. Feedback button: no type (submitted the form), acted on focus (Tab dismissed it, Safari click
+    did nothing); showFeedback() on its own never showed the overlay; warning not centred without
+    a style entry; a title-only labels object left the button empty.
+10. Loader visible behind the feedback box and duplicated on every submission; invisible by default.
+11. Custom progress onReceive called on every message written (every failed validate()).
+12. Rule parsing: keys split at every ':', match stripped all slashes (flags lost), messages split
+    at every ':-' (text lost), ext case-sensitive and crashed with no file, fullName miscounted
+    double spaces, trim ran after required, callBack false wrote nothing, minSize/maxSize no-ops.
+13. Crashes: message.write with a NodeList, required on an empty select, non-element argument.
+14. logServerError required a location; destroy() left boxes and classes behind; destroy() during
+    a pending submit threw when the answer arrived.
+15. Config: progressAnimationCallbacks accepted one callback; loaderLocation "form" demanded
+    submitButtonClass; unsupported submissionMethod silently ignored.
+16. format.currencyField broke decimals ("1,234,.56") and returned a String object; wordSeperator
+    never validated n and added a document listener per call; integerField's type check was a no-op.
+17. Default warning palette: orange text on dark brown.
+
+--------------------------------------------------------------------------------
+BEHAVIOUR CHANGES (documented in ChangeLog "Changed")
+--------------------------------------------------------------------------------
+
+ - An empty field without `required` passes and skips its value rules (a callBack still runs).
+ - validateEmailAddress() needs a last domain label of 2+ letters (a@b.c rejected).
+ - Message colour comes from the stylesheet custom properties.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS (documented, not changed)
+--------------------------------------------------------------------------------
+
+ - alpha/alphaNum/integer/float are ASCII-only; integer/float reject signs.
+ - A warning or success rule message ends the rule chain.
+ - callBack returning anything but false or a number counts as valid.
+ - Fields sharing a wrapper show one box (the latest message); records stay per field.
+ - Global short class names in formValidator.css (.error, .warning, .success, .lerror...).
+ - Default spinner and overlay border are tuned for a light overlay.
+ - .vButtonLoader's flex:1 can stretch a button loader inside a flex row.

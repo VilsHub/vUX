@@ -1,15 +1,15 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.net/lib/vUX/
+ * https://github.com/VilsHub/vUX
  *
  *
  * Released under the MIT license
- * https://library.vilshub.net/lib/vUX/license
+ * https://github.com/VilsHub/vUX/blob/master/LICENSE
  *
  *
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0-beta.js";
+import "./src/vUX-core-4.0.0.js";
 
 /************************Marquee****************************/
 export function Marquee(container) {

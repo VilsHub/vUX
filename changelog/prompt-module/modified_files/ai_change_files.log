@@ -1,0 +1,30 @@
+FEATURE: prompt-module
+DATE: 2026-11-09
+
+<Prompt (new module)>
+  Added:
+    vUX-prompt.js
+    assets/css/prompt.css
+
+<Core>
+  Modified:
+    src/helpers.js              (prompt.js added to the module registry)
+
+<Documentation>
+  Added:
+    doc/prompt.md
+  Modified:
+    doc/README.md
+    README.md
+    ChangeLog.md
+    CLAUDE.md                   (Prompt in constructor list)
+
+<Example>
+  Added:
+    examples/prompt/index.html
+    examples/prompt/main.js
+    examples/prompt/README.md
+
+<app.myinvitees.com (consumer)>
+  Modified:
+    assets/js/pages/card-tool/card-ops.js

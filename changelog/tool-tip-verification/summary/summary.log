@@ -1,0 +1,51 @@
+FEATURE: tool-tip-verification
+DATE: 2026-11-09
+SCOPE: verify the ToolTip module, fix what is broken, and document it
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library. examples/component uses ToolTip on its chips: re-checked, the tip shows above the
+hovered chip. No workspace app imports vUX-toolTip.js.
+
+Consumer-visible surface:
+  - vUX-toolTip.js        public API kept (initialize, refresh, on, off, destroy, config);
+                          config.html and tipBoxStyles.backgroundColor added.
+  - assets/css/toolTip.css  position:fixed, 320px max width, flipped arrow variant.
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+Headless Chromium (Playwright), same suite on the original and fixed files.
+
+Baseline (original code):   15 passed, 23 failed
+After the fixes:            39 passed, 0 failed  (baseline counted on the 38-test suite)
+features-validator run 1 findings fixed: refresh() re-enabled off() members; member's own
+aria-describedby overwritten; a second instance on the class could tear down the first
+(now reference counted, config.html shared).
+features-validator run 2: PASS WITH FINDINGS. Its Low (off() through a second same-class instance
+left the tip up) fixed: the showing member and hide() are reached through the shared entry.
+
+--------------------------------------------------------------------------------
+DEFECTS FOUND AND FIXED
+--------------------------------------------------------------------------------
+
+ 1. on() threw a ReferenceError (undefined tipId) and never adopted the title.
+ 2. off() threw "No tool tip applied" for members set up by initialize(); did not hide a showing tip.
+ 3. Hovering a member's child (icon in a button) showed nothing; moving onto it hid the tip.
+ 4. tipBoxStyles: validation loop never ran; >2 keys threw a ReferenceError; unset keys wrote
+    "undefined"; arrowColor wrote the undefined backgroundColor; changes after initialize() ignored.
+ 5. Tip text inserted as HTML (title text could inject markup).
+ 6. Placement in document coordinates with no edge handling: off the top, under the pointer.
+ 7. Touch: a tapped tip never closed. No keyboard support or ARIA.
+ 8. Before toolTip.css loaded, a shown tip sat unstyled at the bottom of the page.
+ 9. className error message named datePicker; className not checked.
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS
+--------------------------------------------------------------------------------
+
+ - One tip per class at a time; the tip reads only `title`.
+ - Two instances on the same class share one box and listeners (reference counted).

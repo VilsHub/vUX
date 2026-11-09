@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX CShapes example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- canvases ----------
+       CShapes sizes the backing store from the canvas's CSS box on every draw, so every
+       canvas here gets its size from CSS (never width/height attributes) and display:block,
+       which stops an inline canvas picking up a line-height gap under it. */
+    canvas{display:block}
+
+    /* ---------- hero: ring + marching cards ---------- */
+    .hero-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:44px; align-items:center; margin-top:38px}
+    .ring-stage{position:relative; display:flex; flex-direction:column; align-items:center; gap:16px}
+    #heroRing{width:min(320px,78vw); height:min(320px,78vw)}
+    .ring-caption{font-family:var(--mono); font-size:.78rem; color:var(--dim); text-align:center}
+    .ring-caption b{color:var(--cyan); font-weight:600}
+
+    .ants{display:grid; gap:16px}
+    .ant-card{position:relative; padding:20px 22px; min-height:96px}
+    /* the canvas sits behind the card's content and covers the whole card: a CShapes
+       rectangle always runs round the full canvas, so the canvas IS the border box */
+    .ant-card > canvas{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+    .ant-card > *:not(canvas){position:relative}
+    .ant-card h3{font-size:1.02rem}
+    .ant-card p{margin:0; color:var(--muted); font-size:.88rem}
+    .ant-card .tag{font-family:var(--mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim)}
+    .ant-card.c1{border-radius:16px; background:rgba(200,162,255,.04)}
+    .ant-card.c2{background:rgba(92,207,230,.035)}
+    .ant-card.c3{background:rgba(255,180,84,.035)}
+
+    /* ---------- playgrounds ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,360px) minmax(0,1fr); gap:22px; align-items:start}
+    .stage{
+        background:var(--ink); border-radius:0; padding:26px; min-height:300px;
+        display:flex; align-items:center; justify-content:center;
+        background-image:radial-gradient(rgba(123,139,163,.14) 1px,transparent 1px); background-size:18px 18px;
+    }
+    #arcCanvas{width:260px; height:260px; max-width:100%}
+    .rect-box{position:relative; width:100%; max-width:440px; height:220px}
+    .rect-box canvas{position:absolute; inset:0; width:100%; height:100%}
+    .rect-box .inner{
+        position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+        font-family:var(--mono); font-size:.8rem; color:var(--dim); text-align:center; padding:20px;
+    }
+    .pair{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .pair .field{margin-bottom:0}
+    .controls .field{margin-bottom:14px}
+    .controls select{width:100%}
+    .color-row{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; font-size:.86rem; color:var(--muted)}
+    .color-row code{color:var(--fg)}
+    .group{border-top:1px solid var(--line); margin:16px -16px 0; padding:14px 16px 0}
+    .group-t{font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:0 0 12px}
+    .play .log{height:110px; margin-top:16px}
+
+    /* ---------- uploads ---------- */
+    .uploads{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:22px}
+    .up{display:flex; align-items:center; gap:16px; padding:14px 16px}
+    .up canvas{width:64px; height:64px; flex:none}
+    .up .meta{min-width:0; flex:1}
+    .up .name{font-family:var(--mono); font-size:.88rem; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .up .size{font-size:.8rem; color:var(--dim)}
+    .up .state{font-family:var(--mono); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim)}
+    .up.done .state{color:var(--green)}
+    .up.busy .state{color:var(--amber)}
+
+    /* ---------- failure modes ---------- */
+    .bad-grid{display:flex; flex-wrap:wrap; gap:8px}
+    .bad-grid button{font-family:var(--mono); font-size:.78rem}
+
+    .motion-note{display:none; margin-top:18px}
+    .reduced .motion-note{display:inline-block}
+
+    @media (max-width:860px){
+        .hero-grid{grid-template-columns:minmax(0,1fr); gap:34px}
+        .play{grid-template-columns:minmax(0,1fr)}
+    }
+    @media (max-width:420px){
+        .wrap{padding:0 16px}
+        .stage{padding:18px}
+        .uploads{grid-template-columns:1fr}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> CShapes <b>/</b> v4.0.0</p>
+        <h1>Rings and borders, drawn on canvas.</h1>
+        <p class="hero-sub">
+            One constructor, three shapes: a <b>progress ring</b> that animates between values,
+            a <b>marching-ants border</b>, and a <b>fixed dashed border</b>. Sharp on every screen.
+        </p>
+        <span class="pill on motion-note">reduced motion: animation off</span>
+
+        <div class="hero-grid">
+            <div class="ring-stage">
+                <!-- the ring's numbers are canvas pixels, so the element carries the accessible text -->
+                <canvas id="heroRing" role="img" aria-label="Build progress: 0 percent"></canvas>
+                <div class="row">
+                    <button class="primary" id="heroReplay">Replay</button>
+                    <button class="ghost" id="heroRandom">Random value</button>
+                </div>
+                <div class="ring-caption">arc().draw(canvas, <b id="heroValue">87</b>, "deployed")</div>
+            </div>
+
+            <div class="ants">
+                <div class="ant-card c1">
+                    <canvas id="ant1"></canvas>
+                    <span class="tag">animatedRectangle / radius 16</span>
+                    <h3>A colour that never sits still</h3>
+                    <p><code>config.lineColor</code> is read on every frame, so a tween can write it while the dashes run.</p>
+                </div>
+                <div class="ant-card c2">
+                    <canvas id="ant2"></canvas>
+                    <span class="tag">animatedRectangle / counter-clockwise</span>
+                    <h3>Square corners, reversed</h3>
+                    <p><code>clockWise = false</code> runs the dashes the other way round.</p>
+                </div>
+                <div class="ant-card c3">
+                    <canvas id="ant3"></canvas>
+                    <span class="tag">fixedRectangle</span>
+                    <h3>Drawn once, then left alone</h3>
+                    <p>A still dashed border for drop zones and placeholders.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-src">const shapes = <span class="d">new</span> CShapes(); shapes.arc(); shapes.animatedRectangle(); shapes.fixedRectangle();</div>
+    </div>
+</header>
+
+<!-- ============================================================ arc -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>arc(): the progress ring</h2>
+        <p class="lede">
+            Every <code>config</code> property of <code>arc()</code> is wired below; any change redraws the ring.
+            With a duration above 0, each draw animates from the value last shown on this canvas to the new one.
+        </p>
+
+        <div class="play">
+            <div class="panel controls">
+                <div class="panel-h"><span>Config</span></div>
+                <div class="panel-b">
+                    <div class="field">
+                        <label class="lbl" for="arcProgress">draw(canvas, progress) <span class="val" id="arcProgressV">64</span></label>
+                        <input type="range" id="arcProgress" min="0" max="100" step="0.5" value="64">
+                    </div>
+                    <div class="field">
+                        <label class="lbl" for="arcLabel">draw(..., label)</label>
+                        <input type="text" id="arcLabel" value="uploaded" maxlength="24">
+                    </div>
+
+                    <div class="group">
+                        <p class="group-t">Geometry</p>
+                        <div class="pair field">
+                            <div class="field">
+                                <label class="lbl" for="arcStart">start</label>
+                                <select id="arcStart"><option value="12" selected>12</option><option value="3">3</option><option value="6">6</option><option value="9">9</option></select>
+                            </div>
+                            <div class="field">
+                                <label class="lbl" for="arcCap">lineCap</label>
+                                <select id="arcCap"><option selected>butt</option><option>round</option></select>
+                            </div>
+                        </div>
+                        <div class="field" style="margin-top:14px">
+                            <label class="lbl" for="arcStroke">strokeWidth <span class="val" id="arcStrokeV">16</span></label>
+                            <input type="range" id="arcStroke" min="1" max="60" value="16">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arcRadius">radius <span class="val" id="arcRadiusV">auto</span></label>
+                            <input type="range" id="arcRadius" min="10" max="200" value="100" disabled>
+                        </div>
+                        <div class="field row" style="justify-content:space-between">
+                            <label class="switch"><input type="checkbox" id="arcRadiusAuto" checked> radius "auto"</label>
+                            <label class="switch"><input type="checkbox" id="arcClock" checked> clockWise</label>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <p class="group-t">Colour and text</p>
+                        <div class="color-row"><code>strokeColor</code><input type="color" id="arcStrokeColor" value="#5ccfe6"></div>
+                        <div class="color-row"><code>progressBackground</code><input type="color" id="arcBg" value="#1f2a3a"></div>
+                        <div class="color-row"><code>percentageFontColor</code><input type="color" id="arcPctColor" value="#d7e0ec"></div>
+                        <div class="color-row"><code>labelFontColor</code><input type="color" id="arcLabelColor" value="#7b8ba3"></div>
+                        <div class="field row" style="justify-content:space-between">
+                            <label class="switch"><input type="checkbox" id="arcShowPct" checked> showPercentage</label>
+                            <label class="switch"><input type="checkbox" id="arcShowLabel" checked> progressLabel</label>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arcPctFont">percentageFont (empty = scaled default)</label>
+                            <input type="text" id="arcPctFont" placeholder="700 48px system-ui, sans-serif">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arcLabelFont">labelFont (empty = scaled default)</label>
+                            <input type="text" id="arcLabelFont" placeholder="14px ui-monospace, monospace">
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <p class="group-t">Motion</p>
+                        <div class="field">
+                            <label class="lbl" for="arcDuration">duration <span class="val" id="arcDurationV">900</span></label>
+                            <input type="range" id="arcDuration" min="0" max="3000" step="50" value="900">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arcEasing">easing</label>
+                            <select id="arcEasing"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span class="dots"><i></i><i></i><i></i></span><span>canvas 260 x 260</span></div>
+                    <div class="stage"><canvas id="arcCanvas" role="img" aria-label="Progress: 0 percent"></canvas></div>
+                    <div class="status" id="arcStatus"><span class="dot"></span><span id="arcStatusText">idle</span></div>
+                </div>
+                <div class="row" style="margin-top:16px">
+                    <button class="primary" id="arcDraw">draw()</button>
+                    <button id="arcStop">stop()</button>
+                    <button id="arcDestroy" class="danger">destroy()</button>
+                    <button class="ghost" id="arcZero">draw 0</button>
+                    <button class="ghost" id="arcFull">draw 100</button>
+                </div>
+                <pre class="log" id="arcLog" aria-live="polite"></pre>
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="arcSnippet"></pre>
+                </div>
+            </div>
+        </div>
+        <p class="note">
+            Try <strong>stop()</strong> halfway through an animated draw, then <strong>draw()</strong> again: the next animation
+            starts from the frozen frame. <strong>destroy()</strong> clears the canvas and resets the start value to 0.
+        </p>
+    </div>
+</section>
+
+<!-- ============================================================ animatedRectangle -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>animatedRectangle(): marching ants</h2>
+        <p class="lede">
+            The dashes move a whole number of dash periods per cycle, so repeats loop without a jump. The canvas size and
+            the config are re-read at the start of every cycle; <code>lineColor</code> is read on every frame.
+        </p>
+
+        <div class="play">
+            <div class="panel controls">
+                <div class="panel-h"><span>Config</span></div>
+                <div class="panel-b">
+                    <div class="color-row"><code>lineColor</code><input type="color" id="arLine" value="#ffb454"></div>
+                    <div class="field">
+                        <label class="lbl" for="arWidth">lineWidth <span class="val" id="arWidthV">6</span></label>
+                        <input type="range" id="arWidth" min="0" max="24" value="6">
+                    </div>
+                    <div class="pair field">
+                        <div class="field">
+                            <label class="lbl" for="arDash">segment dash <span class="val" id="arDashV">14</span></label>
+                            <input type="range" id="arDash" min="1" max="60" value="14">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arGap">gap <span class="val" id="arGapV">8</span></label>
+                            <input type="range" id="arGap" min="1" max="60" value="8">
+                        </div>
+                    </div>
+                    <div class="pair field" style="margin-top:14px">
+                        <div class="field">
+                            <label class="lbl" for="arOx">origin x <span class="val" id="arOxV">0</span></label>
+                            <input type="range" id="arOx" min="-20" max="40" value="0">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arOy">origin y <span class="val" id="arOyV">0</span></label>
+                            <input type="range" id="arOy" min="-20" max="40" value="0">
+                        </div>
+                    </div>
+                    <div class="field" style="margin-top:14px">
+                        <label class="lbl" for="arRadius">radius <span class="val" id="arRadiusV">18</span></label>
+                        <input type="range" id="arRadius" min="0" max="110" value="18">
+                    </div>
+                    <div class="group">
+                        <p class="group-t">Motion</p>
+                        <div class="field">
+                            <label class="lbl" for="arDuration">duration <span class="val" id="arDurationV">2400</span></label>
+                            <input type="range" id="arDuration" min="0" max="8000" step="100" value="2400">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arEasing">easing</label>
+                            <select id="arEasing"></select>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="arIter">iterationCount <span class="val" id="arIterV">infinite</span></label>
+                            <input type="range" id="arIter" min="1" max="10" value="3" disabled>
+                        </div>
+                        <div class="field row" style="justify-content:space-between">
+                            <label class="switch"><input type="checkbox" id="arInfinite" checked> "infinite"</label>
+                            <label class="switch"><input type="checkbox" id="arClock" checked> clockWise</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span class="dots"><i></i><i></i><i></i></span><span>canvas 100% x 220</span></div>
+                    <div class="stage">
+                        <div class="rect-box">
+                            <canvas id="arCanvas"></canvas>
+                            <div class="inner">the canvas covers this box;<br>the border runs round its edge</div>
+                        </div>
+                    </div>
+                    <div class="status" id="arStatus"><span class="dot"></span><span id="arStatusText">idle</span></div>
+                </div>
+                <div class="row" style="margin-top:16px">
+                    <button class="primary" id="arDraw">draw()</button>
+                    <button id="arStop">stop()</button>
+                    <button class="danger" id="arDestroy">destroy()</button>
+                    <button class="ghost" id="arTween">tween lineColor</button>
+                </div>
+                <pre class="log" id="arLog" aria-live="polite"></pre>
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="arSnippet"></pre>
+                </div>
+            </div>
+        </div>
+        <p class="note">
+            Square corners (radius 0) show half of <code>lineWidth</code>: the line runs on the canvas edge and the canvas clips
+            its outer half. Rounded corners are drawn inset so they keep one even thickness. A lineWidth of 0 becomes 1.
+        </p>
+    </div>
+</section>
+
+<!-- ============================================================ fixedRectangle -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>fixedRectangle(): drawn once</h2>
+        <p class="lede">
+            The same border without the motion: <code>draw()</code> strokes it once and returns. There is no
+            <code>stop()</code> or <code>destroy()</code>; to remove it, clear the canvas yourself.
+        </p>
+
+        <div class="play">
+            <div class="panel controls">
+                <div class="panel-h"><span>Config</span></div>
+                <div class="panel-b">
+                    <div class="color-row"><code>lineColor</code><input type="color" id="frLine" value="#a7e05f"></div>
+                    <div class="field">
+                        <label class="lbl" for="frWidth">lineWidth <span class="val" id="frWidthV">4</span></label>
+                        <input type="range" id="frWidth" min="0" max="24" value="4">
+                    </div>
+                    <div class="pair field">
+                        <div class="field">
+                            <label class="lbl" for="frDash">segment dash <span class="val" id="frDashV">10</span></label>
+                            <input type="range" id="frDash" min="1" max="60" value="10">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="frGap">gap <span class="val" id="frGapV">6</span></label>
+                            <input type="range" id="frGap" min="1" max="60" value="6">
+                        </div>
+                    </div>
+                    <div class="pair field" style="margin-top:14px">
+                        <div class="field">
+                            <label class="lbl" for="frOx">origin x <span class="val" id="frOxV">0</span></label>
+                            <input type="range" id="frOx" min="-20" max="40" value="0">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="frOy">origin y <span class="val" id="frOyV">0</span></label>
+                            <input type="range" id="frOy" min="-20" max="40" value="0">
+                        </div>
+                    </div>
+                    <div class="field" style="margin-top:14px">
+                        <label class="lbl" for="frRadius">radius <span class="val" id="frRadiusV">12</span></label>
+                        <input type="range" id="frRadius" min="0" max="110" value="12">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span class="dots"><i></i><i></i><i></i></span><span>drop zone</span></div>
+                    <div class="stage">
+                        <div class="rect-box">
+                            <canvas id="frCanvas"></canvas>
+                            <div class="inner">Drop files here<br>(a still dashed border, redrawn on every change)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:16px">
+                    <button class="primary" id="frDraw">draw()</button>
+                    <button class="ghost" id="frClear">clear the canvas</button>
+                </div>
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="frSnippet"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ uploads -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Many rings at once</h2>
+        <p class="lede">
+            A file-upload list: each row has its own <code>arc()</code> object and its own canvas, fed progress in uneven steps.
+            Each step animates from where the last one ended, and <code>callback</code> marks the row done at 100.
+        </p>
+        <div class="uploads" id="uploads"></div>
+        <div class="row">
+            <button class="primary" id="upStart">Start uploads</button>
+            <button id="upStop">stop() all</button>
+            <button class="ghost" id="upReset">Reset</button>
+            <span id="upNote" style="color:var(--dim); font-family:var(--mono); font-size:.8rem"></span>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ errors -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>Bad input throws</h2>
+        <p class="lede">
+            Every setter and <code>draw()</code> checks its argument and throws at the call, so a typo fails in your code, not
+            silently inside an animation frame. Each button below makes one bad call and prints what was thrown.
+        </p>
+        <div class="bad-grid" id="badGrid"></div>
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/c-shapes.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The shapes are on <span class="kbd">window</span> as <span class="kbd">heroRing</span>,
+            <span class="kbd">playArc</span>, <span class="kbd">playRect</span> and <span class="kbd">playFixed</span>.
+            Try <span class="kbd">playArc.draw(document.getElementById("arcCanvas"), 33.3, "console")</span>.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

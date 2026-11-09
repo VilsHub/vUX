@@ -1,0 +1,55 @@
+FEATURE: prompt-module
+DATE: 2026-11-09
+SCOPE: new Prompt module (Promise-based alert/confirm/input dialogs) and its first consumer
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX: additive, a new module plus one line in the module registry. Consumers that do
+not import vUX-prompt.js are unaffected.
+
+app.myinvitees.com: card-ops.js uses Prompt for its two delete confirmations
+(unpaid order, generated cards) instead of window.confirm().
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+new Prompt(); config (theme, okText, cancelText, width, speed, closeOnBackdrop,
+respectReducedMotion); initialize(); alert/confirm/input(message, options) return
+Promises resolving undefined / boolean / string-or-null. Options: title, danger and
+the config keys; input adds value, placeholder, inputType, maxLength, required,
+validate (sync or async). closeAll(), destroy(), pending.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+Headless Chromium (playwright-core, chrome-headless-shell 1228):
+  - confirm with danger: focus on Cancel, body overflow hidden; OK -> true; dialog
+    removed, focus back on the opener, overflow restored
+  - queue: two calls, pending 2; Escape -> false, second opens; Enter -> undefined
+  - input: required + validate refuses "ab" with its message, accepts "abc"
+  - closeOnBackdrop: click outside -> false
+  - destroy() with one open and one queued: resolves null and false, no dialogs left
+  - validation errors thrown with their messages
+  - example page at 1280 and 390: no horizontal scroll, no console errors; async
+    validate disables OK while running and shows the refusal
+card-ops.js: the edited file parses; not exercised in the running app.
+
+dist/ (minified build) was not regenerated; run ./minify.sh to refresh it.
+
+--------------------------------------------------------------------------------
+VALIDATOR FOLLOW-UP (features-validator: PASS WITH FINDINGS, fixes applied)
+--------------------------------------------------------------------------------
+
+  - Page freeze: Prompt no longer freezes a body that is already overflow:hidden
+    (a ModalDisplayer layer holds it), so a panel closed while a prompt is up can
+    no longer leave the page locked. Verified: panel closed under an open prompt,
+    overflow "" during and after.
+  - A dialog closed (close()) or removed by other code resolves as cancelled and
+    the queue moves on. Verified: both cases, next queued dialog opens, pending 0.
+  - options === null throws the module's own TypeError; config.width "0px" is refused.
+  - doc: an element message is moved into the dialog, pass a fresh node.
+  - card-ops.js: ask.closeAll() on route entry, next to panelModal/notice.closeAll().

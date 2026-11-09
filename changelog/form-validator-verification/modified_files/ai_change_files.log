@@ -1,0 +1,11 @@
+<vUX>
+vUX-formValidator.js
+assets/css/formValidator.css
+src/helpers.js
+ChangeLog.md
+doc/README.md
+README.md
+doc/form-validator.md (new)
+examples/formvalidator/index.html (new)
+examples/formvalidator/main.js (new)
+examples/formvalidator/README.md (new)

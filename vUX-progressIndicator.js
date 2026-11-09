@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.net/lib/vUX/
+ * https://github.com/VilsHub/vUX
  *
  *
  * Released under the MIT license
- * https://library.vilshub.net/lib/vUX/license
+ * https://github.com/VilsHub/vUX/blob/master/LICENSE
  *
  * Date: 2022-05-17=T09:20Z
  * 
@@ -12,7 +12,7 @@
  */
 // Import vUX core
 import { validateNumber, validateString } from "./src/helpers.js";
-import "./src/vUX-core-4.0.0-beta.js";
+import "./src/vUX-core-4.0.0.js";
 
 /***************************progress Indicator*****************************/
 export function ProgressIndicator(defaultProgressSpace=null) {

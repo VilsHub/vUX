@@ -1,0 +1,47 @@
+FEATURE: cshapes-finalize
+DATE: 2026-11-09
+SCOPE: finish CShapes: a working arc() progress ring, clearer rectangle errors, guide and example
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library. Consumers of the rectangles: ProgressIndicator grid type (re-checked, the canvas
+paints) and Apps/vilshub.net (animatedRectangle contact-form border; API unchanged).
+
+Consumer-visible surface:
+  - vUX-cShapes.js   arc() is new in practice: before, it referenced an undefined canvasElement and
+                     returned nothing, so nothing could depend on it. Rectangles: same API; error
+                     messages name the property; duration 0 paints once instead of looping.
+  - src/helpers.js   percentageToAngle() is no longer used by CShapes (kept as a public helper).
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+Headless Chromium (Playwright), pixel sampling on the canvas, same suite on original and new files.
+
+Baseline (original code):   3 passed, 26 failed  (only the rectangle regressions passed)
+After the work:             31 passed, 0 failed  (baseline counted on the 29-test suite)
+features-validator run 1 findings fixed: overshooting easings printed 108%; canvas reallocated
+every frame; non-canvas draw() threw a raw TypeError.
+features-validator run 2: PASS WITH FINDINGS. Its Medium (with the canvas no longer reset by a
+resize, a rectangle's dashes carried into an arc on the same canvas, and an arc's round caps into
+a rectangle) fixed: the arc sets a solid line and the rectangles set butt caps on every draw.
+
+--------------------------------------------------------------------------------
+ARC
+--------------------------------------------------------------------------------
+
+draw(canvas, progress 0-100, label = ""); start 12/3/6/9; clockWise; percentage and label text with
+fonts that scale with the radius (null/"" restores the default); radius "auto" or fitted; lineCap;
+devicePixelRatio sizing; optional animation from the last value shown (duration, easing,
+callback(progress)), stop(), destroy().
+
+--------------------------------------------------------------------------------
+KNOWN LIMITATIONS
+--------------------------------------------------------------------------------
+
+ - Rectangles always cover the whole canvas; a positive origin pushes edges off it.
+ - iterationCount 0 runs one cycle, like 1.
+ - Arc text is canvas-drawn: give the canvas role="img" and an aria-label.

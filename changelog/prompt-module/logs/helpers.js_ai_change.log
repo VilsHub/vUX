@@ -1,0 +1,16 @@
+FILE: src/helpers.js
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+prompt.js added to the module registry so window.vUxModules lists it. CRLF kept.
+
+OLD_SECTION
+                "progressIndicator.js",
+                "resizer.js",
+
+NEW_SECTION
+                "progressIndicator.js",
+                "prompt.js",
+                "resizer.js",

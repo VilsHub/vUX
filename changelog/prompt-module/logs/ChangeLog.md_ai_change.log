@@ -1,0 +1,23 @@
+FILE: ChangeLog.md
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+Five bullets under v4.0.0-beta / Added for the module, danger, input validation,
+the queue, and the guide plus example.
+
+OLD_SECTION
+- SPA example section "Back to where you were": ...
+
+## Fixed
+
+NEW_SECTION
+- SPA example section "Back to where you were": ...
+- Prompt module (vUX-prompt.js): `alert()`, `confirm()` and `input()` dialogs that resolve a Promise with the answer, replacing the blocking native calls with a styled, themable dialog that sits above every modal on the page and keeps Escape from reaching the page underneath
+- Prompt `danger` option: a red OK button and focus starting on Cancel, so a stray Enter cannot confirm a destructive action
+- Prompt input validation: `required`, `maxLength`, `inputType` and a `validate()` function that may be async, with OK held off while it runs and the refusal shown under the field
+- Prompt queue: dialogs asked for while another is up, from any instance, open in turn instead of on top of each other
+- Prompt guide (doc/prompt.md) and runnable example (examples/prompt/): each dialog one click away, a playground over every config property with a log of each answer, a guarded delete, an async-validated rename, two instances sharing the queue, and the validation errors
+
+## Fixed

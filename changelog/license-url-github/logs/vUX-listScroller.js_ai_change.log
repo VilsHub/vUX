@@ -1,0 +1,26 @@
+FILE: vUX-listScroller.js
+FEATURE: license-url-github
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+The licence link in the file's header comment pointed at the old library host
+(library.vilshub.net). It now points at the LICENSE file in the GitHub repository,
+the canonical copy. Comment only, no code change. Line endings kept as they were.
+
+OLD_SECTION (line 7)
+ * https://library.vilshub.net/lib/vUX/license
+
+NEW_SECTION (line 7)
+ * https://github.com/VilsHub/vUX/blob/master/LICENSE
+
+--------------------------------------------------------------------------------
+REASON (second change, same header)
+The project link in the header comment also pointed at the old library host. It now
+points at the GitHub repository. Comment only. Line endings kept.
+
+OLD_SECTION (line 3)
+ * https://library.vilshub.net/lib/vUX/
+
+NEW_SECTION (line 3)
+ * https://github.com/VilsHub/vUX

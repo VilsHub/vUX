@@ -1,0 +1,42 @@
+OLD_SECTION (onKeyUp)
+    function onKeyUp(e) {
+        if (e.code == "Space" && spaceDown) {
+            spaceDown = false;
+            if (!drag) setTool(tool); //restores the tool's own cursor
+        }
+    }
+
+NEW_SECTION (onKeyUp, releaseSpace, onVisibilityChange)
+    function onKeyUp(e) {
+        if (e.code == "Space") releaseSpace();
+    }
+    function releaseSpace() {
+        if (!spaceDown) return;
+        spaceDown = false;
+        if (!drag) setTool(tool);
+    }
+    function onVisibilityChange() {
+        if (document.hidden) releaseSpace();
+    }
+
+OLD_SECTION (listener setup)
+            listen(host, "keyup", onKeyUp);
+        ...
+            listen(window, "keyup", onKeyUp);
+        }
+
+NEW_SECTION (listener setup)
+            listen(host, "keyup", onKeyUp);
+            listen(host, "focusout", releaseSpace);
+        ...
+            listen(window, "keyup", onKeyUp);
+        }
+        listen(window, "blur", releaseSpace);
+        listen(document, "visibilitychange", onVisibilityChange);
+
+REASON
+spaceDown was cleared only by a Space keyup. When focus left the pad (keyboardScope
+"element") or the window/tab while Space was held, that keyup never reached the pad,
+spaceDown stayed true, and onPointerDown turned every drag into a pan regardless of the
+active tool. Losing focus, blurring the window or hiding the tab now releases it too.
+The new listeners go through listen(), so destroy() removes them.

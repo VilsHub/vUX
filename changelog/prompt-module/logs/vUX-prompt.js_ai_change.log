@@ -1,0 +1,29 @@
+FILE: vUX-prompt.js
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+NEW FILE. The Prompt module: Promise-based alert(), confirm() and input() dialogs,
+so apps stop using the blocking, unstyled window.alert/confirm/prompt.
+
+Design points worth recording:
+  - Native <dialog> + showModal(): top layer above every z-index (ModalDisplayer
+    layers sit at 999+), background inert and focus kept inside for free.
+  - The dialog spans the window and is transparent; .vpr-overlay and .vpr-box are
+    what animate (::backdrop transitions are unreliable). Class toggles through
+    $$.sm(el).class, end of animation by timer at config.speed.
+  - Escape is handled on the dialog's keydown and stopped from propagating, because
+    ModalDisplayer listens on document.body and would also close the panel beneath.
+    The dialog's cancel event (phone back gesture) is turned into a normal cancel.
+  - One dialog at a time across instances: a module-level queue.
+  - The Promise resolves on the answer, before the exit animation.
+  - Page freeze (overflow hidden + scrollbar compensation) restores the values it
+    replaced, so a page already frozen by ModalDisplayer stays frozen.
+  - danger focuses Cancel; input() focuses and selects the field; focus returns to
+    the opener on close.
+  - Strings are textContent, never innerHTML.
+
+FOLLOW-UP (validator findings): freezePage() skips an already-held body; a "close"
+listener and a disconnected-dialog check in next() settle externally closed dialogs;
+null options and zero string widths throw the module's own errors.

@@ -1,0 +1,6 @@
+OLD_SECTION (line 35)
+- **`onDestroy` is where nested vUX components are released.** Each board attaches a `ToolTip` in `onMount` and calls `tip.destroy()` in `onDestroy`. That method only exists across the library as of v4.0.0-beta, which is why this module was built after the teardown pass and not before.
+NEW_SECTION (line 35)
+- **`onDestroy` is where nested vUX components are released.** Each board attaches a `ToolTip` in `onMount` and calls `tip.destroy()` in `onDestroy`. That method only exists across the library as of v4.0.0, which is why this module was built after the teardown pass and not before.
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.

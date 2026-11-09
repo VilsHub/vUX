@@ -540,7 +540,7 @@ const BAD = {
     "$$.randomString(2.5)": () => $$.randomString(2.5)
 };
 
-//calls that threw or misbehaved earlier in v4.0.0-beta, shown returning what they return now
+//calls that threw or misbehaved earlier in v4.0.0, shown returning what they return now
 const DEFECTS = {
     "scroll.x()": () => { const el = scratch(); $$.sm(el).scroll.x(); return `class="${el.className}"`; },
     "$$.scroll.direction()": () => $$.scroll.direction(),

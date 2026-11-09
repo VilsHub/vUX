@@ -1,0 +1,6 @@
+OLD_SECTION (line 309)
+## Remaining limitations (4.0.0-beta)
+NEW_SECTION (line 309)
+## Remaining limitations (4.0.0)
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.

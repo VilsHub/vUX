@@ -1,6 +1,6 @@
 # vUX Documentation
 
-vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0-beta). There is no build step and no package manager — modules are imported directly by the browser.
+vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0). There is no build step and no package manager; modules are imported directly by the browser.
 
 Every component follows the same lifecycle:
 
@@ -32,6 +32,7 @@ A consuming page declares a single module script and tells vUX where the library
 | [Component](component.md) | `vUX-component.js` | Your own reusable component from your own markup: template instancing, bindings, keyed lists, nesting and teardown |
 | [Data View](data-view.md) | `vUX-dataView.js` | Keyed data-to-DOM binding for tables/dashboards with frequent fine-grained updates |
 | [MessageBox](message-box.md) | `vUX-messageBox.js` | Notification messages that drop in from the top or slide in from an edge, aligned left, centre or right, with a display time that pauses while read |
+| [Prompt](prompt.md) | `vUX-prompt.js` | Promise-based alert, confirm and input dialogs: themable, top-layer, destructive-action styling, sync or async input validation |
 | [Modal Displayer](modal-displayer.md) | `vUX-modalDisplayer.js` | Trigger-driven modal dialogs with open/close effects, responsive widths and scroll locking |
 | [Form Components](form-components.md) | `vUX-formComponents.js` | Custom select, radio, checkbox, date picker, slide switch and file input built over the hidden native controls |
 | [Auto Writer](auto-writer.md) | `vUX-autoWriter.js` | Typewriter text effect with an embedded directive syntax for line breaks, pauses and backspacing |
@@ -41,8 +42,11 @@ A consuming page declares a single module script and tells vUX where the library
 | [Marquee](marquee.md) | `vUX-marquee.js` | An endless, seamless scrolling strip from items written once: cloned to fit any width, pause on hover and focus, edge fade, reduced motion respected |
 | [ListScroller](list-scroller.md) | `vUX-listScroller.js` | A list as one horizontal row, moved a step at a time by your own two buttons, with their inactive state kept true to the scroll position |
 | [SketchPad](sketch-pad.md) | `vUX-sketchPad.js` | A drawing surface in any element: shapes, bound and curved connectors, ink, text, images, undo, pan/zoom and export, with a scene that saves as JSON; or, constrained, a single box over an image |
+| [FormValidator](form-validator.md) | `vUX-formValidator.js` | Rule-based field validation with messages beside or under each field, a submit helper with a loader and a feedback box, server error logging and input formatters |
+| [ToolTip](tool-tip.md) | `vUX-toolTip.js` | Styled tooltips from your elements' own title attributes: kept inside the window, keyboard accessible, plain text by default |
+| [CShapes](c-shapes.md) | `vUX-cShapes.js` | Canvas shapes: a dashed border, a marching-ants border and an animated progress ring, all sharp on high-density screens |
 
-Guides for the remaining modules (`FormValidator`, `TouchHandler`, `ToolTip`, `CShapes`) are coming next.
+A guide for the remaining module (`TouchHandler`) is coming next.
 
 ## Tearing a component down
 
@@ -57,6 +61,9 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 - [Resizer example](../examples/resizer/README.md) — runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
 - [Carousel example](../examples/carousel/README.md) — runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
 - [TimeLineList example](../examples/timelinelist/README.md) — runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
+- [FormValidator example](../examples/formvalidator/README.md): runnable example of live validation, message placement, theming, submission feedback, the formatters and the validation errors.
+- [ToolTip example](../examples/tooltip/README.md): runnable example of tip placement at the window edges, styling, on()/off()/refresh(), keyboard focus and the validation errors.
+- [CShapes example](../examples/cshapes/README.md): runnable example with a playground for each of the three shapes and the validation errors.
 - [ListScroller example](../examples/listscroller/README.md) — runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
 - [Skeleton example](../examples/skeleton/README.md) — runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
 - [FontSplash example](../examples/fontsplash/README.md) — runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
@@ -64,6 +71,7 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 - [SketchPad example](../examples/sketchpad/README.md) — runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
 - [Marquee example](../examples/marquee/README.md): runnable example with two opposing hero rows, a live playground over every config property, a strip of linked cards showing how clones stay out of the tab order, and the validation errors.
 - [MessageBox example](../examples/messagebox/README.md) — runnable example opening with a dropped-in message: the typed shorthands, a playground over every config property with an `onShow`/`onClose` log, every effect at each alignment, a sticky message closed through its handle, element content with Undo, and the validation errors.
+- [Prompt example](../examples/prompt/README.md): runnable example with each dialog one click away, a playground over every config property with a log of each answer, a guarded delete, an async-validated rename, two instances sharing the queue, and the validation errors.
 - [Core example](../examples/core/README.md) — runnable example of every core utility: a selection board, slides, a flip card, an easing lab, filters, overlays, delegated events, a countdown, the built-in extensions evaluated live, the validation errors, and the calls repaired in this release.
 - [README](../README.md) — installation and the public feature list per release.
 - [ChangeLog](../ChangeLog.md) — API renames and changes between releases.

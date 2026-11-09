@@ -1,0 +1,42 @@
+FEATURE: license-url-github
+DATE: 2026-11-09
+SCOPE: licence link and project link in every source file's header comment
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX: comment-only change in 25 source files. No behaviour, API or file-name change,
+so consumers (app.myinvitees.com, vilshub.net, vSketch, vGet) are unaffected.
+
+--------------------------------------------------------------------------------
+WHAT CHANGED
+--------------------------------------------------------------------------------
+
+The header comment's licence URL moved from the old library host
+  https://library.vilshub.net/lib/vUX/license
+to the LICENSE file in the GitHub repository
+  https://github.com/VilsHub/vUX/blob/master/LICENSE
+
+The project link on the line above it moved from
+  https://library.vilshub.net/lib/vUX/
+to the GitHub repository
+  https://github.com/VilsHub/vUX
+
+The CDN import URLs on library.vilshub.net shown in
+README.md and CLAUDE.md (http://library.vilshub.net/lib/vUX/<version>/...) were left as
+they are: they are module import paths, not links to the project.
+
+--------------------------------------------------------------------------------
+VERIFICATION
+--------------------------------------------------------------------------------
+
+grep: 0 old licence or project links left, 25 of each new one. CR line-ending counts per file are
+identical before and after (the CRLF files stay CRLF).
+
+--------------------------------------------------------------------------------
+VERSION
+--------------------------------------------------------------------------------
+
+Patch-level (comment only). .version already records v4.0.0-beta, a major bump over
+the last tag v3.0.0, so it is unchanged.

@@ -1,0 +1,14 @@
+FILE: README.md
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+Prompt added to the v4.0.0-beta feature list. CRLF kept.
+
+OLD_SECTION
+- MessageBox module (`vUX-messageBox.js`), ...
+
+NEW_SECTION
+- MessageBox module (`vUX-messageBox.js`), ...
+- Prompt module (`vUX-prompt.js`), styled `alert()`, `confirm()` and `input()` dialogs that return the answer as a Promise, sit above every modal on the page, mark destructive actions, validate input (sync or async) and queue when two parts of a page ask at once

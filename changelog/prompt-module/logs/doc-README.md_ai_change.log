@@ -1,0 +1,15 @@
+FILE: doc/README.md
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+Prompt guide row in the module table and the example link in the examples list.
+
+OLD_SECTION
+| [Modal Displayer](modal-displayer.md) | ...
+
+NEW_SECTION
+| [Prompt](prompt.md) | `vUX-prompt.js` | Promise-based alert, confirm and input dialogs: themable, top-layer, destructive-action styling, sync or async input validation |
+- [Prompt example](../examples/prompt/README.md): runnable example with each dialog one click away, a playground over every config property with a log of each answer, a guarded delete, an async-validated rename, two instances sharing the queue, and the validation errors.
+| [Modal Displayer](modal-displayer.md) | ...

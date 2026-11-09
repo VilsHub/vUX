@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.net/lib/vUX/
+ * https://github.com/VilsHub/vUX
  *
  *
  * Released under the MIT license
- * https://library.vilshub.net/lib/vUX/license
+ * https://github.com/VilsHub/vUX/blob/master/LICENSE
  *
  * Date: 2026-07-25
  *
@@ -15,7 +15,7 @@ import { validateElement, validateFunction, validateObjectLiteral, validateStrin
 import {
     resolveTemplate, patchBindings, destroyInstance, reconcileList
 } from "./src/componentEngine.js";
-import "./src/vUX-core-4.0.0-beta.js";
+import "./src/vUX-core-4.0.0.js";
 
 /***************************Data View*****************************/
 export function DataView(container) {

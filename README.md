@@ -42,7 +42,7 @@ Run `./minify.sh` from the repository root (needs Node 18+; esbuild is fetched b
 ## Features
 
 
-The beta version (**v4.0.0-beta** ) has the following features added:
+Version **v4.0.0** has the following features added:
 - Component module (`vUX-component.js`), for building your own reusable components from your own markup — template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
 - `destroy()` on every component, releasing the listeners, timers and animations it started and the DOM it injected
 - Skeleton module (`vUX-skeleton.js`), for placeholder screens derived from the template you already wrote, with a delay and minimum duration so they never flash or flicker
@@ -50,6 +50,9 @@ The beta version (**v4.0.0-beta** ) has the following features added:
 - SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface — rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images — with selection, move/resize, undo/redo, pan/zoom and PNG export
 - Marquee module (`vUX-marquee.js`), an endless scrolling strip built from items written once in the HTML: cloned to cover any width without a seam, measured speed in pixels per second, left or right, pause on hover and keyboard focus, an optional edge fade, and stillness under reduced motion
 - MessageBox module (`vUX-messageBox.js`), notification messages that drop in from the top or slide in from either edge, aligned left, centre or right, with a display duration that pauses while the message is read, a countdown bar, a close button, stacking without jumps and typed shorthands (`info()`, `success()`, `warning()`, `error()`)
+- Prompt module (`vUX-prompt.js`), styled `alert()`, `confirm()` and `input()` dialogs that return the answer as a Promise, sit above every modal on the page, mark destructive actions, validate input (sync or async) and queue when two parts of a page ask at once
+- CShapes progress ring (`new CShapes().arc()`), a canvas ring that starts at any quarter, runs either way, shows the percentage and a label, and animates from the last value shown
+- FormValidator and ToolTip verified and reworked: FormValidator handles every text-like input type, file size rules, any server answer and several forms per page; ToolTip stays inside the window, works from the keyboard and treats tips as text
 
 See the [ChangeLog](ChangeLog.md) for the complete list of additions, fixes and renames in this release, and the [documentation index](doc/README.md) for the usage guides.
 

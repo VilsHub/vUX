@@ -1,0 +1,13 @@
+OLD_SECTION (line 313)
+            <code>destroy()</code> in <code>onDestroy</code> — hover a chip to see it. Before v4.0.0-beta
+NEW_SECTION (line 313)
+            <code>destroy()</code> in <code>onDestroy</code> — hover a chip to see it. Before v4.0.0
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.
+
+OLD_SECTION (line 395)
+            vUX v4.0.0-beta · this page loads the library from
+NEW_SECTION (line 395)
+            vUX v4.0.0 · this page loads the library from
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.

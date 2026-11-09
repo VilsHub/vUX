@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0-beta) consumed directly by browsers — there is **no build step, no package.json, no bundler, no test runner, and no linter**. Source is shipped as-is. "Running" the library means importing a `vUX-*.js` module from an HTML page; there is no local dev server in the repo.
+vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0) consumed directly by browsers: there is **no build step, no package.json, no bundler, no test runner, and no linter**. Source is shipped as-is. "Running" the library means importing a `vUX-*.js` module from an HTML page; there is no local dev server in the repo.
 
 ## How a consumer loads vUX (and why it matters when editing)
 
@@ -21,10 +21,10 @@ At import time `src/helpers.js` runs `processAssetPath()`, which scans the DOM f
 **Three layers, wired by import side-effects:**
 
 1. `src/helpers.js` — pure exported functions: a large family of `validateX()` argument-checkers (each throws a descriptive `Error` naming the offending method/argument), CSS/DOM utilities, string/number/date helpers. Also defines `window.vModel` (internal data model: asset path, module registry) and triggers asset-path bootstrap on import.
-2. `src/vUX-core-4.0.0-beta.js` — imports all of `helpers.js` and **promotes every helper export to a global** (`for (let name in vUxHelpers) window[name] = vUxHelpers[name]`). Defines `window.$$`, the core utility namespace (`$$.ss` select-single, `$$.sa` select-all, `$$.sm` select-and-manipulate, `$$.ce` create-element, `$$.attachEventHandler`, `$$.styleElement`, etc.). Also monkey-patches built-ins (`String.prototype.xTrim/trimChar/toUpperCaseFirst`, `Array.prototype.has`, `Storage.prototype.set/getIterable`, `Date.prototype.isValid`, `RegExp.parseChars`) and exposes the `window.vUxModules` console getter.
-3. `vUX-*.js` (repo root): one component per file, each exporting a **single constructor function** (`Carousel`, `FormValidator`, `SPAEngine`, `ModalDisplayer`, `ListScroller`, `ProgressIndicator`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `SketchPad`, `FormComponents`, `MessageBox`, `Marquee`). Every one begins with `import "./src/vUX-core-4.0.0-beta.js"` so that importing any component transitively boots the whole core + globals.
+2. `src/vUX-core-4.0.0.js`: imports all of `helpers.js` and **promotes every helper export to a global** (`for (let name in vUxHelpers) window[name] = vUxHelpers[name]`). Defines `window.$$`, the core utility namespace (`$$.ss` select-single, `$$.sa` select-all, `$$.sm` select-and-manipulate, `$$.ce` create-element, `$$.attachEventHandler`, `$$.styleElement`, etc.). Also monkey-patches built-ins (`String.prototype.xTrim/trimChar/toUpperCaseFirst`, `Array.prototype.has`, `Storage.prototype.set/getIterable`, `Date.prototype.isValid`, `RegExp.parseChars`) and exposes the `window.vUxModules` console getter.
+3. `vUX-*.js` (repo root): one component per file, each exporting a **single constructor function** (`Carousel`, `FormValidator`, `SPAEngine`, `ModalDisplayer`, `ListScroller`, `ProgressIndicator`, `TouchHandler`, `ToolTip`, `AutoWriter`, `Resizer`, `TimeLineList`, `CShapes`, `SketchPad`, `FormComponents`, `MessageBox`, `Marquee`, `Prompt`). Every one begins with `import "./src/vUX-core-4.0.0.js"` so that importing any component transitively boots the whole core + globals.
 
-`vUX-core.js` is just a thin re-export shim that imports `./src/vUX-core-4.0.0-beta.js`.
+`vUX-core.js` is just a thin re-export shim that imports `./src/vUX-core-4.0.0.js`.
 
 **Global-by-design:** because helpers and `$$` are attached to `window`, component code calls helpers like `validateElement(...)`, `hyphenatedToCamel(...)`, `$$.ss(...)` unqualified, relying on the core having been imported first. When adding a shared utility, export it from `helpers.js` — it becomes globally available automatically.
 
@@ -44,7 +44,7 @@ Two patterns coexist: (a) static stylesheets in `assets/css/*.css`, linked at ru
 
 ## Versioning
 
-The version is baked into filenames (`vUX-core-4.0.0-beta.js`) and into the absolute CDN import URLs shown in the README (`http://library.vilshub.net/lib/vUX/<version>/vUX-*.js`). Bumping a version touches filenames, the import in `vUX-core.js`, and the module registry list in `vModel.core.data.modules` (`src/helpers.js`).
+The version is baked into filenames (`vUX-core-4.0.0.js`) and into the absolute CDN import URLs shown in the README (`http://library.vilshub.net/lib/vUX/<version>/vUX-*.js`). Bumping a version touches filenames, the import in `vUX-core.js`, and the module registry list in `vModel.core.data.modules` (`src/helpers.js`).
 
 ## Example pages (required for every module)
 

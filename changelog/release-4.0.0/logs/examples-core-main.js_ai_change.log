@@ -1,0 +1,6 @@
+OLD_SECTION (line 543)
+//calls that threw or misbehaved earlier in v4.0.0-beta, shown returning what they return now
+NEW_SECTION (line 543)
+//calls that threw or misbehaved earlier in v4.0.0, shown returning what they return now
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.

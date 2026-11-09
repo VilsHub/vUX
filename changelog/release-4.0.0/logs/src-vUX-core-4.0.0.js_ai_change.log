@@ -1,0 +1,6 @@
+OLD_SECTION
+src/vUX-core-4.0.0-beta.js (filename)
+NEW_SECTION
+src/vUX-core-4.0.0.js (filename)
+REASON
+The version is baked into the core filename; the release drops the -beta suffix. Content unchanged (git mv).

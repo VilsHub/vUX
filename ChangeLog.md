@@ -1,5 +1,5 @@
 # Changelog
-## v4.0.0-beta
+## v4.0.0
 ## Added
 - domDrawer module
 - $$.styleElement() feature
@@ -92,6 +92,23 @@
 - SPAEngine `config.styleTimeout`: the longest, in milliseconds, a fragment waits for its stylesheets before it is mounted anyway (default 3000, 0 to not wait)
 - SPAEngine scroll restoration (`config.restoreScroll`, on by default): back/forward and a reload return to the scroll position each history entry had, instead of keeping whatever position the previous route left
 - SPA example section "Back to where you were": a live view of the engine's scroll state (current position, the position saved in the history entry, history length, the last restore) and a button to leave from the current spot and come back with Back
+- Prompt module (vUX-prompt.js): `alert()`, `confirm()` and `input()` dialogs that resolve a Promise with the answer, replacing the blocking native calls with a styled, themable dialog that sits above every modal on the page and keeps Escape from reaching the page underneath
+- Prompt `danger` option: a red OK button and focus starting on Cancel, so a stray Enter cannot confirm a destructive action
+- Prompt input validation: `required`, `maxLength`, `inputType` and a `validate()` function that may be async, with OK held off while it runs and the refusal shown under the field
+- Prompt queue: dialogs asked for while another is up, from any instance, open in turn instead of on top of each other
+- Prompt guide (doc/prompt.md) and runnable example (examples/prompt/): each dialog one click away, a playground over every config property with a log of each answer, a guarded delete, an async-validated rename, two instances sharing the queue, and the validation errors
+- FormValidator `validate()` returns true when the field passes and false when it fails
+- FormValidator `minSize` and `maxSize` rules (`"maxSize:2MB"`; B, KB, MB or GB) checked against every selected file; they were listed as supported but did nothing
+- FormValidator `callBack` functions receive the field as a second argument
+- FormValidator default loader: a ring spinner when `config.progressIndicatorStyle` is not set (the loader used to be invisible without it)
+- FormValidator guide (doc/form-validator.md) and runnable example (examples/formvalidator/)
+- ToolTip `config.html`: tips are plain text by default; `true` sets them as HTML
+- ToolTip `tipBoxStyles.backgroundColor`, alongside `arrowColor` and `fontColor`; the arrow follows the background unless `arrowColor` is given
+- ToolTip keyboard support: focusing a member shows its tip and blur hides it; the tip has role="tooltip" and the shown member points at it with aria-describedby
+- ToolTip guide (doc/tool-tip.md) and runnable example (examples/tooltip/)
+- CShapes `arc()`: a progress ring drawn with `draw(canvas, progress, label)`, starting at 12, 3, 6 or 9 o'clock in either direction, with the percentage and a label in the middle, round or butt line caps, a radius that fits the canvas, and an optional animation from the last value shown (`duration`, `easing`, `callback`, `stop()`, `destroy()`)
+- CShapes guide (doc/c-shapes.md) and runnable example (examples/cshapes/)
+- CShapes `arc()` fonts reset to the radius-scaled default when set to `null` or `""`
 
 ## Fixed
 - modal multiple display bug
@@ -234,6 +251,48 @@
 - SPAEngine no longer adds a second history entry for the entry page at boot, so the first Back press leaves the page instead of appearing to do nothing; the boot entry also keeps the URL's query and `#hash`, which used to be dropped
 - SPAEngine: a route fragment that fails to load is reported in the console (as a failed page or section already was) and its link can be clicked again; it used to throw a ReferenceError while building a blocking alert, and leave the link stuck
 - ProgressIndicator: the first linear bar shown in a page now animates; it used to jump straight to its first stop, and a style 3 bar then never moved on to its slow and crawl phases (later bars were fine)
+- FormValidator `required`, `minLength`, `maxLength` and `email` reported an error on every valid value in email, password, number, tel, url and other non-"text" inputs, and in inputs with no type attribute
+- FormValidator no longer leaves an old error showing after the field is corrected and validated again
+- FormValidator writing a message straight after a clear (a click into the field, then a failed check) no longer loses the new message when the old one finishes fading
+- FormValidator message text gets its colour even when no transition runs (reduced motion, a hidden form); it used to stay transparent
+- FormValidator changing a field's message type or side (error to warning, bottom to right) restyles or moves the box instead of keeping the old one
+- FormValidator only error messages make `formOk()` false; a warning or success message (for example "Username available") used to block submission
+- FormValidator forms on the same page no longer affect each other: a click in one form no longer clears another form's messages, each form's messages take that form's own colour variables, and a feedback box or loader in one form is no longer emptied or removed by another
+- FormValidator `submit()` no longer leaves the form locked behind its overlay when the server answers anything other than 200, 404, 405, 419 or 500, or cannot be reached: any 2xx counts as success and every other answer shows an error feedback box
+- FormValidator `submit()` sends its `headers` argument (it was ignored), sends the fields in the query string for GET (they were dropped), ignores a second call while a request is pending, and checks its arguments before locking the form
+- FormValidator feedback button: no longer submits the form it sits in, acts on click instead of on focus (tabbing onto it used to dismiss the box, and in Safari clicking it did nothing), and `showFeedback()` called on its own now shows the overlay it lives in
+- FormValidator feedback box: a warning is centred when `feedbackModalStyles` has no warning entry, and `labels` with only a title (or only a button label) keep the other default instead of leaving it empty
+- FormValidator loader: hidden while the feedback box shows, and no longer duplicated on every submission
+- FormValidator custom progress animation: `onReceive` runs once per request; it used to run on every message written, including every failed `validate()`
+- FormValidator rule keys may contain colons (`"match:/^a:b$/"`), `match` keeps its regex flags and escaped slashes, `ext` is case-insensitive, `fullName` copes with double spaces, `trim` runs before `required`, and a `callBack` returning false writes its first message
+- FormValidator rule messages containing ":-" are kept whole; only a leading `e:-`, `w:-` or `s:-` sets the type
+- FormValidator `ext` with no file chosen, `required` on a select with no options, and `message.write()` with a NodeList no longer throw; radio groups from `form.elements` are accepted
+- FormValidator `logServerError()` defaults each entry's location to bottom and writes server messages as text
+- FormValidator `destroy()` also removes the message boxes and the classes and attributes it put on fields
+- FormValidator config: `progressAnimationCallbacks` needs both `onSend` and `onReceive` (a missing one crashed later), `loaderLocation` can be set before `submitButtonClass` and "form" no longer needs it, and an unsupported `submissionMethod` throws instead of being ignored
+- FormValidator default warning and success colours are readable (dark text on a light fill); the warning used orange text on dark brown
+- `FormValidator.format.currencyField()` keeps decimals (1234.56 became "1,234,.56") and always returns a string; `wordSeperator()` validates its repeat count and no longer adds a document listener per call; `integerField()` rejects non-text inputs as documented
+- `validateEmailAddress()` (used by the FormValidator `email` rule) accepts sub-domains, hyphenated domains and "+" in the local part
+- ToolTip `on()` works (it threw a ReferenceError), `off()` works on members set up by `initialize()` (it threw "No tool tip applied") and hides a tip that is showing
+- ToolTip shows when the pointer is over a child of a member (an icon in a button) and stays up when moving onto one
+- ToolTip `tipBoxStyles` validates its keys and values (the checks never ran, and more than two keys threw a ReferenceError), no longer writes "undefined" colours, and applies when set after `initialize()`
+- ToolTip stays inside the window: fixed to the viewport, flipped below the pointer near the top edge and pushed in from the side edges, with the arrow kept on the pointer
+- ToolTip text is set as text, so a title containing markup can no longer inject HTML
+- ToolTip hides on scroll, Escape or a touch elsewhere, so a tip opened by a tap no longer stays up
+- ToolTip error for a bad `className` names ToolTip instead of datePicker
+- ToolTip `refresh()` no longer turns back on a member switched off with `off()`
+- ToolTip keeps a member's own `aria-describedby`, adding the tip's id while it shows; it used to overwrite and then remove it
+- ToolTip instances on the same class: destroying one no longer removes the tip box and the titles from under the other, and `config.html` set on either applies
+- CShapes `draw()` on anything but a canvas throws a clear error instead of "getContext is not a function"
+- FormValidator `minLength` / `maxLength` without a whole number (`"maxLength:abc"`) throw instead of passing every value, and a click on markup inside the feedback button's label works
+- FormValidator `destroy()` during a pending `submit()` aborts the request; the answer used to arrive at the torn-down form and throw
+- FormValidator `showFeedback()` ends the loading state (button loader, custom `onReceive`), so a custom animation no longer keeps running behind the feedback box
+- FormValidator `customStyles` passed with a message update apply to the box already showing, and long messages under a field wrap instead of running off a narrow screen
+- ToolTip keeps its 320px maximum width (or your own `max-width`) on wide windows; an inline width set from the window size used to override it
+- ToolTip switching `config.html` re-renders a tip that is already showing, and `config.className` must be a single class name
+- CShapes rectangle error messages name the property (they said only "Please provide a string" or "a real number"), the `origin` message no longer reads "arrayof", and an unknown easing lists the valid ones
+- CShapes `animatedRectangle()` with `duration` 0 paints once instead of running a frame loop that called `callback` on every frame
+- SketchPad no longer gets stuck panning: if focus left the pad or the browser window while Space was held, the missed keyup left space-to-pan on, so every drag moved the view whatever tool was active
 
 ## Removed
 - colorOverlayStyle in modalDisplayerObj
@@ -270,6 +329,12 @@
 - ListScroller button scrolls take config.scrollSpeed's default of 290ms instead of a fixed 200ms
 - ListScroller marks both buttons inactive at initialize(), until onScroller() arms them
 - CShapes `animatedRectangle()` applies `config.lineColor` on every frame, so a colour set while it runs shows on the next frame instead of the next cycle, and a colour can be tweened
+- The licence and project links in every source file header now point at GitHub (https://github.com/VilsHub/vUX/blob/master/LICENSE and https://github.com/VilsHub/vUX) instead of the old library.vilshub.net addresses
+- v4.0.0 is a stable release, no longer a beta: the core file is now `src/vUX-core-4.0.0.js`, so a page that imports `src/vUX-core-4.0.0-beta.js` directly must switch to the new name (or import `vUX-core.js`, which follows the version)
+- FormValidator: an empty field without the `required` rule passes and skips its value rules, so an optional email field left blank is no longer "invalid"; a `callBack` rule still runs on it
+- `validateEmailAddress()` requires a last domain label of at least two letters, so `a@b.c` and `a@b.c1` are now rejected
+- FormValidator: the message text colour comes from the stylesheet (`--error-color`, `--warning-color`, `--success-color` on the form or any ancestor) instead of being set inline from the first validator's form
+- ToolTip: the tip box is `position: fixed` and placed from the pointer's viewport position
 
 ## Optimised
 - Optimized $$.cssStyle() static method functionality

@@ -1,0 +1,6 @@
+OLD_SECTION (line 3)
+vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0-beta). There is no build step and no package manager — modules are imported directly by the browser.
+NEW_SECTION (line 3)
+vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0). There is no build step and no package manager — modules are imported directly by the browser.
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.

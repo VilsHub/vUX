@@ -1,0 +1,34 @@
+FEATURE: license-url-github
+DATE: 2026-11-09
+
+<vUX (all modules)>
+  Modified (header comment: licence link and project link):
+    src/componentEngine.js
+    src/helpers.js
+    src/vUX-core-4.0.0-beta.js
+    vUX-autoWriter.js
+    vUX-cShapes.js
+    vUX-carousel.js
+    vUX-component.js
+    vUX-core.js
+    vUX-dataView.js
+    vUX-fontSplash.js
+    vUX-formComponents.js
+    vUX-formValidator.js
+    vUX-listScroller.js
+    vUX-marquee.js
+    vUX-messageBox.js
+    vUX-modalDisplayer.js
+    vUX-progressIndicator.js
+    vUX-prompt.js
+    vUX-resizer.js
+    vUX-skeleton.js
+    vUX-sketchPad.js
+    vUX-spaEngine.js
+    vUX-timeLineList.js
+    vUX-toolTip.js
+    vUX-touchHandler.js
+
+<Documentation>
+  Modified:
+    ChangeLog.md

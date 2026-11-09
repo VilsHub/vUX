@@ -1,0 +1,64 @@
+OLD_SECTION (line 1)
+
+NEW_SECTION (line 1)
+/* The tip is fixed to the window: ToolTip places it from the pointer's viewport position and keeps
+   it inside the window, so a positioned body or a scrolled page cannot offset it */
+REASON
+Tip fixed to the viewport, max-content width up to 320px, pointer-events none, arrow position variable and a flipped (bottom) arrow.
+
+OLD_SECTION (line 7)
+  position:absolute;
+  width:auto;
+NEW_SECTION (line 9)
+  position:fixed;
+  width:max-content;
+  max-width:320px;
+REASON
+Tip fixed to the viewport, max-content width up to 320px, pointer-events none, arrow position variable and a flipped (bottom) arrow.
+
+OLD_SECTION (line 11)
+  padding: 5px;
+NEW_SECTION (line 14)
+  padding: 5px 8px;
+REASON
+Tip fixed to the viewport, max-content width up to 320px, pointer-events none, arrow position variable and a flipped (bottom) arrow.
+
+OLD_SECTION (line 15)
+
+NEW_SECTION (line 18)
+  overflow-wrap:anywhere;
+  pointer-events:none;
+REASON
+Tip fixed to the viewport, max-content width up to 320px, pointer-events none, arrow position variable and a flipped (bottom) arrow.
+
+OLD_SECTION (line 19)
+}
+.vToolTipTop::before{
+  position:absolute;
+  content:'';
+  top:CALC(100%);
+NEW_SECTION (line 24)
+  left:var(--vtt-arrow-left, 6px);
+REASON
+Tip fixed to the viewport, max-content width up to 320px, pointer-events none, arrow position variable and a flipped (bottom) arrow.
+
+OLD_SECTION (line 26)
+
+NEW_SECTION (line 27)
+}
+/* above the pointer: the arrow hangs from the bottom edge and points down */
+.vToolTipTop::before{
+  top:100%;
+REASON
+Tip fixed to the viewport, max-content width up to 320px, pointer-events none, arrow position variable and a flipped (bottom) arrow.
+
+OLD_SECTION (line 28)
+
+NEW_SECTION (line 33)
+/* flipped below the pointer near the top of the window: the arrow points up */
+.vToolTipBottom::before{
+  bottom:100%;
+  border-bottom:10px solid #c08bc0;
+}
+REASON
+Tip fixed to the viewport, max-content width up to 320px, pointer-events none, arrow position variable and a flipped (bottom) arrow.

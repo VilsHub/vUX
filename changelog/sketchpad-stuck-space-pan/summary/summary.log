@@ -1,0 +1,1 @@
+SketchPad (vUX-sketchPad.js): fixed space-to-pan getting stuck on when the Space keyup was missed, which made the view pan on every drag with any tool. Affects every SketchPad consumer, notably Apps/vSketch (via its lib/vUX symlink). Patch-level fix; .version already records v4.0.0 above the last tag v3.0.0, so no bump.

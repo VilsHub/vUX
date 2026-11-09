@@ -1,0 +1,8 @@
+OLD_SECTION
+    var email_filter = /^[a-zA-Z0-9\-\.\_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]{1,}$/.test(input); //matches email address pattern
+NEW_SECTION
+    //local part: letters, digits and . _ % + - ; domain: one or more dot-separated labels (letters,
+    //digits, inner hyphens) and a last label of 2+ letters, so sub-domains and hyphenated domains pass
+    var email_filter = /^[A-Za-z0-9._%+\-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9\-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/.test(input);
+REASON
+validateEmailAddress() rejected ada@mail.example.co.uk, ada@my-site.com and a+b@x.io, so the FormValidator email rule failed real addresses.

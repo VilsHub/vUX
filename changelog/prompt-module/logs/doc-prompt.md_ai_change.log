@@ -1,0 +1,9 @@
+FILE: doc/prompt.md
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+NEW FILE. Prompt guide: how it works (Promise answers, top layer, queue, Escape),
+quick start, focus and keys, config, options, message handling, members, styling,
+Prompt vs MessageBox, errors.

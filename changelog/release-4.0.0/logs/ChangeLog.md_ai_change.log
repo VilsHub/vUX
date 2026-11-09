@@ -1,0 +1,13 @@
+OLD_SECTION (line 2)
+## v4.0.0-beta
+NEW_SECTION (line 2)
+## v4.0.0
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.
+
+OLD_SECTION (line 279)
+
+NEW_SECTION (line 279)
+- v4.0.0 is a stable release, no longer a beta: the core file is now `src/vUX-core-4.0.0.js`, so a page that imports `src/vUX-core-4.0.0-beta.js` directly must switch to the new name (or import `vUX-core.js`, which follows the version)
+REASON
+Version release: v4.0.0-beta becomes the stable v4.0.0, so every reference to the old version (core filename, imports, docs, examples) moves to 4.0.0.

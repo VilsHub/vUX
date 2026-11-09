@@ -306,7 +306,7 @@ file.autoBuild();
 
 `autoBuild()`, `refresh(parent)` (`parent` required) and `refreshFile(nativeFile)` — rebuilds one widget.
 
-## Remaining limitations (4.0.0-beta)
+## Remaining limitations (4.0.0)
 
 - **One visual size per select className** — the select's generated stylesheet is created once per `config.className`, using the dimensions of the last widget built, so every select sharing a class renders at that size even though each carries its own size attribute. Use a separate builder (and class name) per size. Dropdown *placement* is computed from each widget's own rendered height, so it stays correct either way.
 - **Slide switch markup constraint** — the checkbox must be the last element child of its wrapper (see [Slide switch](#slide-switch)); the widget locates its native input as the immediately preceding element.

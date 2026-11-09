@@ -1,0 +1,19 @@
+FILE: Apps/myinvitees/app.myinvitees.com/assets/js/pages/card-tool/card-ops.js (consumer, outside this repo)
+FEATURE: prompt-module
+DATE: 2026-11-09
+
+REASON
+The two native confirm() calls replaced with Prompt, as danger dialogs.
+
+OLD_SECTION
+        if (!confirm("Delete this unpaid order?")) return;
+        if (action == "delete" && !confirm("Delete these cards from your account?")) return;
+
+NEW_SECTION
+        if (!await ask.confirm("Delete this unpaid order?", {title: "Delete order", okText: "Delete", danger: true})) return;
+        if (action == "delete" && !await ask.confirm("Delete these cards from your account?", {title: "Delete cards", okText: "Delete", danger: true})) return;
+
+plus: import {Prompt} from "/lib/vUX/vUX-prompt.js"; and var ask = new Prompt(); ask.initialize();
+
+FOLLOW-UP: ask.closeAll() added on route entry after notice.closeAll(), so a prompt
+never outlives the panel it was asked from.

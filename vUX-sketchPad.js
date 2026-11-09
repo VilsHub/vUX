@@ -1,10 +1,10 @@
 /*
  * vUX JavaScript library v4.0.0
- * https://library.vilshub.net/lib/vUX/
+ * https://github.com/VilsHub/vUX
  *
  *
  * Released under the MIT license
- * https://library.vilshub.net/lib/vUX/license
+ * https://github.com/VilsHub/vUX/blob/master/LICENSE
  *
  * Date: 2026-10-06
  *
@@ -12,7 +12,7 @@
  */
 // Import vUX core
 import { validateElement, validateString, validateBoolean, validateFunction, validateObjectLiteral, validateArray } from "./src/helpers.js";
-import "./src/vUX-core-4.0.0-beta.js";
+import "./src/vUX-core-4.0.0.js";
 
 /***************************SketchPad*****************************/
 export function SketchPad(host) {
@@ -224,10 +224,13 @@ export function SketchPad(host) {
             host.style.outline = "none";
             listen(host, "keydown", onKeyDown);
             listen(host, "keyup", onKeyUp);
+            listen(host, "focusout", releaseSpace);
         } else if (settings.keyboardScope == "document") {
             listen(window, "keydown", onKeyDown);
             listen(window, "keyup", onKeyUp);
         }
+        listen(window, "blur", releaseSpace);
+        listen(document, "visibilitychange", onVisibilityChange);
 
         resizeObserver = new ResizeObserver(resizeCanvas);
         resizeObserver.observe(host);
@@ -1655,10 +1658,20 @@ export function SketchPad(host) {
     }
 
     function onKeyUp(e) {
-        if (e.code == "Space" && spaceDown) {
-            spaceDown = false;
-            if (!drag) setTool(tool); //restores the tool's own cursor
-        }
+        if (e.code == "Space") releaseSpace();
+    }
+
+    //Space-to-pan only lasts while Space is held. Its keyup never arrives when focus
+    //leaves the pad (or the window) mid-press, so those also release it; otherwise
+    //every later drag would pan whatever tool is active.
+    function releaseSpace() {
+        if (!spaceDown) return;
+        spaceDown = false;
+        if (!drag) setTool(tool); //restores the tool's own cursor
+    }
+
+    function onVisibilityChange() {
+        if (document.hidden) releaseSpace();
     }
 
     //--------------------------------------------------------------- SVG stamps

@@ -1,0 +1,11 @@
+FILE: examples/prompt/
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+NEW FILES index.html, main.js, README.md. Example page: hero with the three kinds
+and the resolved value, playground over every config property with a log and
+equivalent code, real flows (guarded delete, async-validated rename, two instances
+queued), validation errors. Checked headless at 1280 and 390 wide: no horizontal
+scroll, no console errors.

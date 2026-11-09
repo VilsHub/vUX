@@ -1,0 +1,13 @@
+FILE: CLAUDE.md
+FEATURE: prompt-module
+DATE: 2026-11-09
+PRIOR STATE: as left by the last commit plus uncommitted work from earlier features
+
+REASON
+Prompt added to the list of exported constructors.
+
+OLD_SECTION
+... `MessageBox`, `Marquee`).
+
+NEW_SECTION
+... `MessageBox`, `Marquee`, `Prompt`).

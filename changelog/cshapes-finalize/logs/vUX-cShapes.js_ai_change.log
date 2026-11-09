@@ -1,0 +1,528 @@
+OLD_SECTION (line 21)
+
+NEW_SECTION (line 21)
+    //The backing store is only reallocated when the size or ratio changed, so a per-frame call
+    //(the animated arc) does not reallocate it on every frame.
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 25)
+        canvasElement.width = Math.round(width * ratio);
+        canvasElement.height = Math.round(height * ratio);
+NEW_SECTION (line 27)
+        var w = Math.round(width * ratio), h = Math.round(height * ratio);
+        if (canvasElement.width != w) canvasElement.width = w;
+        if (canvasElement.height != h) canvasElement.height = h;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 39)
+
+NEW_SECTION (line 42)
+        //the context keeps its state between draws on one canvas (it is no longer reset by resizing),
+        //so a cap left by an arc on the same canvas is put back to the rectangles' butt ends
+        context.lineCap = "butt";
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 59)
+
+NEW_SECTION (line 65)
+    function validateCanvas(element, message) {
+        if (!(element instanceof Element) || element.nodeName != "CANVAS") throw new TypeError(message);
+    }
+
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 71)
+                validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+NEW_SECTION (line 81)
+                validateCanvas(canvasElement, "A canvas element is needed as the argument for the 'draw()' method");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 92)
+                    if (validateString(value)) {
+                        FRlinecolor = value;
+                    }
+NEW_SECTION (line 102)
+                    validateString(value, "'fixedRectangle.config.lineColor' property value must be a string of a valid CSS colour");
+                    FRlinecolor = value;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 99)
+                    if (validateNumber(value)) {
+                        if (value > 0) {
+                            FRlinewidth = value;
+                        } else {
+                            FRlinewidth = 1;
+                        }
+                    }
+NEW_SECTION (line 108)
+                    validateNumber(value, "'fixedRectangle.config.lineWidth' property value must be a number of pixels");
+                    FRlinewidth = value > 0 ? value : 1;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 117)
+                        throw new Error("Array members for 'segment' property value must all be positive integers");
+NEW_SECTION (line 121)
+                        throw new Error("Array members for 'segment' property value must both be numbers above 0");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 123)
+                    var temp = "fixedRectangle.config.origin property value must be an array";
+NEW_SECTION (line 127)
+                    var temp = "fixedRectangle.config.origin property value must be an array ";
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 155)
+                validateElement(canvasElement, "A valid HTML element needed as argument for 'draw()' method");
+NEW_SECTION (line 159)
+                validateCanvas(canvasElement, "A canvas element is needed as the argument for the 'draw()' method");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 199)
+                    if (animationCount == "infinite" || cycle < animationCount) {
+NEW_SECTION (line 203)
+                    //a 0ms cycle has nothing to animate: it paints once instead of looping every frame
+                    if (ARduration > 0 && (animationCount == "infinite" || cycle < animationCount)) {
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 235)
+                    validateNumber(value);
+NEW_SECTION (line 240)
+                    validateNumber(value, "'animatedRectangle.config.lineWidth' property value must be a number of pixels");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 274)
+                        throw new Error("Array members for 'segment' property value must all be positive integers");
+NEW_SECTION (line 279)
+                        throw new Error("Array members for 'segment' property value must both be numbers above 0");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 280)
+                    var temp = "animatedRectangle.config.origin property value must be an array";
+NEW_SECTION (line 285)
+                    var temp = "animatedRectangle.config.origin property value must be an array ";
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 295)
+                    validateString(value);
+                    validateObjectMember(timing, value);
+NEW_SECTION (line 300)
+                    validateString(value, "'animatedRectangle.config.easing' property value must be a string");
+                    if (!Object.prototype.hasOwnProperty.call(timing, value)) throw new Error("'animatedRectangle.config.easing' property value must be one of: " + Object.keys(timing).join(", "));
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 302)
+                    validateNumber(value);
+NEW_SECTION (line 307)
+                    validateNumber(value, "'animatedRectangle.config.duration' property value must be a number of milliseconds");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 312)
+                    validateBoolean(value);
+NEW_SECTION (line 317)
+                    validateBoolean(value, "'animatedRectangle.config.clockWise' property value must be a boolean");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 335)
+
+NEW_SECTION (line 340)
+    //A progress ring: a background circle, an arc for the percentage and, optionally, the
+    //percentage and a label in its centre. draw() paints it at once, or animates to the new value
+    //from the last one drawn when config.duration is above 0.
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 336)
+        var canvasObj = canvasElement.getContext('2d'); //initialization
+        var start =12,progressLabel = true, progressBackground	= "#ccc",strokeWidth	= 10, strokeColor	="yellow", radius	= 50, percentageFontColor	= "white",
+        percentageFont = "normal normal 2.1vw Verdana", LabelFontColor = "white", LabelFont	= "normal normal .9vw Verdana";
+        
+NEW_SECTION (line 344)
+        var start = 12, clockWise = true, progressLabel = true, showPercentage = true, progressBackground = "#ddd", strokeWidth = 10,
+            strokeColor = "black", radius = "auto", lineCap = "butt", percentageFontColor = "black", percentageFont = null,
+            labelFontColor = "#555", labelFont = null, duration = 0, easing = "linear", callback = null;
+        var startAngles = {12: -0.5 * Math.PI, 3: 0, 6: 0.5 * Math.PI, 9: Math.PI};
+        var target = null;     //the canvas last drawn on
+        var shown = 0;         //the progress currently painted on it, where an animated draw() starts from
+        var run = 0;           //bumped by draw(), stop() and destroy(); a frame from an older run exits
+
+        function paint(canvasElement, progress, label) {
+            var size = prepareCanvas(canvasElement);
+            var ctx = size.context;
+            var x = size.width / 2, y = size.height / 2;
+            //"auto" fills the canvas; a number is kept, but never so large that the ring is cut off
+            var fit = Math.max(1, Math.min(size.width, size.height) / 2 - strokeWidth / 2 - 1);
+            var r = radius == "auto" ? fit : Math.min(radius, fit);
+
+            ctx.clearRect(0, 0, size.width, size.height);
+            //solid line: dashes left by a rectangle drawn on this canvas earlier do not carry over
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = lineCap;
+
+            ctx.beginPath();
+            ctx.strokeStyle = progressBackground;
+            ctx.arc(x, y, r, 0, 2 * Math.PI, false);
+            ctx.stroke();
+
+            if (progress > 0) {
+                var from = startAngles[start];
+                var sweep = (Math.min(progress, 100) / 100) * 2 * Math.PI;
+                ctx.beginPath();
+                ctx.strokeStyle = strokeColor;
+                ctx.arc(x, y, r, from, clockWise ? from + sweep : from - sweep, !clockWise);
+                ctx.stroke();
+            }
+
+            var hasLabel = progressLabel && label != "";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            if (showPercentage) {
+                ctx.font = percentageFont != null ? percentageFont : "600 " + Math.max(8, Math.round(r * 0.42)) + "px system-ui, sans-serif";
+                ctx.fillStyle = percentageFontColor;
+                ctx.fillText(Math.round(progress) + "%", x, hasLabel ? y - r * 0.12 : y);
+            }
+            if (hasLabel) {
+                ctx.font = labelFont != null ? labelFont : Math.max(8, Math.round(r * 0.2)) + "px system-ui, sans-serif";
+                ctx.fillStyle = labelFontColor;
+                ctx.fillText(label, x, showPercentage ? y + r * 0.3 : y);
+            }
+            shown = progress;
+        }
+
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 342)
+            draw: function(progress, label){
+                if (!validateInteger(progress)) throw new Error("circularProgress.draw() method argument 1 must be an integer");
+NEW_SECTION (line 399)
+            draw: function(canvasElement, progress, label = ""){
+                validateCanvas(canvasElement, "arc.draw() method argument 1 must be the canvas element to draw on");
+                if (typeof progress != "number" || !isFinite(progress)) throw new Error("arc.draw() method argument 2 must be a number from 0 to 100");
+                if (progress < 0 || progress > 100) throw new Error("arc.draw() method argument 2 must be between 0 - 100");
+                validateString(label, "arc.draw() method argument 3 must be a string");
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 345)
+                if(progress < 0 || progress >100) throw new Error("circularProgress.draw() method argument 1 must be between 0 - 100");
+                
+NEW_SECTION (line 405)
+                run++;
+                var token = run;
+                var from = canvasElement == target ? shown : 0;   //a new canvas starts from empty
+                target = canvasElement;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 348)
+                validateString(label, "circularProgress.draw() method argument 2 must be a string");
+
+                var startPoint = 0;
+                var fprog = parseInt(progress);
+                if(start == 12){
+                    startPoint = -0.5*Math.PI;
+                }else if(start == 3){
+                    startPoint = 0*Math.PI;
+                }else{
+                    startPoint = 0*Math.PI;
+NEW_SECTION (line 410)
+                if (duration <= 0 || from == progress) {
+                    paint(canvasElement, progress, label);
+                    if (callback != null) callback(progress);
+                    return;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 359)
+
+                var x = (50/100) * canvasElement.scrollWidth;
+                var y = (50/100) * canvasElement.scrollHeight;
+                if(progressLabel == true){
+                    var fontY = (46/100) * canvasElement.scrollHeight;
+                    var labelY = (55/100) * canvasElement.scrollHeight;
+                }else{
+                    var fontY = y;
+NEW_SECTION (line 415)
+                var began = Date.now();
+                function frame() {
+                    if (token != run) return;   //stopped, destroyed or replaced by a newer draw()
+                    var tf = timeFraction(began, duration);
+                    //easings that overshoot are kept inside 0-100, so the text never reads 108% or -3%
+                    paint(canvasElement, Math.min(100, Math.max(0, from + (progress - from) * timing[easing](tf))), label);
+                    if (tf < 1) {
+                        requestAnimationFrame(frame);
+                        return;
+                    }
+                    paint(canvasElement, progress, label);   //easings that overshoot still end exactly on the value
+                    if (callback != null) callback(progress);
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 368)
+
+                //Draw
+                canvasObj.clearRect(0,0, canvasElement.width, canvasElement.height);
+
+                //Progress Background
+                canvasObj.beginPath();
+                canvasObj.lineWidth = strokeWidth;
+                canvasObj.strokeStyle  = progressBackground;
+                canvasObj.arc(x,y,radius,0,2*Math.PI, false);
+                canvasObj.stroke();
+
+
+                //Progress Text
+                canvasObj.textAlign = "center";
+                canvasObj.textBaseline = "middle";
+                canvasObj.font = percentageFont;
+                canvasObj.fillStyle = percentageFontColor;
+                canvasObj.fillText(fprog+"%", x, fontY);
+                if(progressLabel == true){ //label
+                    canvasObj.font = LabelFont;
+                    canvasObj.fillStyle = LabelFontColor;
+                    canvasObj.fillText(label, x, labelY);
+NEW_SECTION (line 428)
+                frame();   //the first frame is painted now, like animatedRectangle
+            },
+            stop: function() {
+                //Leaves the current frame painted; the next animated draw() starts from it
+                run++;
+            },
+            destroy: function() {
+                run++;
+                if (target != null) {
+                    var ctx = target.getContext("2d");
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.clearRect(0, 0, target.width, target.height);
+                    target = null;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 391)
+
+                //Progress point
+                canvasObj.beginPath();
+                canvasObj.lineWidth = strokeWidth;
+                canvasObj.strokeStyle  =strokeColor;
+                canvasObj.arc(x,y,radius,startPoint,percentageToAngle(progress, start), false);
+                canvasObj.stroke();
+NEW_SECTION (line 442)
+                shown = 0;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 401)
+        Object.defineProperties(body, {
+            config:{writable:false},
+            show:{writable:false}
+        });
+NEW_SECTION (line 446)
+        function colour(name, set) {
+            return {
+                set: function(value) {
+                    validateString(value, "arc.config." + name + " property value must be a string of a valid CSS colour");
+                    set(value);
+                }
+            };
+        }
+        function font(name, set) {
+            return {
+                set: function(value) {
+                    //null or "" goes back to the default, which scales with the radius
+                    if (value == null || value === "") { set(null); return; }
+                    validateString(value, "arc.config." + name + " property value must be a string of a valid CSS font value, such as '600 24px system-ui'");
+                    set(value);
+                }
+            };
+        }
+        function flag(name, set) {
+            return {
+                set: function(value) {
+                    validateBoolean(value, "arc.config." + name + " property value must be a boolean");
+                    set(value);
+                }
+            };
+        }
+
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 408)
+                    if(validateNumber(value, "'start' property value must be numeric")){
+                        start = value;
+                    }
+NEW_SECTION (line 476)
+                    if (typeof value != "number" || startAngles[value] == undefined) throw new Error("arc.config.start property value must be 12, 3, 6 or 9: the clock position the arc starts from");
+                    start = value;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 413)
+            progressLabel:{
+                set: function(value){
+                    if(validateBoolean(value, "'progressLabel' property value must be boolean")){
+                        progressLabel = value;
+                    }
+                }
+            },
+            progressBackground:{
+                set: function(value){
+                    if(validateString(value, "'progressBackground' property value must be string of valid CSS color")){
+                        progressBackground = value;
+                    }
+                }
+            },
+NEW_SECTION (line 480)
+            clockWise: flag("clockWise", function(v){ clockWise = v; }),
+            progressLabel: flag("progressLabel", function(v){ progressLabel = v; }),
+            showPercentage: flag("showPercentage", function(v){ showPercentage = v; }),
+            progressBackground: colour("progressBackground", function(v){ progressBackground = v; }),
+            strokeColor: colour("strokeColor", function(v){ strokeColor = v; }),
+            percentageFontColor: colour("percentageFontColor", function(v){ percentageFontColor = v; }),
+            labelFontColor: colour("labelFontColor", function(v){ labelFontColor = v; }),
+            percentageFont: font("percentageFont", function(v){ percentageFont = v; }),
+            labelFont: font("labelFont", function(v){ labelFont = v; }),
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 429)
+                    validateNumber(value, "'strokeWidth' property value must be numeric");
+                    if(!validateInteger(value)) throw new Error ("'strokeWidth' property value must be integer");		strokeWidth = value;
+                }
+            },
+            strokeColor:{
+                set: function(value){
+                    if(validateString(value, "'strokeColor' property value must be string of valid CSS color")){
+                        strokeColor = value;
+                    }
+NEW_SECTION (line 491)
+                    if (typeof value != "number" || !isFinite(value) || value <= 0) throw new Error("arc.config.strokeWidth property value must be a number of pixels above 0");
+                    strokeWidth = value;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 442)
+                    if(validateNumber(value, "'radius' property value must be numeric")){
+                        if(!validateInteger(value)) throw new Error ("'radius' property value must be integer");
+                        radius = value;
+                    }
+NEW_SECTION (line 497)
+                    if (value === "auto") { radius = value; return; }
+                    if (typeof value != "number" || !isFinite(value) || value <= 0) throw new Error("arc.config.radius property value must be 'auto' or a number of pixels above 0");
+                    radius = value;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 448)
+            percentageFontColor:{
+NEW_SECTION (line 502)
+            lineCap:{
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 450)
+                    if(validateString(value, "'percentageFontColor' property value must be string of valid CSS color")){
+                        percentageFontColor = value;
+                    }
+NEW_SECTION (line 504)
+                    if (value != "butt" && value != "round") throw new Error("arc.config.lineCap property value must be 'butt' or 'round'");
+                    lineCap = value;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 455)
+            percentageFont:{
+NEW_SECTION (line 508)
+            duration:{
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 457)
+                    validateString(value, "'percentageFont' property value must be string of valid CSS font property value");
+                    percentageFont = value;
+NEW_SECTION (line 510)
+                    validateNumber(value, "arc.config.duration property value must be a number of milliseconds");
+                    duration = value > 0 ? value : 0;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 461)
+            labelFontColor:{
+NEW_SECTION (line 514)
+            easing:{
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 463)
+                    validateString(value, "'labelFontColor' property value must be string of valid CSS color");
+                    LabelFontColor = value;
+NEW_SECTION (line 516)
+                    validateString(value, "arc.config.easing property value must be a string");
+                    if (!Object.prototype.hasOwnProperty.call(timing, value)) throw new Error("arc.config.easing property value must be one of: " + Object.keys(timing).join(", "));
+                    easing = value;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 467)
+            labelFont:{
+                    set: function(value){
+                        if(validateString(value, "'labelFont' property value must be string of valid CSS font property value")){
+                            LabelFont = value;
+                        }
+                    }
+NEW_SECTION (line 521)
+            callback:{
+                set: function(value){
+                    validateFunction(value, "arc.config.callback property value must be a function");
+                    callback = value;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 474)
+        })
+NEW_SECTION (line 526)
+            }
+        });
+        Object.defineProperties(body, {
+            config:{writable:false},
+            draw:{writable:false},
+            stop:{writable:false},
+            destroy:{writable:false}
+        });
+
+        return body;
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 476)
+     /*******************************************************************/
+NEW_SECTION (line 537)
+    /*******************************************************************/
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.
+
+OLD_SECTION (line 479)
+
+NEW_SECTION (line 540)
+    Object.defineProperty(this, "arc", { writable: false });
+REASON
+arc() rebuilt as a working progress ring; rectangle errors name their property; draw() checks for a canvas; duration 0 paints once; canvas reallocated only on a size change, with line dash and cap reset per shape.

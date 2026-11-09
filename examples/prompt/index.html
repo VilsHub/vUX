@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX Prompt example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    .seg{display:flex; flex-wrap:wrap; gap:6px}
+    .seg button{padding:5px 10px; font-size:.78rem; font-family:var(--mono)}
+    .seg button.on{border-color:var(--amber); color:var(--amber); background:rgba(255,180,84,.08)}
+
+    .play{display:grid; grid-template-columns:minmax(0,360px) minmax(0,1fr); gap:22px; align-items:start}
+    .switches{display:grid; grid-template-columns:1fr; gap:10px}
+    .switches .switch{font-size:.84rem}
+
+    /* the hero's answer readout: what the last dialog resolved with */
+    .answer{
+        margin-top:22px; display:inline-flex; align-items:center; gap:12px; flex-wrap:wrap;
+        padding:10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel);
+        font-family:var(--mono); font-size:.86rem; color:var(--muted); max-width:100%;
+    }
+    .answer b{color:var(--amber); font-weight:600; overflow-wrap:anywhere}
+    .hero-cta button{font-family:var(--mono)}
+
+    .card .sym{font-size:1.15rem}
+    .cards .card:nth-child(1) .sym{color:var(--red)}
+    .cards .card:nth-child(2) .sym{color:var(--cyan)}
+    .cards .card:nth-child(3) .sym{color:var(--violet)}
+
+    /* a list the delete card works on */
+    .files{list-style:none; margin:0 0 14px; padding:0; font-family:var(--mono); font-size:.82rem; color:var(--muted)}
+    .files li{padding:6px 0; border-bottom:1px dashed var(--line)}
+    .files li:last-child{border-bottom:0}
+    .files:empty::after{content:"Nothing left."; color:var(--dim)}
+
+    .log{height:180px}
+
+    @media (max-width:860px){ .play{grid-template-columns:minmax(0,1fr)} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> Prompt <b>/</b> v4.0.0</p>
+        <h1>Ask first.<br>Then act on the answer.</h1>
+        <p class="hero-sub">
+            Styled <b>alert</b>, <b>confirm</b> and <b>input</b> dialogs that hand the answer back as a
+            Promise, sit above every modal on the page and never freeze your scripts.
+        </p>
+        <div class="hero-cta">
+            <button data-hero="alert">alert()</button>
+            <button class="primary" data-hero="confirm">confirm()</button>
+            <button data-hero="input">input()</button>
+        </div>
+        <div class="answer">resolved with <b id="heroAnswer">nothing yet</b></div>
+        <div class="hero-src">if (await ask.confirm(<span class="d">"Delete these cards?"</span>, { danger: <span class="d">true</span> })) remove()</div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            The controls on the left set <code>config</code> on one live instance; the ones on the right are per-call
+            options for the next dialog. Every answer lands in the log, so you can see what Cancel, Escape and a
+            backdrop click each resolve with.
+        </p>
+
+        <div class="play">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>config</span></div>
+                    <div class="panel-b">
+                        <div class="field row" style="justify-content:space-between">
+                            <label class="lbl" style="margin:0">theme</label>
+                            <div class="seg" id="themeSeg">
+                                <button data-theme="light" class="on">light</button>
+                                <button data-theme="dark">dark</button>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="okText">okText</label>
+                            <input type="text" id="okText" value="OK">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="cancelText">cancelText</label>
+                            <input type="text" id="cancelText" value="Cancel">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="width">width <span class="val" id="widthV">420px</span></label>
+                            <input type="range" id="width" min="260" max="640" step="10" value="420">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="speed">speed <span class="val" id="speedV">180ms</span></label>
+                            <input type="range" id="speed" min="0" max="1200" step="20" value="180">
+                        </div>
+                        <div class="field switches">
+                            <label class="switch"><input type="checkbox" data-flag="closeOnBackdrop"> closeOnBackdrop</label>
+                            <label class="switch"><input type="checkbox" data-flag="respectReducedMotion" checked> respectReducedMotion</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>next dialog</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl">kind</label>
+                            <div class="seg" id="kindSeg">
+                                <button data-kind="alert">alert</button>
+                                <button data-kind="confirm" class="on">confirm</button>
+                                <button data-kind="input">input</button>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="title">title <span class="val">option</span></label>
+                            <input type="text" id="title" value="Leave this page?">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="message">message <span class="val">argument 1</span></label>
+                            <input type="text" id="message" value="Changes you made will not be saved.">
+                        </div>
+                        <div class="field row">
+                            <label class="switch"><input type="checkbox" id="danger"> danger</label>
+                            <label class="switch"><input type="checkbox" id="required"> required <span style="color:var(--dim)">(input)</span></label>
+                        </div>
+                        <div class="row">
+                            <button class="primary" id="ask">Ask</button>
+                            <button class="ghost" id="clearLog">Clear log</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="snippet" style="margin:0; border:0; border-radius:0 0 12px 12px"></pre>
+                </div>
+                <div class="log" id="log" style="margin-top:18px"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Real flows</h2>
+        <p class="lede">
+            The three jobs a prompt usually does in an app: guard a destructive action, collect one value with a check
+            that may go to the server, and cope when two parts of the page ask at the same moment.
+        </p>
+        <div class="cards">
+            <div class="card">
+                <div class="sym">danger: true</div>
+                <h3>Delete with a guard</h3>
+                <p>Focus starts on Cancel and OK turns red, so a stray Enter cannot delete anything.</p>
+                <ul class="files" id="files"><li>invite-front.png</li><li>invite-back.png</li><li>guests.txt</li></ul>
+                <button class="danger" id="delete">Delete files</button>
+            </div>
+            <div class="card">
+                <div class="sym">validate()</div>
+                <h3>Rename with an async check</h3>
+                <p>The name is checked against a fake server (600ms). "taken" is refused; OK waits while it checks.</p>
+                <p style="flex:0; font-family:var(--mono); color:var(--amber)" id="projectName">Wedding cards</p>
+                <button id="rename">Rename project</button>
+            </div>
+            <div class="card">
+                <div class="sym">queue</div>
+                <h3>Two questions at once</h3>
+                <p>Two instances ask together. The second waits its turn instead of landing on top of the first.</p>
+                <button id="queue">Ask twice</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Bad input fails immediately</h2>
+        <p class="lede">
+            Every config property and every per-call option is checked when it is set, so a typo throws to your code
+            instead of opening a dialog that silently ignores it.
+        </p>
+        <div class="row">
+            <button data-bad="theme">config.theme = "blue"</button>
+            <button data-bad="message">confirm(42)</button>
+            <button data-bad="option">confirm("a", { value: "x" })</button>
+            <button data-bad="ok">config.okText = ""</button>
+            <button data-bad="type">input("a", { inputType: "date" })</button>
+            <button data-bad="init">confirm() before initialize()</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet. Press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/prompt.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The playground instance is on <span class="kbd">window</span> as <span class="kbd">ask</span>.
+            Try <span class="kbd">await ask.input("Your name?")</span>.
+        </p>
+    </div>
+</footer>
+</body>
+</html>

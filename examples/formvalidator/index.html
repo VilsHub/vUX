@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX FormValidator example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- what the page styles, and what it leaves to FormValidator ----------
+       FormValidator appends a message box to each field's WRAPPER (the field's parent by default)
+       and paints that wrapper while it shows an error (.lerror border, .wError background).
+       So every field here sits in a .ctl shell, and the input inside it is transparent: the
+       shell is what turns red. The box colours come from custom properties set per form. */
+
+    /* dark palette for the boxes and the painted wrapper, set on the forms that use it.
+       formValidator.css defines its light defaults on :root; these win inside these forms. */
+    .fv-dark{
+        --error-color:#ffa3b0; --error-background-color:#2a121b; --error-border-color:#ff6b7f;
+        --warning-color:#ffd59a; --warning-background-color:#2a1f0e; --warning-border-color:#ffb454;
+        --success-color:#c8f08f; --success-background-color:#15230f; --success-border-color:#a7e05f;
+    }
+
+    /* the field shell */
+    .ctl{
+        position:relative; border:1px solid var(--line); border-radius:10px; background:var(--ink);
+        transition:border-color .15s, margin-bottom .2s cubic-bezier(0,.81,.22,1);
+    }
+    .ctl:focus-within{border-color:#2f4560}
+    .ctl input[type=text],.ctl input[type=email],.ctl input[type=password]{
+        display:block; width:100%; height:44px; background:transparent; border:0; border-radius:10px;
+        padding:0 14px; color:var(--fg); font-family:var(--sans); font-size:.95rem;
+    }
+    .ctl input:focus{outline:none}
+    /* bottom boxes are absolutely positioned under the wrapper and do not push the next field
+       down, so the page opens a gap only while one is showing (a box on its way out has .clear) */
+    .ctl:has(> .vMsgBox.vBottom:not(.clear)){margin-bottom:52px}
+
+    /* the message boxes: only what the dark page needs on top of formValidator.css. That sheet
+       is linked ~300ms after initialize(), after this one, so these selectors are made more
+       specific than its rules instead of relying on order */
+    form.fv .vMsgBox{font-family:var(--sans); font-weight:550; letter-spacing:.01em; border-radius:8px}
+    form.fv .vLeft::before, form.fv .vRight::before{top:calc(50% - 8px)}
+    /* the overlay ring style is the module's own white glow; on a dark page it is replaced */
+    form.fv .vFormOverlay.vFormOverlayShow{border:0; box-shadow:none; border-radius:inherit}
+    /* the page's own button colour would leak into the module's light default feedback button */
+    form.fv .FbMsgBox button{color:#222}
+
+
+    /* ---------- hero ---------- */
+    .hero{padding-bottom:64px}
+    .hero-grid{display:grid; grid-template-columns:minmax(0,1fr); justify-items:center; margin-top:40px}
+    .signup{
+        width:100%; max-width:460px; background:var(--panel); border:1px solid var(--line);
+        border-radius:18px; padding:26px 26px 22px; box-shadow:0 30px 80px -40px rgba(0,0,0,.9);
+    }
+    .signup-h{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:20px; gap:12px}
+    .signup-h h2{font-size:1.25rem; margin:0}
+    .signup-h span{font-family:var(--mono); font-size:.72rem; color:var(--dim)}
+    .f{margin-bottom:18px}
+    .f > .lbl{display:flex; justify-content:space-between; gap:8px}
+    .f > .lbl i{font-style:normal; text-transform:none; letter-spacing:0; color:var(--dim); font-family:var(--mono); font-size:.72rem}
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+
+    /* the radio group: each radio sits in its own <label>, so its parent is not the wrapper.
+       config.wrapperClassAttribute points every radio at .plans instead */
+    .plans{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:6px}
+    .plan{
+        display:flex; flex-direction:column; gap:2px; padding:9px 10px; border-radius:7px; cursor:pointer;
+        border:1px solid transparent; background:var(--panel-2); font-size:.86rem; min-width:0;
+    }
+    .plan input{position:absolute; opacity:0; pointer-events:none}
+    .plan b{font-weight:600}
+    .plan small{font-family:var(--mono); color:var(--dim); font-size:.7rem}
+    .plan:has(input:checked){border-color:var(--amber); background:#1d1a14}
+    .plan:has(input:focus-visible){outline:2px solid rgba(92,207,230,.45)}
+
+    .filebox{display:flex; align-items:center; gap:12px; padding:7px 8px}
+    .filebox input[type=file]{flex:1; min-width:0; color:var(--muted); font-family:var(--mono); font-size:.76rem}
+    .filebox input[type=file]::file-selector-button{
+        font-family:var(--sans); font-size:.8rem; font-weight:550; margin-right:10px; cursor:pointer;
+        background:var(--panel-2); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:6px 11px;
+    }
+    .terms{display:flex; gap:10px; align-items:center; padding:10px 12px; cursor:pointer; font-size:.88rem; color:var(--muted)}
+    .terms input{accent-color:var(--amber); width:16px; height:16px}
+    .signup .actions{display:flex; gap:10px; align-items:center; margin-top:22px}
+    .signup .actions button{height:44px}
+    .signup .actions .primary{flex:1; font-size:.95rem}
+
+    .readout{
+        width:100%; max-width:460px; margin-top:16px; display:grid; grid-template-columns:repeat(3,1fr);
+        gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    }
+    .readout div{background:var(--panel); padding:9px 12px; font-family:var(--mono); font-size:.7rem; color:var(--dim); min-width:0}
+    .readout b{display:block; color:var(--fg); font-size:.9rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .readout b.ok{color:var(--green)} .readout b.bad{color:var(--red)}
+
+    /* ---------- playground ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:22px; align-items:start}
+    .play .panel + .panel{margin-top:18px}
+    .stage{background:var(--ink); border-radius:0 0 12px 12px; padding:34px 22px 30px}
+    .specimen{max-width:280px; min-height:270px; margin:0 auto; position:relative; border-radius:14px; padding:18px; background:var(--panel); border:1px solid var(--line)}
+    /* a block, not a flex row: the button loader (loaderLocation "button") shrinks the button to
+       a 46px circle with width !important, and as a flex item it would be stretched instead */
+    .specimen .actions{margin-top:16px}
+    .specimen .actions button{width:100%; height:40px}
+    form.fv .vButtonLoader{color:transparent}
+    form.fv .vButtonLoader::before{border-color:var(--amber)}
+    /* the custom progress animation (progressAnimationType "custom"): onSend adds .sending */
+    .sweep{position:absolute; left:14px; right:14px; top:0; height:3px; border-radius:3px; overflow:hidden; opacity:0; transition:opacity .2s}
+    .sweep::before{content:""; position:absolute; top:0; bottom:0; width:40%; left:-40%; background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+    .specimen.sending .sweep{opacity:1}
+    .specimen.sending .sweep::before{animation:sweep 1s linear infinite}
+    @keyframes sweep{to{left:100%}}
+    .colors{display:grid; grid-template-columns:auto repeat(3,auto); gap:8px 12px; align-items:center; justify-content:start}
+    .colors span{font-size:.78rem; color:var(--muted)}
+    .colors .hd{font-family:var(--mono); font-size:.66rem; color:var(--dim); letter-spacing:.1em; text-transform:uppercase}
+    .ctl-sel{width:100%}
+    .btn-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px}
+    .play .log{height:170px}
+    #code{white-space:pre-wrap; overflow-wrap:anywhere}
+    .tok{font-family:var(--mono); font-size:.74rem; color:var(--dim); margin-top:12px; overflow-wrap:anywhere}
+    .tok b{color:var(--amber); font-weight:500}
+    textarea#rules{min-height:118px; font-size:.78rem}
+
+    /* ---------- theming ---------- */
+    .themes{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px}
+    .theme-card{border-radius:14px; padding:22px 22px 26px; border:1px solid var(--line)}
+    .theme-card h3{display:flex; justify-content:space-between; gap:10px}
+    .theme-card h3 code{font-weight:400; font-size:.72rem}
+    .theme-card .f:last-of-type{margin-bottom:0}
+    /* the plain card shows the stylesheet's own defaults on the light page they were made for */
+    .paper{background:#f6f3ee; color:#2a2620; border-color:#e5dfd4}
+    .paper .lbl{color:#7d7366}
+    .paper h3 code{color:#7d7366}
+    .paper .ctl{background:#fff; border-color:#ddd5c8}
+    /* the white shell above outranks the module's .wError fill, so it is handed back here */
+    .paper .ctl.wError{background:var(--error-background-color)}
+    .paper .ctl input[type=text]{color:#2a2620}
+    /* the themed card: one form's custom properties, nothing else */
+    .violet{
+        background:var(--panel);
+        --error-color:#f0d4ff; --error-background-color:#2b1840; --error-border-color:#c8a2ff;
+        --warning-color:#b9f3ff; --warning-background-color:#0f2a33; --warning-border-color:#5ccfe6;
+        --success-color:#101a06; --success-background-color:#a7e05f; --success-border-color:#c8f08f;
+    }
+    .theme-actions{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap}
+
+    /* ---------- formatters ---------- */
+    .card .out{
+        background:var(--ink); border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+        font-family:var(--mono); font-size:.86rem; color:var(--green); min-height:44px; margin-top:10px; overflow-wrap:anywhere;
+    }
+    .card .sym{color:var(--amber)}
+    .card:nth-child(2) .sym{color:var(--cyan)}
+    .card:nth-child(3) .sym{color:var(--violet)}
+    .card:nth-child(4) .sym{color:var(--green)}
+    .card .in{display:flex; gap:8px}
+    .card .in select{flex:none}
+    .fmt{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+    /* ---------- failure modes ---------- */
+    .bad{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px}
+    .bad button.lazy{border-color:#4a3b22; color:var(--amber)}
+    .bad button{text-align:left; font-family:var(--mono); font-size:.76rem; font-weight:400; line-height:1.45; overflow-wrap:anywhere}
+
+    @media (max-width:900px){ .play{grid-template-columns:minmax(0,1fr)} }
+    @media (max-width:720px){ .themes{grid-template-columns:minmax(0,1fr)} }
+    @media (max-width:520px){
+        .wrap{padding:0 16px}
+        .signup{padding:20px 16px 18px; border-radius:14px}
+        .two{grid-template-columns:1fr; gap:0}
+        .signup-h span{display:none}
+        .signup .actions{flex-wrap:wrap}
+        .signup .actions .primary{flex:1 1 100%}
+        .signup .actions .ghost{flex:1}
+        .readout div{padding:8px 9px}
+        .plans{grid-template-columns:1fr}
+        .readout b{font-size:.8rem}
+        .stage{padding:24px 12px}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> FormValidator <b>/</b> v4.0.0</p>
+        <h1>Rules in, messages out.</h1>
+        <p class="hero-sub">
+            Write each field's rules as a small object. FormValidator checks them in a fixed order,
+            puts the first failure <b>under or beside the field</b>, and submits the form behind its own loader.
+            Leave a field, or press Create account.
+        </p>
+
+        <div class="hero-grid">
+            <form class="signup fv fv-dark" id="signup" novalidate autocomplete="off">
+                <div class="signup-h"><h2>Create your account</h2><span>8 fields, 8 rule sets</span></div>
+
+                <div class="f">
+                    <label class="lbl" for="fullName">Full name <i>left</i></label>
+                    <div class="ctl"><input type="text" id="fullName" name="fullName" data-small-view="1100" placeholder="Ada King Lovelace"></div>
+                </div>
+                <div class="f">
+                    <label class="lbl" for="username">Username <i>right, try "ada"</i></label>
+                    <div class="ctl"><input type="text" id="username" name="username" data-small-view="1100" placeholder="lovelace"></div>
+                </div>
+                <div class="f">
+                    <label class="lbl" for="email">Email <i>right</i></label>
+                    <div class="ctl"><input type="email" id="email" name="email" data-small-view="1100" placeholder="ada@example.com"></div>
+                </div>
+                <div class="two">
+                    <div class="f">
+                        <label class="lbl" for="password">Password</label>
+                        <div class="ctl"><input type="password" id="password" name="password"></div>
+                    </div>
+                    <div class="f">
+                        <label class="lbl" for="confirm">Confirm</label>
+                        <div class="ctl"><input type="password" id="confirm" name="confirm"></div>
+                    </div>
+                </div>
+                <div class="f">
+                    <label class="lbl">Plan <i>radio group</i></label>
+                    <div class="ctl plans">
+                        <label class="plan"><input type="radio" name="plan" value="free" data-wrap="plans"><b>Free</b><small>1 project</small></label>
+                        <label class="plan"><input type="radio" name="plan" value="pro" data-wrap="plans"><b>Pro</b><small>unlimited</small></label>
+                        <label class="plan"><input type="radio" name="plan" value="team" data-wrap="plans"><b>Team</b><small>10 seats</small></label>
+                    </div>
+                </div>
+                <div class="f">
+                    <label class="lbl" for="avatar">Avatar <i>optional, jpg png webp, 200KB</i></label>
+                    <div class="ctl filebox"><input type="file" id="avatar" name="avatar"></div>
+                </div>
+                <div class="f">
+                    <label class="ctl terms"><input type="checkbox" id="terms" name="terms" value="yes"> I accept the terms of service</label>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="primary">Create account</button>
+                    <button type="button" class="ghost" id="heroFill">Fill it</button>
+                    <button type="button" class="ghost" id="heroReset">Reset</button>
+                </div>
+            </form>
+
+            <div class="readout" aria-live="polite">
+                <div>last validate()<b id="roLast">-</b></div>
+                <div>formOk()<b id="roOk">-</b></div>
+                <div>submit()<b id="roSubmit">-</b></div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section id="playground">
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Write a message straight onto the field, run your own rules through <code>validate()</code>,
+            recolour the boxes, pick a loader and submit. Settings that <code>initialize()</code> reads
+            rebuild the validator; the rest apply to the running one.
+        </p>
+
+        <div class="play">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>message.write()</span></div>
+                    <div class="panel-b">
+                        <div class="field row">
+                            <select id="pLoc" aria-label="location"><option>bottom</option><option>left</option><option selected>right</option></select>
+                            <select id="pType" aria-label="type"><option>error</option><option>warning</option><option>success</option></select>
+                        </div>
+                        <div class="field">
+                            <input type="text" id="pText" value="Check the spelling" aria-label="message text">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pSmall">Small-view width <span class="val" id="pSmallV">866px</span></label>
+                            <input type="range" id="pSmall" min="320" max="1600" step="10" value="866">
+                        </div>
+                        <div class="field">
+                            <label class="switch"><input type="checkbox" id="pCustom"> customStyles <code>[64, "font-weight:700"]</code></label>
+                        </div>
+                        <div class="field row">
+                            <button class="primary tiny" id="pWrite">write()</button>
+                            <button class="tiny" id="pClear">clear()</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-h"><span>validate()</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="rules">Rules (JSON)</label>
+                            <textarea id="rules" spellcheck="false"></textarea>
+                        </div>
+                        <div class="field row">
+                            <button class="primary tiny" id="pValidate">validate()</button>
+                            <button class="tiny" id="pFormOk">formOk()</button>
+                            <button class="tiny ghost" data-rules="basic">basic</button>
+                            <button class="tiny ghost" data-rules="match">match</button>
+                            <button class="tiny ghost" data-rules="warn">warning</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-h"><span>Colours (custom properties)</span></div>
+                    <div class="panel-b">
+                        <div class="colors">
+                            <span></span><span class="hd">border</span><span class="hd">fill</span><span class="hd">text</span>
+                            <span>error</span><input type="color" data-var="--error-border-color" value="#ff6b7f"><input type="color" data-var="--error-background-color" value="#2a121b"><input type="color" data-var="--error-color" value="#ffa3b0">
+                            <span>warning</span><input type="color" data-var="--warning-border-color" value="#ffb454"><input type="color" data-var="--warning-background-color" value="#2a1f0e"><input type="color" data-var="--warning-color" value="#ffd59a">
+                            <span>success</span><input type="color" data-var="--success-border-color" value="#a7e05f"><input type="color" data-var="--success-background-color" value="#15230f"><input type="color" data-var="--success-color" value="#c8f08f">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-h"><span>Submit config</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="pLoader">Loader <span class="val">initialize()</span></label>
+                            <select id="pLoader" class="ctl-sel">
+                                <option value="ring">default ring</option>
+                                <option value="style" selected>progressIndicatorStyle</option>
+                                <option value="button">loaderLocation "button"</option>
+                                <option value="custom">progressAnimationType "custom"</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pOverlay">overlayStyle <span class="val">initialize()</span></label>
+                            <select id="pOverlay" class="ctl-sel">
+                                <option value="dark" selected>dark, blurred</option>
+                                <option value="none">module default (white)</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pMethod">submissionMethod</label>
+                            <select id="pMethod" class="ctl-sel">
+                                <option>POST</option><option selected>GET</option><option>PUT</option><option>DELETE</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="pSuccess">successButtonAction</label>
+                            <select id="pSuccess" class="ctl-sel">
+                                <option value="close" selected>close (calls config.modal.close())</option>
+                                <option value="redirect">redirect to "#playground"</option>
+                            </select>
+                        </div>
+                        <div class="field"><label class="switch"><input type="checkbox" id="pController" checked> feedBackController (holds 1.2s)</label></div>
+                        <div class="field"><label class="switch"><input type="checkbox" id="pThemed" checked> feedbackModalStyles (dark box)</label></div>
+                        <div class="field"><label class="switch"><input type="checkbox" id="pBoxStyle"> bottom/left/rightConStyle (pill boxes)</label></div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h">
+                        <span class="dots"><i></i><i></i><i></i></span>
+                        <span>specimen form</span>
+                    </div>
+                    <div class="stage">
+                        <form class="specimen fv fv-dark" id="specimen" novalidate autocomplete="off">
+                            <div class="sweep" aria-hidden="true"></div>
+                            <div class="f">
+                                <label class="lbl" for="sName">Display name</label>
+                                <div class="ctl"><input type="text" id="sName" name="displayName" value="ada" data-small-view="866"></div>
+                            </div>
+                            <input type="hidden" name="_token" id="sToken" value="tok-initial">
+                            <div class="actions">
+                                <button type="submit" class="primary sendBtn" id="sSend">Send</button>
+                            </div>
+                            <p class="tok">CSRF <code>_token</code> = <b id="sTokenV">tok-initial</b></p>
+                        </form>
+                    </div>
+                    <div class="status" id="pStatus"><span class="dot"></span><span id="pStatusText">ready</span></div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Actions</span></div>
+                    <div class="panel-b btn-grid">
+                        <button class="tiny" id="aSubmit">submit()</button>
+                        <button class="tiny" id="aTwice">submit() twice</button>
+                        <button class="tiny" id="aPost">POST (error box)</button>
+                        <button class="tiny" id="aFbS">showFeedback success</button>
+                        <button class="tiny" id="aFbW">showFeedback warning</button>
+                        <button class="tiny" id="aFbE">showFeedback error</button>
+                        <button class="tiny" id="aServer">logServerError()</button>
+                        <button class="tiny" id="aHide">hideProgress()</button>
+                        <button class="tiny" id="aCsrf">updateCSRFToken()</button>
+                        <button class="tiny danger" id="aDestroy">destroy()</button>
+                        <button class="tiny ghost" id="aRebuild">Rebuild</button>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Event log</span><button class="tiny ghost" id="logClear">clear</button></div>
+                    <div class="panel-b"><pre class="log" id="log"></pre></div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="code"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>One form, its own colours</h2>
+        <p class="lede">
+            The boxes read <code>--error-color</code>, <code>--error-background-color</code>,
+            <code>--error-border-color</code> and the warning and success pairs. Set them on a form and
+            only that form changes. Both cards below run the same three <code>message.write()</code> calls.
+        </p>
+        <div class="themes">
+            <form class="theme-card paper fv" id="themePlain" novalidate>
+                <h3>Stylesheet defaults <code>:root</code></h3>
+                <div class="f"><label class="lbl" for="tp1">Error</label><div class="ctl"><input type="text" id="tp1" value="not-an-email"></div></div>
+                <div class="f"><label class="lbl" for="tp2">Warning</label><div class="ctl"><input type="text" id="tp2" value="password1"></div></div>
+                <div class="f"><label class="lbl" for="tp3">Success</label><div class="ctl"><input type="text" id="tp3" value="lovelace"></div></div>
+            </form>
+            <form class="theme-card violet fv" id="themeViolet" novalidate>
+                <h3>Themed on the form <code>#themeViolet</code></h3>
+                <div class="f"><label class="lbl" for="tv1">Error</label><div class="ctl"><input type="text" id="tv1" value="not-an-email"></div></div>
+                <div class="f"><label class="lbl" for="tv2">Warning</label><div class="ctl"><input type="text" id="tv2" value="password1"></div></div>
+                <div class="f"><label class="lbl" for="tv3">Success</label><div class="ctl"><input type="text" id="tv3" value="lovelace"></div></div>
+            </form>
+        </div>
+        <div class="theme-actions">
+            <button class="primary" id="themeShow">Write the three messages</button>
+            <button id="themeClear">Clear them</button>
+        </div>
+        <div class="panel" style="margin-top:22px">
+            <div class="panel-h"><span>The themed card's CSS</span></div>
+<pre class="snip"><span class="p">#themeViolet</span>{
+    --error-color:<span class="s">#f0d4ff</span>;   --error-background-color:<span class="s">#2b1840</span>;   --error-border-color:<span class="s">#c8a2ff</span>;
+    --warning-color:<span class="s">#b9f3ff</span>; --warning-background-color:<span class="s">#0f2a33</span>; --warning-border-color:<span class="s">#5ccfe6</span>;
+    --success-color:<span class="s">#101a06</span>; --success-background-color:<span class="s">#a7e05f</span>; --success-border-color:<span class="s">#c8f08f</span>;
+}</pre>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Formatters</h2>
+        <p class="lede">
+            <code>FormValidator.format</code> is static: no instance, no <code>initialize()</code>.
+        </p>
+        <div class="cards fmt">
+            <div class="card">
+                <div class="sym">1,234.5</div>
+                <h3>currencyField(number, sep)</h3>
+                <p>Groups the whole part only, keeps the sign and the decimals, and returns a string.</p>
+                <div class="in">
+                    <input type="text" id="fmCur" value="-1234567.891" aria-label="number">
+                    <select id="fmSep" aria-label="separator"><option>,</option><option value=" ">space</option><option>.</option><option>'</option></select>
+                </div>
+                <div class="out" id="fmCurOut"></div>
+            </div>
+            <div class="card">
+                <div class="sym">1.01</div>
+                <h3>roundToDec(value, decimals)</h3>
+                <p>Rounds through exponent notation, so <code>1.005</code> becomes <code>1.01</code>, not <code>1</code>.</p>
+                <div class="in">
+                    <input type="text" id="fmRound" value="1.005" aria-label="value">
+                    <select id="fmDec" aria-label="decimals"><option>0</option><option>1</option><option selected>2</option><option>3</option></select>
+                </div>
+                <div class="out" id="fmRoundOut"></div>
+            </div>
+            <div class="card">
+                <div class="sym">0-9</div>
+                <h3>integerField(input)</h3>
+                <p>Strips every non-digit as it is typed. Paste <code>+1 (555) 010-99</code> and see.</p>
+                <input type="text" id="fmInt" placeholder="type or paste here" aria-label="digits only">
+                <div class="out" id="fmIntOut">value = ""</div>
+            </div>
+            <div class="card">
+                <div class="sym">a-b-c</div>
+                <h3>wordSeperator(input, sep, n)</h3>
+                <p>On blur, joins the words with the separator repeated <code>n</code> times. Here <code>"-"</code>, twice.</p>
+                <input type="text" id="fmWord" value="Ada  King   Lovelace" aria-label="words">
+                <div class="out" id="fmWordOut">leave the field to join</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Misuse throws</h2>
+        <p class="lede">
+            The constructor, every setter and every method check their arguments. Each button runs one bad
+            call on a fresh validator and prints what it threw.
+        </p>
+        <div class="bad" id="bad"></div>
+        <div class="err-out" id="errOut">No error yet. Press one of the buttons above.</div>
+        <p class="note">
+            Two checks are lazy, and the last two buttons show it: <code>validate()</code> checks
+            <code>location</code> only when it writes a message, and a size rule is parsed only when a file is chosen.
+        </p>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/form-validator.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The validators are on <span class="kbd">window</span> as <span class="kbd">signupValidator</span>,
+            <span class="kbd">playValidator</span> and <span class="kbd">themeValidators</span>. Try
+            <span class="kbd">signupValidator.formOk()</span> from the console.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>
