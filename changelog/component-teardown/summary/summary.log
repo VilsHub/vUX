@@ -7,7 +7,7 @@ FOLLOWS: changelog/resizer-docs
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected. There is no build step
+vUX library (this repository): the only project affected. There is no build step
 and no dependency graph to propagate through; changes take effect on the next page
 load.
 
@@ -52,7 +52,7 @@ WHAT DESTROY() DOES, AND WHAT IT DELIBERATELY DOES NOT DO
 
 Uniformly: detach every listener the component bound, clear every timer and
 animation it started, and remove the DOM it injected. Where the component mutated
-consumer markup and retained enough to reverse it, it reverses it — ToolTip gives
+consumer markup and retained enough to reverse it, it reverses it: ToolTip gives
 'title' attributes back, TimeLineList strips its marker classes, Carousel clears
 the attributes it wrote onto the sliders.
 
@@ -83,7 +83,7 @@ Both were found by running the components rather than by reading them, and both
 are on default configuration paths.
 
 1. Carousel never imported TouchHandler, although it constructs one whenever
-   config.touchResponse is true — which is the default. initialize() threw
+   config.touchResponse is true, which is the default. initialize() threw
    'TouchHandler is not defined' on any page that did not explicitly disable touch.
 
 2. FormValidator.createLoader() centred the loader while it was still detached.

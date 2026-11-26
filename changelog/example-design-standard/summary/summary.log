@@ -7,7 +7,7 @@ FOLLOWS: changelog/auto-writer-docs
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — conventions only.
+vUX library (this repository): conventions only.
 
   - CLAUDE.md   new section "Example pages (required for every module)"
 
@@ -25,7 +25,7 @@ commented for a reader rather than for a maintainer.
 
 It names examples/autowriter/ as the reference implementation, and records that
 examples/modal/, examples/form/ and examples/spa/ predate the standard so they are not
-copied as the house pattern — with the reason they are plainer (structural behaviour
+copied as the house pattern: with the reason they are plainer (structural behaviour
 rather than a visual effect) kept alongside, so the note is not read as a verdict on them.
 
 --------------------------------------------------------------------------------

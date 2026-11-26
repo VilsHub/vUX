@@ -1,0 +1,87 @@
+OLD_SECTION (line 3)
+`AutoWriter` types text into an element one character at a time, at a randomised human-looking speed. A small directive syntax embedded in the string adds line breaks, pauses and backspacing, so a whole sequence [em dash] type, wait, delete, retype [em dash] is expressed as a single string rather than as a chain of callbacks.
+NEW_SECTION (line 3)
+`AutoWriter` types text into an element one character at a time, at a randomised human-looking speed. A small directive syntax embedded in the string adds line breaks, pauses and backspacing, so a whole sequence (type, wait, delete, retype) is expressed as a single string rather than as a chain of callbacks.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 13)
+**It owns the inside of the element you give it.** On each run it appends a `<span class="vAutoWriter">` to your target (reusing one if it is already there) and types into that span, not into the target directly. When `config.showCursor` is on, a second `<span class="vAutoWriterBlinker">` follows it as the caret. Your target element should therefore be an empty container [em dash] anything already inside it sits alongside the typed text, and the span is emptied at the start of every run.
+NEW_SECTION (line 13)
+**It owns the inside of the element you give it.** On each run it appends a `<span class="vAutoWriter">` to your target (reusing one if it is already there) and types into that span, not into the target directly. When `config.showCursor` is on, a second `<span class="vAutoWriterBlinker">` follows it as the caret. Your target element should therefore be an empty container: anything already inside it sits alongside the typed text, and the span is emptied at the start of every run.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 71)
+Pass a collection of elements and a matching array of strings, and they are typed **in sequence** [em dash] the second element starts once the first has finished. The callback runs once, after the last one.
+NEW_SECTION (line 71)
+Pass a collection of elements and a matching array of strings, and they are typed **in sequence**: the second element starts once the first has finished. The callback runs once, after the last one.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 81)
+Both the collection and the array are copied when the run starts, so mutating either afterwards [em dash] or a live `HTMLCollection` changing under you as the DOM moves [em dash] cannot derail the sequence.
+NEW_SECTION (line 81)
+Both the collection and the array are copied when the run starts, so mutating either afterwards (or a live `HTMLCollection` changing under you as the DOM moves) cannot derail the sequence.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 90)
+`deleteText()` erases from the end, at typing speed, and is independent of `writeText()` [em dash] you can use it on any element, whether or not this component wrote its contents.
+NEW_SECTION (line 90)
+`deleteText()` erases from the end, at typing speed, and is independent of `writeText()`: you can use it on any element, whether or not this component wrote its contents.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 96)
+For erasing *during* a run, prefer the `*n*` directive [em dash] it is sequenced with the typing, whereas a `deleteText()` call fired at the same time is a second animation competing for the same node.
+NEW_SECTION (line 96)
+For erasing *during* a run, prefer the `*n*` directive: it is sequenced with the typing, whereas a `deleteText()` call fired at the same time is a second animation competing for the same node.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 110)
+- **while typing** [em dash] shown, steady
+- **during a `~n~` pause** [em dash] blinking, every `cursorBlinkDelay` ms
+- **when the run finishes** [em dash] hidden
+NEW_SECTION (line 110)
+- **while typing**: shown, steady
+- **during a `~n~` pause**: blinking, every `cursorBlinkDelay` ms
+- **when the run finishes**: hidden
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 130)
+Being write-only, `.config` properties cannot be read back [em dash] `writer.config.typingSpeed` is `undefined`. Keep your own copy if you need one. (This is the convention across vUX components.)
+NEW_SECTION (line 130)
+Being write-only, `.config` properties cannot be read back: `writer.config.typingSpeed` is `undefined`. Keep your own copy if you need one. (This is the convention across vUX components.)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 134)
+One instance runs one animation at a time. Calling `writeText()` while a run is in progress cancels it and starts the new one, and the target span is cleared at the start of every run [em dash] so an instance is freely reusable, and repeated calls do not accumulate text.
+NEW_SECTION (line 134)
+One instance runs one animation at a time. Calling `writeText()` while a run is in progress cancels it and starts the new one, and the target span is cleared at the start of every run, so an instance is freely reusable, and repeated calls do not accumulate text.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 142)
+Call it whenever the element being typed into is about to disappear [em dash] an SPA route change, a closing modal, a component teardown. Nothing else cancels the pending timers, and a run whose target has been removed from the document keeps typing into a detached node until it completes.
+NEW_SECTION (line 142)
+Call it whenever the element being typed into is about to disappear: an SPA route change, a closing modal, a component teardown. Nothing else cancels the pending timers, and a run whose target has been removed from the document keeps typing into a detached node until it completes.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 173)
+Rebuild the string each time rather than looping in code [em dash] the erase is part of the sequence, so the timing stays right:
+NEW_SECTION (line 173)
+Rebuild the string each time rather than looping in code: the erase is part of the sequence, so the timing stays right:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 200)
+- The component types into the DOM as text nodes. It does not parse HTML in your string [em dash] `<b>bold</b>` is typed out as those literal characters. The one exception is `|`, which inserts a real `<br>`.
+NEW_SECTION (line 200)
+- The component types into the DOM as text nodes. It does not parse HTML in your string: `<b>bold</b>` is typed out as those literal characters. The one exception is `|`, which inserts a real `<br>`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

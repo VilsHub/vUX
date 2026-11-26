@@ -12,7 +12,7 @@ NEW_SECTION
 scene as data, constrained mode, stamps and icons, touch/multiple pads, guide
 and example).
 ## Removed: "- DOMDrawer module (vUX-domDrawer.js and assets/css/domDrawer.css)
-— replaced by SketchPad, ..."
+: replaced by SketchPad, ..."
 
 REASON
 Release-facing record of the new module and the removal. The earlier bullets

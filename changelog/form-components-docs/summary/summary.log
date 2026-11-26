@@ -5,10 +5,10 @@ Verified the FormComponents module source (all six builders: select, radio, chec
 datePicker, slideSwitch, file) and documented it.
 
 Changes:
-1. doc/form-components.md (new) — full usage guide for all custom form components:
+1. doc/form-components.md (new): full usage guide for all custom form components:
    shared builder model, markup contracts, configuration tables, methods, date-picker
    module prerequisites, and a Known issues section from the verification pass.
-2. doc/README.md — added the guide to the usage-guides table and removed FormComponents
+2. doc/README.md: added the guide to the usage-guides table and removed FormComponents
    from the "coming next" list.
 
 No source code was modified. Verification findings (documented in the guide's Known

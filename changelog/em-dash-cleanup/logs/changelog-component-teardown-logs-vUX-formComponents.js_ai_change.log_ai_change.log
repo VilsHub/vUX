@@ -1,0 +1,15 @@
+OLD_SECTION (line 8)
+file() registered its own delegated listeners [em dash] twenty across the file [em dash] and discarded
+NEW_SECTION (line 8)
+file() registered its own delegated listeners (twenty across the file) and discarded
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 19)
+right scope for the case this exists to serve [em dash] a widget going away with the markup around
+it [em dash] and pretending otherwise would mean silently reconstructing an element that is not
+NEW_SECTION (line 19)
+right scope for the case this exists to serve: a widget going away with the markup around
+it, and pretending otherwise would mean silently reconstructing an element that is not
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

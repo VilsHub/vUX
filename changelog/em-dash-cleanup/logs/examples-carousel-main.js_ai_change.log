@@ -1,0 +1,62 @@
+OLD_SECTION (line 2)
+ * vUX Carousel [em dash] runnable example.
+NEW_SECTION (line 2)
+ * vUX Carousel: runnable example.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 123)
+    if (playState === "destroyed") { setStatus("err", "destroyed [em dash] press Rebuild"); return; }
+NEW_SECTION (line 123)
+    if (playState === "destroyed") { setStatus("err", "destroyed: press Rebuild"); return; }
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 136)
+    setStatus("err", "destroyed [em dash] dots, listeners, interval and inline styles removed");
+NEW_SECTION (line 136)
+    setStatus("err", "destroyed: dots, listeners, interval and inline styles removed");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 185)
+ * 3. Two on one page [em dash] independent state and scoped buttonStyle
+NEW_SECTION (line 185)
+ * 3. Two on one page: independent state and scoped buttonStyle
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 228)
+    gestText.textContent = "pointer over the frame [em dash] autoplay paused";
+NEW_SECTION (line 228)
+    gestText.textContent = "pointer over the frame: autoplay paused";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 232)
+    gestText.textContent = "pointer outside [em dash] autoplaying";
+NEW_SECTION (line 232)
+    gestText.textContent = "pointer outside: autoplaying";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 236)
+    if (gestEl.matches(":hover")) gestText.textContent = "settled on slide " + i + " [em dash] autoplay paused while you point";
+NEW_SECTION (line 236)
+    if (gestEl.matches(":hover")) gestText.textContent = "settled on slide " + i + ": autoplay paused while you point";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 241)
+ * 5. Validation [em dash] each of these throws synchronously
+NEW_SECTION (line 241)
+ * 5. Validation: each of these throws synchronously
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 269)
+            $("#errOut").textContent = "No error thrown [em dash] that should not happen.";
+NEW_SECTION (line 269)
+            $("#errOut").textContent = "No error thrown: that should not happen.";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

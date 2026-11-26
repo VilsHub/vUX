@@ -4,11 +4,11 @@ DATE: 2026-08-03
 PRIOR STATE: as left by feature 'modal-displayer-verification'
 
 ================================================================================
-CHANGE 1 — New "Stacking" section
+CHANGE 1: New "Stacking" section
 ================================================================================
 
 OLD_SECTION
-(no such section — the guide described a single modal at a time)
+(no such section: the guide described a single modal at a time)
 
 NEW_SECTION
 ## Stacking
@@ -29,7 +29,7 @@ modal onto itself or onto an already displayed modal is refused rather than allo
 to corrupt state.
 
 ================================================================================
-CHANGE 2 — Replace the "one modal at a time" limitation
+CHANGE 2: Replace the "one modal at a time" limitation
 ================================================================================
 
 OLD_SECTION
@@ -46,7 +46,7 @@ the first modal and left the page permanently frozen. It is removed outright; se
 CHANGE 6 for why no replacement caveat belongs here.
 
 ================================================================================
-CHANGE 6 — State last-in-first-out as the stack's defining property, not a caveat
+CHANGE 6: State last-in-first-out as the stack's defining property, not a caveat
 ================================================================================
 
 OLD_SECTION
@@ -58,7 +58,7 @@ Each layer gets its own overlay element with an increasing `z-index`, its own re
 NEW_SECTION
 Each layer gets its own overlay element with an increasing `z-index`, its own responsive width, and its own scroll container, so a tall modal at layer 2 scrolls independently of layer 1.
 
-**Layers close last-in-first-out, and that is the point of a modal stack rather than a restriction on it.** A modal takes exclusive control of interaction: while it is up, everything beneath it is unreachable by definition. So a covered layer has no way to be acted on, and closing one out of order would leave the dialog it spawned floating above nothing. `Escape`, an overlay click and a close button therefore all pop **only the topmost layer**, and there is deliberately no API that takes a specific layer. `closeAll()` unwinds the whole stack when you need to dismiss everything at once — on a route change or logout, for example.
+**Layers close last-in-first-out, and that is the point of a modal stack rather than a restriction on it.** A modal takes exclusive control of interaction: while it is up, everything beneath it is unreachable by definition. So a covered layer has no way to be acted on, and closing one out of order would leave the dialog it spawned floating above nothing. `Escape`, an overlay click and a close button therefore all pop **only the topmost layer**, and there is deliberately no API that takes a specific layer. `closeAll()` unwinds the whole stack when you need to dismiss everything at once: on a route change or logout, for example.
 
 (the "Requirements and gotchas" bullet is deleted)
 
@@ -66,7 +66,7 @@ REASON
 Corrects a framing error, on reviewer feedback, with no code change.
 
 The first write-up listed top-down unwinding under "Requirements and gotchas" and,
-in the summary, under "Known limitations" — as though closing a middle layer were a
+in the summary, under "Known limitations": as though closing a middle layer were a
 capability the implementation had failed to provide. That is the wrong way round.
 Last-in-first-out is not a constraint imposed on a modal stack; it is what makes it
 a modal stack. A modal is modal precisely because it takes exclusive control of
@@ -85,7 +85,7 @@ clicks and close buttons all route through closeTopLayer(), and no exported memb
 accepts a layer. Only the documentation was wrong.
 
 ================================================================================
-CHANGE 3 — API table: closeAll(), depth, and top-of-stack semantics
+CHANGE 3, API table: closeAll(), depth, and top-of-stack semantics
 ================================================================================
 
 OLD_SECTION
@@ -104,12 +104,12 @@ NEW_SECTION
 
 REASON
 Adds the two new members and restates the existing ones in terms of the stack. The
-initialize() description also drops "builds the overlay", which is no longer true —
+initialize() description also drops "builds the overlay", which is no longer true:
 overlays are created per layer when a modal opens, so no overlay exists in the
 document until then.
 
 ================================================================================
-CHANGE 4 — New "Internal DOM" section, and the getElementById note
+CHANGE 4: New "Internal DOM" section, and the getElementById note
 ================================================================================
 
 OLD_SECTION
@@ -135,7 +135,7 @@ becomes materially more important with stacking, since it is the reason a trigge
 pointing at an already displayed modal is ignored.
 
 ================================================================================
-CHANGE 5 — Width guidance in requirements
+CHANGE 5: Width guidance in requirements
 ================================================================================
 
 OLD_SECTION

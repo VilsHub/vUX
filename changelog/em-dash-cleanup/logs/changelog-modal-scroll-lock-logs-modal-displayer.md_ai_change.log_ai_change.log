@@ -1,0 +1,34 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Describe the overflow-based lock in "How it works"
+NEW_SECTION (line 7)
+CHANGE 1: Describe the overflow-based lock in "How it works"
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 16)
+The page is held with `overflow` rather than by taking the body out of flow, so the document never moves: the scroll position is preserved because nothing scrolled, not because it was saved and reapplied. Two consequences worth knowing [em dash] the page behind keeps its normal layout while a modal is up, and `overflow: hidden` blocks *user* scrolling (wheel, touch, keyboard) but not programmatic `scrollTo()`, so your own code can still move the page behind a modal if it chooses to.
+NEW_SECTION (line 16)
+The page is held with `overflow` rather than by taking the body out of flow, so the document never moves: the scroll position is preserved because nothing scrolled, not because it was saved and reapplied. Two consequences worth knowing: the page behind keeps its normal layout while a modal is up, and `overflow: hidden` blocks *user* scrolling (wheel, touch, keyboard) but not programmatic `scrollTo()`, so your own code can still move the page behind a modal if it chooses to.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 27)
+longer accurate [em dash] nothing is restored, because nothing moves.
+NEW_SECTION (line 27)
+longer accurate: nothing is restored, because nothing moves.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 30)
+CHANGE 2 [em dash] Restate page-level state in the Stacking section
+NEW_SECTION (line 30)
+CHANGE 2: Restate page-level state in the Stacking section
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 34)
+Page-level state is handled at the stack boundary rather than per modal. The body is frozen and the scroll position captured when the first layer opens, and released only when the last layer closes [em dash] so nesting never loses the page's scroll position. Similarly a blurred `pageContainer` stays blurred until no remaining layer wants it blurred.
+NEW_SECTION (line 34)
+Page-level state is handled at the stack boundary rather than per modal. The body is frozen and the scroll position captured when the first layer opens, and released only when the last layer closes, so nesting never loses the page's scroll position. Similarly a blurred `pageContainer` stays blurred until no remaining layer wants it blurred.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

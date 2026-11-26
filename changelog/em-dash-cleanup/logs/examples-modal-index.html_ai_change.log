@@ -1,0 +1,66 @@
+OLD_SECTION (line 103)
+                            <option value="slideLeft">slideLeft [em dash] docks right</option>
+                            <option value="slideRight">slideRight [em dash] docks left</option>
+NEW_SECTION (line 103)
+                            <option value="slideLeft">slideLeft: docks right</option>
+                            <option value="slideRight">slideRight: docks left</option>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 110)
+                            <option value="color">color [em dash] tint the overlay</option>
+                            <option value="blur">blur [em dash] blur the page behind</option>
+NEW_SECTION (line 110)
+                            <option value="color">color: tint the overlay</option>
+                            <option value="blur">blur: blur the page behind</option>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 180)
+                    A page-level button cannot dismiss a stack [em dash] the overlay blocks the page, which is the
+NEW_SECTION (line 180)
+                    A page-level button cannot dismiss a stack: the overlay blocks the page, which is the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 199)
+            <strong>all</strong> instances, because the state it protects [em dash] the body freeze [em dash] belongs to the document.
+NEW_SECTION (line 199)
+            <strong>all</strong> instances, because the state it protects (the body freeze) belongs to the document.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 215)
+                <p>“Help”, inside Profile settings, is opened by a different <code>ModalDisplayer</code> with its own trigger class and effect [em dash] yet it layers correctly and one Esc still pops exactly one layer.</p>
+NEW_SECTION (line 215)
+                <p>“Help”, inside Profile settings, is opened by a different <code>ModalDisplayer</code> with its own trigger class and effect, yet it layers correctly and one Esc still pops exactly one layer.</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 247)
+        <div class="err-out" id="errOut">No error yet [em dash] press one of the buttons above.</div>
+NEW_SECTION (line 247)
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 258)
+        <div class="filler">Scroll to here, then press Esc-able open below [em dash] the page will not jump.</div>
+NEW_SECTION (line 258)
+        <div class="filler">Scroll to here, then press Esc-able open below: the page will not jump.</div>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 274)
+            <span class="kbd">altModal</span> [em dash] try <span class="kbd">demoModal.depth</span> or
+NEW_SECTION (line 274)
+            <span class="kbd">altModal</span>: try <span class="kbd">demoModal.depth</span> or
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 304)
+    <p>Opened from inside the sign-in modal [em dash] the one underneath stays open and intact.</p>
+NEW_SECTION (line 304)
+    <p>Opened from inside the sign-in modal: the one underneath stays open and intact.</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -1,0 +1,47 @@
+OLD_SECTION (line 7)
+- **Live table island** [em dash] the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown** [em dash] leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+NEW_SECTION (line 7)
+- **Live table island**, the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown**, leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 10)
+- **Validation** [em dash] the buttons in section 02 build throwaway engines to show how `initialize()` refuses an incomplete setup and how `dataAttributeNames`/`classes` reject unknown keys.
+NEW_SECTION (line 10)
+- **Validation**: the buttons in section 02 build throwaway engines to show how `initialize()` refuses an incomplete setup and how `dataAttributeNames`/`classes` reject unknown keys.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 16)
+- **Live table island** [em dash] the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown** [em dash] leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+NEW_SECTION (line 16)
+- **Live table island**, the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown**, leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 19)
+- **Shipping a new release** [em dash] section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+- **Validation** [em dash] the buttons in section 03 build throwaway engines to show how `initialize()` refuses an incomplete setup, how `dataAttributeNames`/`classes` reject unknown keys, and how `cacheVersion` rejects an empty value.
+NEW_SECTION (line 19)
+- **Shipping a new release**: section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+- **Validation**: the buttons in section 03 build throwaway engines to show how `initialize()` refuses an incomplete setup, how `dataAttributeNames`/`classes` reject unknown keys, and how `cacheVersion` rejects an empty value.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 36)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary` [em dash] the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+NEW_SECTION (line 36)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary`: the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 48)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary` [em dash] the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+NEW_SECTION (line 48)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary`: the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

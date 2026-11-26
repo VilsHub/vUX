@@ -1,0 +1,13 @@
+OLD_SECTION (line 29)
+content:''; /* without this the pseudo-element never renders and radios are invisible [em dash] the checkbox rule below already had it */
+NEW_SECTION (line 29)
+content:''; /* without this the pseudo-element never renders and radios are invisible: the checkbox rule below already had it */
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 270)
+    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget [em dash] same fix as .vRadioButtonWrapper above */
+NEW_SECTION (line 270)
+    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget: same fix as .vRadioButtonWrapper above */
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

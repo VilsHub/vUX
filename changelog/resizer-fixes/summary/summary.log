@@ -6,7 +6,7 @@ SCOPE: repair the Resizer module end to end and load its stylesheet
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected. No public API was
+vUX library (this repository): the only project affected. No public API was
 removed or renamed, so no consumer change is required. Two additions
 (resizerObj.destroy(), and the left/top edge inversion) and one previously
 inert option (config.myResizeHandler) become usable.
@@ -19,7 +19,7 @@ STARTING POSITION
 --------------------------------------------------------------------------------
 
 The module had not been touched since 2024-12-31 and did not work. It was not
-degraded or partially working — a mousedown on a handler threw before it set any
+degraded or partially working: a mousedown on a handler threw before it set any
 state, so the component never responded to a drag at all. Three independent
 ReferenceErrors, a drag formula that cancelled to an identity, and a stylesheet
 that was never loaded meant nothing about the component functioned: not the
@@ -34,7 +34,7 @@ Crashes (module code is strict mode, so these threw rather than creating globals
   1. `callBack` was read and assigned but never declared. Setting
      config.callBack threw immediately; even leaving it unset, resize() threw on
      every mousemove of every drag.
-  2. pinPoint() assigned to `targetElementleWidth`/`targetElementleHeight` —
+  2. pinPoint() assigned to `targetElementleWidth`/`targetElementleHeight`:
      misspellings of the module's own variables. This threw on the function's
      first statement, so no direction was resolved and `pin` was never set. This
      is the defect that made the component inert.
@@ -51,7 +51,7 @@ Wrong behaviour:
   5. Nothing inverted the delta for a handler on the left or top edge, so those
      two position settings produced controls that shrank the element when
      dragged outward.
-  6. unPin() cleared "on" from `$$.ss(".resizeHandle")` — the first handler in
+  6. unPin() cleared "on" from `$$.ss(".resizeHandle")`: the first handler in
      the document, not the one dragged. Both ends used toggle() rather than
      add/remove, so the class tracked drag-count parity rather than drag state.
   7. `if(yhandler != "")` tested an element against a string where it meant
@@ -59,7 +59,7 @@ Wrong behaviour:
      selector, so x and y styles overwrote each other and an empty y style could
      blank a configured x style.
   8. resizeHandlerProperties.styles.both was validated but read by nothing.
-  9. config.myResizeHandler was validated and stored but never used — binding was
+  9. config.myResizeHandler was validated and stored but never used: binding was
      hardcoded to "resizeHandle", so supplying a custom handler produced a
      component with nothing listening to it.
  10. assets/css/resizer.css was never linked. Handlers had no position, no size
@@ -88,7 +88,7 @@ on document plus a closest()-based lookup. That does three things at once: it
 lets destroy() unregister what initialize() registered, it accepts a mousedown
 landing on a child of the handler (which matters for consumer handlers containing
 a grip or an icon), and it lets the axis fall back to the configured direction
-when the handler carries no marker class — which is what finally makes
+when the handler carries no marker class, which is what finally makes
 config.myResizeHandler usable.
 
 The stylesheet is linked through the same processAssetPath()/linkStyleSheet()
@@ -96,7 +96,7 @@ shape used by ModalDisplayer and FormComponents, so it resolves against
 vModel.core.data.assetPath and honours the data-library-root contract.
 
 Generated handler CSS is scoped per axis, styles.both fills in for an axis with
-no style of its own, and initialize() is now idempotent — it previously appended
+no style of its own, and initialize() is now idempotent: it previously appended
 a duplicate handler, listener set and <style> element on every extra call.
 
 --------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ this is static verification plus an extracted-arithmetic check:
 
   - The module parses as an ES module with the core import stubbed.
   - The new delta arithmetic was lifted verbatim into a standalone script and run
-    over 8 cases — right-edge grow/shrink, left-edge grow/shrink, max clamp, min
+    over 8 cases: right-edge grow/shrink, left-edge grow/shrink, max clamp, min
     clamp, the negative guard, and a zero-distance drag. All 8 pass. The old
     expression returns the raw pointer coordinate in all 8.
   - The fixed file was grepped for each original defect signature; none survives.

@@ -1,0 +1,41 @@
+OLD_SECTION (line 4)
+Section 1 [em dash] .vCheckboxWrapper
+NEW_SECTION (line 4)
+Section 1: .vCheckboxWrapper
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 12)
+    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget [em dash] same fix as .vRadioButtonWrapper above */
+NEW_SECTION (line 12)
+    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget: same fix as .vRadioButtonWrapper above */
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+<width>x0 [em dash] invisible and unclickable. The radio wrapper had the identical line already
+NEW_SECTION (line 18)
+<width>x0: invisible and unclickable. The radio wrapper had the identical line already
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 22)
+Section 2 [em dash] .vRadioButtonWrapper .vRadioButton::before
+NEW_SECTION (line 22)
+Section 2: .vRadioButtonWrapper .vRadioButton::before
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 30)
+content:''; /* without this the pseudo-element never renders and radios are invisible [em dash] the checkbox rule below already had it */
+NEW_SECTION (line 30)
+content:''; /* without this the pseudo-element never renders and radios are invisible: the checkbox rule below already had it */
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 40)
+Section 3 [em dash] date picker control buttons (after the .rinactive rules)
+NEW_SECTION (line 40)
+Section 3: date picker control buttons (after the .rinactive rules)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

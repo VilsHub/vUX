@@ -1,0 +1,34 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] the only project affected. No other project in the
+NEW_SECTION (line 10)
+vUX library (this repository): the only project affected. No other project in the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 19)
+renamed or removed. Two behaviour changes do affect existing consumers [em dash] see
+NEW_SECTION (line 19)
+renamed or removed. Two behaviour changes do affect existing consumers: see
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+   overlay cannot represent two modals [em dash] it has one backdrop and one scroll box.
+NEW_SECTION (line 33)
+   overlay cannot represent two modals: it has one backdrop and one scroll box.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 48)
+   the state it protects [em dash] the body freeze, the scroll position [em dash] belongs to the
+NEW_SECTION (line 48)
+   the state it protects (the body freeze, the scroll position) belongs to the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 80)
+   page could never be scrolled again. Nothing threw [em dash] the failure was silent.
+NEW_SECTION (line 80)
+   page could never be scrolled again. Nothing threw: the failure was silent.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

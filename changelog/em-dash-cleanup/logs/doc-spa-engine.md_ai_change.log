@@ -1,0 +1,201 @@
+NOTE: this file also carries the spa-engine-history-fixes changes, logged in that feature's folder; only the hunks that removed em dashes are listed here.
+
+OLD_SECTION (line 1)
+# SPA Engine [em dash] Setup & Routing
+NEW_SECTION (line 1)
+# SPA Engine: Setup & Routing
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 9)
+The engine renders by swapping server-rendered HTML fragments into content nodes [em dash] there is no virtual DOM. For navigation-shaped apps this is a deliberate advantage, not a missing feature:
+NEW_SECTION (line 9)
+The engine renders by swapping server-rendered HTML fragments into content nodes: there is no virtual DOM. For navigation-shaped apps this is a deliberate advantage, not a missing feature:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 12)
+- **No framework runtime.** There is nothing to download, parse and boot before first interaction [em dash] no ~140KB runtime, no hydration pass, no build step. The engine is ~1,000 lines of native ES6.
+- **Less memory, less GC pressure.** A virtual DOM app permanently holds a JavaScript mirror of the UI (component trees, props, hook state) and allocates a fresh tree every re-render. This engine retains only the real DOM plus cached HTML strings [em dash] which double as the history state, making back/forward navigation a single synchronous `innerHTML` with zero network and zero computation.
+NEW_SECTION (line 12)
+- **No framework runtime.** There is nothing to download, parse and boot before first interaction: no ~140KB runtime, no hydration pass, no build step. The engine is ~1,000 lines of native ES6.
+- **Less memory, less GC pressure.** A virtual DOM app permanently holds a JavaScript mirror of the UI (component trees, props, hook state) and allocates a fresh tree every re-render. This engine retains only the real DOM plus cached HTML strings, which double as the history state, making back/forward navigation a single synchronous `innerHTML` with zero network and zero computation.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 15)
+- **HTML stays the source of truth.** Fragments over the wire is the same architectural bet as HTMX/Turbo/Hotwire: HTML is already a serialization format for UI, and browsers are extremely good at consuming it [em dash] no JSON → virtual tree → DOM pipeline.
+NEW_SECTION (line 15)
+- **HTML stays the source of truth.** Fragments over the wire is the same architectural bet as HTMX/Turbo/Hotwire: HTML is already a serialization format for UI, and browsers are extremely good at consuming it: no JSON → virtual tree → DOM pipeline.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 17)
+**The honest trade-off:** a virtual DOM earns its cost for frequent, fine-grained updates to a large *stateful* view [em dash] a live table, a dashboard, a feed [em dash] where naive `innerHTML` replacement is slower and destroys focus, scroll and input state. vUX answers that case per-section rather than per-app: mount a [DataView](data-view.md) island inside the route that has the hot-update workload (keyed direct binding, `O(changes)` updates, state-preserving sorts), and release it in the route's [`exitCallback`](#callbacks) when the user navigates away. The rest of the app never pays for reactivity it doesn't use.
+NEW_SECTION (line 17)
+**The honest trade-off:** a virtual DOM earns its cost for frequent, fine-grained updates to a large *stateful* view (a live table, a dashboard, a feed) where naive `innerHTML` replacement is slower and destroys focus, scroll and input state. vUX answers that case per-section rather than per-app: mount a [DataView](data-view.md) island inside the route that has the hot-update workload (keyed direct binding, `O(changes)` updates, state-preserving sorts), and release it in the route's [`exitCallback`](#callbacks) when the user navigates away. The rest of the app never pays for reactivity it doesn't use.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 50)
+- Give each link an `id` [em dash] the engine uses it to re-associate history entries with the link on back/forward navigation.
+NEW_SECTION (line 50)
+- Give each link an `id`: the engine uses it to re-associate history entries with the link on back/forward navigation, to find the link's history callback and content node. A link without an id, or one that is no longer in the page (it sat in content another route has replaced), is restored as an entry with no originating link: the route's `historyCallbacks.default` runs and the default content node is used.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 63)
+        default: { // a route named "default" is required [em dash] it is the app's entry route
+NEW_SECTION (line 63)
+        default: { // a route named "default" is required: it is the app's entry route
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 108)
+`config.classes.spaLink` and `config.routeConfigs` are mandatory [em dash] `initialize()` throws if either is missing.
+NEW_SECTION (line 108)
+`config.classes.spaLink` and `config.routeConfigs` are mandatory: `initialize()` throws if either is missing.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 118)
+| `defaultContentNode` | Element or `null` | `null` | The element route content is mounted into when an SPA link does not name its own target via the `contentNodeId` data attribute. A link-level `contentNodeId` always takes priority over this default. When `null`, every SPA link **must** carry a `contentNodeId` data attribute [em dash] a link without one throws. |
+NEW_SECTION (line 118)
+| `defaultContentNode` | Element or `null` | `null` | The element route content is mounted into when an SPA link does not name its own target via the `contentNodeId` data attribute. A link-level `contentNodeId` always takes priority over this default. When `null`, every SPA link **must** carry a `contentNodeId` data attribute: a link without one throws. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 125)
+| `clearCache()` | Empties everything the engine has cached [em dash] route contents, page contents, page sections and block sections [em dash] so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+NEW_SECTION (line 125)
+| `clearCache()` | Empties everything the engine has cached (route contents, page contents, page sections and block sections) so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 137)
+| `config.classes` | yes | Object of class names the engine needs. Only key: `spaLink` [em dash] the class that marks an element as an SPA link; it is used to register the global click listener. |
+| `config.routeConfigs` | yes | The route configuration object [em dash] see [Route properties](#route-properties). |
+| `config.dataAttributeNames` | no | Renames the `data-*` attributes the engine reads off SPA links [em dash] see [Link data attributes](#link-data-attributes). |
+NEW_SECTION (line 137)
+| `config.classes` | yes | Object of class names the engine needs. Only key: `spaLink`: the class that marks an element as an SPA link; it is used to register the global click listener. |
+| `config.routeConfigs` | yes | The route configuration object: see [Route properties](#route-properties). |
+| `config.dataAttributeNames` | no | Renames the `data-*` attributes the engine reads off SPA links: see [Link data attributes](#link-data-attributes). |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 142)
+| `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback` [em dash] see [Callbacks](#callbacks). |
+| `config.preClickCallback` | no | Function called just before a link's content is fetched from the server [em dash] e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
+NEW_SECTION (line 142)
+| `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback`: see [Callbacks](#callbacks). |
+| `config.preClickCallback` | no | Function called just before a link's content is fetched from the server: e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
+| `config.errorCallback` | no | Function called when a route's content cannot be loaded: a link's fetch fails (an error status, offline, aborted) or the entry route's content fails at boot. Only the navigation still under way is reported; a request that a newer click or Back/Forward has superseded is noted in the console as a warning. Without it the failure is logged to the console. A typical use is a full page load of the link as a fallback; at boot (`element` is `null`) the page is already a full load, so do not reload the same URL there (it would loop). See [Callbacks](#callbacks). |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 148)
+| `config.functions` | no | Reserved. Accepted and validated, but not currently consulted [em dash] dedicated callbacks are looked up in each route's `clickLoadCallbacks` / `historyCallbacks` objects instead. |
+NEW_SECTION (line 148)
+| `config.functions` | no | Reserved. Accepted and validated, but not currently consulted: dedicated callbacks are looked up in each route's `clickLoadCallbacks` / `historyCallbacks` objects instead. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 164)
+| `pageSections` | object | Fragments mounted alongside the route's content [em dash] `{name: {mountPoint, replaceOld, source}}` (see "Sections"). |
+| `flush` | array | CSS selectors whose elements are emptied (`innerHTML = ""`) when the route loads [em dash] used to clear another route's leftovers. |
+NEW_SECTION (line 164)
+| `pageSections` | object | Fragments mounted alongside the route's content: `{name: {mountPoint, replaceOld, source}}` (see "Sections"). |
+| `flush` | array | CSS selectors whose elements are emptied (`innerHTML = ""`) when the route loads: used to clear another route's leftovers. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 168)
+| `exitCallback` | function | Called just **before** this route's mounted content is replaced by another route [em dash] release timers, intervals, observers and listeners the page started. Takes priority over the global `config.exitCallback`. |
+NEW_SECTION (line 168)
+| `exitCallback` | function | Called just **before** this route's mounted content is replaced by another route: release timers, intervals, observers and listeners the page started. Takes priority over the global `config.exitCallback`. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 188)
+The captured `params` object is passed as the **last argument** to every callback (see signatures below). The address bar keeps the real URL (`/user/7`), so dynamic routes can be refreshed, bookmarked, and shared [em dash] provided the server rewrite from "Prerequisites" is in place.
+NEW_SECTION (line 188)
+The captured `params` object is passed as the **last argument** to every callback (see signatures below). The address bar keeps the real URL (`/user/7`), so dynamic routes can be refreshed, bookmarked, and shared: provided the server rewrite from "Prerequisites" is in place.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 195)
+| `routes.<name>.exitCallback` | `(routeName, params)` | Just before the route's mounted content is replaced [em dash] on link navigation, back/forward, or any other content swap. This is the teardown hook: cancel timers, disconnect observers, destroy components (e.g. a [DataView](data-view.md)). Content-swapping the DOM does not stop the JavaScript a page started; without cleanup here, it leaks. |
+NEW_SECTION (line 195)
+| `routes.<name>.exitCallback` | `(routeName, params)` | Just before the route's mounted content is replaced: on link navigation, back/forward, or any other content swap. This is the teardown hook: cancel timers, disconnect observers, destroy components (e.g. a [DataView](data-view.md)). Content-swapping the DOM does not stop the JavaScript a page started; without cleanup here, it leaks. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 200)
+| `config.preClickCallback` | `(element)` | Immediately before a link's content is fetched from the server [em dash] e.g. to show a loading indicator. Skipped when the content is served from cache. |
+NEW_SECTION (line 200)
+| `config.preClickCallback` | `(element)` | Immediately before a link's content is fetched from the server: e.g. to show a loading indicator. Skipped when the content is served from cache. |
+| `config.errorCallback` | `(element, routeName, message)` | When a route's content cannot be loaded. `element` is the clicked link, or `null` for the entry route at boot. The content on screen, the address and the page title are left as they were, and the link is released first, so the callback can retry it. Superseded requests are not reported. An exception thrown by `bootCallback`, or by this callback itself, is not a load failure and is not reported here. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 211)
+| `clickLoadCallback` | string | [em dash] | Names the key in the route's `clickLoadCallbacks` to run after this link loads. Overrides the global `config.clickLoadCallback`. |
+| `historyCallback` | string | [em dash] | Names the key in the route's `historyCallbacks` to run when this link's history entry is revisited. |
+| `contentNodeId` | string (element ID) | [em dash] | ID of the element to mount this link's content into. Takes priority over the constructor's default content node. Required on every link when the constructor was given `null`. |
+NEW_SECTION (line 211)
+| `clickLoadCallback` | string | - | Names the key in the route's `clickLoadCallbacks` to run after this link loads. Overrides the global `config.clickLoadCallback`. |
+| `historyCallback` | string | - | Names the key in the route's `historyCallbacks` to run when this link's history entry is revisited. |
+| `contentNodeId` | string (element ID) | - | ID of the element to mount this link's content into. Takes priority over the constructor's default content node. Required on every link when the constructor was given `null`. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 219)
+Boolean attributes follow HTML conventions: set the value to `"false"` or `"0"` to disable, any other value (including bare presence) enables. Example [em dash] load a fragment fresh every time and keep it out of the browser history:
+NEW_SECTION (line 219)
+Boolean attributes follow HTML conventions: set the value to `"false"` or `"0"` to disable, any other value (including bare presence) enables. Example: load a fragment fresh every time and keep it out of the browser history:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 237)
+- **`routeConfigs.blockSections`** [em dash] layout fragments (header, footer, …) loaded once at boot, regardless of route.
+- **`routes.<name>.pageSections`** [em dash] fragments loaded whenever that route is activated (menus, side panels, …).
+NEW_SECTION (line 237)
+- **`routeConfigs.blockSections`**: layout fragments (header, footer, …) loaded once at boot, regardless of route.
+- **`routes.<name>.pageSections`**: fragments loaded whenever that route is activated (menus, side panels, …).
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 283)
+Since the cache lives in `sessionStorage`, it resets when the browser tab is closed. During development, a hard refresh alone does not clear it [em dash] empty the session storage from dev tools when editing fragment files, or call `clearCache()`.
+NEW_SECTION (line 283)
+Since the cache lives in `sessionStorage`, it resets when the browser tab is closed. During development, a hard refresh alone does not clear it: empty the session storage from dev tools when editing fragment files, or call `clearCache()`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 289)
+1. Publish a file the server never caches, e.g. `/version.json` containing `{ "build": "a1b2c3d" }`, and write a new value into it on every deploy [em dash] the commit hash from the deploy script is the usual choice.
+NEW_SECTION (line 289)
+1. Publish a file the server never caches, e.g. `/version.json` containing `{ "build": "a1b2c3d" }`, and write a new value into it on every deploy: the commit hash from the deploy script is the usual choice.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 298)
+At `initialize()` the engine compares it with the version it recorded the last time it filled the cache (the `spaCacheVersion` key). If they differ [em dash] or no version was recorded [em dash] the cache is emptied before the entry route mounts. If they match, the cache is kept.
+NEW_SECTION (line 298)
+At `initialize()` the engine compares it with the version it recorded the last time it filled the cache (the `spaCacheVersion` key). If they differ (or no version was recorded) the cache is emptied before the entry route mounts. If they match, the cache is kept.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 300)
+3. For tabs that stay open, check again later [em dash] for example when the tab becomes visible [em dash] and set the value on the running engine. A changed value empties the cache immediately; the same value does nothing:
+NEW_SECTION (line 300)
+3. For tabs that stay open, check again later (for example when the tab becomes visible) and set the value on the running engine. A changed value empties the cache immediately; the same value does nothing:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 315)
+- The JavaScript and CSS already loaded are not replaced [em dash] only fetched HTML is. Have the server send `Cache-Control: no-cache` for HTML fragments so the refetch is not served from the HTTP cache.
+NEW_SECTION (line 315)
+- The JavaScript and CSS already loaded are not replaced: only fetched HTML is. Have the server send `Cache-Control: no-cache` for HTML fragments so the refetch is not served from the HTTP cache.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

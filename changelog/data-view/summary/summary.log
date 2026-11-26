@@ -1,8 +1,8 @@
-Feature: data-view (RETROACTIVE — commit 65fdc2f, logged after the changelog/
+Feature: data-view (RETROACTIVE: commit 65fdc2f, logged after the changelog/
 convention was introduced in 478c817)
 Target module: DataView (new)
 
-Added vUX-dataView.js: keyed data-to-DOM binding for hot-update views — updateRow
+Added vUX-dataView.js: keyed data-to-DOM binding for hot-update views: updateRow
 writes only changed cells, sort/setData move existing nodes (preserving focus/input
 state), filter toggles visibility; data-v-row / data-v-field template contract.
 Also registered dataView.js in the module registry (deduping the doubled

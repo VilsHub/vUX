@@ -1,0 +1,83 @@
+OLD_SECTION (line 48)
+            The native element stays the <b>source of truth</b> [em dash] your form, your validation, your submit.
+NEW_SECTION (line 48)
+            The native element stays the <b>source of truth</b>: your form, your validation, your submit.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 76)
+            change log in section 03 [em dash] every line there was fired by the <em>native</em> element.
+NEW_SECTION (line 76)
+            change log in section 03: every line there was fired by the <em>native</em> element.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 97)
+                        <p><code>multiple</code> [em dash] click to toggle, full list as a tooltip:</p>
+NEW_SECTION (line 97)
+                        <p><code>multiple</code>: click to toggle, full list as a tooltip:</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 121)
+                        <p>Checkboxes [em dash] the tick is supplied by config <code>content</code>, not an icon font:</p>
+NEW_SECTION (line 121)
+                        <p>Checkboxes: the tick is supplied by config <code>content</code>, not an icon font:</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 137)
+                        <p class="state" id="dateState">value: [em dash] | complete: [em dash]</p>
+NEW_SECTION (line 137)
+                        <p class="state" id="dateState">value: - | complete: -</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 140)
+                        <p><code>type="datetime-local"</code> [em dash] day selection continues into time entry:</p>
+NEW_SECTION (line 140)
+                        <p><code>type="datetime-local"</code>: day selection continues into time entry:</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 143)
+                        <p class="state" id="dtState">value: [em dash] | complete: [em dash]</p>
+NEW_SECTION (line 143)
+                        <p class="state" id="dtState">value: - | complete: -</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 146)
+                        Pick February of a leap year (2024) [em dash] it has 29 days. Day cells carry their
+NEW_SECTION (line 146)
+                        Pick February of a leap year (2024): it has 29 days. Day cells carry their
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 168)
+                        <p>File input [em dash] label, browse button, and the file name as a tooltip:</p>
+NEW_SECTION (line 168)
+                        <p>File input: label, browse button, and the file name as a tooltip:</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 216)
+            form control [em dash] which is what your <code>submit</code> will send.
+NEW_SECTION (line 216)
+            form control, which is what your <code>submit</code> will send.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 250)
+        <div class="err-out" id="errOut">No error yet [em dash] press one of the buttons above.</div>
+NEW_SECTION (line 250)
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 262)
+            All six builders are on <span class="kbd">window.demoForm</span> [em dash] try
+NEW_SECTION (line 262)
+            All six builders are on <span class="kbd">window.demoForm</span>: try
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

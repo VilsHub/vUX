@@ -37,7 +37,7 @@
 
     .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(248px,1fr)); gap:16px}
     .grid:empty::after{
-        content:"no instances — mount one"; color:var(--dim); font-family:var(--mono); font-size:.82rem;
+        content:"no instances: mount one"; color:var(--dim); font-family:var(--mono); font-size:.82rem;
     }
 
     /* ---------- playground ---------- */
@@ -139,7 +139,7 @@
         <h1>One template.<br>As many live instances as you like.</h1>
         <p class="hero-sub">
             Write the markup once, mark it up with <b>data-v-*</b> bindings, and hand it to
-            <b>Component</b>. You get cloning, field binding, event wiring and teardown —
+            <b>Component</b>. You get cloning, field binding, event wiring and teardown,
             over your own HTML, styled by your own stylesheet.
         </p>
         <div class="hero-cta">
@@ -161,7 +161,7 @@
         <h2><span class="num">01</span>Instances of one template</h2>
         <p class="lede">
             Every card below is a clone of the same <code>&lt;template&gt;</code>. Mounting returns an
-            <b>Instance</b> — an object with its own node, its own data, and its own
+            <b>Instance</b>: an object with its own node, its own data, and its own
             <code>update()</code> and <code>destroy()</code>. The template itself is never touched.
         </p>
 
@@ -198,7 +198,7 @@
         <h2><span class="num">02</span>Every binding, live</h2>
         <p class="lede">
             Each control writes one field through <code>instance.update()</code>. Only the bindings whose
-            value actually moved are written to the DOM — the rest are left alone.
+            value actually moved are written to the DOM: the rest are left alone.
         </p>
 
         <div class="play">
@@ -235,7 +235,7 @@
             <div class="panel">
                 <div class="panel-h">
                     <span>rendered</span>
-                    <span class="pill" id="patchPill">—</span>
+                    <span class="pill" id="patchPill">-</span>
                 </div>
                 <div class="stage"><div class="stage-one" id="oneStage"></div></div>
                 <pre class="snip" id="codePanel"></pre>
@@ -244,7 +244,7 @@
 
         <p class="note">
             The pill above the card reports what <code>update()</code> returned: the list of field names
-            that changed. Edit a field to a value it already holds and it reports nothing — no DOM write happens.
+            that changed. Edit a field to a value it already holds and it reports nothing: no DOM write happens.
         </p>
     </div>
 </section>
@@ -256,7 +256,7 @@
         <h2><span class="num">03</span>Keyed lists keep their nodes</h2>
         <p class="lede">
             <code>sync()</code> matches data to instances by <code>config.key</code>. Rows that survive are
-            <b>moved</b>, not rebuilt — so anything the browser owns inside them survives too.
+            <b>moved</b>, not rebuilt, so anything the browser owns inside them survives too.
         </p>
 
         <div class="panel">
@@ -265,7 +265,7 @@
                 <p class="note" style="margin:0 0 14px">
                     <b>Try this:</b> type into a row's text box, then press <b>sort by score</b>. The row moves
                     and your text moves with it. Then press <b>rebuild</b>, which throws the instances away and
-                    mounts fresh ones — and the text is gone. That difference is the whole point of keying.
+                    mounts fresh ones, and the text is gone. That difference is the whole point of keying.
                 </p>
                 <div class="row" style="margin-bottom:16px">
                     <button id="sortScore">sort by score</button>
@@ -289,7 +289,7 @@
         <h2><span class="num">04</span>Nesting, and letting go cleanly</h2>
         <p class="lede">
             A child mounted through <code>instance.mount()</code> is <b>owned</b> by its parent. Destroy the
-            parent and the children go with it — including the vUX components attached in
+            parent and the children go with it: including the vUX components attached in
             <code>onMount</code>.
         </p>
 
@@ -310,7 +310,7 @@
 
         <p class="note">
             Each board attaches a <b>ToolTip</b> in <code>onMount</code> and calls its
-            <code>destroy()</code> in <code>onDestroy</code> — hover a chip to see it. Before v4.0.0
+            <code>destroy()</code> in <code>onDestroy</code>: hover a chip to see it. Before v4.0.0
             most vUX components had no <code>destroy()</code> to call, which is why this module waited on
             that work. The log records every mount, update and destroy as it happens.
         </p>
@@ -324,7 +324,7 @@
         <h2><span class="num">05</span>What it refuses to do</h2>
         <p class="lede">
             Every button below deliberately misuses the API. The real thrown <code>Error</code> is printed
-            verbatim — nothing here is a canned string.
+            verbatim: nothing here is a canned string.
         </p>
 
         <div class="cards">
@@ -379,7 +379,7 @@
             </div>
         </div>
 
-        <div class="err-out" id="errOut">No error raised yet — press one of the buttons above.</div>
+        <div class="err-out" id="errOut">No error raised yet: press one of the buttons above.</div>
     </div>
 </section>
 

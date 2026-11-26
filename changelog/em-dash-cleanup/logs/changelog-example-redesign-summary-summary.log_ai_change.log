@@ -1,0 +1,48 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] examples and conventions only. No library source changed.
+NEW_SECTION (line 10)
+vUX library (this repository): examples and conventions only. No library source changed.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 12)
+  - examples/shared/example.css   new [em dash] tokens and primitives for all example pages
+NEW_SECTION (line 12)
+  - examples/shared/example.css   new: tokens and primitives for all example pages
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 42)
+  - modal [em dash] content is moved into an overlay outside the page wrapper, so it is styled
+NEW_SECTION (line 42)
+  - modal: content is moved into an overlay outside the page wrapper, so it is styled
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 44)
+  - form [em dash] the component generates the widgets' stylesheets from config strings, so
+NEW_SECTION (line 44)
+  - form: the component generates the widgets' stylesheets from config strings, so
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 47)
+  - spa [em dash] route fragments are injected at runtime and carry no classes, so they are
+NEW_SECTION (line 47)
+  - spa: route fragments are injected at runtime and carry no classes, so they are
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 60)
+  - The pages were not opened in a browser [em dash] there is none in this environment [em dash] so
+NEW_SECTION (line 60)
+  - The pages were not opened in a browser (there is none in this environment) so
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 74)
+src/helpers.js using the exact values each button passes [em dash] 14 for modal, 15 for form
+NEW_SECTION (line 74)
+src/helpers.js using the exact values each button passes: 14 for modal, 15 for form
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

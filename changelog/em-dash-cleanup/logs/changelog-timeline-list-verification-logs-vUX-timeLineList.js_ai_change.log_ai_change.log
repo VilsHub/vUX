@@ -1,0 +1,48 @@
+OLD_SECTION (line 14)
+CHANGE 1 [em dash] instance numbering and new state
+NEW_SECTION (line 14)
+CHANGE 1: instance numbering and new state
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 41)
+CHANGE 2 [em dash] autoBuild(): links the stylesheet, binds once, builds only unbuilt lists
+NEW_SECTION (line 41)
+CHANGE 2, autoBuild(): links the stylesheet, binds once, builds only unbuilt lists
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 79)
+CHANGE 3 [em dash] destroy() removes its own stylesheet by reference
+NEW_SECTION (line 79)
+CHANGE 3: destroy() removes its own stylesheet by reference
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 95)
+CHANGE 4 [em dash] refresh(): guarded, escaped, and builds styles for what it activates
+NEW_SECTION (line 95)
+CHANGE 4, refresh(): guarded, escaped, and builds styles for what it activates
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 142)
+CHANGE 5 [em dash] wrapList(): no selector, this instance's lists only
+NEW_SECTION (line 142)
+CHANGE 5, wrapList(): no selector, this instance's lists only
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 188)
+CHANGE 6 [em dash] buildLists() / listStyles() replace timeLineStyleSheet()
+NEW_SECTION (line 188)
+CHANGE 6: buildLists() / listStyles() replace timeLineStyleSheet()
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 261)
+CHANGE 7 [em dash] config setters
+NEW_SECTION (line 261)
+CHANGE 7: config setters
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

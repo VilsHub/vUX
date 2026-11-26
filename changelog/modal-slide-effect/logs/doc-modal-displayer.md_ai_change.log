@@ -4,7 +4,7 @@ DATE: 2026-10-08
 PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
 
 ================================================================================
-CHANGE 1 — effect property row
+CHANGE 1: effect property row
 ================================================================================
 
 OLD_SECTION
@@ -17,7 +17,7 @@ REASON
 List the new value.
 
 ================================================================================
-CHANGE 2 — Effects table and completion note
+CHANGE 2: Effects table and completion note
 ================================================================================
 
 OLD_SECTION
@@ -35,7 +35,7 @@ REASON
 Document the effect and how it completes.
 
 ================================================================================
-CHANGE 3 — example pointer
+CHANGE 3: example pointer
 ================================================================================
 
 OLD_SECTION
@@ -48,7 +48,7 @@ REASON
 Count updated.
 
 ================================================================================
-CHANGE 4 — docked slide effects
+CHANGE 4: docked slide effects
 ================================================================================
 
 OLD_SECTION
@@ -61,7 +61,7 @@ REASON
 Document the docked sideways slides.
 
 ================================================================================
-CHANGE 5 — rename slide to drop
+CHANGE 5: rename slide to drop
 ================================================================================
 
 OLD_SECTION
@@ -74,7 +74,7 @@ REASON
 Rename.
 
 ================================================================================
-CHANGE 6 — sideways exit direction
+CHANGE 6: sideways exit direction
 ================================================================================
 
 OLD_SECTION
@@ -87,7 +87,7 @@ REASON
 Exit now continues in the direction of entry.
 
 ================================================================================
-CHANGE 7 — exit direction reverted
+CHANGE 7: exit direction reverted
 ================================================================================
 
 OLD_SECTION

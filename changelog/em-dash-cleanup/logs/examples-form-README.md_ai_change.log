@@ -1,0 +1,39 @@
+OLD_SECTION (line 20)
+| Hero | a select, a switch and a radio group [em dash] built by the same `autoBuild()` calls as the rest of the page |
+NEW_SECTION (line 20)
+| Hero | a select, a switch and a radio group: built by the same `autoBuild()` calls as the rest of the page |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 41)
+- **The native input stays the source of truth.** The "native change log" at the bottom uses one delegated `change` listener [em dash] every entry is fired by a *hidden native* input, so each line proves a widget wrote its state through.
+- **The date picker writes attributes, not events** [em dash] the two `value: … | complete: …` state lines are driven by a `MutationObserver` watching the native input's `value` and `data-complete` (the configured `validationAttribute`) attributes.
+- **Leap years** [em dash] open the date-of-birth picker and pick February 2024: it has 29 days.
+- **Dynamic content** [em dash] "Add option + refreshSelect()" mutates the native select and rebuilds one widget; "Inject a new switch + refresh()" inserts brand-new checkbox markup and converts it.
+- **The two attribute conventions** [em dash] the select and date picker take full attribute names (`sizeAttribute: "data-size"`), while the slide switch and file input take `dataset` names without the prefix (`dataAttributeNames: { size: "dim" }`).
+- **The slide-switch markup rule** [em dash] each switch checkbox is the last element child of its own wrapper `DIV`, with the text label outside it.
+- Glyphs supplied entirely through config `content` (the checkbox check mark, the calendar and folder icons, the search icon) [em dash] no icon font needed.
+NEW_SECTION (line 41)
+- **The native input stays the source of truth.** The "native change log" at the bottom uses one delegated `change` listener: every entry is fired by a *hidden native* input, so each line proves a widget wrote its state through.
+- **The date picker writes attributes, not events**: the two `value: … | complete: …` state lines are driven by a `MutationObserver` watching the native input's `value` and `data-complete` (the configured `validationAttribute`) attributes.
+- **Leap years**, open the date-of-birth picker and pick February 2024: it has 29 days.
+- **Dynamic content**: "Add option + refreshSelect()" mutates the native select and rebuilds one widget; "Inject a new switch + refresh()" inserts brand-new checkbox markup and converts it.
+- **The two attribute conventions**: the select and date picker take full attribute names (`sizeAttribute: "data-size"`), while the slide switch and file input take `dataset` names without the prefix (`dataAttributeNames: { size: "dim" }`).
+- **The slide-switch markup rule**: each switch checkbox is the last element child of its own wrapper `DIV`, with the text label outside it.
+- Glyphs supplied entirely through config `content` (the checkbox check mark, the calendar and folder icons, the search icon): no icon font needed.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 49)
+- **Bad input fails immediately** [em dash] section 04 performs each bad call and prints what was thrown.
+NEW_SECTION (line 49)
+- **Bad input fails immediately**: section 04 performs each bad call and prints what was thrown.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 55)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). The **widgets themselves** are styled through builder config instead, because the component generates their stylesheets: `main.js` keeps the page's palette in one `T` object and interpolates it into the config strings, so the widget colours and the page stylesheet cannot drift apart. That is the pattern to copy [em dash] the component ships structure, the consuming page supplies the look.
+NEW_SECTION (line 55)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). The **widgets themselves** are styled through builder config instead, because the component generates their stylesheets: `main.js` keeps the page's palette in one `T` object and interpolates it into the config strings, so the widget colours and the page stylesheet cannot drift apart. That is the pattern to copy: the component ships structure, the consuming page supplies the look.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

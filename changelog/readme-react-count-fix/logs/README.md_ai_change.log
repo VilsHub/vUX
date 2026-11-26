@@ -1,0 +1,6 @@
+OLD_SECTION (README.md, "vUX and React" summary)
+In short: 14 features are **not required**, ...
+NEW_SECTION
+In short: 11 features are **not required**, ...
+REASON
+The table above it has 11 "Not required" rows (14 is the count of "Yes" rows). Found by the features-validator while checking the docs site, which reuses the table.

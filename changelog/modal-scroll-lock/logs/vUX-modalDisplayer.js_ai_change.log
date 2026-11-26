@@ -4,7 +4,7 @@ DATE: 2026-08-03
 PRIOR STATE: as left by feature 'modal-stacking'
 
 ================================================================================
-CHANGE 1 — Hold the page with overflow:hidden instead of position:fixed
+CHANGE 1: Hold the page with overflow:hidden instead of position:fixed
 ================================================================================
 
 OLD_SECTION
@@ -63,7 +63,7 @@ well, and it removes a whole category of state.
 The layout defect, measured on the example page at a 1280px viewport: setting
 `body { position: fixed }` takes the body out of normal flow, at which point it has
 no containing block width and collapses to shrink-to-fit. Content width behind the
-modal went from 1217px to 528.5px — a 688px reflow of the entire page every time a
+modal went from 1217px to 528.5px: a 688px reflow of the entire page every time a
 modal opened, and back again on close. Under the new mechanism the same measurement
 shifts by 15px, which is the width of the scrollbar being removed and is unavoidable
 for any scroll lock that hides the scrollbar. This was previously recorded as a
@@ -71,13 +71,13 @@ known limitation of the position:fixed approach; it is now fixed.
 
 The state removal follows from the mechanism. Taking the body out of flow makes the
 document jump to the top, so the old code had to capture window.scrollY on open and
-scrollTo() it back on close — and, because a consumer page with
+scrollTo() it back on close, and, because a consumer page with
 `scroll-behavior: smooth` would animate that jump, it had to suppress and restore
 scroll-behavior on <html> around the call. With overflow the document never moves,
 so pageState.scrollY, the top offset, the scrollTo and the entire scroll-behavior
 dance all disappear. releasePage() no longer touches <html> at all. The scroll
 position is now preserved because nothing scrolled, rather than because it was saved
-and reapplied — which is strictly more robust, since there is no window in which the
+and reapplied, which is strictly more robust, since there is no window in which the
 saved value can be wrong.
 
 What is captured and restored is the body's own inline overflow value, so a page
@@ -85,7 +85,7 @@ that already set `body { overflow: scroll }` gets that back rather than having t
 property cleared.
 
 BEHAVIOUR CHANGE: `overflow: hidden` blocks user scrolling (wheel, touch, keyboard)
-but does not block programmatic scrolling — `scrollTo()` from consumer code will
+but does not block programmatic scrolling: `scrollTo()` from consumer code will
 still move the page behind an open modal. The previous mechanism blocked that too,
 as a side effect of the document collapsing to viewport height. This is documented
 rather than worked around: suppressing programmatic scrolling would mean fighting
@@ -96,7 +96,7 @@ KNOWN LIMITATION, unchanged in kind but worth restating: iOS Safari ignores
 does work. Mobile Safari is the one environment where the old approach was better.
 
 ================================================================================
-CHANGE 2 — Correct a now-stale ordering comment
+CHANGE 2: Correct a now-stale ordering comment
 ================================================================================
 
 OLD_SECTION

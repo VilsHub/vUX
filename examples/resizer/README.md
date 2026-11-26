@@ -1,6 +1,6 @@
 # Resizer example
 
-A runnable demo of `vUX-resizer.js` — a drag handle on any element, on either axis,
+A runnable demo of `vUX-resizer.js`: a drag handle on any element, on either axis,
 clamped to bounds you set.
 
 ## Run
@@ -27,7 +27,7 @@ Then open <http://localhost:8000/examples/resizer/index.html>.
 
 ## What it demonstrates
 
-- **`config` is read once, by `initialize()`.** There is no live reconfiguration. Every control in the playground rebuilds the instance — `destroy()`, `new Resizer(...)`, configure, `initialize()` — which is the intended pattern and the reason `destroy()` exists.
+- **`config` is read once, by `initialize()`.** There is no live reconfiguration. Every control in the playground rebuilds the instance: `destroy()`, `new Resizer(...)`, configure, `initialize()`, which is the intended pattern and the reason `destroy()` exists.
 - **A drag measures distance travelled, not pointer position.** Grab a handle anywhere along its length: the box does not jump. The grab offset cancels out, and the element's position on the page never enters the arithmetic.
 - **A handle grows the element in the direction it faces.** Section 03 drags left and up to make boxes bigger.
 - **`0` is the "unset" sentinel for every threshold**, not a bound of zero. Drag `maxWidth` to 0 in the playground and the upper clamp disappears rather than collapsing the box.
@@ -42,8 +42,8 @@ Then open <http://localhost:8000/examples/resizer/index.html>.
 Three things the library deliberately does not do for you.
 
 **1. Give the handle a hit area.** `assets/css/resizer.css` gives a handle everything
-structural — `position:absolute`, a 2px cross-axis thickness, a 100% main-axis span, the
-four edge anchors and the `col-resize`/`row-resize` cursors — but no resting appearance,
+structural: `position:absolute`, a 2px cross-axis thickness, a 100% main-axis span, the
+four edge anchors and the `col-resize`/`row-resize` cursors, but no resting appearance,
 and 2px is a hard target for a mouse. Every box here widens the strip you can grab and
 paints a thinner line inside it, so the two sizes are independent:
 
@@ -54,8 +54,8 @@ paints a thinner line inside it, so the two sizes are independent:
 
 **2. Watch the specificity, and the source order.** `resizer.css` is injected by the
 module during `initialize()`, so it lands *after* your page's own `<style>` block. A rule
-written as `.resizeHandle` ties with it on specificity and loses. Scope yours — `.rz
-.resizeHandle` — and it wins. The same applies to the library's default green
+written as `.resizeHandle` ties with it on specificity and loses. Scope yours: `.rz
+.resizeHandle`, and it wins. The same applies to the library's default green
 `:hover`/`.on` highlight, which this page neutralises at `(0,3,0)`:
 
 ```css
@@ -63,8 +63,8 @@ written as `.resizeHandle` ties with it on specificity and loses. Scope yours �
 ```
 
 A rule generated from `config.resizeHandlerProperties.styles` is *also* `(0,3,0)` and is
-injected later still, so pushing a style through `config` beats that and stays in control
-— which is what the playground's colour picker is doing.
+injected later still, so pushing a style through `config` beats that and stays in control,
+which is what the playground's colour picker is doing.
 
 **3. Anchor the box yourself.** The module writes a size and nothing else. An element left
 at its default top-left grows down and to the right no matter which handle you drag, so a
@@ -94,6 +94,6 @@ lifeResizer.destroy()             // handles vanish from the box in section 04
 edgeResizers.left.resizedWidth
 ```
 
-`.config` properties are **write-only** across vUX — `playResizer.config.direction` reads
+`.config` properties are **write-only** across vUX: `playResizer.config.direction` reads
 back as `undefined`. The page keeps its own copy of what it set, which is how the
 "equivalent code" panel can show the current settings.

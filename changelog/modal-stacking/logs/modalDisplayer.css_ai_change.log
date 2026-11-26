@@ -4,7 +4,7 @@ DATE: 2026-08-03
 PRIOR STATE: as left by feature 'modal-displayer-verification'
 
 ================================================================================
-CHANGE 1 — Style the content host by class as well as by id
+CHANGE 1: Style the content host by class as well as by id
 ================================================================================
 
 OLD_SECTION

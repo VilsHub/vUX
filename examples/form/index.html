@@ -45,7 +45,7 @@
         <h1>Native inputs, better dressed.</h1>
         <p class="hero-sub">
             Six builders that hide a real <code>&lt;input&gt;</code> and draw a widget in front of it.
-            The native element stays the <b>source of truth</b> — your form, your validation, your submit.
+            The native element stays the <b>source of truth</b>: your form, your validation, your submit.
         </p>
 
         <!-- real widgets, built by the same autoBuild() call as the rest of the page -->
@@ -73,7 +73,7 @@
         <h2><span class="num">01</span>All six builders</h2>
         <p class="lede">
             Each widget below is driven by a hidden native input. Interact with any of them and watch the
-            change log in section 03 — every line there was fired by the <em>native</em> element.
+            change log in section 03: every line there was fired by the <em>native</em> element.
         </p>
 
         <div class="f-grid">
@@ -94,7 +94,7 @@
                         <button type="button" class="tiny" id="addOption" style="margin-top:12px">Add option + refreshSelect()</button>
                     </div>
                     <div class="f-block">
-                        <p><code>multiple</code> — click to toggle, full list as a tooltip:</p>
+                        <p><code>multiple</code>: click to toggle, full list as a tooltip:</p>
                         <select class="demo-select" name="toppings" multiple data-size="100%,40px">
                             <option selected>Cheese</option>
                             <option>Mushroom</option>
@@ -118,7 +118,7 @@
                         </div>
                     </div>
                     <div class="f-block">
-                        <p>Checkboxes — the tick is supplied by config <code>content</code>, not an icon font:</p>
+                        <p>Checkboxes: the tick is supplied by config <code>content</code>, not an icon font:</p>
                         <div class="v-group">
                             <div><input type="checkbox" name="updates" class="demo-check" checked> <label>Email me updates</label></div>
                             <div><input type="checkbox" name="terms" class="demo-check"> <label>Accept the terms</label></div>
@@ -134,16 +134,16 @@
                         <p><code>type="date"</code> with <code>min</code>/<code>max</code> and a preset value:</p>
                         <input type="date" class="demo-date" name="dob" data-size="100%,40px"
                                min="1990-01-01" max="2030-12-31" value="2000-06-15">
-                        <p class="state" id="dateState">value: — | complete: —</p>
+                        <p class="state" id="dateState">value: - | complete: -</p>
                     </div>
                     <div class="f-block">
-                        <p><code>type="datetime-local"</code> — day selection continues into time entry:</p>
+                        <p><code>type="datetime-local"</code>: day selection continues into time entry:</p>
                         <input type="datetime-local" class="demo-date" name="meeting" data-size="100%,40px"
                                min="2020-01-01" max="2030-12-31">
-                        <p class="state" id="dtState">value: — | complete: —</p>
+                        <p class="state" id="dtState">value: - | complete: -</p>
                     </div>
                     <p class="note">
-                        Pick February of a leap year (2024) — it has 29 days. Day cells carry their
+                        Pick February of a leap year (2024): it has 29 days. Day cells carry their
                         weekday as a tooltip (<code>daysToolTip</code>).
                     </p>
                 </div>
@@ -165,7 +165,7 @@
                         <button type="button" class="tiny" id="injectSwitch">Inject a new switch + refresh()</button>
                     </div>
                     <div class="f-block">
-                        <p>File input — label, browse button, and the file name as a tooltip:</p>
+                        <p>File input: label, browse button, and the file name as a tooltip:</p>
                         <input type="file" class="demo-file" name="attachment" data-dim="100%,36px">
                     </div>
                 </div>
@@ -213,7 +213,7 @@
         <p class="lede">
             One delegated <code>change</code> listener, bound to <code>document</code> and reading the
             <em>native</em> element. Every line below proves a widget wrote its state through to the real
-            form control — which is what your <code>submit</code> will send.
+            form control, which is what your <code>submit</code> will send.
         </p>
         <div class="panel">
             <div class="panel-h">
@@ -247,7 +247,7 @@
             <button data-bad="unknownStyle">styles = { glow: [] }</button>
             <button data-bad="incomplete">radio autoBuild() with no size</button>
         </div>
-        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
     </div>
 </section>
 
@@ -259,7 +259,7 @@
             <a href="../../doc/README.md">All vUX docs</a>
         </p>
         <p>
-            All six builders are on <span class="kbd">window.demoForm</span> — try
+            All six builders are on <span class="kbd">window.demoForm</span>: try
             <span class="kbd">demoForm.select.refresh()</span>.
         </p>
     </div>

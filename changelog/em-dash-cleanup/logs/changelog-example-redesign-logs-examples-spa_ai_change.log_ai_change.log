@@ -1,0 +1,61 @@
+OLD_SECTION (line 8)
+index.html [em dash] 23 lines: an unstyled <nav>, a bare #contentBoundary and a <pre> log.
+main.js    [em dash] routing, progress, callbacks and the ?autorun harness.
+table.html [em dash] <table border="1" cellspacing="0" cellpadding="4">, unclassed buttons.
+server.py  [em dash] /lib/vUX/ mapped to the repo root.
+NEW_SECTION (line 8)
+index.html, 23 lines: an unstyled <nav>, a bare #contentBoundary and a <pre> log.
+main.js: routing, progress, callbacks and the ?autorun harness.
+table.html: <table border="1" cellspacing="0" cellpadding="4">, unclassed buttons.
+server.py: /lib/vUX/ mapped to the repo root.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+index.html [em dash] 161 lines: shared design system, a sticky top bar with the nav, a styled
+NEW_SECTION (line 14)
+index.html, 161 lines: shared design system, a sticky top bar with the nav, a styled
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 17)
+main.js    [em dash] the same routing and callbacks, plus markNav(), a log clear button,
+NEW_SECTION (line 17)
+main.js: the same routing and callbacks, plus markNav(), a log clear button,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 19)
+table.html [em dash] button classes and a .table-scroll wrapper; presentational HTML attributes
+NEW_SECTION (line 19)
+table.html: button classes and a .table-scroll wrapper; presentational HTML attributes
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 21)
+server.py  [em dash] /shared/ additionally mapped to examples/shared/.
+NEW_SECTION (line 21)
+server.py: /shared/ additionally mapped to examples/shared/.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 30)
+They are therefore styled through #contentBoundary [em dash] the element they are loaded into [em dash]
+NEW_SECTION (line 30)
+They are therefore styled through #contentBoundary: the element they are loaded into:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 46)
+makes the "User 8" opt-out visible [em dash] that link sets data-add-to-history="false", so its
+NEW_SECTION (line 46)
+makes the "User 8" opt-out visible: that link sets data-add-to-history="false", so its
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 57)
+needs was confirmed to return 200 [em dash] /, /shared/example.css, /main.js, /pages/table.js,
+NEW_SECTION (line 57)
+needs was confirmed to return 200: /, /shared/example.css, /main.js, /pages/table.js,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

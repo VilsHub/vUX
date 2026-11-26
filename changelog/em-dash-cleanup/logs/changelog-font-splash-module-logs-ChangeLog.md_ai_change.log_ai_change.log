@@ -1,0 +1,17 @@
+OLD_SECTION (line 14)
+- FontSplash module (vUX-fontSplash.js) [em dash] a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
+- FontSplash waits for its font [em dash] `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
+NEW_SECTION (line 14)
+- FontSplash module (vUX-fontSplash.js): a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
+- FontSplash waits for its font: `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 17)
+- FontSplash progress mode [em dash] `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
+- FontSplash timing [em dash] `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
+NEW_SECTION (line 17)
+- FontSplash progress mode: `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
+- FontSplash timing: `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

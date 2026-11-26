@@ -1,0 +1,20 @@
+OLD_SECTION (line 6)
+CHANGE 1 [em dash] move(): use the frame's viewport
+NEW_SECTION (line 6)
+CHANGE 1, move(): use the frame's viewport
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+CHANGE 2 [em dash] updateSliderPosition(): use the frame's viewport
+NEW_SECTION (line 18)
+CHANGE 2, updateSliderPosition(): use the frame's viewport
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 107)
+CHANGE 3 [em dash] link touchHandler.css; mark pan axis
+NEW_SECTION (line 107)
+CHANGE 3: link touchHandler.css; mark pan axis
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

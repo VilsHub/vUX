@@ -1,0 +1,36 @@
+OLD_SECTION (line 6)
+CHANGE 1 [em dash] guide table
+NEW_SECTION (line 6)
+CHANGE 1: guide table
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 20)
+CHANGE 2 [em dash] remaining-guides sentence
+NEW_SECTION (line 20)
+CHANGE 2: remaining-guides sentence
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+CHANGE 3 [em dash] other references
+NEW_SECTION (line 33)
+CHANGE 3: other references
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 37)
+    - [Component example](../examples/component/README.md) [em dash] ...
+NEW_SECTION (line 37)
+    - [Component example](../examples/component/README.md): ...
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 40)
+    - [Carousel example](../examples/carousel/README.md) [em dash] runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+    - [Component example](../examples/component/README.md) [em dash] ...
+NEW_SECTION (line 40)
+    - [Carousel example](../examples/carousel/README.md): runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+    - [Component example](../examples/component/README.md): ...
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

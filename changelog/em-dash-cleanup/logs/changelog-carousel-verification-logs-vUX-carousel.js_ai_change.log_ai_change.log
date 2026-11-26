@@ -1,0 +1,48 @@
+OLD_SECTION (line 13)
+CHANGE 1 [em dash] Slide discovery no longer depends on the viewport id; instance numbering and new state
+NEW_SECTION (line 13)
+CHANGE 1: Slide discovery no longer depends on the viewport id; instance numbering and new state
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 49)
+CHANGE 2 [em dash] One movement path: goTo() / settle() replace forceSlide(), nextSlide() and the two-branch transitionend handler
+NEW_SECTION (line 49)
+CHANGE 2, One movement path: goTo() / settle() replace forceSlide(), nextSlide() and the two-branch transitionend handler
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 258)
+CHANGE 3 [em dash] Dots: no ids, listener instead of onclick, controlArea kept
+NEW_SECTION (line 258)
+CHANGE 3, Dots: no ids, listener instead of onclick, controlArea kept
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 316)
+CHANGE 4 [em dash] Per-instance button styles that beat carousel.css; carousel.css now linked
+NEW_SECTION (line 316)
+CHANGE 4: Per-instance button styles that beat carousel.css; carousel.css now linked
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 380)
+CHANGE 5 [em dash] Autoplay interval and touch wiring
+NEW_SECTION (line 380)
+CHANGE 5: Autoplay interval and touch wiring
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 433)
+CHANGE 6 [em dash] initialize(), start(), destroy()
+NEW_SECTION (line 433)
+CHANGE 6: initialize(), start(), destroy()
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 621)
+CHANGE 7 [em dash] config setters: live application and buttonStyle messages
+NEW_SECTION (line 621)
+CHANGE 7, config setters: live application and buttonStyle messages
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

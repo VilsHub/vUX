@@ -4,7 +4,7 @@ DATE: 2026-10-05
 PRIOR STATE: commit 3f1472a (unchanged since it was added; never linked by any code until this change)
 
 ================================================================================
-CHANGE 1 — room for the label column
+CHANGE 1: room for the label column
 ================================================================================
 
 OLD_SECTION
@@ -29,7 +29,7 @@ the file was never loaded. Now that the module links it, the default has to rend
 can depend on the old value, since the file was never applied.
 
 ================================================================================
-CHANGE 2 — wrap rules: three classes, and the margin dropped when stacked
+CHANGE 2, wrap rules: three classes, and the margin dropped when stacked
 ================================================================================
 
 OLD_SECTION

@@ -153,7 +153,7 @@
         <h1>The page, before the page.</h1>
         <p class="hero-sub">
             <b>Skeleton</b> reads the template you already wrote for your cards and draws its
-            shape while the data is on its way — same grid, same padding, same line count.
+            shape while the data is on its way: same grid, same padding, same line count.
             Fast loads never flash it; slow ones never flicker it.
         </p>
         <div class="hero-bar">
@@ -210,8 +210,8 @@
                 <tr><td>data-skeleton="circle"</td><td>a circle; <code>circle:48</code> or <code>circle:3rem</code> also sizes it</td></tr>
                 <tr><td>data-skeleton="rect"</td><td>a filled block; <code>rect:16/9</code> also sets an aspect ratio</td></tr>
                 <tr><td>data-skeleton="media"</td><td>a media block, for a <code>&lt;div&gt;</code> with a background image; <code>media:4/3</code> takes a ratio</td></tr>
-                <tr><td>data-skeleton="keep"</td><td>left exactly as written — a label that is true before the data arrives</td></tr>
-                <tr><td>data-skeleton="skip"</td><td>left out — a badge that only some items show</td></tr>
+                <tr><td>data-skeleton="keep"</td><td>left exactly as written: a label that is true before the data arrives</td></tr>
+                <tr><td>data-skeleton="skip"</td><td>left out: a badge that only some items show</td></tr>
             </tbody>
         </table>
         </div>
@@ -233,8 +233,8 @@
                     <div class="field">
                         <label class="lbl">template</label>
                         <select id="pTemplate">
-                            <option value="post">#postTpl — cards</option>
-                            <option value="row">#rowTpl — comment rows</option>
+                            <option value="post">#postTpl: cards</option>
+                            <option value="row">#rowTpl: comment rows</option>
                         </select>
                     </div>
                     <div class="field">
@@ -271,7 +271,7 @@
                         <input type="text" id="pLabel" value="Loading comments">
                     </div>
                     <div class="field">
-                        <label class="switch"><input type="checkbox" id="pReveal" checked> reveal — fade the content in</label>
+                        <label class="switch"><input type="checkbox" id="pReveal" checked> reveal: fade the content in</label>
                     </div>
                     <div class="field">
                         <label class="lbl">simulated latency <span class="val" id="vLat">1200ms</span></label>
@@ -320,20 +320,20 @@
         </div>
         <div class="lanes">
             <div class="panel lane" id="laneNaive">
-                <div class="panel-h"><span>naive — delay 0, minDuration 0</span></div>
+                <div class="panel-h"><span>naive: delay 0, minDuration 0</span></div>
                 <div class="panel-b">
                     <div class="rows lane-out"></div>
                     <div class="track"><div class="seg-load"></div><div class="seg-sk"></div></div>
-                    <div class="track-axis"><span>0</span><span class="axis-end">—</span></div>
+                    <div class="track-axis"><span>0</span><span class="axis-end">-</span></div>
                     <div class="verdict"></div>
                 </div>
             </div>
             <div class="panel lane" id="laneTuned">
-                <div class="panel-h"><span>defaults — delay 120, minDuration 400</span></div>
+                <div class="panel-h"><span>defaults: delay 120, minDuration 400</span></div>
                 <div class="panel-b">
                     <div class="rows lane-out"></div>
                     <div class="track"><div class="seg-load"></div><div class="seg-sk"></div></div>
-                    <div class="track-axis"><span>0</span><span class="axis-end">—</span></div>
+                    <div class="track-axis"><span>0</span><span class="axis-end">-</span></div>
                     <div class="verdict"></div>
                 </div>
             </div>
@@ -349,12 +349,12 @@
 <!-- ======================================================================= -->
 <section>
     <div class="wrap">
-        <h2><span class="num">04</span>Mask mode — refreshing what is already there</h2>
+        <h2><span class="num">04</span>Mask mode: refreshing what is already there</h2>
         <p class="lede">
             With no <code>config.template</code>, the skeleton masks the container's own content in
             place. Nothing is cloned: classes go on, text is wrapped in a span so each bar is as long
             as its words, and when the mask lifts the same nodes go back and the markup is
-            byte-for-byte what it was — the status line below checks.
+            byte-for-byte what it was: the status line below checks.
         </p>
         <div class="panel">
             <div class="panel-h"><span>a live panel</span><button class="tiny primary" id="mRefresh">Refresh</button></div>

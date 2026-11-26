@@ -4,20 +4,20 @@ Feature: spa-cache-version
 =======================================================================
 Section 1
 OLD_SECTION
-- **Live table island** — the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
-- **Route teardown** — leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+- **Live table island**, the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown**, leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
 
-- **Validation** — the buttons in section 02 build throwaway engines to show how `initialize()` refuses an incomplete setup and how `dataAttributeNames`/`classes` reject unknown keys.
+- **Validation**: the buttons in section 02 build throwaway engines to show how `initialize()` refuses an incomplete setup and how `dataAttributeNames`/`classes` reject unknown keys.
 
 Everything a callback receives is printed to the diagnostics panel at the bottom of the page.
 
 
 NEW_SECTION
-- **Live table island** — the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
-- **Route teardown** — leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+- **Live table island**, the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown**, leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
 
-- **Shipping a new release** — section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
-- **Validation** — the buttons in section 03 build throwaway engines to show how `initialize()` refuses an incomplete setup, how `dataAttributeNames`/`classes` reject unknown keys, and how `cacheVersion` rejects an empty value.
+- **Shipping a new release**: section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+- **Validation**: the buttons in section 03 build throwaway engines to show how `initialize()` refuses an incomplete setup, how `dataAttributeNames`/`classes` reject unknown keys, and how `cacheVersion` rejects an empty value.
 
 Everything a callback receives is printed to the diagnostics panel at the bottom of the page.
 
@@ -33,7 +33,7 @@ The bundled server provides what any real vUX SPA deployment needs: a history fa
 
 ## Styling
 
-The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary` — the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary`: the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
 
 NEW_SECTION
 
@@ -45,7 +45,7 @@ The bundled server provides what any real vUX SPA deployment needs: a history fa
 
 ## Styling
 
-The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary` — the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary`: the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
 
 REASON
 Documents the new release section, the renumbered validation section, and how to simulate a release by editing version.json.

@@ -4,7 +4,7 @@ DATE: 2026-10-08
 PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
 
 ================================================================================
-CHANGE 1 — effect select
+CHANGE 1: effect select
 ================================================================================
 
 OLD_SECTION
@@ -18,7 +18,7 @@ REASON
 The playground can now switch to the slide effect; main.js already applies whatever value the select holds.
 
 ================================================================================
-CHANGE 2 — docked options
+CHANGE 2: docked options
 ================================================================================
 
 OLD_SECTION
@@ -26,14 +26,14 @@ OLD_SECTION
 
 NEW_SECTION
                             <option value="slide">slide</option>
-                            <option value="slideLeft">slideLeft — docks right</option>
-                            <option value="slideRight">slideRight — docks left</option>
+                            <option value="slideLeft">slideLeft: docks right</option>
+                            <option value="slideRight">slideRight: docks left</option>
 
 REASON
 Playground can switch to both docked slides.
 
 ================================================================================
-CHANGE 3 — rename
+CHANGE 3: rename
 ================================================================================
 
 OLD_SECTION

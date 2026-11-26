@@ -1,0 +1,41 @@
+OLD_SECTION (line 3)
+`ProgressIndicator` (`vUX-progressIndicator.js`) renders a loading indicator inside a "progress space" element while work is in flight [em dash] a linear bar across the space, a circular spinner overlay, or an animated grid border. Its stylesheet (`assets/css/progressIndicator.css`) is linked automatically on `initialize()`.
+NEW_SECTION (line 3)
+`ProgressIndicator` (`vUX-progressIndicator.js`) renders a loading indicator inside a "progress space" element while work is in flight: a linear bar across the space, a circular spinner overlay, or an animated grid border. Its stylesheet (`assets/css/progressIndicator.css`) is linked automatically on `initialize()`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 23)
+The progress space is any element the indicator renders into. The injected `.vProgressItem` is absolutely positioned (`top:0`, `z-index:102`) within it, so give the space element its own positioning [em dash] e.g. a viewport-wide bar strip:
+NEW_SECTION (line 23)
+The progress space is any element the indicator renders into. The injected `.vProgressItem` is absolutely positioned (`top:0`, `z-index:102`) within it, so give the space element its own positioning: e.g. a viewport-wide bar strip:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 54)
+| `config.progressStyle` | no | Per-type styling [em dash] see below. |
+NEW_SECTION (line 54)
+| `config.progressStyle` | no | Per-type styling: see below. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 56)
+| `config.progressSpeed` | no | Reserved [em dash] accepted but not currently consumed (the linear sweep duration is fixed in CSS). |
+NEW_SECTION (line 56)
+| `config.progressSpeed` | no | Reserved: accepted but not currently consumed (the linear sweep duration is fixed in CSS). |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 65)
+| `style` | `3` | `1` [em dash] repeating left-to-right sweep; `2` [em dash] alternating sweep; `3` [em dash] request-style bar that fills to 57%, slows toward 85%, then crawls until `hideProgress()` completes it. Use `3` for real network activity, `1`/`2` for indeterminate waits. |
+NEW_SECTION (line 65)
+| `style` | `3` | `1`: repeating left-to-right sweep; `2`: alternating sweep; `3`: request-style bar that fills to 57%, slows toward 85%, then crawls until `hideProgress()` completes it. Use `3` for real network activity, `1`/`2` for indeterminate waits. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 85)
+`SPAEngine`'s callbacks map directly onto the show/complete cycle. `preClickCallback` fires only when a route is actually fetched from the server, so cached navigations never flash a bar [em dash] but for the same reason the completion callbacks must guard against completing a bar that was never shown:
+NEW_SECTION (line 85)
+`SPAEngine`'s callbacks map directly onto the show/complete cycle. `preClickCallback` fires only when a route is actually fetched from the server, so cached navigations never flash a bar, but for the same reason the completion callbacks must guard against completing a bar that was never shown:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

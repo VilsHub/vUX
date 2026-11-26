@@ -10,7 +10,7 @@ never loaded so the handlers it creates had no size, no position and no cursor.
 Every change below is a fix; no public API was removed.
 
 ================================================================================
-CHANGE 1 — Declare callBack
+CHANGE 1: Declare callBack
 ================================================================================
 
 OLD_SECTION
@@ -37,14 +37,14 @@ drag-origin quartet (change 3), the handler element actually grabbed (change 6),
 resolved handler class name (change 11), the list of handlers to remove on destroy
 (change 9) and an initialized flag to make initialize() idempotent.
 
-targetElement no longer resolves here — see change 9.
+targetElement no longer resolves here: see change 9.
 
 ================================================================================
-CHANGE 2 — Load the module's stylesheet
+CHANGE 2: Load the module's stylesheet
 ================================================================================
 
 OLD_SECTION
-    (no equivalent — the module never linked a stylesheet)
+    (no equivalent: the module never linked a stylesheet)
 
 NEW_SECTION
     async function addVitalStyles() {
@@ -68,7 +68,7 @@ handler a handler: position:absolute, the 2px cross-axis thickness, the 100%
 main-axis span, the four edge anchors (.x.left/.x.right/.y.top/.y.bottom), the
 col-resize/row-resize cursors and the default :hover/.on highlight. Nothing linked
 it. A consumer following the documented usage got zero-size static DIVs appended to
-their container — an invisible, ungrabbable component — unless they happened to
+their container (an invisible, ungrabbable component) unless they happened to
 supply a complete style string through config.resizeHandlerProperties.styles.
 
 Loading follows the established pattern rather than inventing one: the same
@@ -77,7 +77,7 @@ vUX-formComponents.js, so the file resolves through vModel.core.data.assetPath a
 honours the data-library-root contract instead of a hardcoded relative path.
 
 ================================================================================
-CHANGE 3 — Resize against the drag origin instead of the raw pointer coordinate
+CHANGE 3: Resize against the drag origin instead of the raw pointer coordinate
 ================================================================================
 
 OLD_SECTION
@@ -144,7 +144,7 @@ The edge inversion is new behaviour that the old code had no way to express. A
 handler anchored to the left or top edge moves toward the element's origin as the
 pointer moves in the negative direction, which should make the element bigger, not
 smaller. Without the inversion, position:{x:"left"} produced a control that shrank
-the element when dragged outward — backwards, and the reason the left/right and
+the element when dragged outward: backwards, and the reason the left/right and
 top/bottom position options were only ever usable in one of their two settings.
 
 `if(newWidth < 0) newWidth = 0` guards the case the threshold clamps do not cover.
@@ -153,7 +153,7 @@ had nothing stopping a fast drag past the far edge from writing a negative width
 which the browser rejects, leaving the element stuck at its last valid size mid-drag.
 
 ================================================================================
-CHANGE 4 — Bind removable listeners that tolerate a child as the event target
+CHANGE 4: Bind removable listeners that tolerate a child as the event target
 ================================================================================
 
 OLD_SECTION
@@ -170,7 +170,7 @@ NEW_SECTION
 
 REASON
 $$.attachEventHandler() registers an anonymous wrapper function against window, so
-there is no reference with which to unregister it — a component using it can never
+there is no reference with which to unregister it: a component using it can never
 be torn down, which is what blocked destroy() (change 9) from existing. It also
 matches on e.target's own class list only, so a mousedown landing on any child of a
 handler was ignored; that is invisible for the empty DIVs this module builds itself,
@@ -186,7 +186,7 @@ The two window-level listeners move to document alongside it purely for symmetry
 removal; mouseup and mousemove bubble to both.
 
 ================================================================================
-CHANGE 5 — Capture the drag origin; resolve axis and edge from the handler
+CHANGE 5: Capture the drag origin; resolve axis and edge from the handler
 ================================================================================
 
 OLD_SECTION
@@ -270,7 +270,7 @@ marker class silently resized on the Y axis rather than reporting the ambiguity.
 resolveDirection() now falls back to the configured direction when it is unambiguous,
 which is what actually makes config.myResizeHandler usable (change 10), and throws a
 descriptive error naming both remedies when direction is "both" and the handler is
-unmarked — a case with no correct guess available.
+unmarked: a case with no correct guess available.
 
 resolveEdge() is new, supplying change 3's inversion. It prefers the edge class on
 the handler so a hand-written handler is self-describing, and falls back to the
@@ -283,10 +283,10 @@ and released over text, left that text selected.
 The bare `targetDirection` expression statement is deleted; it evaluated a variable
 and discarded the result.
 
-classList.toggle("on") is replaced by add("on") — see change 6.
+classList.toggle("on") is replaced by add("on"): see change 6.
 
 ================================================================================
-CHANGE 6 — Release the handler that was actually grabbed
+CHANGE 6: Release the handler that was actually grabbed
 ================================================================================
 
 OLD_SECTION
@@ -321,7 +321,7 @@ drag. add() on grab and remove() on release makes the state absolute, and rememb
 the grabbed element in activeHandle makes it the right element.
 
 ================================================================================
-CHANGE 7 — Build handlers with axis-scoped styles, honouring styles.both
+CHANGE 7: Build handlers with axis-scoped styles, honouring styles.both
 ================================================================================
 
 OLD_SECTION
@@ -382,7 +382,7 @@ Four defects in one block.
 `if(yhandler != "")` tests the Y handler *element* against an empty string where it
 meant to test yStyle, as the X branch correctly does one block above. An element is
 never equal to "", so the guard was permanently true and an empty yStyle emitted
-`.resizeHandle:hover{}` — harmless in itself, but it is the rule that then collided
+`.resizeHandle:hover{}`: harmless in itself, but it is the rule that then collided
 with the X rule below.
 
 Both branches generated their rules against the bare `.resizeHandle` selector rather
@@ -394,7 +394,7 @@ produced an empty Y rule that landed last and blanked the X styling. Scoping eac
 rule to its axis makes the two independent.
 
 resizeHandlerProperties.styles.both was accepted and validated by the config setter
-but read by nothing — a documented key with no effect. It now supplies the style for
+but read by nothing: a documented key with no effect. It now supplies the style for
 either axis that has no style of its own, which is the only reading under which the
 key means anything.
 
@@ -408,14 +408,14 @@ and are built with handlerClass rather than the literal so a custom class name
 (change 11) is honoured.
 
 ================================================================================
-CHANGE 8 — (folded into change 7)
+CHANGE 8: (folded into change 7)
 ================================================================================
 
 The xhandler/yhandler/xStyle/yStyle locals and the xPosition/yPosition locals
 disappear with the rewrite above; each is now a buildHandler() argument.
 
 ================================================================================
-CHANGE 9 — Resolve the target in initialize(); add destroy()
+CHANGE 9: Resolve the target in initialize(); add destroy()
 ================================================================================
 
 OLD_SECTION
@@ -458,17 +458,17 @@ selector in the error the way the module's other validators name their arguments
 
 The initialized guard makes initialize() idempotent. Calling it twice previously
 appended a second set of handlers, registered a second set of listeners and appended
-a duplicate <style> element for each axis — attachStyleSheet() appends unconditionally.
+a duplicate <style> element for each axis: attachStyleSheet() appends unconditionally.
 
 destroy() is new. Every listener this module registers was previously permanent, and
 the handlers it injects into the consumer's container had no removal path, so a
-Resizer over an element belonging to a view — an SPA route, a modal — leaked its
+Resizer over an element belonging to a view (an SPA route, a modal) leaked its
 listeners and left orphaned handler DIVs behind on every teardown. It could not be
 written while binding went through $$.attachEventHandler (change 4). unPin() runs
 first so a destroy mid-drag does not leave a handler stuck in its "on" state.
 
 ================================================================================
-CHANGE 10 — Fix the resizeHandlerProperties key count and unknown-key handling
+CHANGE 10: Fix the resizeHandlerProperties key count and unknown-key handling
 ================================================================================
 
 OLD_SECTION
@@ -519,7 +519,7 @@ NEW_SECTION
 
 REASON
 `targetConfig[0].length` is the length of the first [key, value] pair produced by
-Object.entries, which is always 2 — not the number of keys supplied. The guard
+Object.entries, which is always 2, not the number of keys supplied. The guard
 below it therefore compared 2 against 4 and 0 on every call: it never rejected an
 over-long object, and it could never see the empty object it was written to catch.
 Passing {} instead made `targetConfig[0]` undefined and threw a bare TypeError on
@@ -532,7 +532,7 @@ Key matching was thus case-sensitive against lowercase literals, so {Direction:"
 matched no branch.
 
 Matching no branch was silent: the if/else-if chain had no final else. A misspelled
-or miscased key was accepted, ignored, and the component ran on with its defaults —
+or miscased key was accepted, ignored, and the component ran on with its defaults:
 the single hardest failure mode to diagnose from the consumer's side, and contrary
 to the strict-validation contract every other setter in this file follows. The added
 else throws in the same form as the thresholdValues setter's unknown-key error.
@@ -544,7 +544,7 @@ keys). Its local was named totalPositionKeys for the same reason. Strings and lo
 corrected to say styles; no logic change in this part.
 
 ================================================================================
-CHANGE 11 — Make config.myResizeHandler actually take effect
+CHANGE 11: Make config.myResizeHandler actually take effect
 ================================================================================
 
 OLD_SECTION
@@ -567,7 +567,7 @@ NEW_SECTION
         },
 
 REASON
-myResizeHandler was validated and stored, and read in exactly one place — the
+myResizeHandler was validated and stored, and read in exactly one place: the
 `myResizeHandler == null` test that decides whether to build handlers. Its value was
 never used for anything. Binding was hardcoded to the literal class "resizeHandle",
 so a consumer who supplied their own handler got the intended half of the behaviour
@@ -603,5 +603,5 @@ verification was static plus an extracted-arithmetic check.
 
 Not verified: real mouse-drag behaviour in a browser, and that resizer.css resolves
 at runtime under a live data-library-root. Both need a page to load the module, and
-the Resizer module has no example under examples/ — writing one is the obvious next
+the Resizer module has no example under examples/: writing one is the obvious next
 piece of work and would turn every check above into something demonstrable.

@@ -10,7 +10,7 @@ touchResponse) is unchanged; start() before initialize() now throws, and dots lo
 attributes (see ChangeLog 'Changed').
 
 ================================================================================
-CHANGE 1 — Slide discovery no longer depends on the viewport id; instance numbering and new state
+CHANGE 1: Slide discovery no longer depends on the viewport id; instance numbering and new state
 ================================================================================
 
 OLD_SECTION
@@ -46,7 +46,7 @@ instanceId scopes the per-carousel button styles (change 5); controlArea is kept
 goes through this instance's own dots (change 3).
 
 ================================================================================
-CHANGE 2 — One movement path: goTo() / settle() replace forceSlide(), nextSlide() and the two-branch transitionend handler
+CHANGE 2, One movement path: goTo() / settle() replace forceSlide(), nextSlide() and the two-branch transitionend handler
 ================================================================================
 
 OLD_SECTION
@@ -255,7 +255,7 @@ container.onclick/onmouseenter/onmouseleave, which overwrote any handlers the co
 the container (and were overwritten by them).
 
 ================================================================================
-CHANGE 3 — Dots: no ids, listener instead of onclick, controlArea kept
+CHANGE 3, Dots: no ids, listener instead of onclick, controlArea kept
 ================================================================================
 
 OLD_SECTION
@@ -313,7 +313,7 @@ with page ids; nothing in the library read them. Dot lookups were document-wide
 active class from the first carousel's dot (verified). Lookups now go through controlArea.
 
 ================================================================================
-CHANGE 4 — Per-instance button styles that beat carousel.css; carousel.css now linked
+CHANGE 4: Per-instance button styles that beat carousel.css; carousel.css now linked
 ================================================================================
 
 OLD_SECTION
@@ -377,7 +377,7 @@ The duplicated condition (buttonStyle[1] != undefined || buttonStyle[1] != undef
 one test.
 
 ================================================================================
-CHANGE 5 — Autoplay interval and touch wiring
+CHANGE 5: Autoplay interval and touch wiring
 ================================================================================
 
 OLD_SECTION
@@ -430,7 +430,7 @@ carousel; it clears the transition shorthand TouchHandler leaves behind after a 
 otherwise override the longhands.
 
 ================================================================================
-CHANGE 6 — initialize(), start(), destroy()
+CHANGE 6: initialize(), start(), destroy()
 ================================================================================
 
 OLD_SECTION
@@ -618,7 +618,7 @@ destroy(): removes the named listeners, this instance's style element, data-vcar
 posUpdate class and the transition shorthand, in addition to what it removed before.
 
 ================================================================================
-CHANGE 7 — config setters: live application and buttonStyle messages
+CHANGE 7, config setters: live application and buttonStyle messages
 ================================================================================
 
 OLD_SECTION

@@ -1,0 +1,15 @@
+NOTE: this file also carries the readme-react-count-fix changes, logged in that feature's folder; only the hunks that removed em dashes are listed here.
+
+OLD_SECTION (line 52)
+- Component module (`vUX-component.js`), for building your own reusable components from your own markup [em dash] template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
+NEW_SECTION (line 52)
+- Component module (`vUX-component.js`), for building your own reusable components from your own markup: template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 56)
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface [em dash] rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images [em dash] with selection, move/resize, undo/redo, pan/zoom and PNG export
+NEW_SECTION (line 56)
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface: rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images, with selection, move/resize, undo/redo, pan/zoom and PNG export
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

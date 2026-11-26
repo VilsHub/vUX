@@ -1,0 +1,50 @@
+OLD_SECTION (line 3)
+A runnable demo of `vUX-component.js` [em dash] your own reusable component, built from your own markup. See the [Component guide](../../doc/component.md) for the full API.
+NEW_SECTION (line 3)
+A runnable demo of `vUX-component.js`: your own reusable component, built from your own markup. See the [Component guide](../../doc/component.md) for the full API.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 23)
+| 03 · Keyed lists | `sync()` moving surviving rows instead of rebuilding them [em dash] and a "rebuild" button that shows what you lose without keys |
+NEW_SECTION (line 23)
+| 03 · Keyed lists | `sync()` moving surviving rows instead of rebuilding them, and a "rebuild" button that shows what you lose without keys |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 30)
+- **The constructor takes an element, not a name.** `new Component($$.ss("#userCardTpl"))`. Because there is no registry to look a component up in, there are no name collisions and no module-level state [em dash] and section 02 can point a *second* `Component` at the same template without conflict.
+- **Bindings are field names, never expressions.** `data-v-field="name"`, `data-v-show="verified"`, `data-v-class="muted:inactive"`. Anything computed [em dash] uppercasing the role, clamping the bio to 90 characters, deriving the avatar letter from the name [em dash] is ordinary JavaScript in `config.formatters` or in the page's own handler.
+NEW_SECTION (line 30)
+- **The constructor takes an element, not a name.** `new Component($$.ss("#userCardTpl"))`. Because there is no registry to look a component up in, there are no name collisions and no module-level state, and section 02 can point a *second* `Component` at the same template without conflict.
+- **Bindings are field names, never expressions.** `data-v-field="name"`, `data-v-show="verified"`, `data-v-class="muted:inactive"`. Anything computed (uppercasing the role, clamping the bio to 90 characters, deriving the avatar letter from the name) is ordinary JavaScript in `config.formatters` or in the page's own handler.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+- **Keys buy you node identity.** Type into a row in section 03, then sort. The row moves and your text moves with it, because `sync()` re-appends the surviving node rather than building a new one. Press **rebuild (unkeyed)** and the same sort loses your typing [em dash] that contrast is the reason `config.key` exists.
+NEW_SECTION (line 33)
+- **Keys buy you node identity.** Type into a row in section 03, then sort. The row moves and your text moves with it, because `sync()` re-appends the surviving node rather than building a new one. Press **rebuild (unkeyed)** and the same sort loses your typing: that contrast is the reason `config.key` exists.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 44)
+    // NOT cards.length [em dash] onMount fires from inside mount(), before the caller
+NEW_SECTION (line 44)
+    // NOT cards.length: onMount fires from inside mount(), before the caller
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 59)
+One `Component` syncs one container. The reconcile owns every child of that container, so pointing the same component at a second container throws rather than letting two lists quietly delete each other's rows. Use a second `Component` over the same template [em dash] as section 02 does [em dash] when you want a second list.
+NEW_SECTION (line 59)
+One `Component` syncs one container. The reconcile owns every child of that container, so pointing the same component at a second container throws rather than letting two lists quietly delete each other's rows. Use a second `Component` over the same template (as section 02 does) when you want a second list.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 63)
+Nothing is exported to `window`; open `main.js` alongside the page instead [em dash] it is commented for exactly that. As across all of vUX, `.config` properties are **write-only**: `card.config.key` reads back as `undefined`. Read an instance's state with `instance.data`, which returns a copy.
+NEW_SECTION (line 63)
+Nothing is exported to `window`; open `main.js` alongside the page instead: it is commented for exactly that. As across all of vUX, `.config` properties are **write-only**: `card.config.key` reads back as `undefined`. Read an instance's state with `instance.data`, which returns a copy.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -1,0 +1,41 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Expand the blur overlay section
+NEW_SECTION (line 7)
+CHANGE 1: Expand the blur overlay section
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+- **`pageContainer` must wrap your page content but not the modal content**, or the dialog blurs along with the page. Keep your modal markup outside it [em dash] the overlay itself is appended to `<body>`, so it is never affected.
+NEW_SECTION (line 18)
+- **`pageContainer` must wrap your page content but not the modal content**, or the dialog blurs along with the page. Keep your modal markup outside it: the overlay itself is appended to `<body>`, so it is never affected.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 21)
+With stacking, the blur is held for as long as any open layer wants it and is lifted only when no remaining layer targets that container [em dash] so opening and closing a nested modal never flickers the blur off and on.
+NEW_SECTION (line 21)
+With stacking, the blur is held for as long as any open layer wants it and is lifted only when no remaining layer targets that container, so opening and closing a nested modal never flickers the blur off and on.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 45)
+CHANGE 2 [em dash] Update the example pointer
+NEW_SECTION (line 45)
+CHANGE 2: Update the example pointer
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 49)
+See [`examples/modal/`](../examples/modal/) [em dash] all four effects, stacked modals, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+NEW_SECTION (line 49)
+See [`examples/modal/`](../examples/modal/): all four effects, stacked modals, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 52)
+See [`examples/modal/`](../examples/modal/) [em dash] seven modals covering all four effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+NEW_SECTION (line 52)
+See [`examples/modal/`](../examples/modal/): seven modals covering all four effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

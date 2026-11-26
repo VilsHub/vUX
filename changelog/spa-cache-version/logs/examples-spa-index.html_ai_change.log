@@ -55,7 +55,7 @@ NEW_SECTION
     <div class="wrap">
         <h2><span class="num">02</span>Shipping a new release</h2>
         <p class="lede">
-            Everything the engine fetches stays in <code>sessionStorage</code> — and that survives a
+            Everything the engine fetches stays in <code>sessionStorage</code>, and that survives a
             reload, even a hard one. <code>config.cacheVersion</code> ties the cache to a release: when
             the value changes, the engine empties its cache and the next navigation fetches fresh.
             This page reads it from <code>/version.json</code> before <code>initialize()</code>.
@@ -66,11 +66,11 @@ NEW_SECTION
                     <div class="panel-h"><span>try it</span></div>
                     <div class="panel-b">
                         <ol class="steps">
-                            <li>Click <b>User 7</b> — fetched, so the progress bar shows.</li>
-                            <li>Click it again from another route — served from cache, no bar.</li>
+                            <li>Click <b>User 7</b>: fetched, so the progress bar shows.</li>
+                            <li>Click it again from another route: served from cache, no bar.</li>
                             <li>Ship a release: type a new version below and set it, or edit
                                 <code>examples/spa/version.json</code> on disk and press <b>Check</b>.</li>
-                            <li>Click <b>User 7</b> — the bar is back: the cache was emptied.</li>
+                            <li>Click <b>User 7</b>, the bar is back: the cache was emptied.</li>
                         </ol>
                     </div>
                 </div>
@@ -102,8 +102,8 @@ NEW_SECTION
                         </table>
                         <p class="note" style="margin-top:12px">
                             <code>vuxSpaLoads</code> is this page's own key: <code>clearCache()</code>
-                            empties only the engine's four, so app state — like auth in
-                            <code>userProperties</code> — survives a release.
+                            empties only the engine's four, so app state: like auth in
+                            <code>userProperties</code>: survives a release.
                         </p>
                     </div>
                 </div>
@@ -138,7 +138,7 @@ OLD_SECTION
             <button data-bad="badClass">classes = { nope: "x" }</button>
             <button data-bad="badNode">new SPAEngine("#contentBoundary")</button>
         </div>
-        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
     </div>
 
 NEW_SECTION
@@ -147,7 +147,7 @@ NEW_SECTION
             <button data-bad="badNode">new SPAEngine("#contentBoundary")</button>
             <button data-bad="badVersion">cacheVersion = ""</button>
         </div>
-        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
     </div>
 
 REASON

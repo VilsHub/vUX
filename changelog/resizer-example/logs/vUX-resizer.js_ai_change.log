@@ -4,7 +4,7 @@ DATE: 2026-08-27
 PRIOR STATE: as left by feature 'resizer-fixes'
 
 ================================================================================
-CHANGE 1 — Replace a generated handle stylesheet instead of appending another
+CHANGE 1: Replace a generated handle stylesheet instead of appending another
 ================================================================================
 
 OLD_SECTION
@@ -30,7 +30,7 @@ NEW_SECTION
         }
 
 REASON
-Found by building the example, not by reading the module — the playground rebuilds its
+Found by building the example, not by reading the module: the playground rebuilds its
 Resizer on every control change, which made the accumulation obvious within a dozen
 clicks.
 
@@ -43,7 +43,7 @@ control panel over a Resizer accumulates one dead node per axis per change.
 
 Removing the same-data-id element first keeps <head> at one stylesheet per axis. It
 does not alter the resolution order between two Resizers configured with different
-styles — that was already last-writer-wins, since both generate rules against the same
+styles: that was already last-writer-wins, since both generate rules against the same
 global `.resizeHandle.x` / `.resizeHandle.y` selectors. The example's README states
 that limitation and gives the workaround (a distinct handle class per instance via
 config.myResizeHandler) rather than pretending it is solved.

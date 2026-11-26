@@ -4,7 +4,7 @@ DATE: 2026-08-27
 PRIOR STATE: as left by feature 'auto-writer-docs'
 
 ================================================================================
-CHANGE 1 — Add Resizer to the guides table
+CHANGE 1: Add Resizer to the guides table
 ================================================================================
 
 OLD_SECTION
@@ -19,7 +19,7 @@ The index is the entry point to the documentation set; a guide not listed here i
 guide nobody finds.
 
 ================================================================================
-CHANGE 2 — Drop Resizer from the "coming next" list
+CHANGE 2: Drop Resizer from the "coming next" list
 ================================================================================
 
 OLD_SECTION
@@ -33,15 +33,15 @@ Resizer is no longer pending. Leaving it in both lists would contradict the tabl
 directly above it.
 
 ================================================================================
-CHANGE 3 — Add the example to "Other references"
+CHANGE 3: Add the example to "Other references"
 ================================================================================
 
 OLD_SECTION
-- [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
 
 NEW_SECTION
-- [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
-- [Resizer example](../examples/resizer/README.md) — runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md): runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
 
 REASON
 Every other module with both a guide and an example is listed in both places, and the

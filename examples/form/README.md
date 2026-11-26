@@ -17,7 +17,7 @@ Then open <http://localhost:8000/examples/form/index.html>.
 
 | Section | Shows |
 |---|---|
-| Hero | a select, a switch and a radio group — built by the same `autoBuild()` calls as the rest of the page |
+| Hero | a select, a switch and a radio group: built by the same `autoBuild()` calls as the rest of the page |
 | 01 All six builders | every widget, in four panels |
 | 02 Two attribute conventions | full attribute name vs `dataset` name, and rebuilding content added later |
 | 03 Native change log | one delegated listener proving the native input holds the state |
@@ -38,18 +38,18 @@ Then open <http://localhost:8000/examples/form/index.html>.
 
 ## What it demonstrates
 
-- **The native input stays the source of truth.** The "native change log" at the bottom uses one delegated `change` listener — every entry is fired by a *hidden native* input, so each line proves a widget wrote its state through.
-- **The date picker writes attributes, not events** — the two `value: … | complete: …` state lines are driven by a `MutationObserver` watching the native input's `value` and `data-complete` (the configured `validationAttribute`) attributes.
-- **Leap years** — open the date-of-birth picker and pick February 2024: it has 29 days.
-- **Dynamic content** — "Add option + refreshSelect()" mutates the native select and rebuilds one widget; "Inject a new switch + refresh()" inserts brand-new checkbox markup and converts it.
-- **The two attribute conventions** — the select and date picker take full attribute names (`sizeAttribute: "data-size"`), while the slide switch and file input take `dataset` names without the prefix (`dataAttributeNames: { size: "dim" }`).
-- **The slide-switch markup rule** — each switch checkbox is the last element child of its own wrapper `DIV`, with the text label outside it.
-- Glyphs supplied entirely through config `content` (the checkbox check mark, the calendar and folder icons, the search icon) — no icon font needed.
+- **The native input stays the source of truth.** The "native change log" at the bottom uses one delegated `change` listener: every entry is fired by a *hidden native* input, so each line proves a widget wrote its state through.
+- **The date picker writes attributes, not events**: the two `value: … | complete: …` state lines are driven by a `MutationObserver` watching the native input's `value` and `data-complete` (the configured `validationAttribute`) attributes.
+- **Leap years**, open the date-of-birth picker and pick February 2024: it has 29 days.
+- **Dynamic content**: "Add option + refreshSelect()" mutates the native select and rebuilds one widget; "Inject a new switch + refresh()" inserts brand-new checkbox markup and converts it.
+- **The two attribute conventions**: the select and date picker take full attribute names (`sizeAttribute: "data-size"`), while the slide switch and file input take `dataset` names without the prefix (`dataAttributeNames: { size: "dim" }`).
+- **The slide-switch markup rule**: each switch checkbox is the last element child of its own wrapper `DIV`, with the text label outside it.
+- Glyphs supplied entirely through config `content` (the checkbox check mark, the calendar and folder icons, the search icon): no icon font needed.
 
-- **Bad input fails immediately** — section 04 performs each bad call and prints what was thrown.
+- **Bad input fails immediately**: section 04 performs each bad call and prints what was thrown.
 
 All six builders are exposed on `window.demoForm` for the console, e.g. `demoForm.select.refresh()`.
 
 ## Styling
 
-The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). The **widgets themselves** are styled through builder config instead, because the component generates their stylesheets: `main.js` keeps the page's palette in one `T` object and interpolates it into the config strings, so the widget colours and the page stylesheet cannot drift apart. That is the pattern to copy — the component ships structure, the consuming page supplies the look.
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). The **widgets themselves** are styled through builder config instead, because the component generates their stylesheets: `main.js` keeps the page's palette in one `T` object and interpolates it into the config strings, so the widget colours and the page stylesheet cannot drift apart. That is the pattern to copy: the component ships structure, the consuming page supplies the look.

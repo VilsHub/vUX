@@ -1,0 +1,404 @@
+OLD_SECTION (line 24)
+
+NEW_SECTION (line 24)
+    //errorCallback: told when a route's content cannot be loaded. shownPath: the path of the content
+    //on screen, to tell whether a history entry the engine has no state for belongs to another page.
+    var errorCallback=null, shownPath=null, clickCallbackTimer=null;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 113)
+
+NEW_SECTION (line 113)
+        shownPath = null;
+        clearTimeout(clickCallbackTimer);
+        clickCallbackTimer = null;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 212)
+            if(e.state != null){
+NEW_SECTION (line 212)
+            let parsedData = readEngineState(e.state);
+
+            //An entry the engine cannot restore. With no state at all (one the browser made for a
+            //#fragment link, or one made before the engine booted), the page on screen is left as it
+            //is, including a click callback still due (a #fragment change right after a navigation
+            //must not cancel it), and another page is loaded from the server, since the content
+            //shown would no longer match the address. An engine entry whose route is no longer
+            //configured (an older release) is loaded from the server too. Another script's state
+            //is left to that script.
+            if (parsedData == null){
+                let stale = isEngineShaped(e.state);
+                if (stale || (e.state == null && shownPath != null && location.pathname != shownPath)){
+                    clearTimeout(clickCallbackTimer);
+                    clickCallbackTimer = null;
+                    location.reload();
+                }
+                return;
+            }
+
+            //One of the engine's own entries replaces the content: the click callback of the page
+            //being left must not run against it
+            clearTimeout(clickCallbackTimer);
+            clickCallbackTimer = null;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 236)
+                let parsedData          = JSON.parse(e.state);
+NEW_SECTION (line 236)
+            {
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 240)
+                let ele                 = parsedData.elementId; //Element must have an ID
+NEW_SECTION (line 240)
+                let ele                 = parsedData.elementId; //the link that made the entry, by id
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 246)
+
+NEW_SECTION (line 246)
+                let historyCallbacks    = routeConfigs.routes[routeName].historyCallbacks;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 248)
+                if(ele != null){
+NEW_SECTION (line 248)
+                //The link may be gone: it can sit in content another route has since replaced, or
+                //have had no id. The entry is then restored as one with no originating link.
+                if (ele != null && ele !== "") element = document.getElementById(ele);
+
+                if(element != null){
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 253)
+                    element             = $$.ss("#"+ele);
+NEW_SECTION (line 253)
+
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 259)
+                        contentNode     = $$.ss("#"+contentNodeId);
+NEW_SECTION (line 259)
+                        let namedNode   = document.getElementById(contentNodeId);
+                        if (namedNode != null) contentNode = namedNode;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 265)
+                        if (routeConfigs.routes[routeName].historyCallbacks[callbackKey] != undefined){
+                            usedHistoryCallback = routeConfigs.routes[routeName].historyCallbacks[callbackKey];
+NEW_SECTION (line 265)
+                        if (historyCallbacks != undefined && historyCallbacks[callbackKey] != undefined){
+                            usedHistoryCallback = historyCallbacks[callbackKey];
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 272)
+                }else if(routeConfigs.routes[routeName].historyCallbacks != undefined){
+                    if(routeConfigs.routes[routeName].historyCallbacks["default"] != undefined){
+                        usedHistoryCallback = routeConfigs.routes[routeName].historyCallbacks["default"];
+                    }
+NEW_SECTION (line 272)
+                }else if(historyCallbacks != undefined && historyCallbacks["default"] != undefined){
+                    usedHistoryCallback = historyCallbacks["default"];
+                }
+
+                if (contentNode == null){
+                    //no node to restore into (no default content node, and the link that named one is gone)
+                    location.reload();
+                    return;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 297)
+
+NEW_SECTION (line 297)
+                    shownPath = location.pathname;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 333)
+        //a pushed entry starts with the position the new route opened at (the app has placed it by
+        //now), so it has one to return to even if the visitor never scrolls on it
+NEW_SECTION (line 333)
+        //a pushed entry starts with the position the page is at when the new content is mounted, so
+        //it has one to return to even if the visitor never scrolls on it. The click callback runs
+        //200ms later; if it moves the page, the position is recorded again after it (see afterClickLoad)
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 346)
+
+NEW_SECTION (line 346)
+        shownPath = location.pathname;
+    }
+
+    function readEngineState(state){
+        //The engine's own data in a history entry, or null for an entry it did not write (no state,
+        //another script's state, or a route that is no longer configured)
+        if (typeof state != "string") return null;
+        try {
+            let data = JSON.parse(state);
+            if (data == null || data.routeProperties == undefined || data.contents == undefined) return null;
+            if (routeConfigs.routes[data.routeProperties.name] == undefined) return null;
+            return data;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function isEngineShaped(state){
+        //Written by the engine (by its shape), whatever route it names
+        if (typeof state != "string") return false;
+        try {
+            let data = JSON.parse(state);
+            return data != null && data.routeProperties != undefined && data.contents != undefined;
+        } catch (error) {
+            return false;
+        }
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 437)
+
+NEW_SECTION (line 437)
+    function afterClickLoad(callback, element, routeName, callbackKey, data){
+        //Runs the click callback 200ms after the content is mounted, then records the position again
+        //in case the callback moved the page (to the top, or to a #section)
+        //A newer navigation, Back/Forward or destroy() cancels it (see beginNavigation, the popstate
+        //handler and destroy), so a page that was left does not run its callback or write a position
+        clearTimeout(clickCallbackTimer);
+        clickCallbackTimer = setTimeout(function(){
+            clickCallbackTimer = null;
+            if (callback != null) callback(element, routeName, callbackKey, data);
+            if (restoreScroll) rememberScroll();
+        }, 200);
+    }
+
+    function reportLoadError(element, routeName, message, error=null){
+        //A route's content could not be loaded. The app hears about it through config.errorCallback
+        //(for example to fall back to a full page load); without one it is logged, with the
+        //original Error when there is one, so its stack is kept.
+        if (errorCallback != null) errorCallback(element, routeName, message);
+        else console.error(error != null ? error : message);
+    }
+
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 469)
+
+NEW_SECTION (line 469)
+        //the navigation this request belongs to; a newer one (a click, Back/Forward) supersedes it
+        var requestToken = navigationToken;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 528)
+                            // Pass: element, routeid, callbackKey
+                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeData)}, 200): null;
+
+NEW_SECTION (line 528)
+
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 531)
+
+NEW_SECTION (line 531)
+                            //the title changes with the content, not before it arrives
+                            setPageTitle(element);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 534)
+
+NEW_SECTION (line 534)
+
+                            // Pass: element, routeid, callbackKey
+                            afterClickLoad(usedloadCallBack, element, routeName, callbackKey, routeData);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 543)
+                     usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
+NEW_SECTION (line 543)
+                     afterClickLoad(usedloadCallBack, element, routeName, callbackKey, routeData);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 550)
+        //Reported in the console, as a failed page or section fetch is; a blocking alert is no way to
+NEW_SECTION (line 550)
+        //Reported to config.errorCallback, or the console without one; a blocking alert is no way to
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 552)
+        //no response at all (offline, DNS, aborted) never fires "load", so those end here too.
+NEW_SECTION (line 552)
+        //no response at all (offline, DNS, aborted) never fires "load", so those end here too. A
+        //request a newer navigation has superseded is only noted in the console: reporting it would
+        //invite a fallback (a full load of the failed link) away from the page the visitor chose.
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 556)
+            console.error(message);
+NEW_SECTION (line 556)
+            //released first, so the error callback can retry the link (and a callback that throws
+            //does not leave the link dead)
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 563)
+
+NEW_SECTION (line 563)
+            if (requestToken == navigationToken) reportLoadError(element, routeName, message);
+            else console.warn(message + " (a newer navigation had already replaced this request)");
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 692)
+        //A newer navigation supersedes every fragment still waiting on its stylesheets
+NEW_SECTION (line 692)
+        //A newer navigation supersedes every fragment still waiting on its stylesheets, and the
+        //click callback of the one before it
+        clearTimeout(clickCallbackTimer);
+        clickCallbackTimer = null;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 799)
+
+NEW_SECTION (line 799)
+        //A boot failure is reported once, after the chain below, so an error callback that throws is
+        //not caught and reported to itself a second time
+        var bootFailure = null;
+
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 808)
+
+NEW_SECTION (line 808)
+            if (!data.status) bootFailure = {message: "The content of the route '"+routeProperties.name+"' could not be loaded from "+routeProperties.properties.target, error: null};
+
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 812)
+                if (!mounted || contentStage == null) return;
+NEW_SECTION (line 812)
+                if (!mounted || contentStage == null) return false;
+                shownPath = location.pathname;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 820)
+
+                if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
+                scrollToSaved(savedScroll);
+NEW_SECTION (line 820)
+                return true;
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 823)
+
+NEW_SECTION (line 823)
+            //A failed load is reported, not rethrown: a rejected promise here would only surface as
+            //an unhandled rejection, and the page shell stays usable
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 826)
+            throw error;
+NEW_SECTION (line 826)
+            bootFailure = {message: error && error.message ? error.message : String(error), error: error};
+            return false;
+        }).then(function(booted){
+            //Outside the catch above, so an exception in the app's error or boot callback surfaces as
+            //the app's own error, not as a load failure
+            if (bootFailure != null){
+                reportLoadError(null, routeProperties != null ? routeProperties.name : null, bootFailure.message, bootFailure.error);
+                return;
+            }
+            if (!booted) return;
+            if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
+            scrollToSaved(savedScroll);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 937)
+
+NEW_SECTION (line 937)
+                            setPageTitle(element);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 941)
+                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, route.data)}, 200): null;
+NEW_SECTION (line 941)
+                            afterClickLoad(usedloadCallBack, element, routeName, callbackKey, route.data);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 955)
+
+NEW_SECTION (line 955)
+                setPageTitle(element);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 962)
+
+NEW_SECTION (line 962)
+            setPageTitle(element);
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 964)
+
+        // Set Page title
+        setPageTitle(element);
+NEW_SECTION (line 964)
+        //A link whose content is fetched or read from the cache sets the title once it is mounted,
+        //so a failed load leaves the title of the page still on screen
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 1014)
+            }else{
+                console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
+NEW_SECTION (line 1014)
+
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 1016)
+
+NEW_SECTION (line 1016)
+            //a failed response is reported by the caller (the boot sequence), not here
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.
+
+OLD_SECTION (line 1393)
+
+NEW_SECTION (line 1393)
+        errorCallback: {
+            set: function(value) {
+                validateFunction(value, "config.errorCallback property value must be a function");
+                errorCallback = value;
+            }
+        },
+REASON
+History and error handling fixes found while building the vUX docs site on SPAEngine, plus two rounds of features-validator follow-ups: popstate no longer reads a missing originating link (Back threw); a stateless entry of another page, or an engine entry naming a route no longer configured, reloads the page, while another script's state is left alone and a stateless same-page entry keeps a click callback still due; the title is set when the content is mounted; config.errorCallback (link released before it runs, only the navigation still under way reported, original Error logged without it, boot failures reported once outside the guarded chain, bootCallback exceptions kept out of it); the scroll position is recorded again after the click callback, whose timer (now used by the loadIntoNode=false branch too) a newer navigation, an engine history entry or destroy() cancels.

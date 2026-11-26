@@ -1,0 +1,62 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] v4.0.0-beta Added
+NEW_SECTION (line 7)
+CHANGE 1: v4.0.0-beta Added
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+- ModalDisplayer "slide" effect [em dash] the modal slides down from above the viewport into place and slides back up on close; set `config.effect = "slide"`
+NEW_SECTION (line 14)
+- ModalDisplayer "slide" effect: the modal slides down from above the viewport into place and slides back up on close; set `config.effect = "slide"`
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 20)
+CHANGE 2 [em dash] v4.0.0-beta Added
+NEW_SECTION (line 20)
+CHANGE 2: v4.0.0-beta Added
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 27)
+- ModalDisplayer "slideLeft" and "slideRight" effects [em dash] the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right and docks right, slideRight enters from the left and docks left
+NEW_SECTION (line 27)
+- ModalDisplayer "slideLeft" and "slideRight" effects: the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right and docks right, slideRight enters from the left and docks left
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+CHANGE 3 [em dash] rename in the unreleased bullet
+NEW_SECTION (line 33)
+CHANGE 3: rename in the unreleased bullet
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 37)
+- ModalDisplayer "slide" effect [em dash] the modal slides down from above the viewport into place and slides back up on close; set `config.effect = "slide"`
+NEW_SECTION (line 37)
+- ModalDisplayer "slide" effect: the modal slides down from above the viewport into place and slides back up on close; set `config.effect = "slide"`
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 40)
+- ModalDisplayer "drop" effect [em dash] the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
+NEW_SECTION (line 40)
+- ModalDisplayer "drop" effect: the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 46)
+CHANGE 4 [em dash] exit direction in the unreleased bullet
+NEW_SECTION (line 46)
+CHANGE 4: exit direction in the unreleased bullet
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 59)
+CHANGE 5 [em dash] exit direction in the unreleased bullet
+NEW_SECTION (line 59)
+CHANGE 5: exit direction in the unreleased bullet
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

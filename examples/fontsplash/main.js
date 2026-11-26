@@ -1,5 +1,5 @@
 /* ============================================================================
-   vUX FontSplash example — the loader is a word.
+   vUX FontSplash example: the loader is a word.
 
    Importing any vUX-*.js module boots the whole core, so $$ and the validateX
    helpers are globals by the time this file's body runs.

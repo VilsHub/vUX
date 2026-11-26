@@ -1,0 +1,62 @@
+OLD_SECTION (line 9)
+
+NEW_SECTION (line 9)
+- SPAEngine `config.errorCallback(element, routeName, message)`: told when a route's content cannot be loaded (a failed link fetch, or the entry route at boot), for example to fall back to a full page load; the link is released before it runs, so the callback can retry it; only the navigation still under way is reported (a superseded request is a console warning); and an exception in `bootCallback` or in the callback itself is not reported as a load failure
+- SPA example "Broken link": a route whose fragment is missing, showing `config.errorCallback`; the example's server answers 404 for a missing fragment instead of the app shell
+REASON
+Release-facing record: errorCallback and the SPA example Broken link under Added, five SPAEngine fixes under Fixed. (This file also carries the em-dash-cleanup and readme-react-count-fix changes, logged in their folders.)
+
+OLD_SECTION (line 13)
+
+NEW_SECTION (line 13)
+## Fixed
+- SPAEngine Back and Forward no longer throw when the link that made the history entry is gone (it sat in content another route replaced) or had no id; the entry is restored as one with no originating link
+- SPAEngine Back or Forward onto a history entry it holds no content for, belonging to another page and carrying no state (a `#section` entry, or one made before the engine booted), loads that page instead of leaving the old content under the new address; an entry carrying another script's own state is left to that script
+- SPAEngine sets the page title when a link's content is mounted rather than on click, so a failed load no longer leaves the title of a page that never arrived
+- SPAEngine no longer turns a failed entry-route load at boot into an unhandled promise rejection; it is reported through `config.errorCallback` or the console
+- SPAEngine records the scroll position again after a link's click callback runs, so a callback that moves the page (to the top, or to a section) is what Back returns to
+- README "vUX and React" summary counts 11 features as not required, matching its table (it said 14)
+
+REASON
+Release-facing record: errorCallback and the SPA example Broken link under Added, five SPAEngine fixes under Fixed. (This file also carries the em-dash-cleanup and readme-react-count-fix changes, logged in their folders.)
+
+OLD_SECTION (line 22)
+
+NEW_SECTION (line 22)
+- The guides, example pages, README, ChangeLog and change logs no longer use em dashes; each one is rewritten as a colon, comma, parentheses or a hyphen for an empty value
+REASON
+Release-facing record: errorCallback and the SPA example Broken link under Added, five SPAEngine fixes under Fixed. (This file also carries the em-dash-cleanup and readme-react-count-fix changes, logged in their folders.)
+
+OLD_SECTION (line 56)
+- Resizer.destroy() [em dash] removes the module's listeners and any resize handlers it injected, and releases a drag in progress
+- Runnable Resizer example (examples/resizer/) [em dash] both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
+- Resizer guide (doc/resizer.md) [em dash] the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
+- destroy() on every component [em dash] AutoWriter, Carousel, DOMDrawer, FormValidator, ListScroller, ModalDisplayer, ProgressIndicator, SPAEngine, TimeLineList, ToolTip and TouchHandler, plus each of the six FormComponents widgets [em dash] detaching the listeners, timers and animations the component started and removing the DOM it injected, so a component can be torn down without leaving anything bound to the page
+NEW_SECTION (line 56)
+- Resizer.destroy(): removes the module's listeners and any resize handlers it injected, and releases a drag in progress
+- Runnable Resizer example (examples/resizer/): both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
+- Resizer guide (doc/resizer.md): the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
+- destroy() on every component: AutoWriter, Carousel, DOMDrawer, FormValidator, ListScroller, ModalDisplayer, ProgressIndicator, SPAEngine, TimeLineList, ToolTip and TouchHandler, plus each of the six FormComponents widgets, detaching the listeners, timers and animations the component started and removing the DOM it injected, so a component can be torn down without leaving anything bound to the page
+REASON
+Release-facing record: errorCallback and the SPA example Broken link under Added, five SPAEngine fixes under Fixed. (This file also carries the em-dash-cleanup and readme-react-count-fix changes, logged in their folders.)
+
+OLD_SECTION (line 98)
+- SPAEngine `config.cacheVersion` [em dash] ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
+- SPAEngine `clearCache()` [em dash] empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/) [em dash] boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property [em dash] the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+NEW_SECTION (line 98)
+- SPAEngine `config.cacheVersion`, ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
+- SPAEngine `clearCache()`: empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/): boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property: the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+REASON
+Release-facing record: errorCallback and the SPA example Broken link under Added, five SPAEngine fixes under Fixed. (This file also carries the em-dash-cleanup and readme-react-count-fix changes, logged in their folders.)
+
+OLD_SECTION (## v4.1.0 / ## Fixed)
+(no bullets for the stale-route reload or the click-callback cancellation)
+NEW_SECTION
+- SPAEngine Back or Forward onto one of its own history entries whose route is no longer configured (written by an older release) loads the page from the server instead of changing only the address
+- SPAEngine cancels a link's pending click callback when a newer navigation, one of its own history entries or `destroy()` comes within its 200ms (the `loadIntoNode` off case included), and keeps it across a `#section` change made right after the navigation
+REASON
+Two consumer-visible behaviours from the validator follow-ups had no release-facing bullet (vUX guide: one bullet per distinct change).

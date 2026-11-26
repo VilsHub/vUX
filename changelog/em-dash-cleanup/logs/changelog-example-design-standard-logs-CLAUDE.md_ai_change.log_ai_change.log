@@ -1,0 +1,36 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Add a required standard for module example pages
+NEW_SECTION (line 7)
+CHANGE 1: Add a required standard for module example pages
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 24)
+Every module gets a runnable example under `examples/<module>/` [em dash] `index.html`, `main.js`, `README.md` [em dash] served from the repository root with `data-id="vUX"` and `data-library-root="../../"`.
+NEW_SECTION (line 24)
+Every module gets a runnable example under `examples/<module>/`: `index.html`, `main.js`, `README.md`: served from the repository root with `data-id="vUX"` and `data-library-root="../../"`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 38)
+(19 lines added [em dash] see the file for the full text)
+NEW_SECTION (line 38)
+(19 lines added: see the file for the full text)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 54)
+bullets are the concrete, checkable parts [em dash] a look, a lead, interactivity, failure modes,
+offline, responsive, commented JS [em dash] so the rule is actionable rather than a matter of
+NEW_SECTION (line 54)
+bullets are the concrete, checkable parts: a look, a lead, interactivity, failure modes,
+offline, responsive, commented JS, so the rule is actionable rather than a matter of
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 62)
+why they are plainer [em dash] they demonstrate structural behaviour, not a visual effect [em dash] so
+NEW_SECTION (line 62)
+why they are plainer (they demonstrate structural behaviour, not a visual effect) so
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

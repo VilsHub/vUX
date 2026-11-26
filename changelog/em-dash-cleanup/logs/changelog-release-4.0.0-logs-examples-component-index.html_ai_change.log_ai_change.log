@@ -1,0 +1,13 @@
+OLD_SECTION (line 2)
+            <code>destroy()</code> in <code>onDestroy</code> [em dash] hover a chip to see it. Before v4.0.0-beta
+NEW_SECTION (line 2)
+            <code>destroy()</code> in <code>onDestroy</code>: hover a chip to see it. Before v4.0.0-beta
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 4)
+            <code>destroy()</code> in <code>onDestroy</code> [em dash] hover a chip to see it. Before v4.0.0
+NEW_SECTION (line 4)
+            <code>destroy()</code> in <code>onDestroy</code>: hover a chip to see it. Before v4.0.0
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

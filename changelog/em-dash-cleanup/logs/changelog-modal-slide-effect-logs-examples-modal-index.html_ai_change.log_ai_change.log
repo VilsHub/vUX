@@ -1,0 +1,29 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] effect select
+NEW_SECTION (line 7)
+CHANGE 1: effect select
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 21)
+CHANGE 2 [em dash] docked options
+NEW_SECTION (line 21)
+CHANGE 2: docked options
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 29)
+                            <option value="slideLeft">slideLeft [em dash] docks right</option>
+                            <option value="slideRight">slideRight [em dash] docks left</option>
+NEW_SECTION (line 29)
+                            <option value="slideLeft">slideLeft: docks right</option>
+                            <option value="slideRight">slideRight: docks left</option>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 36)
+CHANGE 3 [em dash] rename
+NEW_SECTION (line 36)
+CHANGE 3: rename
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

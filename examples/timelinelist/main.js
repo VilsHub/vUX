@@ -1,5 +1,5 @@
 /*
- * vUX TimeLineList — runnable example.
+ * vUX TimeLineList: runnable example.
  *
  * Every timeline here follows the same three steps: new TimeLineList(), set .config, autoBuild().
  * config.className picks the lists; config.dataAttributes names the attributes each list carries
@@ -115,7 +115,7 @@ function rebuild() {
         destroyed = false;
         window.playTimeline = playTimeline;
         $("#roInst").textContent = "#" + (++instanceNo);
-        setStatus("run", "built — styles read from the list's attributes");
+        setStatus("run", "built: styles read from the list's attributes");
     } catch (error) {
         setStatus("err", error.message);
     }
@@ -186,7 +186,7 @@ $("#destroy").addEventListener("click", () => {
     playTimeline.destroy();
     destroyed = true;
     ui.playLabel.textContent = "destroyed";
-    setStatus("", "destroyed — the list is back to plain markup; Rebuild makes a new instance");
+    setStatus("", "destroyed: the list is back to plain markup; Rebuild makes a new instance");
     readout();
 });
 
@@ -251,7 +251,7 @@ $("#append").addEventListener("click", () => {
 feedCount();
 
 /* ------------------------------------------------------------------ *
- * 4. Bad input — every button throws on purpose
+ * 4. Bad input: every button throws on purpose
  * ------------------------------------------------------------------ */
 
 const BAD = {

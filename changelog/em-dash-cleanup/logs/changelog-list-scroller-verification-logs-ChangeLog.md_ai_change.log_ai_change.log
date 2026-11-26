@@ -1,0 +1,22 @@
+OLD_SECTION (line 6)
+CHANGE 1 [em dash] ListScroller bullets under v4.0.0-beta Added, Fixed and Changed
+NEW_SECTION (line 6)
+CHANGE 1: ListScroller bullets under v4.0.0-beta Added, Fixed and Changed
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 17)
+> - ListScroller guide (doc/list-scroller.md) [em dash] the container, list and button contract, every config property, the markup it produces, limits and the error list
+> - Runnable ListScroller example (examples/listscroller/) [em dash] a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
+NEW_SECTION (line 17)
+> - ListScroller guide (doc/list-scroller.md): the container, list and button contract, every config property, the markup it produces, limits and the error list
+> - Runnable ListScroller example (examples/listscroller/): a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 43)
+CHANGE 2 [em dash] follow-up: datePicker one scroller per picker
+NEW_SECTION (line 43)
+CHANGE 2, follow-up: datePicker one scroller per picker
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -4,7 +4,7 @@ DATE: 2026-10-08
 PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
 
 ================================================================================
-CHANGE 1 — modal example link
+CHANGE 1: modal example link
 ================================================================================
 
 OLD_SECTION
@@ -17,7 +17,7 @@ REASON
 Count updated.
 
 ================================================================================
-CHANGE 2 — count
+CHANGE 2: count
 ================================================================================
 
 OLD_SECTION

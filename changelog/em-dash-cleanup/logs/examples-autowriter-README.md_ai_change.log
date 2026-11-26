@@ -1,0 +1,20 @@
+OLD_SECTION (line 28)
+- **The directive syntax carries the choreography.** The "Rewrite" preset types a sentence, pauses, backspaces fourteen characters and finishes differently [em dash] as one string, with no callback chain. Nothing on the page re-renders; characters are appended as text nodes.
+NEW_SECTION (line 28)
+- **The directive syntax carries the choreography.** The "Rewrite" preset types a sentence, pauses, backspaces fourteen characters and finishes differently: as one string, with no callback chain. Nothing on the page re-renders; characters are appended as text nodes.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+- **`deleteText()` targets the same element you typed into.** The button erases five units from the playground stage [em dash] the caret is not one of them.
+NEW_SECTION (line 33)
+- **`deleteText()` targets the same element you typed into.** The button erases five units from the playground stage: the caret is not one of them.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 51)
+Note that `.config` properties are **write-only** across vUX [em dash] `playWriter.config.typingSpeed` reads back as `undefined`. The page keeps its own copy of what it set, which is why the "Equivalent code" panel can show the current settings.
+NEW_SECTION (line 51)
+Note that `.config` properties are **write-only** across vUX: `playWriter.config.typingSpeed` reads back as `undefined`. The page keeps its own copy of what it set, which is why the "Equivalent code" panel can show the current settings.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

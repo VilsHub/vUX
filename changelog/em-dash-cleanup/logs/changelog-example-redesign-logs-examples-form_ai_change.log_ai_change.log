@@ -1,0 +1,43 @@
+OLD_SECTION (line 7)
+index.html [em dash] 156 lines: <fieldset> groups in two .row flex rows, light palette.
+main.js    [em dash] 146 lines: six builders configured with light-theme colour literals
+NEW_SECTION (line 7)
+index.html, 156 lines: <fieldset> groups in two .row flex rows, light palette.
+main.js, 146 lines: six builders configured with light-theme colour literals
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 12)
+index.html [em dash] 269 lines: shared design system plus a hero containing three live widgets,
+NEW_SECTION (line 12)
+index.html, 269 lines: shared design system plus a hero containing three live widgets,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+main.js    [em dash] 205 lines: the same six builders, their colours interpolated from a single
+NEW_SECTION (line 14)
+main.js, 205 lines: the same six builders, their colours interpolated from a single
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 26)
+stylesheets from config strings, so re-theming the page means re-theming those strings [em dash]
+NEW_SECTION (line 26)
+stylesheets from config strings, so re-theming the page means re-theming those strings:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 34)
+    built by the same autoBuild() calls as the rest of the page [em dash] not a screenshot.
+NEW_SECTION (line 34)
+    built by the same autoBuild() calls as the rest of the page, not a screenshot.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 44)
+helpers from src/helpers.js with the exact values the page passes [em dash] 15 assertions, all
+NEW_SECTION (line 44)
+helpers from src/helpers.js with the exact values the page passes: 15 assertions, all
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

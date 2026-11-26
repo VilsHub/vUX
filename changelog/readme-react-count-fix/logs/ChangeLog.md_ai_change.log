@@ -1,0 +1,7 @@
+OLD_SECTION (## v4.1.0)
+(no ## Fixed heading)
+NEW_SECTION
+## Fixed
+- README "vUX and React" summary counts 11 features as not required, matching its table (it said 14)
+REASON
+Release-facing record of the README correction.

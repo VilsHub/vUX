@@ -5,7 +5,7 @@ PRIOR STATE: as left by feature 'resizer-docs'
 
 REASON
 Each widget returned by select(), radio(), checkbox(), datePicker(), slideSwitch() and
-file() registered its own delegated listeners — twenty across the file — and discarded
+file() registered its own delegated listeners (twenty across the file) and discarded
 every handle; select and datePicker additionally bound window scroll/resize and document
 click listeners as anonymous closures. A page that rebuilt its form widgets therefore
 accumulated listeners with no way to shed them.
@@ -16,8 +16,8 @@ body gained a destroy() that detaches everything it registered.
 
 destroy() unbinds; it does not rebuild the page. These builders replace consumer markup in
 place and never retain the original, so there is nothing to restore from. That is the
-right scope for the case this exists to serve — a widget going away with the markup around
-it — and pretending otherwise would mean silently reconstructing an element that is not
+right scope for the case this exists to serve: a widget going away with the markup around
+it, and pretending otherwise would mean silently reconstructing an element that is not
 the one the consumer wrote.
 
 ================================================================================

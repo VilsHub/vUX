@@ -1,0 +1,20 @@
+OLD_SECTION (line 8)
+| [SPA Engine [em dash] setup & routing](spa-engine.md) | ...
+NEW_SECTION (line 8)
+| [SPA Engine: setup & routing](spa-engine.md) | ...
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+| [SPA Engine [em dash] setup & routing](spa-engine.md) | ...
+NEW_SECTION (line 14)
+| [SPA Engine: setup & routing](spa-engine.md) | ...
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 17)
+- [Core example](../examples/core/README.md) [em dash] runnable example of every core utility: ...
+NEW_SECTION (line 17)
+- [Core example](../examples/core/README.md), runnable example of every core utility...
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

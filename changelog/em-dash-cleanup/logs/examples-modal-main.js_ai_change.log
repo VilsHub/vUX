@@ -1,0 +1,34 @@
+OLD_SECTION (line 2)
+ * vUX ModalDisplayer [em dash] runnable example.
+NEW_SECTION (line 2)
+ * vUX ModalDisplayer: runnable example.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 96)
+        //the page content only [em dash] the modal markup sits outside it, so the dialog stays sharp.
+NEW_SECTION (line 96)
+        //the page content only: the modal markup sits outside it, so the dialog stays sharp.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 127)
+<span class="p">modal</span>.initialize();  <span class="c">// required [em dash] nothing works before this</span>`;
+NEW_SECTION (line 127)
+<span class="p">modal</span>.initialize();  <span class="c">// required: nothing works before this</span>`;
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 145)
+ * Validation [em dash] every one of these throws
+NEW_SECTION (line 145)
+ * Validation: every one of these throws
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 165)
+            $("#errOut").textContent = "No error thrown [em dash] that should not happen.";
+NEW_SECTION (line 165)
+            $("#errOut").textContent = "No error thrown: that should not happen.";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

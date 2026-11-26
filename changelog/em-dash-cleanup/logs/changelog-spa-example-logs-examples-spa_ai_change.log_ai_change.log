@@ -1,0 +1,27 @@
+OLD_SECTION (line 1)
+RETROACTIVE LOG [em dash] commits ae28575 and 9dcbc8b, recorded after the fact (the
+NEW_SECTION (line 1)
+RETROACTIVE LOG: commits ae28575 and 9dcbc8b, recorded after the fact (the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 9)
+(none [em dash] the examples/ directory did not exist)
+NEW_SECTION (line 9)
+(none: the examples/ directory did not exist)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 12)
+Commit ae28575 [em dash] runnable SPA example app combining SPAEngine (static + dynamic
+NEW_SECTION (line 12)
+Commit ae28575: runnable SPA example app combining SPAEngine (static + dynamic
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 16)
+Commit 9dcbc8b [em dash] /table page added: mounts a 500-row DataView with sort, filter, a
+NEW_SECTION (line 16)
+Commit 9dcbc8b, /table page added: mounts a 500-row DataView with sort, filter, a
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

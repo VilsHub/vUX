@@ -3,7 +3,7 @@ FEATURE: modal-displayer-verification
 DATE: 2026-08-03
 
 ================================================================================
-CHANGE 1 — Remove dead state variables; add defaultModalWidths
+CHANGE 1: Remove dead state variables; add defaultModalWidths
 ================================================================================
 
 OLD_SECTION
@@ -23,7 +23,7 @@ removed. `defaultModalWidths` is added to hold the responsive default triple so
 that a per-trigger width override can be reverted (see CHANGE 6).
 
 ================================================================================
-CHANGE 2 — Fire openProcessor for the "none" effect
+CHANGE 2: Fire openProcessor for the "none" effect
 ================================================================================
 
 OLD_SECTION
@@ -50,7 +50,7 @@ is made directly after the overlay is shown. Verified by the
 "[none] openProcessor called" check.
 
 ================================================================================
-CHANGE 3 — Rewrite positionVertically(); remove undefined VerticalScroll reference
+CHANGE 3: Rewrite positionVertically(); remove undefined VerticalScroll reference
 ================================================================================
 
 OLD_SECTION
@@ -94,7 +94,7 @@ NEW_SECTION
 
 REASON
 This was the module's most serious defect. `VerticalScroll` is not defined anywhere
-in the library (confirmed by grepping the whole repository — the only occurrence was
+in the library (confirmed by grepping the whole repository: the only occurrence was
 this call site), so every attempt to open a modal within 100px of the viewport
 height threw `ReferenceError: VerticalScroll is not defined`, aborting the open
 half-way and leaving the overlay in a broken state that also broke the next
@@ -115,7 +115,7 @@ removes the crash and preserves the intended layout. Paired with CHANGE 8, which
 makes the overlay scrollable so a pinned tall modal is actually reachable.
 
 ================================================================================
-CHANGE 4 — Extract restoreScrollPosition(); stop forcing smooth scroll on <html>
+CHANGE 4: Extract restoreScrollPosition(); stop forcing smooth scroll on <html>
 ================================================================================
 
 OLD_SECTION
@@ -157,7 +157,7 @@ it was. The logic is extracted into a function because the same restore is now n
 from two call sites (see CHANGE 5).
 
 ================================================================================
-CHANGE 5 — Make the "none" close path consistent with the animated ones
+CHANGE 5: Make the "none" close path consistent with the animated ones
 ================================================================================
 
 OLD_SECTION
@@ -192,7 +192,7 @@ raw `scrollTo` is routed through `restoreScrollPosition()` so both paths handle
 `scroll-behavior` identically. `scrollable = false` drops with its variable.
 
 ================================================================================
-CHANGE 6 — Delegate trigger matching with closest(); reset per-trigger widths
+CHANGE 6: Delegate trigger matching with closest(); reset per-trigger widths
 ================================================================================
 
 OLD_SECTION
@@ -235,8 +235,8 @@ NEW_SECTION
 
 REASON
 Two problems. (a) `e.target.classList.contains(...)` only matched when the user
-clicked the trigger element itself. A trigger containing markup — an icon, a
-`<span>` label, anything nested — delivered the child as `e.target`, so the click was
+clicked the trigger element itself. A trigger containing markup: an icon, a
+`<span>` label, anything nested: delivered the child as `e.target`, so the click was
 ignored. Nested content in triggers and close buttons is ordinary usage, so both
 checks now walk up with `closest()`.
 (b) `modalWidths` was overwritten whenever a trigger carried the widths attribute
@@ -247,7 +247,7 @@ Verified by the "data-widths attribute honoured" and "default widths restored on
 next open" checks.
 
 ================================================================================
-CHANGE 7 — Fix overlay dedupe selector and overlay background application
+CHANGE 7: Fix overlay dedupe selector and overlay background application
 ================================================================================
 
 OLD_SECTION
@@ -281,20 +281,20 @@ NEW_SECTION
 REASON
 Two defects in one block. (a) The guard against building a second overlay searched
 for `style[data-id='vModalStyles']`, but the marker is written onto the overlay
-`<div>`, never onto a `<style>` element — so the guard never matched. A second
+`<div>`, never onto a `<style>` element, so the guard never matched. A second
 `ModalDisplayer` instance on the same page appended a second `.vModal` overlay, and
 from then on the `$$.ss(".vModal")` lookups used throughout the module resolved to
 whichever came first, breaking both instances. The selector now targets the `div`
 that actually carries the marker.
 (b) `overlay["style"] = overlayStyle` assigns to the element's `style` property,
 which is a read-only `CSSStyleDeclaration`; the assignment was silently discarded
-and `config.overlayStyle` had no effect at all — the overlay was always fully
+and `config.overlayStyle` had no effect at all: the overlay was always fully
 transparent. The value is now applied as the `background` declaration, which accepts
 the documented colour syntax. Verified by the "second instance does not duplicate
 overlay" and "overlayStyle color applied to overlay" checks.
 
 ================================================================================
-CHANGE 8 — Measure the modal once instead of twice
+CHANGE 8: Measure the modal once instead of twice
 ================================================================================
 
 OLD_SECTION
@@ -316,14 +316,14 @@ NEW_SECTION
 
 REASON
 `getDimensionOfHidden()` (src/helpers.js) is expensive and destructive: it mutates
-the element's position/opacity/display, reads `scrollHeight` and `scrollWidth` —
-each a forced synchronous layout — then restores the styles. Calling it twice to
+the element's position/opacity/display, reads `scrollHeight` and `scrollWidth`:
+each a forced synchronous layout, then restores the styles. Calling it twice to
 read two members of the same returned object doubled that work and forced two extra
 reflows on every open, for identical results. It is now called once and both
 dimensions are read from the single result.
 
 ================================================================================
-CHANGE 9 — Drop the unused totalHeight read from initialize()
+CHANGE 9: Drop the unused totalHeight read from initialize()
 ================================================================================
 
 OLD_SECTION

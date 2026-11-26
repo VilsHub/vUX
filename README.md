@@ -49,11 +49,11 @@ See the [Store guide](doc/store.md) and the [ChangeLog](ChangeLog.md).
 
 
 Version **v4.0.0** has the following features added:
-- Component module (`vUX-component.js`), for building your own reusable components from your own markup — template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
+- Component module (`vUX-component.js`), for building your own reusable components from your own markup: template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
 - `destroy()` on every component, releasing the listeners, timers and animations it started and the DOM it injected
 - Skeleton module (`vUX-skeleton.js`), for placeholder screens derived from the template you already wrote, with a delay and minimum duration so they never flash or flicker
 - FontSplash module (`vUX-fontSplash.js`), a splash screen whose loader is a word in your own font, with a gradient flowing through the letters as they fade in a wave; full-screen or over one element, determinate or not, and never shown in the wrong font
-- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface — rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images — with selection, move/resize, undo/redo, pan/zoom and PNG export
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface: rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows with curved joints and connectors bound to shapes, freehand pen, text, icons and images, with selection, move/resize, undo/redo, pan/zoom and PNG export
 - Marquee module (`vUX-marquee.js`), an endless scrolling strip built from items written once in the HTML: cloned to cover any width without a seam, measured speed in pixels per second, left or right, pause on hover and keyboard focus, an optional edge fade, and stillness under reduced motion
 - MessageBox module (`vUX-messageBox.js`), notification messages that drop in from the top or slide in from either edge, aligned left, centre or right, with a display duration that pauses while the message is read, a countdown bar, a close button, stacking without jumps and typed shorthands (`info()`, `success()`, `warning()`, `error()`)
 - Prompt module (`vUX-prompt.js`), styled `alert()`, `confirm()` and `input()` dialogs that return the answer as a Promise, sit above every modal on the page, mark destructive actions, validate input (sync or async) and queue when two parts of a page ask at once
@@ -135,7 +135,7 @@ How the features of React map onto vUX. **Status** reads:
 | Testing tools | React Testing Library, Jest | None (no test runner by design) | Gap: tests are run in a browser by hand |
 | Build tooling | Needed (JSX, bundling) | None; `./minify.sh` is optional | Not required: vUX runs unbuilt |
 
-In short: 14 features are **not required**, because React needs them only for re-rendering and compiling. Five are **partial**: conditionals, props, children/slots, two-way form binding and Suspense. Four are **gaps**: error boundaries, dev tools, TypeScript types and testing tools. None of the gaps blocks building an app.
+In short: 11 features are **not required**, because React needs them only for re-rendering and compiling. Five are **partial**: conditionals, props, children/slots, two-way form binding and Suspense. Four are **gaps**: error boundaries, dev tools, TypeScript types and testing tools. None of the gaps blocks building an app.
 
 ## Demo
 

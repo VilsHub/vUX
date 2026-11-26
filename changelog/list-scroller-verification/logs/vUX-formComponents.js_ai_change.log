@@ -3,7 +3,7 @@ FEATURE: list-scroller-verification
 DATE: 2026-10-05
 
 ================================================================================
-CHANGE 1 — datePicker destroy() tears down its ListScroller
+CHANGE 1: datePicker destroy() tears down its ListScroller
 ================================================================================
 
 OLD_SECTION
@@ -21,7 +21,7 @@ REASON
 The decade-series ListScroller now holds listeners on the picker's buttons and container and a ResizeObserver on them. datePicker.destroy() released its own listeners but never the scroller's, so those would outlive the picker. Verified the picker's decade Prev/Next still work with the new ListScroller on a 1700-2030 range (two range boxes): Next 0→300, end 302 with Next inactive, and Prev from the end now moves (it did not before).
 
 ================================================================================
-CHANGE 2 — follow-up: one ListScroller per picker instead of one per builder
+CHANGE 2, follow-up: one ListScroller per picker instead of one per builder
 ================================================================================
 
 OLD_SECTION

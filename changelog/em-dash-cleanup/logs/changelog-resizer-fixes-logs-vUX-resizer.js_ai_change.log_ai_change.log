@@ -1,0 +1,181 @@
+OLD_SECTION (line 13)
+CHANGE 1 [em dash] Declare callBack
+NEW_SECTION (line 13)
+CHANGE 1: Declare callBack
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 40)
+targetElement no longer resolves here [em dash] see change 9.
+NEW_SECTION (line 40)
+targetElement no longer resolves here: see change 9.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 43)
+CHANGE 2 [em dash] Load the module's stylesheet
+NEW_SECTION (line 43)
+CHANGE 2: Load the module's stylesheet
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 47)
+    (no equivalent [em dash] the module never linked a stylesheet)
+NEW_SECTION (line 47)
+    (no equivalent: the module never linked a stylesheet)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 71)
+their container [em dash] an invisible, ungrabbable component [em dash] unless they happened to
+NEW_SECTION (line 71)
+their container (an invisible, ungrabbable component) unless they happened to
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 80)
+CHANGE 3 [em dash] Resize against the drag origin instead of the raw pointer coordinate
+NEW_SECTION (line 80)
+CHANGE 3: Resize against the drag origin instead of the raw pointer coordinate
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 147)
+the element when dragged outward [em dash] backwards, and the reason the left/right and
+NEW_SECTION (line 147)
+the element when dragged outward: backwards, and the reason the left/right and
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 156)
+CHANGE 4 [em dash] Bind removable listeners that tolerate a child as the event target
+NEW_SECTION (line 156)
+CHANGE 4: Bind removable listeners that tolerate a child as the event target
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 173)
+there is no reference with which to unregister it [em dash] a component using it can never
+NEW_SECTION (line 173)
+there is no reference with which to unregister it: a component using it can never
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 189)
+CHANGE 5 [em dash] Capture the drag origin; resolve axis and edge from the handler
+NEW_SECTION (line 189)
+CHANGE 5: Capture the drag origin; resolve axis and edge from the handler
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 273)
+unmarked [em dash] a case with no correct guess available.
+NEW_SECTION (line 273)
+unmarked: a case with no correct guess available.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 286)
+classList.toggle("on") is replaced by add("on") [em dash] see change 6.
+NEW_SECTION (line 286)
+classList.toggle("on") is replaced by add("on"): see change 6.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 289)
+CHANGE 6 [em dash] Release the handler that was actually grabbed
+NEW_SECTION (line 289)
+CHANGE 6: Release the handler that was actually grabbed
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 324)
+CHANGE 7 [em dash] Build handlers with axis-scoped styles, honouring styles.both
+NEW_SECTION (line 324)
+CHANGE 7: Build handlers with axis-scoped styles, honouring styles.both
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 385)
+`.resizeHandle:hover{}` [em dash] harmless in itself, but it is the rule that then collided
+NEW_SECTION (line 385)
+`.resizeHandle:hover{}`: harmless in itself, but it is the rule that then collided
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 397)
+but read by nothing [em dash] a documented key with no effect. It now supplies the style for
+NEW_SECTION (line 397)
+but read by nothing: a documented key with no effect. It now supplies the style for
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 411)
+CHANGE 8 [em dash] (folded into change 7)
+NEW_SECTION (line 411)
+CHANGE 8: (folded into change 7)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 418)
+CHANGE 9 [em dash] Resolve the target in initialize(); add destroy()
+NEW_SECTION (line 418)
+CHANGE 9: Resolve the target in initialize(); add destroy()
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 461)
+a duplicate <style> element for each axis [em dash] attachStyleSheet() appends unconditionally.
+NEW_SECTION (line 461)
+a duplicate <style> element for each axis: attachStyleSheet() appends unconditionally.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 465)
+Resizer over an element belonging to a view [em dash] an SPA route, a modal [em dash] leaked its
+NEW_SECTION (line 465)
+Resizer over an element belonging to a view (an SPA route, a modal) leaked its
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 471)
+CHANGE 10 [em dash] Fix the resizeHandlerProperties key count and unknown-key handling
+NEW_SECTION (line 471)
+CHANGE 10: Fix the resizeHandlerProperties key count and unknown-key handling
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 522)
+Object.entries, which is always 2 [em dash] not the number of keys supplied. The guard
+NEW_SECTION (line 522)
+Object.entries, which is always 2, not the number of keys supplied. The guard
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 535)
+or miscased key was accepted, ignored, and the component ran on with its defaults [em dash]
+NEW_SECTION (line 535)
+or miscased key was accepted, ignored, and the component ran on with its defaults:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 547)
+CHANGE 11 [em dash] Make config.myResizeHandler actually take effect
+NEW_SECTION (line 547)
+CHANGE 11: Make config.myResizeHandler actually take effect
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 570)
+myResizeHandler was validated and stored, and read in exactly one place [em dash] the
+NEW_SECTION (line 570)
+myResizeHandler was validated and stored, and read in exactly one place: the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 606)
+the Resizer module has no example under examples/ [em dash] writing one is the obvious next
+NEW_SECTION (line 606)
+the Resizer module has no example under examples/: writing one is the obvious next
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

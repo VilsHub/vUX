@@ -1,0 +1,119 @@
+OLD_SECTION (line 2)
+ * vUX core utilities [em dash] runnable example.
+NEW_SECTION (line 2)
+ * vUX core utilities: runnable example.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+ * Hero [em dash] fill() + animate() on the headline, counters, a flip card
+NEW_SECTION (line 18)
+ * Hero: fill() + animate() on the headline, counters, a flip card
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 24)
+//core.css (background-clip: text) [em dash] so the gradient paints the glyphs, not the box.
+NEW_SECTION (line 24)
+//core.css (background-clip: text), so the gradient paints the glyphs, not the box.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 110)
+    hide:   s => { $$.sm(s).hide(); return [`$$.sm("${s}").hide()`, "undefined [em dash] display:none on every match", null]; },
+    unHide: s => { $$.sm(s).unHide("flex"); return [`$$.sm("${s}").unHide("flex")`, "undefined [em dash] display:flex on every match", $$.sa(s)]; },
+NEW_SECTION (line 110)
+    hide:   s => { $$.sm(s).hide(); return [`$$.sm("${s}").hide()`, "undefined: display:none on every match", null]; },
+    unHide: s => { $$.sm(s).unHide("flex"); return [`$$.sm("${s}").unHide("flex")`, "undefined: display:flex on every match", $$.sa(s)]; },
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 141)
+    "$$.ss, $$.sa, $$.sav and $$.sm [em dash] the board above.",
+    "slide, flip.card, animate and filter [em dash] section 02.",
+    "$$.attachEventHandler [em dash] one listener on window, filtered by class [em dash] section 04.",
+    "getTimeSegments, ScreenBreakPoint, IO.get, randomString [em dash] section 05."
+NEW_SECTION (line 141)
+    "$$.ss, $$.sa, $$.sav and $$.sm: the board above.",
+    "slide, flip.card, animate and filter: section 02.",
+    "$$.attachEventHandler (one listener on window, filtered by class): section 04.",
+    "getTimeSegments, ScreenBreakPoint, IO.get, randomString: section 05."
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 155)
+ * 02 Motion [em dash] slides
+NEW_SECTION (line 155)
+ * 02 Motion: slides
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 208)
+ * 02 Motion [em dash] animate() easing lab
+NEW_SECTION (line 208)
+ * 02 Motion: animate() easing lab
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 262)
+ * 02 Motion [em dash] filter()
+NEW_SECTION (line 262)
+ * 02 Motion: filter()
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 339)
+    scrollStatus.className = "status err"; scrollStatus.lastChild.textContent = "locked [em dash] overflow-y: hidden";
+NEW_SECTION (line 339)
+    scrollStatus.className = "status err"; scrollStatus.lastChild.textContent = "locked, overflow-y: hidden";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 343)
+    scrollStatus.className = "status run"; scrollStatus.lastChild.textContent = "unlocked [em dash] overflow-y: auto";
+NEW_SECTION (line 343)
+    scrollStatus.className = "status run"; scrollStatus.lastChild.textContent = "unlocked, overflow-y: auto";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 365)
+//Only e.target is tested [em dash] a click on a child of a .tag is a click on the child.
+NEW_SECTION (line 365)
+//Only e.target is tested: a click on a child of a .tag is a click on the child.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 381)
+//"event:prop=value" [em dash] the handler only runs when e.key is "Enter"
+NEW_SECTION (line 381)
+//"event:prop=value": the handler only runs when e.key is "Enter"
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 404)
+log("ready [em dash] click a tag, or type one and press Enter");
+NEW_SECTION (line 404)
+log("ready: click a tag, or type one and press Enter");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 471)
+    //There is no error callback [em dash] a url that fails never reports, and status never ends true.
+NEW_SECTION (line 471)
+    //There is no error callback: a url that fails never reports, and status never ends true.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 488)
+ * 06 Built-in extensions and global helpers [em dash] evaluated live
+NEW_SECTION (line 488)
+ * 06 Built-in extensions and global helpers: evaluated live
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 585)
+        $("#freezeOut").textContent = `callback ran after ${Math.round(performance.now() - t0)}ms, synchronously [em dash] use setTimeout instead`;
+NEW_SECTION (line 585)
+        $("#freezeOut").textContent = `callback ran after ${Math.round(performance.now() - t0)}ms, synchronously: use setTimeout instead`;
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -8,7 +8,7 @@ worked, and that everything around them was defective. Fourteen defects were con
 by executing the module against a stubbed core; all are addressed below.
 
 ================================================================================
-CHANGE 1 — Guard the blinking cursor against a missing blinker node
+CHANGE 1: Guard the blinking cursor against a missing blinker node
 ================================================================================
 
 OLD_SECTION
@@ -68,7 +68,7 @@ resumeWriting() also cleared the blink interval only when showCursor was true, l
 the interval whenever the flag was turned off between a pause and a resume.
 
 ================================================================================
-CHANGE 2 — Bound the directive scanners and verify directives up front
+CHANGE 2: Bound the directive scanners and verify directives up front
 ================================================================================
 
 OLD_SECTION
@@ -135,17 +135,17 @@ REASON
 Neither scanner tested for the end of the string. Past the last character
 text[startPoint] is undefined, which is never equal to the closing delimiter, so the
 loop appended the string "undefined" to its accumulator for ever. An unterminated
-directive — "wait~500", a plain typo in a caller's string — froze the tab and then
+directive ("wait~500", a plain typo in a caller's string) froze the tab and then
 crashed it; measured before the fix as "RangeError: Invalid string length". The two
 near-identical scanners are merged into one bounded reader, digits are now required
 rather than assumed (parseInt previously turned "~xy~" into NaN silently), and the
 whole string is swept by validateDirectives() from writeText() so a malformed string
 throws to its caller like every other argument fault in the library instead of failing
 inside a timer where nothing can catch it. Merging also drops the old
-'parseInt(int.length)' — a redundant parse of a value that is already a number.
+'parseInt(int.length)': a redundant parse of a value that is already a number.
 
 ================================================================================
-CHANGE 3 — Type and erase through DOM nodes rather than innerHTML strings
+CHANGE 3: Type and erase through DOM nodes rather than innerHTML strings
 ================================================================================
 
 OLD_SECTION
@@ -210,7 +210,7 @@ REASON
 erase() popped characters off the innerHTML string, so it ate markup a byte at a time
 rather than a character at a time: measured before the fix, deleting 2 units from
 "A<br/>B" left the string "A<br". Any erase following a '|' line break corrupted the
-DOM. Writing had the mirror-image problem — 'con.innerHTML += char' re-parses and
+DOM. Writing had the mirror-image problem: 'con.innerHTML += char' re-parses and
 rebuilds the whole subtree on every keystroke, discarding any node identity within it.
 Both now work on nodes: a character extends the trailing text node, a line break is a
 real <br> element, and erasing removes exactly one visible unit whatever it is made of.
@@ -218,7 +218,7 @@ The dead 'return delay * n' is dropped with it; 'delay' was declared and never a
 so the expression was always NaN and the value was never read by any caller.
 
 ================================================================================
-CHANGE 4 — Erase to a completion callback, exactly n units
+CHANGE 4: Erase to a completion callback, exactly n units
 ================================================================================
 
 OLD_SECTION
@@ -292,7 +292,7 @@ Three defects in one method.
     throwing, so the call was a no-op. deleteText("3", box) passed validation and then
     'deletCount == "3"' never held, leaving a setInterval erasing past empty for ever.
     The result is now tested and thrown on, and negative counts are rejected too.
-    (The same latent no-op call exists in $$.randomInteger, core line 1124 — untouched
+    (The same latent no-op call exists in $$.randomInteger, core line 1124: untouched
     here, as it is outside this module.)
 (c) No completion signal for internal callers: erase() now takes a callback, which is
     what lets the inline '*n*' directive wait for it (see CHANGE 5). The public method
@@ -302,7 +302,7 @@ The named timer slot keeps a caller's deleteText() from cancelling an in-flight
 directive erase, and vice versa.
 
 ================================================================================
-CHANGE 5 — Drive typing from one bounded step machine
+CHANGE 5: Drive typing from one bounded step machine
 ================================================================================
 
 OLD_SECTION
@@ -433,7 +433,7 @@ re-validation only because the 'init' flag happened to short-circuit the setup b
 step() closes over the state directly, so per-tick argument re-validation disappears too.
 
 ================================================================================
-CHANGE 6 — Reset per-run state so an instance can be reused, and can be stopped
+CHANGE 6: Reset per-run state so an instance can be reused, and can be stopped
 ================================================================================
 
 OLD_SECTION
@@ -534,11 +534,11 @@ distinction collapses into one list of boxes with one list of texts, removing th
 mainTextBox/mainTexts/familyN/family/init/PlainTextCounter tangle.
 clearMemory() previously cleared only the typing timeout, leaking the blink interval and
 the deletion interval whenever an instance was discarded mid-animation; it now clears all
-four slots. this.stop() is added because there was no way to cancel a run in progress —
+four slots. this.stop() is added because there was no way to cancel a run in progress:
 necessary for a component torn down while typing, e.g. on an SPA route change.
 
 ================================================================================
-CHANGE 7 — Accept the collection form the module already claimed to support
+CHANGE 7: Accept the collection form the module already claimed to support
 ================================================================================
 
 OLD_SECTION
@@ -601,8 +601,8 @@ this.writeText = function(textBox, text, fn=null) {
 REASON
 writeText() ran validateElement() on argument 1 BEFORE consulting writeType(), and
 validateElement() throws for anything that is not an Element. Every collection call was
-therefore rejected at the door and the entire "multiple" branch — writeType()'s NodeList
-test, 'family = textBox.length', and the familyN sequencing in the completion block —
+therefore rejected at the door and the entire "multiple" branch: writeType()'s NodeList
+test, 'family = textBox.length', and the familyN sequencing in the completion block:
 had never executed. Confirmed by measurement: a collection argument threw
 "argument 1 must be a valid HTML element". The type test now runs first and owns all
 argument validation, so the group path is reachable for the first time.
@@ -611,12 +611,12 @@ structural check: the old test recognised querySelectorAll() results but not
 getElementsByClassName() (an HTMLCollection) nor a plain array of elements, and it threw
 outright on a null argument, before any validator could produce a useful message.
 The text array is now checked for string members and for matching the element count,
-rather than only for being an array — the old code would have read undefined off the end.
+rather than only for being an array: the old code would have read undefined off the end.
 The array copies mean a caller mutating their array mid-run cannot derail the sequence,
 and the live-NodeList case cannot lose its footing if the DOM changes while typing.
 
 ================================================================================
-CHANGE 8 — Keep unset cursorStyle members at their defaults
+CHANGE 8: Keep unset cursorStyle members at their defaults
 ================================================================================
 
 OLD_SECTION
@@ -653,7 +653,7 @@ declaration: measured before the fix, {color:"red"} yielded the inline style
 each supplied member is type-checked, so a partial object configures only what it names.
 
 ================================================================================
-CHANGE 9 — Rebuild the span and blinker per run; stop passing null to setTimeout
+CHANGE 9: Rebuild the span and blinker per run; stop passing null to setTimeout
 ================================================================================
 
 OLD_SECTION
@@ -700,7 +700,7 @@ REASON
 addSpan() did nothing at all when a span already existed, so a second run on the same
 element appended to the previous run's text and could never gain a blinker if showCursor
 had been switched on in between. It also built the blinker element unconditionally and
-then discarded it when showCursor was false — allocation for nothing. The span is now
+then discarded it when showCursor was false: allocation for nothing. The span is now
 emptied at the start of each run and the blinker is created, restyled, or removed to
 match the current configuration.
 runCallBack() replaces the two bare 'setTimeout(fn, callBackDelay)' calls in the
@@ -708,12 +708,12 @@ completion path. 'fn' defaults to null, and a null timer handler is not ignored:
 WebIDL the TimerHandler union coerces it to the string "null" and the browser evaluates
 it as script, which a Content-Security-Policy without 'unsafe-eval' blocks with a console
 error; outside a browser it throws outright. This was the first failure hit when the
-module was exercised — writeText(el, "Hello") with no callback threw
+module was exercised: writeText(el, "Hello") with no callback threw
 "ERR_INVALID_ARG_TYPE: The callback argument must be of type function. Received null".
 deleteText() already guarded this correctly; writeText() did not.
 
 ================================================================================
-CHANGE 10 — Housekeeping
+CHANGE 10: Housekeeping
 ================================================================================
 
 OLD_SECTION
@@ -746,7 +746,7 @@ Object.defineProperties(this, {
 REASON
 The per-tick speed draw was repeated in three places and cached in the instance-scoped
 'n', which served no purpose beyond the tick that set it; it is now a function. The
-commented-out document.hidden block is removed — it had been dead since 2021 and its
+commented-out document.hidden block is removed: it had been dead since 2021 and its
 empty if/else made the live branch read as conditional when it was not. 'self' is
 dropped, having become unused once recursion stopped going through the public method,
 and 'type' becomes a local of writeText(), its only reader. this.stop is added to the
@@ -755,7 +755,7 @@ non-writable list so the new method matches the other three.
 --------------------------------------------------------------------------------
 DEFECT LEFT IN PLACE (outside this module)
 --------------------------------------------------------------------------------
-src/helpers.js:721 — validateInteger(n) takes no message argument and returns a boolean
+src/helpers.js:721: validateInteger(n) takes no message argument and returns a boolean
 instead of throwing, unlike every other validateX in the family. Its other caller,
 $$.randomInteger (src/vUX-core-4.0.0-beta.js:1124), passes it a message and ignores the
 result, so those two argument checks are also no-ops. Not changed here: the signature is

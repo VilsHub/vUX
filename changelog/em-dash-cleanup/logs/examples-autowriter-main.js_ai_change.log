@@ -1,0 +1,62 @@
+OLD_SECTION (line 2)
+ * vUX AutoWriter [em dash] runnable example.
+NEW_SECTION (line 2)
+ * vUX AutoWriter: runnable example.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 13)
+ * 1. Hero [em dash] a headline, and a subject line that rewrites itself
+NEW_SECTION (line 13)
+ * 1. Hero: a headline, and a subject line that rewrites itself
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+//typed. Because the erase is part of the string it stays in step with the typing [em dash] a
+NEW_SECTION (line 33)
+//typed. Because the erase is part of the string it stays in step with the typing: a
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 115)
+        playWriter.writeText(stage, ui.script.value, () => setStatus("", "done [em dash] callback fired"));
+NEW_SECTION (line 115)
+        playWriter.writeText(stage, ui.script.value, () => setStatus("", "done: callback fired"));
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 125)
+    setStatus("", "stopped [em dash] text left as it was, no callback");
+NEW_SECTION (line 125)
+    setStatus("", "stopped: text left as it was, no callback");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 167)
+ * 3. Directive cards [em dash] each gets its own writer and its own target
+NEW_SECTION (line 167)
+ * 3. Directive cards: each gets its own writer and its own target
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 189)
+ * 4. Collection mode [em dash] one call, three elements, typed in sequence
+NEW_SECTION (line 189)
+ * 4. Collection mode: one call, three elements, typed in sequence
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 222)
+ * 5. Validation [em dash] every one of these throws synchronously
+NEW_SECTION (line 222)
+ * 5. Validation: every one of these throws synchronously
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 237)
+            $("#errOut").textContent = "No error thrown [em dash] that should not happen.";
+NEW_SECTION (line 237)
+            $("#errOut").textContent = "No error thrown: that should not happen.";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

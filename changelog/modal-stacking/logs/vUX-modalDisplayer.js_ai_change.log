@@ -9,7 +9,7 @@ which all state lived in single closure variables and one overlay was built at
 initialize() time.
 
 ================================================================================
-CHANGE 1 — Replace single-modal closure state with a shared layer stack
+CHANGE 1: Replace single-modal closure state with a shared layer stack
 ================================================================================
 
 OLD_SECTION
@@ -65,7 +65,7 @@ behaves according to the instance that opened it.
 Config variables that remain per instance are unchanged; only the runtime state moved.
 
 ================================================================================
-CHANGE 2 — One overlay per layer, created on open, instead of one built at init
+CHANGE 2: One overlay per layer, created on open, instead of one built at init
 ================================================================================
 
 OLD_SECTION
@@ -137,7 +137,7 @@ Consequence to be aware of: no overlay exists in the DOM until the first modal i
 opened. Previously one sat in the document from initialize() onwards.
 
 ================================================================================
-CHANGE 3 — Address DOM nodes by reference instead of by shared id
+CHANGE 3: Address DOM nodes by reference instead of by shared id
 ================================================================================
 
 OLD_SECTION
@@ -189,7 +189,7 @@ The old code found everything by global id: $$.ss("#vOld") for the original elem
 "#newModal" for the displayed copy, "#effectsCon"/"#eleft"/"#eright"/"#flipper"/
 "#flpform"/"#fBG"/"#Boxform" for the animation boxes. With two modals open every one
 of those ids existed twice and querySelector returned whichever came first in
-document order — so close() restored the wrong element's id, class and innerHTML
+document order, so close() restored the wrong element's id, class and innerHTML
 onto the wrong node, permanently destroying the first modal.
 
 Ids are no longer used for internal wiring at all. Each layer holds direct
@@ -211,7 +211,7 @@ actually see, while removing the transient duplicate ids the split and flip effe
 used to create.
 
 ================================================================================
-CHANGE 4 — Per-layer configuration snapshot
+CHANGE 4: Per-layer configuration snapshot
 ================================================================================
 
 OLD_SECTION
@@ -259,7 +259,7 @@ NEW_SECTION
 
 REASON
 Effect, widths, callbacks and close behaviour were read from instance variables at
-the moment they were needed — which, for a close handler, could be long after the
+the moment they were needed, which, for a close handler, could be long after the
 modal opened and after config had been changed for a different modal. With layers
 they must be fixed per layer, or closing modal A would use the settings that were
 current when modal B opened.
@@ -273,7 +273,7 @@ The self-stacking guard is new: opening a modal that is already on the stack wou
 blank its source a second time and lose the content permanently, so it is refused.
 
 ================================================================================
-CHANGE 5 — Page freeze and scroll capture moved to the stack boundary
+CHANGE 5: Page freeze and scroll capture moved to the stack boundary
 ================================================================================
 
 OLD_SECTION
@@ -312,7 +312,7 @@ This block was the direct cause of the permanent page freeze reported when openi
 modal from inside another. It captured bodyOldPosition from the *computed* body
 position every time a modal opened. On the first open the body was still static, so
 "static" was saved correctly. On a nested open the body was already "fixed", so
-"fixed" was saved — and closing then faithfully restored the page to frozen, leaving
+"fixed" was saved, and closing then faithfully restored the page to frozen, leaving
 it unscrollable for the rest of its life.
 
 Freezing is now a property of the stack, not of a modal: freezePage() captures the
@@ -327,7 +327,7 @@ instead of having position:static written onto it. And the top offset is cleared
 rather than set to "0", for the same reason.
 
 ================================================================================
-CHANGE 6 — Global event handlers acting on the stack, bound once
+CHANGE 6: Global event handlers acting on the stack, bound once
 ================================================================================
 
 OLD_SECTION
@@ -435,7 +435,7 @@ Opening stays per instance, since each instance recognises its own trigger class
 id attribute; see CHANGE 7.
 
 ================================================================================
-CHANGE 7 — Trigger handling: ignore triggers pointing at a displayed modal
+CHANGE 7, Trigger handling: ignore triggers pointing at a displayed modal
 ================================================================================
 
 OLD_SECTION
@@ -481,11 +481,11 @@ The modalWidthsAttribute guard is also new: when the property is unset,
 getAttribute("") was being called on every trigger click.
 
 ================================================================================
-CHANGE 8 — Idempotent open/close completion (fixes duplicate openProcessor)
+CHANGE 8: Idempotent open/close completion (fixes duplicate openProcessor)
 ================================================================================
 
 OLD_SECTION
-(no equivalent — the old transitionend handler ran its completion logic every time
+(no equivalent: the old transitionend handler ran its completion logic every time
 it matched, and relied on the modalOn flag being false to ignore repeats)
 
 NEW_SECTION
@@ -514,7 +514,7 @@ function completeClose(layer) {
 
 REASON
 Measured against the previous build: the box effect fired openProcessor twice on
-every open (verified by counting callback invocations per effect — none/split/flip
+every open (verified by counting callback invocations per effect: none/split/flip
 reported 1, box reported 2). Its animation box uses `transition: all`, which animates
 both width and height, so transitionend fires once per property and the completion
 logic ran twice. Consumers using openProcessor to focus a field or fetch data were
@@ -528,7 +528,7 @@ is additionally guarded at entry by layer.closing so a second Escape during a cl
 animation cannot start the teardown twice.
 
 ================================================================================
-CHANGE 9 — Effects rewritten against a layer; shared helpers extracted
+CHANGE 9: Effects rewritten against a layer; shared helpers extracted
 ================================================================================
 
 OLD_SECTION
@@ -593,8 +593,8 @@ function startCloseTransition(layer, boxSelector) {
 REASON
 All eight effect functions took the modal element and reached for module state and
 global ids; they now take a layer and touch only that layer's nodes. The bookkeeping
-each of them repeated — creating the host, tagging and blanking the source, storing
-the outerHTML, showing the overlay — moved into openLayer() and completeOpen(), so
+each of them repeated: creating the host, tagging and blanking the source, storing
+the outerHTML, showing the overlay: moved into openLayer() and completeOpen(), so
 the effect functions contain only their animation.
 
 Three blocks that were duplicated four times each are extracted: fillEffectBox()
@@ -611,7 +611,7 @@ A typo is corrected in passing: the flipper's inline CSS declared
 backface-visibility, so the flip effect hides its reverse face as intended.
 
 ================================================================================
-CHANGE 10 — Responsive widths applied on open, for every effect
+CHANGE 10: Responsive widths applied on open, for every effect
 ================================================================================
 
 OLD_SECTION
@@ -643,7 +643,7 @@ Beyond taking a layer, this fixes a gap and carries one deliberate behaviour cha
 
 fixModalWidth() was only ever called from the transitionend handler and the resize
 handler. The "none" effect reaches neither, so with the default effect the responsive
-widths were never applied on open — config.modalWidths / modalWidthsAttribute /
+widths were never applied on open: config.modalWidths / modalWidthsAttribute /
 screenBreakPoints simply had no effect until the user happened to resize the window.
 The "none" effect compensated by sizing its host from the modal's own computed width.
 
@@ -662,7 +662,7 @@ changed from `else if (mode == "small")` to `else` so that no breakpoint mode ca
 leave the width unset.
 
 ================================================================================
-CHANGE 11 — Blur released by reference check rather than unconditionally
+CHANGE 11: Blur released by reference check rather than unconditionally
 ================================================================================
 
 OLD_SECTION
@@ -685,7 +685,7 @@ one. The single-modal case is unaffected: with an empty stack the loop finds not
 and the class is removed as before.
 
 ================================================================================
-CHANGE 12 — New public members: closeAll() and depth
+CHANGE 12, New public members: closeAll() and depth
 ================================================================================
 
 OLD_SECTION
@@ -722,7 +722,7 @@ Stacking creates two needs the old API could not express: dismissing an entire s
 closeAll() unwinds top down without animation, since animating several layers out
 simultaneously has no coherent visual result. depth reports the shared stack size.
 
-The stale `show: { writable: false }` descriptor is dropped — there has never been a
+The stale `show: { writable: false }` descriptor is dropped: there has never been a
 public show() method on the instance, so it was guarding a property that did not
 exist. mainForm and displayForm are unchanged in shape but now read from the topmost
 layer, which is identical behaviour when only one modal is open.

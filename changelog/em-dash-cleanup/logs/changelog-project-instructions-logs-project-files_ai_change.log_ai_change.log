@@ -1,0 +1,20 @@
+OLD_SECTION (line 1)
+RETROACTIVE LOG [em dash] commit 981450f, recorded after the fact (the changelog/ convention
+NEW_SECTION (line 1)
+RETROACTIVE LOG: commit 981450f, recorded after the fact (the changelog/ convention
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+- CLAUDE.md [em dash] project instructions for Claude Code: what the library is (no build
+NEW_SECTION (line 14)
+- CLAUDE.md, project instructions for Claude Code: what the library is (no build
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+- LICENSE and assets/css/* [em dash] line-ending normalization (CRLF -> LF); no rule or
+NEW_SECTION (line 18)
+- LICENSE and assets/css/*: line-ending normalization (CRLF -> LF); no rule or
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

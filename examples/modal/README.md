@@ -39,15 +39,15 @@ Then open <http://localhost:8000/examples/modal/index.html>.
 ## What it demonstrates
 
 - All seven effects (`none`, `split`, `flip`, `box`, `drop`, `slideLeft`, `slideRight`), switchable at runtime. `slideLeft` and `slideRight` dock the modal to the right or left edge as a full height panel instead of centring it.
-- **Both overlay background modes** — `color` tints the overlay, `blur` blurs `#page` behind it instead. Switch with the dropdown; it applies from the next open, since config is snapshotted per layer. Note the blur is held while any layer wants it and only lifts when the stack empties.
-- **Stacking** — Sign in → Forgot password → Terms is three layers deep. `Escape` pops one layer at a time, in reverse order. The live **Open layers** counter tracks `depth`.
-- **One stack across instances** — "Help" is opened by a second `ModalDisplayer` with its own trigger class and effect, yet it layers correctly on the profile modal and one `Escape` still pops exactly one layer.
-- **`closeAll()`** from a button *inside* a modal. It is placed there deliberately: a page-level button cannot dismiss a stack, because the overlay blocks the page — which is the whole point of a modal.
+- **Both overlay background modes**: `color` tints the overlay, `blur` blurs `#page` behind it instead. Switch with the dropdown; it applies from the next open, since config is snapshotted per layer. Note the blur is held while any layer wants it and only lifts when the stack empties.
+- **Stacking**: Sign in → Forgot password → Terms is three layers deep. `Escape` pops one layer at a time, in reverse order. The live **Open layers** counter tracks `depth`.
+- **One stack across instances**: "Help" is opened by a second `ModalDisplayer` with its own trigger class and effect, yet it layers correctly on the profile modal and one `Escape` still pops exactly one layer.
+- **`closeAll()`** from a button *inside* a modal. It is placed there deliberately: a page-level button cannot dismiss a stack, because the overlay blocks the page, which is the whole point of a modal.
 - A modal cannot be stacked on itself ("Open myself" does nothing, by design).
 - Per-trigger responsive widths via `config.modalWidthsAttribute` ("Sign in (narrow)").
 - A tall modal scrolling inside its own overlay while the page behind stays put.
 - `openProcessor` / `closeProcessor` written to the on-page log.
-- The page keeping both its scroll position **and its layout** while a modal is open — scroll down before opening to see it.
+- The page keeping both its scroll position **and its layout** while a modal is open: scroll down before opening to see it.
 
 - **Bad input fails immediately.** Every `.config` setter validates, and `initialize()` refuses an incomplete setup; the buttons in section 04 perform the call and print what was thrown.
 
@@ -55,4 +55,4 @@ Both instances are exposed on `window` as `demoModal` and `altModal`, so you can
 
 ## Styling
 
-The page uses the shared example design system at [`../shared/example.css`](../shared/example.css); only the modal-content styling is local to this page. Note that modal content is **moved into the component's overlay**, which lives outside `#page` — so those blocks are styled standalone rather than as descendants of the page wrapper, and `#page` (the `config.pageContainer` used by the blur mode) deliberately does not wrap them, or the dialog would blur along with the page.
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css); only the modal-content styling is local to this page. Note that modal content is **moved into the component's overlay**, which lives outside `#page`, so those blocks are styled standalone rather than as descendants of the page wrapper, and `#page` (the `config.pageContainer` used by the blur mode) deliberately does not wrap them, or the dialog would blur along with the page.

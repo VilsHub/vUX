@@ -7,7 +7,7 @@ REASON
 Resizer already had a working destroy(); only the freeze convention was missing. Its
 public members are now non-writable like every other component's. Note that Resizer's
 destroy() guards on 'initialized' rather than a 'destroyed' flag, and so deliberately
-permits initialize() again afterwards — the other components follow DataView and refuse.
+permits initialize() again afterwards: the other components follow DataView and refuse.
 That difference is intentional and left as it was.
 
 ================================================================================

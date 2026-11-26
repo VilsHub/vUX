@@ -4,24 +4,24 @@ DATE: 2026-08-26
 PRIOR STATE: as left by feature 'modal-example-expansion'
 
 OLD_SECTION
-index.html — 158 lines: sans-serif body, <fieldset>/<legend> groups, grey #f0f0f0 log,
+index.html, 158 lines: sans-serif body, <fieldset>/<legend> groups, grey #f0f0f0 log,
              light modal blocks with coloured top borders, a gradient .filler.
-main.js    — 74 lines: two instances, an effect <select>, an overlay-type <select>,
+main.js, 74 lines: two instances, an effect <select>, an overlay-type <select>,
              a delegated .close-all handler.
 
 NEW_SECTION
-index.html — 362 lines: shared design system plus a hero, five numbered sections
+index.html, 362 lines: shared design system plus a hero, five numbered sections
              (effects & overlay, stacking, widths & instances, bad input, scroll),
              a depth readout with a colour key, and dark modal blocks.
-main.js    — 176 lines: the same two instances, plus live config for effect,
+main.js, 176 lines: the same two instances, plus live config for effect,
              overlayBackgroundType, overlayStyle (colour + alpha), exitOnAway and
              screenBreakPoints; a generated code panel; and ten validation demos.
 
 REASON
 Brings the page up to the standard in CLAUDE.md. Every demonstration the old page made is
-kept — the three-layer stack, the second instance sharing one stack, closeAll() from
+kept: the three-layer stack, the second instance sharing one stack, closeAll() from
 inside a modal, self-stacking being ignored, per-trigger widths, the tall modal, the
-open/close processors, the depth counter and the scroll-position proof — and the gaps the
+open/close processors, the depth counter and the scroll-position proof, and the gaps the
 standard names are filled:
 
   - Lead with the component: the hero opens a real dialog rather than describing one.
@@ -39,7 +39,7 @@ README rather than left to be rediscovered:
 
 One demo was dropped rather than restyled: an "open before initialize()" button. The
 guard it would have shown lives in a private show() function reachable only through a
-trigger click, and an uninitialised instance has no click listener attached — so the
+trigger click, and an uninitialised instance has no click listener attached, so the
 error cannot be produced from outside the component, and a button claiming to produce it
 would have been a lie. Replaced with 'className = 42', which genuinely throws.
 

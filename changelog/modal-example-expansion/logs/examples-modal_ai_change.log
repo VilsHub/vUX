@@ -4,7 +4,7 @@ DATE: 2026-08-04
 PRIOR STATE: as left by feature 'modal-stacking'
 
 ================================================================================
-CHANGE 1 — index.html: from three modals to seven
+CHANGE 1, index.html: from three modals to seven
 ================================================================================
 
 OLD_SECTION
@@ -45,7 +45,7 @@ Each modal carries a distinct accent colour, so that when layers stack it is
 immediately obvious which is which rather than requiring the reader to count.
 
 ================================================================================
-CHANGE 2 — index.html: overlay background selector
+CHANGE 2, index.html: overlay background selector
 ================================================================================
 
 OLD_SECTION
@@ -57,8 +57,8 @@ NEW_SECTION
                 <legend>Overlay background</legend>
                 <label>
                     <select id="overlayType">
-                        <option value="color">color — tint the overlay</option>
-                        <option value="blur">blur — blur the page behind instead</option>
+                        <option value="color">color: tint the overlay</option>
+                        <option value="blur">blur: blur the page behind instead</option>
                     </select>
                 </label>
                 <p class="hint" ...>
@@ -81,7 +81,7 @@ The demo page suits this without restructuring, because its modal markup already
 sits outside #page - so #page is a valid pageContainer as-is.
 
 ================================================================================
-CHANGE 3 — main.js: second instance, depth readout, blur wiring
+CHANGE 3, main.js: second instance, depth readout, blur wiring
 ================================================================================
 
 OLD_SECTION
@@ -130,7 +130,7 @@ The callbacks now report depth alongside the modal id, and update an on-page cou
 which turns stacking from something the reader has to infer into something displayed.
 
 ================================================================================
-CHANGE 4 — closeAll() moved from the page into the modals
+CHANGE 4: closeAll() moved from the page into the modals
 ================================================================================
 
 OLD_SECTION
@@ -145,7 +145,7 @@ document.getElementById("closeAllBtn").addEventListener("click", () => {
 NEW_SECTION
                 <p>Open layers: <span id="depth">0</span></p>
                 <p class="hint" ...>
-                    A page button cannot dismiss a stack — the overlay blocks the page, which is
+                    A page button cannot dismiss a stack: the overlay blocks the page, which is
                     the whole point of a modal. So the <code>closeAll()</code> button lives
                     <em>inside</em> the deeper modals, where it is actually reachable.
                 </p>
@@ -176,7 +176,7 @@ constraint the guide documents for consumer event handling, so the example now
 follows its own advice.
 
 ================================================================================
-CHANGE 5 — README.md rewritten around the expanded demo
+CHANGE 5: README.md rewritten around the expanded demo
 ================================================================================
 
 OLD_SECTION

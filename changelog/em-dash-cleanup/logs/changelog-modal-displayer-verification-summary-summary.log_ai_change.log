@@ -1,0 +1,27 @@
+OLD_SECTION (line 9)
+vUX library (this repository) [em dash] the only project affected. No other project in the
+NEW_SECTION (line 9)
+vUX library (this repository): the only project affected. No other project in the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 108)
+- doc/modal-displayer.md [em dash] full usage guide: trigger-driven model, quick start,
+NEW_SECTION (line 108)
+- doc/modal-displayer.md, full usage guide: trigger-driven model, quick start,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 111)
+- examples/modal/ [em dash] runnable demo (page, wiring module, README) covering all four
+NEW_SECTION (line 111)
+- examples/modal/: runnable demo (page, wiring module, README) covering all four
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 114)
+- doc/README.md [em dash] guide registered in the index; example linked.
+NEW_SECTION (line 114)
+- doc/README.md: guide registered in the index; example linked.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

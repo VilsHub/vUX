@@ -1,0 +1,8 @@
+OLD_SECTION (line 1)
+<h1>Live table [em dash] DataView</h1>
+<p>500 rows managed by <code>vUX-dataView.js</code>: the JSON model lives in memory, every row is bound to its DOM node by key, and updates are targeted DOM operations [em dash] no rebuild, no diffing. Leaving this route fires the SPA engine's <code>exitCallback</code>, which stops the ticker and destroys the view.</p>
+NEW_SECTION (line 1)
+<h1>Live table: DataView</h1>
+<p>500 rows managed by <code>vUX-dataView.js</code>: the JSON model lives in memory, every row is bound to its DOM node by key, and updates are targeted DOM operations: no rebuild, no diffing. Leaving this route fires the SPA engine's <code>exitCallback</code>, which stops the ticker and destroys the view.</p>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

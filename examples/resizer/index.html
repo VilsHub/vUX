@@ -8,9 +8,9 @@
 <link rel="stylesheet" href="../shared/example.css">
 <style>
     /* ---------- making a handle grabbable ----------
-       assets/css/resizer.css gives a handle everything structural — position:absolute,
+       assets/css/resizer.css gives a handle everything structural: position:absolute,
        a 2px cross-axis thickness, a 100% main-axis span, the four edge anchors and the
-       col-resize/row-resize cursors — but no resting appearance, and 2px is a hard
+       col-resize/row-resize cursors, but no resting appearance, and 2px is a hard
        target for a mouse. Every demo box here widens the hit area and paints a thinner
        line inside it, so the strip you can grab is bigger than the strip you can see.
 
@@ -22,7 +22,7 @@
     .rz .resizeHandle.y{ height:14px; }
 
     /* The library's own default is a green highlight on :hover and .on. Neutralised
-       here at (0,3,0) so the pages's palette shows through — but a rule generated from
+       here at (0,3,0) so the pages's palette shows through, but a rule generated from
        config.resizeHandlerProperties.styles is also (0,3,0) and is injected later
        still, so setting a style through config beats this and stays in control. */
     .rz .resizeHandle:hover, .rz .resizeHandle.on{ background-color:transparent; }
@@ -92,7 +92,7 @@
                letter-spacing:.16em; text-transform:uppercase; margin-bottom:12px }
     .split p{ margin:0 0 12px; color:var(--muted); font-size:.88rem }
     /* The consumer's own handle. It is a sibling of the resized element, not a child,
-       and it contains a child node — a mousedown landing on that child still counts. */
+       and it contains a child node: a mousedown landing on that child still counts. */
     .grip{
         flex:none; width:16px; cursor:col-resize; display:flex; align-items:center;
         justify-content:center; background:var(--panel); border-left:1px solid var(--line);
@@ -100,7 +100,7 @@
     }
     .grip:hover{ background:var(--panel-2) }
     .grip.on{ background:var(--panel-2) }
-    /* Deliberately NOT pointer-events:none — the icon is the real mousedown target,
+    /* Deliberately NOT pointer-events:none: the icon is the real mousedown target,
        which is the thing this section is demonstrating. */
     .grip-dots{ font-size:.9rem; line-height:1; color:var(--dim); letter-spacing:-1px; }
     .grip:hover .grip-dots, .grip.on .grip-dots{ color:var(--amber) }
@@ -191,7 +191,7 @@
         <h2><span class="num">01</span>Playground</h2>
         <p class="lede">
             Every <code>config</code> property, wired to one box. Changing a setting tears the
-            Resizer down with <code>destroy()</code> and builds a new one — <code>config</code> is
+            Resizer down with <code>destroy()</code> and builds a new one: <code>config</code> is
             read at <code>initialize()</code>, so a live instance cannot be reconfigured in place.
         </p>
 
@@ -249,7 +249,7 @@
                                 <input type="range" id="cMaxH" min="0" max="700" step="10" value="420">
                             </div>
                         </div>
-                        <p class="note">0 means <em>unset</em>, not zero — it is the sentinel the module uses to skip a clamp.</p>
+                        <p class="note">0 means <em>unset</em>, not zero: it is the sentinel the module uses to skip a clamp.</p>
                     </div>
 
                     <div class="field">
@@ -293,7 +293,7 @@
         <p class="lede">
             Set <code>config.myResizeHandler</code> to a class name and the module stops building
             handles: it listens for a mousedown on <em>your</em> element instead. The grip below is a
-            sibling of the panel it resizes, not a child of it, and it holds an icon — a mousedown
+            sibling of the panel it resizes, not a child of it, and it holds an icon: a mousedown
             landing on that icon still counts, because the module walks up from the event target.
         </p>
 
@@ -324,7 +324,7 @@
         <h2><span class="num">03</span>All four edges</h2>
         <p class="lede">
             A handle grows the element in the direction it faces. Drag the left handle left, or the
-            top handle up, and the box gets bigger — the travelled distance is inverted for those two
+            top handle up, and the box gets bigger: the travelled distance is inverted for those two
             edges.
         </p>
 
@@ -367,8 +367,8 @@
         <h2><span class="num">04</span>Teardown</h2>
         <p class="lede">
             <code>destroy()</code> unregisters the module's listeners and removes the handles it
-            injected. Anything hosting a Resizer inside a view that comes and goes — an SPA route, a
-            modal — needs it.
+            injected. Anything hosting a Resizer inside a view that comes and goes (an SPA route, a
+            modal) needs it.
         </p>
 
         <div class="life">

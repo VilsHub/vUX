@@ -25,7 +25,7 @@ A consuming page declares a single module script and tells vUX where the library
 | Guide | Module | Description |
 |---|---|---|
 | [Core utilities](core.md) | `vUX-core.js` | `$$` and the `$$.sm()` manipulators: selection, classes, slides, flips, tweens, filters, delegated events, countdowns, breakpoints, the global helpers and built-in extensions |
-| [SPA Engine — setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+| [SPA Engine, setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
 | [Progress Indicator](progress-indicator.md) | `vUX-progressIndicator.js` | Linear, circular and grid loading indicators; pairing with SPA navigation |
 | [Skeleton](skeleton.md) | `vUX-skeleton.js` | Placeholder screens derived from your own template, with timing that never flashes on a fast load or flickers on a slow one |
 | [FontSplash](font-splash.md) | `vUX-fontSplash.js` | A splash screen whose loader is a word in your font: gradient fill, fading letters, font loading handled, full-screen or over one element, with a progress mode |
@@ -55,25 +55,25 @@ Every component exposes `destroy()`, which detaches the listeners, timers and an
 
 ## Other references
 
-- [SPA example app](../examples/spa/README.md) — runnable example combining `SPAEngine` and `ProgressIndicator`. **Run it with its own `python3 server.py`**, not from the repository root: a SPA needs a history fallback.
-- [Modal example](../examples/modal/README.md) — runnable example exercising all seven modal effects.
-- [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
-- [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
-- [Resizer example](../examples/resizer/README.md) — runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
-- [Carousel example](../examples/carousel/README.md) — runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
-- [TimeLineList example](../examples/timelinelist/README.md) — runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
+- [SPA example app](../examples/spa/README.md): runnable example combining `SPAEngine` and `ProgressIndicator`. **Run it with its own `python3 server.py`**, not from the repository root: a SPA needs a history fallback.
+- [Modal example](../examples/modal/README.md): runnable example exercising all seven modal effects.
+- [Form example](../examples/form/README.md): runnable example exercising all six form component builders.
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md): runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [Carousel example](../examples/carousel/README.md): runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+- [TimeLineList example](../examples/timelinelist/README.md): runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
 - [FormValidator example](../examples/formvalidator/README.md): runnable example of live validation, message placement, theming, submission feedback, the formatters and the validation errors.
 - [ToolTip example](../examples/tooltip/README.md): runnable example of tip placement at the window edges, styling, on()/off()/refresh(), keyboard focus and the validation errors.
 - [CShapes example](../examples/cshapes/README.md): runnable example with a playground for each of the three shapes and the validation errors.
-- [ListScroller example](../examples/listscroller/README.md) — runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
-- [Skeleton example](../examples/skeleton/README.md) — runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
-- [FontSplash example](../examples/fontsplash/README.md) — runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
-- [Component example](../examples/component/README.md) — runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
-- [SketchPad example](../examples/sketchpad/README.md) — runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
+- [ListScroller example](../examples/listscroller/README.md): runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
+- [Skeleton example](../examples/skeleton/README.md), runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
+- [FontSplash example](../examples/fontsplash/README.md), runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
+- [Component example](../examples/component/README.md), runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
+- [SketchPad example](../examples/sketchpad/README.md): runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
 - [Marquee example](../examples/marquee/README.md): runnable example with two opposing hero rows, a live playground over every config property, a strip of linked cards showing how clones stay out of the tab order, and the validation errors.
-- [MessageBox example](../examples/messagebox/README.md) — runnable example opening with a dropped-in message: the typed shorthands, a playground over every config property with an `onShow`/`onClose` log, every effect at each alignment, a sticky message closed through its handle, element content with Undo, and the validation errors.
+- [MessageBox example](../examples/messagebox/README.md), runnable example opening with a dropped-in message: the typed shorthands, a playground over every config property with an `onShow`/`onClose` log, every effect at each alignment, a sticky message closed through its handle, element content with Undo, and the validation errors.
 - [Prompt example](../examples/prompt/README.md): runnable example with each dialog one click away, a playground over every config property with a log of each answer, a guarded delete, an async-validated rename, two instances sharing the queue, and the validation errors.
-- [Core example](../examples/core/README.md) — runnable example of every core utility: a selection board, slides, a flip card, an easing lab, filters, overlays, delegated events, a countdown, the built-in extensions evaluated live, the validation errors, and the calls repaired in this release.
-- [README](../README.md) — installation and the public feature list per release.
-- [ChangeLog](../ChangeLog.md) — API renames and changes between releases.
-- `window.vUxModules` — type this in the browser console to print the importable module list at runtime.
+- [Core example](../examples/core/README.md), runnable example of every core utility: a selection board, slides, a flip card, an easing lab, filters, overlays, delegated events, a countdown, the built-in extensions evaluated live, the validation errors, and the calls repaired in this release.
+- [README](../README.md): installation and the public feature list per release.
+- [ChangeLog](../ChangeLog.md): API renames and changes between releases.
+- `window.vUxModules`: type this in the browser console to print the importable module list at runtime.

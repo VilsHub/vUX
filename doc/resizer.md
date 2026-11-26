@@ -8,7 +8,7 @@ Module: `vUX-resizer.js` · Stylesheet: `assets/css/resizer.css` (linked automat
 
 Four things about this component shape everything below.
 
-**Two elements are involved.** The *target* is the element that gets resized, named by the selector you pass to the constructor. The *handle* is the thin strip you grab. By default the module builds the handle for you and appends it to the element named by `config.resizeHandlerProperties.parent` — usually the target itself, in which case the module gives that element `position: relative` if it has no positioning of its own, so the absolutely-positioned handle lands on its edge.
+**Two elements are involved.** The *target* is the element that gets resized, named by the selector you pass to the constructor. The *handle* is the thin strip you grab. By default the module builds the handle for you and appends it to the element named by `config.resizeHandlerProperties.parent`: usually the target itself, in which case the module gives that element `position: relative` if it has no positioning of its own, so the absolutely-positioned handle lands on its edge.
 
 **`config` is read once, by `initialize()`.** There is no live reconfiguration. To change a setting on a running Resizer, call `destroy()` and build a new one.
 
@@ -41,7 +41,7 @@ resizer.config.thresholdValues = { minWidth: 180, maxWidth: 640, minHeight: 0, m
 resizer.initialize();
 ```
 
-The constructor takes a **selector string**, not an element. The element it names does not have to exist yet — the lookup happens in `initialize()`, and throws there, naming your selector, if nothing matches.
+The constructor takes a **selector string**, not an element. The element it names does not have to exist yet: the lookup happens in `initialize()`, and throws there, naming your selector, if nothing matches.
 
 ## The handle
 
@@ -65,16 +65,16 @@ Set `config.myResizeHandler` to a class name and the module builds nothing. It l
 resizer.config.myResizeHandler = "grip";   //".grip" is accepted too
 ```
 
-Your handle can live anywhere in the document — it does not have to be inside the target, or even near it. A mousedown landing on a *child* of your handle counts, so an icon or a grip glyph inside it is fine.
+Your handle can live anywhere in the document: it does not have to be inside the target, or even near it. A mousedown landing on a *child* of your handle counts, so an icon or a grip glyph inside it is fine.
 
 It also needs no vUX classes, as long as the module can work out the axis and the edge:
 
-- **Axis** — taken from an `x` or `y` class on your handle if present; otherwise from `config.resizeHandlerProperties.direction`. With `direction: "both"` and no class, there is nothing to infer and the module throws.
-- **Edge** — taken from a `left`/`right`/`top`/`bottom` class if present; otherwise from `config.resizeHandlerProperties.position`.
+- **Axis**: taken from an `x` or `y` class on your handle if present; otherwise from `config.resizeHandlerProperties.direction`. With `direction: "both"` and no class, there is nothing to infer and the module throws.
+- **Edge**: taken from a `left`/`right`/`top`/`bottom` class if present; otherwise from `config.resizeHandlerProperties.position`.
 
 Since both fall back to defaults (`direction: "x"`, `position.x: "right"`), a right-edge horizontal resizer needs only the one line above. `parent` is not needed in this mode and is ignored.
 
-Give your handle its own `cursor` — the library's `col-resize`/`row-resize` rules are scoped to `.resizeHandle`.
+Give your handle its own `cursor`: the library's `col-resize`/`row-resize` rules are scoped to `.resizeHandle`.
 
 ## Direction and edges
 
@@ -86,7 +86,7 @@ Give your handle its own `cursor` — the library's `col-resize`/`row-resize` ru
 
 `position.x` is `"left"` or `"right"` (default `"right"`); `position.y` is `"top"` or `"bottom"` (default `"bottom"`).
 
-**A handle grows the element in the direction it faces.** Drag a `right` handle right, or a `bottom` handle down, and the element gets bigger — the obvious case. Drag a `left` handle *left*, or a `top` handle *up*, and it also gets bigger: the travelled distance is inverted for those two edges.
+**A handle grows the element in the direction it faces.** Drag a `right` handle right, or a `bottom` handle down, and the element gets bigger: the obvious case. Drag a `left` handle *left*, or a `top` handle *up*, and it also gets bigger: the travelled distance is inverted for those two edges.
 
 That is a statement about size, not about position. Because the module never moves anything, an element in normal flow still grows down and right. To make a `left` or `top` handle *look* right, anchor the element to the far side of its container yourself:
 
@@ -110,7 +110,7 @@ All four are optional; supply any subset. Each must be a number, and a negative 
 
 **`0` means *unset*, not a bound of zero.** It is the sentinel the module uses to skip a clamp, so `maxWidth: 0` removes the upper bound rather than collapsing the element. The size is separately floored at `0` so a fast drag past the far edge cannot write a negative value.
 
-Bounds are in pixels and are compared against the value the module writes. They do not know about CSS `min-width`/`max-width` on the same element — if you set both, the browser applies its own on top, and the element will appear to stop before the module thinks it has.
+Bounds are in pixels and are compared against the value the module writes. They do not know about CSS `min-width`/`max-width` on the same element: if you set both, the browser applies its own on top, and the element will appear to stop before the module thinks it has.
 
 ## Reading the size
 
@@ -131,7 +131,7 @@ resizer.config.callBack = function (r) {
 };
 ```
 
-It fires often — once per mousemove — so keep it cheap, and do not do layout-thrashing work inside it.
+It fires often (once per mousemove) so keep it cheap, and do not do layout-thrashing work inside it.
 
 ## Styling the handle
 
@@ -150,7 +150,7 @@ What it does not give you is a resting appearance, and 2px is a hard target for 
 .panel .resizeHandle.x.on::after{ background:#ffb454 }
 ```
 
-**Watch the specificity.** `resizer.css` is injected by the module during `initialize()`, so it lands *after* your page's own stylesheet in source order. A rule written as bare `.resizeHandle` ties with it on specificity and loses. Scope yours — `.panel .resizeHandle` — and it wins. The same goes for suppressing the default green highlight:
+**Watch the specificity.** `resizer.css` is injected by the module during `initialize()`, so it lands *after* your page's own stylesheet in source order. A rule written as bare `.resizeHandle` ties with it on specificity and loses. Scope yours: `.panel .resizeHandle`, and it wins. The same goes for suppressing the default green highlight:
 
 ```css
 .panel .resizeHandle:hover, .panel .resizeHandle.on{ background-color:transparent }
@@ -190,7 +190,7 @@ All settings are **write-only** properties on `.config`; each validates its valu
 | `myResizeHandler` | string | `null` | Class name of your own handle. Suppresses handle building |
 | `callBack` | function | `null` | Run on every mousemove of a drag, receiving the Resizer |
 
-Being write-only, `.config` properties cannot be read back — `resizer.config.direction` is `undefined`. Keep your own copy if you need one. (This is the convention across vUX components.) `resizedWidth` and `resizedHeight` are the exception: they are real getters on the instance itself, not on `.config`.
+Being write-only, `.config` properties cannot be read back: `resizer.config.direction` is `undefined`. Keep your own copy if you need one. (This is the convention across vUX components.) `resizedWidth` and `resizedHeight` are the exception: they are real getters on the instance itself, not on `.config`.
 
 ## Lifecycle
 
@@ -201,7 +201,7 @@ resizer.destroy();      //unbind listeners, remove the handles it built, release
 
 Both are idempotent: `initialize()` on a live instance returns immediately rather than appending a second set of handles, listeners and stylesheets, and `destroy()` on a dead one does nothing.
 
-**Call `destroy()` whenever the target is about to disappear** — an SPA route change, a closing modal, a component teardown. The module's listeners are on `document` and nothing else removes them, and the handles it appended are inside your element.
+**Call `destroy()` whenever the target is about to disappear**: an SPA route change, a closing modal, a component teardown. The module's listeners are on `document` and nothing else removes them, and the handles it appended are inside your element.
 
 `destroy()` does not clear the inline `width`/`height` it wrote. Reset those yourself if you want the element handed back to CSS:
 
@@ -294,7 +294,7 @@ resizer.config.callBack = function (r) { latest = r.resizedWidth; };
 addEventListener("mouseup", () => { if (latest) localStorage.setItem("sideWidth", latest); });
 ```
 
-Write on mouseup rather than in the callback — the callback runs on every mousemove, and `localStorage` is synchronous.
+Write on mouseup rather than in the callback: the callback runs on every mousemove, and `localStorage` is synchronous.
 
 **Tearing down with an SPA route**
 

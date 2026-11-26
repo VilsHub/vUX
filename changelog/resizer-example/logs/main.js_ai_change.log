@@ -16,7 +16,7 @@ The file is written as documentation, per CLAUDE.md, so the comments carry the s
 edges rather than restating the calls.
 
 The playground is the structural decision worth recording. config is read once, by
-initialize(), and there is no live reconfiguration — so a control panel is only
+initialize(), and there is no live reconfiguration, so a control panel is only
 possible by destroying the instance and building a new one on every change. That is
 why buildPlayResizer() opens with `if (playResizer != null) playResizer.destroy()`,
 and it is the clearest demonstration of why destroy() had to be added: without it

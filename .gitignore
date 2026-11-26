@@ -1,1 +1,4 @@
 dist/
+
+# CLAUDE.md is tracked by the VilsHub "claude brain" root repo instead
+/CLAUDE.md

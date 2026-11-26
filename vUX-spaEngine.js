@@ -21,6 +21,9 @@ export function SPAEngine(defaultContentNode=null) {
     var initialize = false,tempStorage = {}, dataLink, preClickCallback=null, functions={}, bootCallback=null;
     var clickLoadCallback = null, loadIntoNode = true, cacheBuilderTracker={},addToHistory=true,savedPageSection={},routeProperties=null;
     var exitCallback=null, activeRoute=null;
+    //errorCallback: told when a route's content cannot be loaded. shownPath: the path of the content
+    //on screen, to tell whether a history entry the engine has no state for belongs to another page.
+    var errorCallback=null, shownPath=null, clickCallbackTimer=null;
     //Teardown state: the detach handle for the delegated link listener, the popstate listener held at
     //instance scope so destroy() can remove it, and the cache builder's timer id.
     var destroyed=false, spaLinkHandle=null, handlePopState=null, cacheBuilderTimer=null;
@@ -107,6 +110,9 @@ var dataAttributes = { //data attributes name should be specified without the da
         savedPageSection = {};
         activeRoute = null;
         routeProperties = null;
+        shownPath = null;
+        clearTimeout(clickCallbackTimer);
+        clickCallbackTimer = null;
 
         initialize = false;
         destroyed = true;
@@ -203,43 +209,74 @@ var dataAttributes = { //data attributes name should be specified without the da
             //new entry, so it is dropped rather than written into the wrong one
             clearTimeout(scrollSaveTimer);
 
-            if(e.state != null){
+            let parsedData = readEngineState(e.state);
 
-                let parsedData          = JSON.parse(e.state);
+            //An entry the engine cannot restore. With no state at all (one the browser made for a
+            //#fragment link, or one made before the engine booted), the page on screen is left as it
+            //is, including a click callback still due (a #fragment change right after a navigation
+            //must not cancel it), and another page is loaded from the server, since the content
+            //shown would no longer match the address. An engine entry whose route is no longer
+            //configured (an older release) is loaded from the server too. Another script's state
+            //is left to that script.
+            if (parsedData == null){
+                let stale = isEngineShaped(e.state);
+                if (stale || (e.state == null && shownPath != null && location.pathname != shownPath)){
+                    clearTimeout(clickCallbackTimer);
+                    clickCallbackTimer = null;
+                    location.reload();
+                }
+                return;
+            }
+
+            //One of the engine's own entries replaces the content: the click callback of the page
+            //being left must not run against it
+            clearTimeout(clickCallbackTimer);
+            clickCallbackTimer = null;
+
+            {
                 let savedScroll         = typeof parsedData.scrollY == "number" ? parsedData.scrollY : null;
                 let routeProperties     = parsedData.routeProperties;
                 let routeName           = routeProperties.name;
-                let ele                 = parsedData.elementId; //Element must have an ID
+                let ele                 = parsedData.elementId; //the link that made the entry, by id
                 let usedHistoryCallback = null;   
                 let contentNode         = defaultContentNode
                 let title               = routeConfigs.routes[routeName].pageTitle;
                 let element             = null;
                 let callbackKey         = null;
+                let historyCallbacks    = routeConfigs.routes[routeName].historyCallbacks;
 
-                if(ele != null){
+                //The link may be gone: it can sit in content another route has since replaced, or
+                //have had no id. The entry is then restored as one with no originating link.
+                if (ele != null && ele !== "") element = document.getElementById(ele);
+
+                if(element != null){
                     
-                    element             = $$.ss("#"+ele);
                     callbackKey         = element.dataset[hyphenatedToCamel(dataAttributes.historyCallback)];
                     let contentNodeId   = element.dataset[hyphenatedToCamel(dataAttributes.contentNodeId)];
                     
                     // Select the content node using the contentNodeId
                     if(contentNodeId != undefined){
-                        contentNode     = $$.ss("#"+contentNodeId);
+                        let namedNode   = document.getElementById(contentNodeId);
+                        if (namedNode != null) contentNode = namedNode;
                     }
                     
                     //Check historyCallback
                     if(callbackKey != undefined){
-                        if (routeConfigs.routes[routeName].historyCallbacks[callbackKey] != undefined){
-                            usedHistoryCallback = routeConfigs.routes[routeName].historyCallbacks[callbackKey];
+                        if (historyCallbacks != undefined && historyCallbacks[callbackKey] != undefined){
+                            usedHistoryCallback = historyCallbacks[callbackKey];
                         }else{
                             console.warn("No function set for the key 'routes['"+routeName+"'].historyCallbacks['"+callbackKey+"']'");
                         } 
             
                     }
-                }else if(routeConfigs.routes[routeName].historyCallbacks != undefined){
-                    if(routeConfigs.routes[routeName].historyCallbacks["default"] != undefined){
-                        usedHistoryCallback = routeConfigs.routes[routeName].historyCallbacks["default"];
-                    }
+                }else if(historyCallbacks != undefined && historyCallbacks["default"] != undefined){
+                    usedHistoryCallback = historyCallbacks["default"];
+                }
+
+                if (contentNode == null){
+                    //no node to restore into (no default content node, and the link that named one is gone)
+                    location.reload();
+                    return;
                 }
 
                 //Set page title
@@ -257,6 +294,7 @@ var dataAttributes = { //data attributes name should be specified without the da
                     //clicking that link again loads it
                     delete contentNode.dataset.link;
                     contentNode.dataset.state = "received";
+                    shownPath = location.pathname;
 
                     //back where the visitor left this entry; again after the history callback, in case
                     //it renders content that the position depends on, but only if the visitor has not
@@ -292,8 +330,9 @@ var dataAttributes = { //data attributes name should be specified without the da
             contents: contents,
             elementId: elementId
         }
-        //a pushed entry starts with the position the new route opened at (the app has placed it by
-        //now), so it has one to return to even if the visitor never scrolls on it
+        //a pushed entry starts with the position the page is at when the new content is mounted, so
+        //it has one to return to even if the visitor never scrolls on it. The click callback runs
+        //200ms later; if it moves the page, the position is recorded again after it (see afterClickLoad)
         if (scrollY == null && !boot && restoreScroll) scrollY = Math.round(window.scrollY);
         if (scrollY != null) historyData.scrollY = scrollY;
 
@@ -304,6 +343,30 @@ var dataAttributes = { //data attributes name should be specified without the da
         //store page details in history state
         if (boot) history.replaceState(JSON.stringify(historyData), title, location.pathname + location.search + location.hash);
         else history.pushState(JSON.stringify(historyData), title, path);
+        shownPath = location.pathname;
+    }
+
+    function readEngineState(state){
+        //The engine's own data in a history entry, or null for an entry it did not write (no state,
+        //another script's state, or a route that is no longer configured)
+        let data = parseEngineShaped(state);
+        if (data == null || routeConfigs.routes[data.routeProperties.name] == undefined) return null;
+        return data;
+    }
+
+    function parseEngineShaped(state){
+        //The parsed state when it was written by the engine (by its shape), whatever route it names
+        if (typeof state != "string") return null;
+        try {
+            let data = JSON.parse(state);
+            return data != null && data.routeProperties != undefined && data.contents != undefined ? data : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function isEngineShaped(state){
+        return parseEngineShaped(state) != null;
     }
 
     function readSavedScroll(state){
@@ -369,6 +432,27 @@ var dataAttributes = { //data attributes name should be specified without the da
         return !(value === "false" || value === "0");
     }
 
+    function afterClickLoad(callback, element, routeName, callbackKey, data){
+        //Runs the click callback 200ms after the content is mounted, then records the position again
+        //in case the callback moved the page (to the top, or to a #section)
+        //A newer navigation, Back/Forward or destroy() cancels it (see beginNavigation, the popstate
+        //handler and destroy), so a page that was left does not run its callback or write a position
+        clearTimeout(clickCallbackTimer);
+        clickCallbackTimer = setTimeout(function(){
+            clickCallbackTimer = null;
+            if (callback != null) callback(element, routeName, callbackKey, data);
+            if (restoreScroll) rememberScroll();
+        }, 200);
+    }
+
+    function reportLoadError(element, routeName, message, error=null){
+        //A route's content could not be loaded. The app hears about it through config.errorCallback
+        //(for example to fall back to a full page load); without one it is logged, with the
+        //original Error when there is one, so its stack is kept.
+        if (errorCallback != null) errorCallback(element, routeName, message);
+        else console.error(error != null ? error : message);
+    }
+
     function fetchData(container=null, element=null, cache=null, show=null) {
         //show(html) mounts the content for the navigation that asked for it (see getLinkContent)
 
@@ -380,6 +464,8 @@ var dataAttributes = { //data attributes name should be specified without the da
 
         //the link this request is for; a newer click changes the node's link, not this one
         var requestedLink = container != null ? container.dataset.link : null;
+        //the navigation this request belongs to; a newer one (a click, Back/Forward) supersedes it
+        var requestToken = navigationToken;
         var xhr = $$.ajax({method:"GET", url:urlTarget}, "html");       
         
         xhr.addEventListener("load", function() {
@@ -438,35 +524,42 @@ var dataAttributes = { //data attributes name should be specified without the da
                         show(xhr.responseText).then(function(mounted){
                             if (!mounted) return; //a newer navigation took over
 
-                            // Pass: element, routeid, callbackKey
-                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeData)}, 200): null;
-
                             container.dataset.state = "received";
 
+                            //the title changes with the content, not before it arrives
+                            setPageTitle(element);
                             saveState(xhr.responseText, element.id);
+
+                            // Pass: element, routeid, callbackKey
+                            afterClickLoad(usedloadCallBack, element, routeName, callbackKey, routeData);
                         });
 
                     }
 
                 }else{//get and return only content
                      //call callback function if enable
-                     usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, routeProperties.data)}, 200): null;
+                     afterClickLoad(usedloadCallBack, element, routeName, callbackKey, routeData);
                 }
             }else{
                 releaseFailed("404 not found\nThe resource URL "+urlTarget+ " cannot be found on this server");
             }
         });
 
-        //Reported in the console, as a failed page or section fetch is; a blocking alert is no way to
+        //Reported to config.errorCallback, or the console without one; a blocking alert is no way to
         //tell a visitor. The node is released so clicking the link again refetches. A request with
-        //no response at all (offline, DNS, aborted) never fires "load", so those end here too.
+        //no response at all (offline, DNS, aborted) never fires "load", so those end here too. A
+        //request a newer navigation has superseded is only noted in the console: reporting it would
+        //invite a fallback (a full load of the failed link) away from the page the visitor chose.
         function releaseFailed(message){
-            console.error(message);
+            //released first, so the error callback can retry the link (and a callback that throws
+            //does not leave the link dead)
             if (container != null && container.dataset.link == requestedLink){
                 container.dataset.state = "received";
                 delete container.dataset.link;
             }
             if (pendingContent != null && pendingContent.link == requestedLink) pendingContent = null;
+            if (requestToken == navigationToken) reportLoadError(element, routeName, message);
+            else console.warn(message + " (a newer navigation had already replaced this request)");
         }
         ["error", "timeout", "abort"].forEach(function(type){
             xhr.addEventListener(type, function(){
@@ -594,7 +687,10 @@ var dataAttributes = { //data attributes name should be specified without the da
     }
 
     function beginNavigation(){
-        //A newer navigation supersedes every fragment still waiting on its stylesheets
+        //A newer navigation supersedes every fragment still waiting on its stylesheets, and the
+        //click callback of the one before it
+        clearTimeout(clickCallbackTimer);
+        clickCallbackTimer = null;
         activeStages.forEach(function(stage){ stage.cancel(); });
         activeStages = [];
         return ++navigationToken;
@@ -698,27 +794,50 @@ var dataAttributes = { //data attributes name should be specified without the da
 
         if (content == null) return uncloak(); //sent to the auth page
 
+        //A boot failure is reported once, after the chain below, so an error callback that throws is
+        //not caught and reported to itself a second time
+        var bootFailure = null;
+        //the entry route, kept here: a link clicked before the boot settles replaces routeProperties
+        var bootRoute = routeProperties;
+
         content.then(function(data){
             let contentStage    = data.status && defaultContentNode != null ? stageHtml(defaultContentNode, data.content, true, false) : null;
-            let route           = {name: routeProperties.name, data: routeProperties.data};
+            let route           = {name: bootRoute.name, data: bootRoute.data};
 
             //The sections and the content appear together, once their stylesheets apply
+            if (!data.status) bootFailure = {message: "The content of the route '"+bootRoute.name+"' could not be loaded from "+bootRoute.properties.target, error: null};
+
             return mountWhenStyled(token, sectionStages, contentStage, undefined, route).then(function(mounted){
                 uncloak();
-                if (!mounted || contentStage == null) return;
+                if (!mounted || contentStage == null) return false;
+                shownPath = location.pathname;
 
                 // Set page title
                 setPageTitle(null);
 
                 //store page details in the entry page's own history entry
                 saveState(data.content, null, true, savedScroll);
-
-                if (bootCallback != null) bootCallback(routeProperties.name, routeProperties.data);
-                scrollToSaved(savedScroll);
+                return true;
             });
         }).catch(function(error){
+            //A failed load is reported, not rethrown: a rejected promise here would only surface as
+            //an unhandled rejection, and the page shell stays usable
             uncloak();
-            throw error;
+            bootFailure = {message: error && error.message ? error.message : String(error), error: error};
+            return false;
+        }).then(function(booted){
+            //Outside the catch above, so an exception in the app's error or boot callback surfaces as
+            //the app's own error, not as a load failure
+            if (bootFailure != null){
+                //nothing to report once the engine is destroyed, or when a link clicked meanwhile
+                //has already replaced the boot
+                if (destroyed || token != navigationToken) return;
+                reportLoadError(null, bootRoute != null ? bootRoute.name : null, bootFailure.message, bootFailure.error);
+                return;
+            }
+            if (!booted) return;
+            if (bootCallback != null) bootCallback(bootRoute.name, bootRoute.data);
+            scrollToSaved(savedScroll);
         })
     }
 
@@ -818,10 +937,11 @@ var dataAttributes = { //data attributes name should be specified without the da
                         show(html).then(function(mounted){
                             if (!mounted) return; //a newer navigation took over
 
+                            setPageTitle(element);
                             saveState(html, element.id);
 
                             contentNode.dataset.state = "received";
-                            usedloadCallBack != null ? setTimeout(function(){usedloadCallBack(element, routeName, callbackKey, route.data)}, 200): null;
+                            afterClickLoad(usedloadCallBack, element, routeName, callbackKey, route.data);
                         });
 
                     } else { //link does not exist, get from server
@@ -835,16 +955,17 @@ var dataAttributes = { //data attributes name should be specified without the da
             }else{
                 //The node already holds this link's content: only the sections are reloaded
                 mountWhenStyled(token, sectionStages, null, flush, route);
+                setPageTitle(element);
             }
 
         }else { //just get only content
             token = beginNavigation();
             fetchData(null, element, cache);
             mountWhenStyled(token, stagePageSections(routeProperties, routeName), null, flush, route);
+            setPageTitle(element);
         }
-
-        // Set Page title
-        setPageTitle(element);
+        //A link whose content is fetched or read from the cache sets the title once it is mounted,
+        //so a failed load leaves the title of the page still on screen
     }
 
     function stagePageSections(targetRouteProperties, routeName, atBoot=false){
@@ -894,9 +1015,8 @@ var dataAttributes = { //data attributes name should be specified without the da
                     saveSectionData("pageContents", name, content);
                 }
                 
-            }else{
-                console.error("404 not found\nThe resource URL "+url+ " cannot be found on this server");
             }
+            //a failed response is reported by the caller (the boot sequence), not here
 
         }else{
             status=true;
@@ -1271,6 +1391,12 @@ var dataAttributes = { //data attributes name should be specified without the da
             set: function(value) {
                 validateFunction(value, "config.preClickCallback property value must be a function");
                 preClickCallback = value;
+            }
+        },
+        errorCallback: {
+            set: function(value) {
+                validateFunction(value, "config.errorCallback property value must be a function");
+                errorCallback = value;
             }
         },
         dataAttributeNames:{

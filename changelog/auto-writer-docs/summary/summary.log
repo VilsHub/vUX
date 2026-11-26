@@ -7,7 +7,7 @@ FOLLOWS: changelog/auto-writer-fixes
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected.
+vUX library (this repository): the only project affected.
 
   - doc/auto-writer.md              new guide
   - doc/README.md                   guide listed, example listed, pending list trimmed
@@ -34,12 +34,12 @@ is given.
 The example is designed rather than plain, which is a deliberate departure from the other
 example pages in this repository. Those are utilitarian because they demonstrate
 structural behaviour; this component's whole output is a visual effect, so the page is
-built to show it — a typed hero, a live playground over every config property, isolated
+built to show it: a typed hero, a live playground over every config property, isolated
 directive demos, collection mode, and a section whose five buttons all throw.
 
 One code change came out of writing it. deleteText() erased from the element it was
 given, while writeText() types into a span INSIDE that element, so passing the same
-element to both — the obvious reading, and what the example does — removed the caret
+element to both (the obvious reading, and what the example does) removed the caret
 before it removed any text. deleteText() now resolves to the written span when there is
 one, and still erases arbitrary elements directly when there is not.
 
@@ -70,4 +70,4 @@ Every string the example types was executed against the real module in the Node 
 module's own suite grew to 29 assertions with the deleteText target change. All example
 selectors were cross-checked against the markup, and every asset the page requests
 returns 200 when the repository root is served over HTTP. The page itself was not opened
-in a browser — there is none in this environment — so its visual result is unconfirmed.
+in a browser (there is none in this environment) so its visual result is unconfirmed.

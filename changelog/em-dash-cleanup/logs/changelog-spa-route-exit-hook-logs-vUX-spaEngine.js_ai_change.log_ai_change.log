@@ -1,0 +1,43 @@
+OLD_SECTION (line 1)
+RETROACTIVE LOG [em dash] commit 3b8bb7b, recorded after the fact (the changelog/ convention
+NEW_SECTION (line 1)
+RETROACTIVE LOG: commit 3b8bb7b, recorded after the fact (the changelog/ convention
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 7)
+Section 1 [em dash] route exit hook
+NEW_SECTION (line 7)
+Section 1: route exit hook
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+site: insertContent() both branches, the history-transition path, and boot [em dash] which
+NEW_SECTION (line 33)
+site: insertContent() both branches, the history-transition path, and boot, which
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 39)
+now fires just before replacement [em dash] on click navigation, history transitions and boot
+[em dash] receiving (routeName, params) of the outgoing route.
+NEW_SECTION (line 39)
+now fires just before replacement: on click navigation, history transitions and boot
+ -  receiving (routeName, params) of the outgoing route.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 43)
+Section 2 [em dash] getDynamicData(): segment-count mismatch
+NEW_SECTION (line 43)
+Section 2, getDynamicData(): segment-count mismatch
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 58)
+treated as MATCHING it with empty params [em dash] e.g. /table matched /user/;id:[0-9]+ and
+NEW_SECTION (line 58)
+treated as MATCHING it with empty params: e.g. /table matched /user/;id:[0-9]+ and
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

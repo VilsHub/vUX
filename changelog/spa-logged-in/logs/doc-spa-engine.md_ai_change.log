@@ -6,14 +6,14 @@ Section 1
 OLD_SECTION
 |---|---|
 | `initialize()` | Boots the engine with all preconfigured settings: mounts the entry route, registers the click and history listeners, and starts the background cache builder. Call it once, after all `config` properties are set. Throws if `config.classes.spaLink` or `config.routeConfigs` is missing. Subsequent calls are ignored. |
-| `clearCache()` | Empties everything the engine has cached — route contents, page contents, page sections and block sections — so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them, such as `userProperties`, is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+| `clearCache()` | Empties everything the engine has cached (route contents, page contents, page sections and block sections) so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them, such as `userProperties`, is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
 
 ## Config properties
 
 NEW_SECTION
 |---|---|
 | `initialize()` | Boots the engine with all preconfigured settings: mounts the entry route, registers the click and history listeners, and starts the background cache builder. Call it once, after all `config` properties are set. Throws if `config.classes.spaLink` or `config.routeConfigs` is missing. Subsequent calls are ignored. |
-| `clearCache()` | Empties everything the engine has cached — route contents, page contents, page sections and block sections — so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+| `clearCache()` | Empties everything the engine has cached (route contents, page contents, page sections and block sections) so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
 
 ## Properties
 
@@ -31,7 +31,7 @@ Section 2
 OLD_SECTION
 ## Protected routes
 
-Setting `protected: true` on a route makes the engine check the session (`sessionStorage.userProperties.auth`) before loading it; unauthenticated users are redirected to the route's `authURL`. Note this is a client-side convenience only — the fragments themselves must still be protected on the server.
+Setting `protected: true` on a route makes the engine check the session (`sessionStorage.userProperties.auth`) before loading it; unauthenticated users are redirected to the route's `authURL`. Note this is a client-side convenience only: the fragments themselves must still be protected on the server.
 
 NEW_SECTION
 ## Protected routes

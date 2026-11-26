@@ -4,7 +4,7 @@ DATE: 2026-08-27
 PRIOR STATE: did not exist
 
 OLD_SECTION
-(no file — Resizer was the only repaired module with no page under examples/)
+(no file: Resizer was the only repaired module with no page under examples/)
 
 NEW_SECTION
 A five-section page built on examples/shared/example.css: a hero whose headline box is
@@ -22,7 +22,7 @@ Section choices follow what the repair actually changed, so the page doubles as 
 demonstration:
 
   - The hero uses direction:"both" with all four thresholds set, because the pre-fix
-    module could not do either — the drag arithmetic ignored the drag, and the module
+    module could not do either: the drag arithmetic ignored the drag, and the module
     threw before it set any state.
   - Section 03 exists solely for the left/top edge inversion, which is new behaviour.
     Before the fix those two position settings produced controls that shrank the
@@ -47,5 +47,5 @@ explained in the README, because a consumer hits all three:
      the page's own <style> block and would win every specificity tie.
   3. Each box in section 03 anchored to the far side of its cell with flexbox. The
      module writes a size and never a position, so without anchoring a left- or
-     top-handled box still resizes but visibly grows the wrong way — which would read
+     top-handled box still resizes but visibly grows the wrong way, which would read
      as the inversion fix not working.

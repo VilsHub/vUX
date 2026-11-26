@@ -1,0 +1,27 @@
+OLD_SECTION (line 4)
+(none [em dash] the examples/ directory had only modal/ and spa/)
+NEW_SECTION (line 4)
+(none: the examples/ directory had only modal/ and spa/)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 10)
+- index.html [em dash] markup for two selects (optgroup/disabled/multiple), a 3-radio group
+NEW_SECTION (line 10)
+- index.html: markup for two selects (optgroup/disabled/multiple), a 3-radio group
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+- main.js [em dash] configures and autoBuild()s each builder; wires "Add option +
+NEW_SECTION (line 14)
+- main.js: configures and autoBuild()s each builder; wires "Add option +
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+- README.md [em dash] run instructions and a walkthrough of what each control demonstrates.
+NEW_SECTION (line 18)
+- README.md: run instructions and a walkthrough of what each control demonstrates.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

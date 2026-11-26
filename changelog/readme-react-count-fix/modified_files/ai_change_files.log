@@ -1,0 +1,7 @@
+FEATURE: readme-react-count-fix
+DATE: 2026-11-26
+
+<Documentation>
+  Modified:
+    README.md                   (summary count 14 -> 11)
+    ChangeLog.md                (v4.1.0 Fixed heading + bullet)

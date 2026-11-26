@@ -1,0 +1,22 @@
+OLD_SECTION (line 141)
+                        <div>window<b id="roWidth">[em dash]</b></div>
+                        <div>layout<b id="roLayout">[em dash]</b></div>
+NEW_SECTION (line 141)
+                        <div>window<b id="roWidth">-</b></div>
+                        <div>layout<b id="roLayout">-</b></div>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 269)
+        <div class="err-out" id="errOut">No error yet [em dash] press one of the buttons above.</div>
+NEW_SECTION (line 269)
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 283)
+            <span class="kbd">feedTimeline</span> [em dash] try <span class="kbd">boardTimeline.destroy()</span>.
+NEW_SECTION (line 283)
+            <span class="kbd">feedTimeline</span>: try <span class="kbd">boardTimeline.destroy()</span>.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -7,7 +7,7 @@ FOLLOWS: changelog/modal-displayer-verification
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected. No other project in the
+vUX library (this repository): the only project affected. No other project in the
 workspace consumes these files, and there is no build step or dependency graph to
 propagate through; changes take effect on the next page load.
 
@@ -16,7 +16,7 @@ Consumer-visible surface:
   - assets/css/modalDisplayer.css one selector widened
 
 Public API is additive: closeAll() and depth are new, and no existing member was
-renamed or removed. Two behaviour changes do affect existing consumers — see
+renamed or removed. Two behaviour changes do affect existing consumers: see
 BEHAVIOUR CHANGES below.
 
 --------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ Design, and why it is shaped this way:
 
 1. One overlay per layer, created on open and removed on close, each with its own
    z-index, its own responsive width and its own scroll container. A single shared
-   overlay cannot represent two modals — it has one backdrop and one scroll box.
+   overlay cannot represent two modals: it has one backdrop and one scroll box.
 
 2. All per-modal state moved from closure variables onto a layer object held in an
    array. Overwriting those variables was the mechanism by which nesting destroyed
@@ -45,7 +45,7 @@ Design, and why it is shaped this way:
    so nesting cannot re-capture a already-frozen body.
 
 5. The stack is module scoped and shared by every ModalDisplayer instance, because
-   the state it protects — the body freeze, the scroll position — belongs to the
+   the state it protects (the body freeze, the scroll position) belongs to the
    document. A stack per instance would let two instances independently freeze and
    unfreeze the body, recreating the bug this change fixes. Instance configuration
    is snapshotted onto each layer at open time, so a layer always closes with the
@@ -77,7 +77,7 @@ BUGS FIXED ALONG THE WAY
    closing, document.getElementById("loginModal") returned null, its inputs were
    gone, an element was stranded as id="vOld", two #newModal elements remained in
    the overlay, the scroll position was lost, and body stayed position:fixed so the
-   page could never be scrolled again. Nothing threw — the failure was silent.
+   page could never be scrolled again. Nothing threw: the failure was silent.
 
 2. openProcessor fired twice for the "box" effect. Its animation box uses
    `transition: all`, animating width and height, so transitionend fired once per

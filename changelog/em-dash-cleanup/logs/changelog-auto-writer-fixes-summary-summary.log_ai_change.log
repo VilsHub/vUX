@@ -1,0 +1,13 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] the only project affected.
+NEW_SECTION (line 10)
+vUX library (this repository): the only project affected.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 75)
+  stop()                          NEW [em dash] cancels a run in progress and clears its timers
+NEW_SECTION (line 75)
+  stop()                          NEW: cancels a run in progress and clears its timers
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

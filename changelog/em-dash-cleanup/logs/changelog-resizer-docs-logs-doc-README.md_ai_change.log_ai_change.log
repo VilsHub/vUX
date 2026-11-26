@@ -1,0 +1,36 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Add Resizer to the guides table
+NEW_SECTION (line 7)
+CHANGE 1: Add Resizer to the guides table
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 22)
+CHANGE 2 [em dash] Drop Resizer from the "coming next" list
+NEW_SECTION (line 22)
+CHANGE 2: Drop Resizer from the "coming next" list
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 36)
+CHANGE 3 [em dash] Add the example to "Other references"
+NEW_SECTION (line 36)
+CHANGE 3: Add the example to "Other references"
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 40)
+- [AutoWriter example](../examples/autowriter/README.md) [em dash] runnable example of the typewriter effect, its directives and its validation.
+NEW_SECTION (line 40)
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 43)
+- [AutoWriter example](../examples/autowriter/README.md) [em dash] runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md) [em dash] runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+NEW_SECTION (line 43)
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md): runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -1,0 +1,224 @@
+NOTE: this file also carries the spa-engine-history-fixes, readme-react-count-fix changes, logged in that feature's folder; only the hunks that removed em dashes are listed here.
+
+OLD_SECTION (line 43)
+- DataView module (vUX-dataView.js) [em dash] keyed data-to-DOM binding for hot-update views (targeted cell updates, node-moving sort/filter)
+- Modal stacking in ModalDisplayer [em dash] a trigger inside a displayed modal opens a new layer on top; one stack shared across instances; closeAll() to unwind it
+NEW_SECTION (line 43)
+- DataView module (vUX-dataView.js): keyed data-to-DOM binding for hot-update views (targeted cell updates, node-moving sort/filter)
+- Modal stacking in ModalDisplayer: a trigger inside a displayed modal opens a new layer on top; one stack shared across instances; closeAll() to unwind it
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 47)
+- Documentation set under doc/ [em dash] index plus SPA engine, progress indicator, data view, modal displayer and form components guides
+NEW_SECTION (line 47)
+- Documentation set under doc/: index plus SPA engine, progress indicator, data view, modal displayer and form components guides
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 51)
+- AutoWriter.stop() [em dash] cancels a run in progress and clears its timers
+NEW_SECTION (line 51)
+- AutoWriter.stop(): cancels a run in progress and clears its timers
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 53)
+- Example page design standard in CLAUDE.md [em dash] module examples are designed pages, not bare demos [em dash] and the requirement to record every change in ChangeLog.md
+- Shared example design system (examples/shared/example.css) [em dash] one palette and one set of primitives across every example page
+NEW_SECTION (line 53)
+- Example page design standard in CLAUDE.md (module examples are designed pages, not bare demos) and the requirement to record every change in ChangeLog.md
+- Shared example design system (examples/shared/example.css): one palette and one set of primitives across every example page
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 56)
+- Resizer.destroy() [em dash] removes the module's listeners and any resize handlers it injected, and releases a drag in progress
+- Runnable Resizer example (examples/resizer/) [em dash] both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
+- Resizer guide (doc/resizer.md) [em dash] the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
+- destroy() on every component [em dash] AutoWriter, Carousel, DOMDrawer, FormValidator, ListScroller, ModalDisplayer, ProgressIndicator, SPAEngine, TimeLineList, ToolTip and TouchHandler, plus each of the six FormComponents widgets [em dash] detaching the listeners, timers and animations the component started and removing the DOM it injected, so a component can be torn down without leaving anything bound to the page
+NEW_SECTION (line 56)
+- Resizer.destroy(): removes the module's listeners and any resize handlers it injected, and releases a drag in progress
+- Runnable Resizer example (examples/resizer/): both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
+- Resizer guide (doc/resizer.md): the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
+- destroy() on every component: AutoWriter, Carousel, DOMDrawer, FormValidator, ListScroller, ModalDisplayer, ProgressIndicator, SPAEngine, TimeLineList, ToolTip and TouchHandler, plus each of the six FormComponents widgets, detaching the listeners, timers and animations the component started and removing the DOM it injected, so a component can be torn down without leaving anything bound to the page
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 61)
+- destroy() on the object returned by CShapes().animatedRectangle() [em dash] stops the animation and clears the canvas, where stop() leaves the last frame painted
+NEW_SECTION (line 61)
+- destroy() on the object returned by CShapes().animatedRectangle(): stops the animation and clears the canvas, where stop() leaves the last frame painted
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 63)
+- Component module (vUX-component.js) [em dash] build your own reusable component from your own markup: a `<template>` marked with `data-v-*` bindings, cloned and managed by vUX, with `mount()`, `update()`, `destroy()` and keyed `sync()`
+- Component bindings: `data-v-field` (text), `data-v-bind` (attributes), `data-v-on` (events), `data-v-ref` (named nodes), `data-v-show` and `data-v-class` (truthiness toggles) [em dash] every value a plain field name, never an expression
+NEW_SECTION (line 63)
+- Component module (vUX-component.js), build your own reusable component from your own markup: a `<template>` marked with `data-v-*` bindings, cloned and managed by vUX, with `mount()`, `update()`, `destroy()` and keyed `sync()`
+- Component bindings: `data-v-field` (text), `data-v-bind` (attributes), `data-v-on` (events), `data-v-ref` (named nodes), `data-v-show` and `data-v-class` (truthiness toggles): every value a plain field name, never an expression
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 66)
+- DataView rows now accept the full binding set [em dash] `data-v-bind`, `data-v-on`, `data-v-ref`, `data-v-show` and `data-v-class` work alongside `data-v-field` [em dash] with `config.handlers` and `config.formatters` to drive them
+- Component guide (doc/component.md) [em dash] the binding contract, both template forms, keyed lists, nesting, the custom-element recipe, and the full error list
+- Runnable Component example (examples/component/) [em dash] every binding under live control, keyed lists keeping their nodes through a sort, nesting with a ToolTip attached and released, and every validation error raised on demand
+- Carousel config changes on a live carousel [em dash] delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+- Carousel guide (doc/carousel.md) [em dash] the required consumer CSS, every config property, the generated markup, and the error list
+- Runnable Carousel example (examples/carousel/) [em dash] a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+- TimeLineList guide (doc/timeline-list.md) [em dash] the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
+- Runnable TimeLineList example (examples/timelinelist/) [em dash] a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
+NEW_SECTION (line 66)
+- DataView rows now accept the full binding set: `data-v-bind`, `data-v-on`, `data-v-ref`, `data-v-show` and `data-v-class` work alongside `data-v-field`, with `config.handlers` and `config.formatters` to drive them
+- Component guide (doc/component.md): the binding contract, both template forms, keyed lists, nesting, the custom-element recipe, and the full error list
+- Runnable Component example (examples/component/): every binding under live control, keyed lists keeping their nodes through a sort, nesting with a ToolTip attached and released, and every validation error raised on demand
+- Carousel config changes on a live carousel: delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+- Carousel guide (doc/carousel.md): the required consumer CSS, every config property, the generated markup, and the error list
+- Runnable Carousel example (examples/carousel/): a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+- TimeLineList guide (doc/timeline-list.md): the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
+- Runnable TimeLineList example (examples/timelinelist/): a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 77)
+- ListScroller guide (doc/list-scroller.md) [em dash] the container, list and button contract, every config property, the markup it produces, limits and the error list
+- Runnable ListScroller example (examples/listscroller/) [em dash] a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
+- Skeleton module (vUX-skeleton.js) [em dash] placeholder screens derived from the template you already wrote for the real content: fields become text bars, images media blocks, controls filled blocks, and your card, padding and grid are kept, so the skeleton has the layout of what replaces it
+- Skeleton `data-skeleton` attribute [em dash] `text:N`, `circle`, `circle:<size>`, `rect`, `rect:<w>/<h>`, `media`, `keep` and `skip` override what an element is inferred to be
+- Skeleton timing [em dash] `config.delay` keeps a fast load from flashing a skeleton at all, `config.minDuration` keeps a slow one from flickering off, and `hide()` returns a promise so you render once it is down; `during(promise)` wraps the whole flow
+- Skeleton mask mode [em dash] with no template, masks the container's existing content in place for a refresh, and puts the same nodes back afterwards
+- Skeleton guide (doc/skeleton.md) [em dash] the two modes, what becomes what, `data-skeleton`, timing, styling through custom properties, accessibility, limits and the error list
+- Runnable Skeleton example (examples/skeleton/) [em dash] a feed reloading at three speeds, a template beside its rendered card and derived skeleton, a playground over every config property, a with/without timing comparison, mask mode with a byte-for-byte check, and the validation errors
+- SketchPad module (vUX-sketchPad.js) [em dash] a canvas drawing surface, extracted from the Sketchpad whiteboard app: rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows, freehand pen, text, font icons and images, with selection, marquee, move, resize, duplicate, delete, undo/redo, wheel zoom and pan
+- SketchPad connectors [em dash] drag from a shape's border to another shape's to draw an arrow bound at both ends that re-routes when either shape moves or resizes; pressing Ctrl while drawing pins a joint, which curves the connector at that point
+- SketchPad scene as data [em dash] `elements` returns the scene as plain JSON and `load()` restores it (optionally as an undoable step); `exportCanvas()` renders it cropped to its content at any scale and background for PNG export or thumbnails
+- SketchPad constrained mode [em dash] `config.tools` limits the tools offered, `config.panZoom = false` fixes the view, `config.bounded` keeps every shape inside the surface and `config.maxElements` caps the scene, for a pad that marks out one region over an image
+- SketchPad stamps and icons [em dash] `createStamp()` turns SVG source into a stamp the stamp tool places, with black-only SVGs retinted by the fill colour; `icon` arms the icon tool with a glyph from any loaded font
+NEW_SECTION (line 77)
+- ListScroller guide (doc/list-scroller.md): the container, list and button contract, every config property, the markup it produces, limits and the error list
+- Runnable ListScroller example (examples/listscroller/): a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
+- Skeleton module (vUX-skeleton.js): placeholder screens derived from the template you already wrote for the real content: fields become text bars, images media blocks, controls filled blocks, and your card, padding and grid are kept, so the skeleton has the layout of what replaces it
+- Skeleton `data-skeleton` attribute: `text:N`, `circle`, `circle:<size>`, `rect`, `rect:<w>/<h>`, `media`, `keep` and `skip` override what an element is inferred to be
+- Skeleton timing: `config.delay` keeps a fast load from flashing a skeleton at all, `config.minDuration` keeps a slow one from flickering off, and `hide()` returns a promise so you render once it is down; `during(promise)` wraps the whole flow
+- Skeleton mask mode: with no template, masks the container's existing content in place for a refresh, and puts the same nodes back afterwards
+- Skeleton guide (doc/skeleton.md): the two modes, what becomes what, `data-skeleton`, timing, styling through custom properties, accessibility, limits and the error list
+- Runnable Skeleton example (examples/skeleton/): a feed reloading at three speeds, a template beside its rendered card and derived skeleton, a playground over every config property, a with/without timing comparison, mask mode with a byte-for-byte check, and the validation errors
+- SketchPad module (vUX-sketchPad.js): a canvas drawing surface, extracted from the Sketchpad whiteboard app: rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows, freehand pen, text, font icons and images, with selection, marquee, move, resize, duplicate, delete, undo/redo, wheel zoom and pan
+- SketchPad connectors: drag from a shape's border to another shape's to draw an arrow bound at both ends that re-routes when either shape moves or resizes; pressing Ctrl while drawing pins a joint, which curves the connector at that point
+- SketchPad scene as data: `elements` returns the scene as plain JSON and `load()` restores it (optionally as an undoable step); `exportCanvas()` renders it cropped to its content at any scale and background for PNG export or thumbnails
+- SketchPad constrained mode: `config.tools` limits the tools offered, `config.panZoom = false` fixes the view, `config.bounded` keeps every shape inside the surface and `config.maxElements` caps the scene, for a pad that marks out one region over an image
+- SketchPad stamps and icons: `createStamp()` turns SVG source into a stamp the stamp tool places, with black-only SVGs retinted by the fill colour; `icon` arms the icon tool with a glyph from any loaded font
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 92)
+- FontSplash module (vUX-fontSplash.js) [em dash] a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
+- FontSplash waits for its font [em dash] `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
+NEW_SECTION (line 92)
+- FontSplash module (vUX-fontSplash.js): a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
+- FontSplash waits for its font: `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 95)
+- FontSplash progress mode [em dash] `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
+- FontSplash timing [em dash] `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
+NEW_SECTION (line 95)
+- FontSplash progress mode: `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
+- FontSplash timing: `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 98)
+- SPAEngine `config.cacheVersion` [em dash] ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
+- SPAEngine `clearCache()` [em dash] empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/) [em dash] boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property [em dash] the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+NEW_SECTION (line 98)
+- SPAEngine `config.cacheVersion`, ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
+- SPAEngine `clearCache()`: empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/): boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property: the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 103)
+- Core utilities guide (doc/core.md) [em dash] `$$`, every `$$.sm()` manipulator, slide/flip/animate/filter in detail, delegated events, data, time and environment utilities, the global helpers and built-in extensions, the error list, and a table of the calls known to be broken in this release
+- Runnable core utilities example (examples/core/) [em dash] a gradient headline turned by `animate()`, a flip card, a selection board with every class and visibility method, slides, an easing lab, filters, overlays, delegated events, a live countdown, the built-in extensions evaluated on the page, and the validation errors and known defects triggered on demand
+- ModalDisplayer "drop" effect [em dash] the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
+- ModalDisplayer "slideLeft" and "slideRight" effects [em dash] the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right, docks right and leaves back out to the right; slideRight mirrors it on the left
+- MessageBox module (vUX-messageBox.js) [em dash] notification messages posted with `show()` or the typed shorthands `info()`, `success()`, `warning()` and `error()`; each stays for `config.duration` (0 keeps it until closed) and leaves on its own
+- MessageBox effects [em dash] `drop` (the default) falls from the top of the window and rises back out, `slideLeft`/`slideRight` slide in from an edge and leave through it, plus `fade` and `none`; the movement is the core slide utility's, and under reduced motion every effect becomes a fade
+- MessageBox alignment [em dash] `config.alignment` lands messages on the left, centre or right; messages stack without jumping, every instance on a page shares the same lanes, and on a narrow window all of them share the centre lane
+NEW_SECTION (line 103)
+- Core utilities guide (doc/core.md): `$$`, every `$$.sm()` manipulator, slide/flip/animate/filter in detail, delegated events, data, time and environment utilities, the global helpers and built-in extensions, the error list, and a table of the calls known to be broken in this release
+- Runnable core utilities example (examples/core/): a gradient headline turned by `animate()`, a flip card, a selection board with every class and visibility method, slides, an easing lab, filters, overlays, delegated events, a live countdown, the built-in extensions evaluated on the page, and the validation errors and known defects triggered on demand
+- ModalDisplayer "drop" effect: the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
+- ModalDisplayer "slideLeft" and "slideRight" effects: the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right, docks right and leaves back out to the right; slideRight mirrors it on the left
+- MessageBox module (vUX-messageBox.js): notification messages posted with `show()` or the typed shorthands `info()`, `success()`, `warning()` and `error()`; each stays for `config.duration` (0 keeps it until closed) and leaves on its own
+- MessageBox effects: `drop` (the default) falls from the top of the window and rises back out, `slideLeft`/`slideRight` slide in from an edge and leave through it, plus `fade` and `none`; the movement is the core slide utility's, and under reduced motion every effect becomes a fade
+- MessageBox alignment: `config.alignment` lands messages on the left, centre or right; messages stack without jumping, every instance on a page shares the same lanes, and on a narrow window all of them share the centre lane
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 111)
+- MessageBox handles [em dash] `show()` returns a handle whose `close()` removes the message when your code decides, and content may be an element carrying your own controls
+NEW_SECTION (line 111)
+- MessageBox handles: `show()` returns a handle whose `close()` removes the message when your code decides, and content may be an element carrying your own controls
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 173)
+- AutoWriter instances unusable twice [em dash] a second writeText() ignored its arguments, wrote the literal string "undefined" and retyped the previous string into the previous element
+- AutoWriter collection mode unreachable [em dash] writeText() validated argument 1 as an element before consulting the type test, so every NodeList was rejected and the whole "multiple" path had never run
+NEW_SECTION (line 173)
+- AutoWriter instances unusable twice: a second writeText() ignored its arguments, wrote the literal string "undefined" and retyped the previous string into the previous element
+- AutoWriter collection mode unreachable: writeText() validated argument 1 as an element before consulting the type test, so every NodeList was rejected and the whole "multiple" path had never run
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 179)
+- Resizer resizing nothing at all [em dash] a mousedown on a handle threw before any state was set (two misspelled variable names), so the component never responded to a drag
+NEW_SECTION (line 179)
+- Resizer resizing nothing at all: a mousedown on a handle threw before any state was set (two misspelled variable names), so the component never responded to a drag
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 183)
+- Resizer config.myResizeHandler being validated and stored but never used [em dash] a consumer-supplied handle now actually drives the resize, and needs no vUX marker classes when direction is 'x' or 'y'
+- Resizer handles having no size, position or cursor [em dash] assets/css/resizer.css is now loaded by the module instead of never being linked
+NEW_SECTION (line 183)
+- Resizer config.myResizeHandler being validated and stored but never used: a consumer-supplied handle now actually drives the resize, and needs no vUX marker classes when direction is 'x' or 'y'
+- Resizer handles having no size, position or cursor: assets/css/resizer.css is now loaded by the module instead of never being linked
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 196)
+- Carousel dots having no height, so they were invisible and unclickable by default [em dash] assets/css/carousel.css is now loaded by the module instead of never being linked
+NEW_SECTION (line 196)
+- Carousel dots having no height, so they were invisible and unclickable by default: assets/css/carousel.css is now loaded by the module instead of never being linked
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 201)
+- Carousel swipes being taken over by page scrolling on phones, and the grab cursor never showing [em dash] TouchHandler now links assets/css/touchHandler.css, which also sets touch-action on the swipe area
+NEW_SECTION (line 201)
+- Carousel swipes being taken over by page scrolling on phones, and the grab cursor never showing: TouchHandler now links assets/css/touchHandler.css, which also sets touch-action on the swipe area
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 330)
+- DOMDrawer module (vUX-domDrawer.js and assets/css/domDrawer.css) [em dash] replaced by SketchPad, whose rect tool with `config.tools = ["select", "rect"]`, `config.maxElements = 1` and `config.bounded` does what DOMDrawer did, plus move, resize, delete, undo and touch input
+NEW_SECTION (line 330)
+- DOMDrawer module (vUX-domDrawer.js and assets/css/domDrawer.css): replaced by SketchPad, whose rect tool with `config.tools = ["select", "rect"]`, `config.maxElements = 1` and `config.bounded` does what DOMDrawer did, plus move, resize, delete, undo and touch input
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 340)
+- Modal scroll lock mechanism from position:fixed to body overflow:hidden [em dash] the page keeps its layout and scroll position; user scrolling is blocked but programmatic scrollTo() is not
+NEW_SECTION (line 340)
+- Modal scroll lock mechanism from position:fixed to body overflow:hidden: the page keeps its layout and scroll position; user scrolling is blocked but programmatic scrollTo() is not
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

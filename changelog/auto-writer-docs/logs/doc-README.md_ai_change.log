@@ -4,7 +4,7 @@ DATE: 2026-08-26
 PRIOR STATE: as left by feature 'doc-pages'
 
 ================================================================================
-CHANGE 1 — List the new guide, and stop listing it as pending
+CHANGE 1: List the new guide, and stop listing it as pending
 ================================================================================
 
 OLD_SECTION
@@ -23,15 +23,15 @@ The guide exists now, so it joins the table and drops out of the pending list. N
 modules remain undocumented.
 
 ================================================================================
-CHANGE 2 — List the new example
+CHANGE 2: List the new example
 ================================================================================
 
 OLD_SECTION
-- [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
+- [Form example](../examples/form/README.md): runnable example exercising all six form component builders.
 
 NEW_SECTION
-- [Form example](../examples/form/README.md) — runnable example exercising all six form component builders.
-- [AutoWriter example](../examples/autowriter/README.md) — runnable example of the typewriter effect, its directives and its validation.
+- [Form example](../examples/form/README.md): runnable example exercising all six form component builders.
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
 
 REASON
 Matches how the SPA, modal and form examples are surfaced under "Other references".

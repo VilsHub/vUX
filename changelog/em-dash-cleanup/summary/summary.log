@@ -1,0 +1,12 @@
+Feature: em-dash-cleanup
+
+Affected projects:
+- Libraries/vUX: every em dash (U+2014) removed from the repo (1,261 in 193 files: changelog/ logs,
+  examples, doc/, ChangeLog.md, CLAUDE.md, assets, README.md; none were in the JS modules). Rewritten
+  by context with a scripted pass whose rules were checked on samples: colon, comma (before a
+  conjunction, or when the clause has its own colon), parentheses (paired aside), hyphen (empty value).
+  Line endings unchanged (CRLF files stay CRLF); every tracked .js parses. ChangeLog.md v4.1.0 Changed
+  bullet.
+- Apps/vux-docs: rebuilt; dist/ has no em dashes.
+- Workspace CLAUDE.md: the em dash rule now names every project, generated output, logs and replies.
+- Workspace .version: unchanged (docs/text only).

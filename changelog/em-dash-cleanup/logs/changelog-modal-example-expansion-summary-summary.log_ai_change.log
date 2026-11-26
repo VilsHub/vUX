@@ -1,0 +1,27 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] the only project affected.
+NEW_SECTION (line 10)
+vUX library (this repository): the only project affected.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 39)
+  and that one Escape pops exactly one layer [em dash] behaviour the guide asserts and
+NEW_SECTION (line 39)
+  and that one Escape pops exactly one layer: behaviour the guide asserts and
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 57)
+That is correct behaviour, not a defect [em dash] a modal blocks the page beneath it [em dash] but it
+NEW_SECTION (line 57)
+That is correct behaviour, not a defect (a modal blocks the page beneath it) but it
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 106)
+layer, stacking across the two instances, and exercising both overlay modes [em dash]
+NEW_SECTION (line 106)
+layer, stacking across the two instances, and exercising both overlay modes:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

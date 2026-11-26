@@ -26,7 +26,7 @@ float:left;
 margin-right:5px;
 }
 .vRadioButtonWrapper .vRadioButton::before {
-content:''; /* without this the pseudo-element never renders and radios are invisible — the checkbox rule below already had it */
+content:''; /* without this the pseudo-element never renders and radios are invisible: the checkbox rule below already had it */
 position:absolute;
 border-radius:100%;
 transition:all .2s linear;
@@ -267,7 +267,7 @@ top:0;
 
 /* Checkbox */
 .vCheckboxWrapper {
-    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget — same fix as .vRadioButtonWrapper above */
+    /* height:auto; */ /* would override the generated .v<className> height (the link loads after the generated styles) and collapse the widget: same fix as .vRadioButtonWrapper above */
     display:block;
     top:0px;
     position: relative;

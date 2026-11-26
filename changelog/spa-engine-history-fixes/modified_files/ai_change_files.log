@@ -1,0 +1,18 @@
+FEATURE: spa-engine-history-fixes
+DATE: 2026-11-26
+
+<SPAEngine>
+  Modified:
+    vUX-spaEngine.js            (popstate null-safe, stateless and stale-route entries, title on mount, errorCallback for the current navigation only, boot failure reported once, scroll after callback, cancellable click-callback timer, parseEngineShaped)
+
+<Documentation>
+  Modified:
+    doc/spa-engine.md
+    ChangeLog.md                (v4.1.0 Added + Fixed bullets)
+
+<Example>
+  Modified:
+    examples/spa/server.py       (missing /display/ fragment answers 404)
+    examples/spa/index.html      (Broken link)
+    examples/spa/main.js         (broken route, config.errorCallback)
+    examples/spa/README.md       (Load errors bullet)

@@ -1,0 +1,29 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] the only project affected. Documentation only; no
+NEW_SECTION (line 10)
+vUX library (this repository): the only project affected. Documentation only; no
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 54)
+                       route are stated [em dash] it reaches every Resizer on the page, and
+NEW_SECTION (line 54)
+                       route are stated: it reaches every Resizer on the page, and
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 70)
+    keyboard path to resizing. A workaround is suggested [em dash] offer another control that
+    writes style.width directly [em dash] rather than leaving it implicit.
+NEW_SECTION (line 70)
+    keyboard path to resizing. A workaround is suggested: offer another control that
+    writes style.width directly, rather than leaving it implicit.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 89)
+browser, for the same reason the example has not [em dash] no browser is available in this
+NEW_SECTION (line 89)
+browser, for the same reason the example has not: no browser is available in this
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

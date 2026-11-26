@@ -1,5 +1,5 @@
 /* ============================================================================
-   vUX Component example — bring your own component.
+   vUX Component example: bring your own component.
 
    Importing any vUX-*.js module boots the whole core, so $$ and the validateX
    helpers are globals by the time this file's body runs. ToolTip is imported for
@@ -42,7 +42,7 @@ const say = (el, text, cls) => {
 };
 
 /* ===========================================================================
-   SECTION 1 — instances of one template
+   SECTION 1: instances of one template
    ========================================================================= */
 
 const grid = $$.ss("#cardGrid");
@@ -62,7 +62,7 @@ card.config.formatters = {
 };
 
 /* Handlers are named in the template by data-v-on="click:pin". Each is called
-   with (data, node, event, component) — 'data' being the instance's CURRENT data,
+   with (data, node, event, component): 'data' being the instance's CURRENT data,
    not whatever it held when the node was first built. */
 card.config.handlers = {
     pin: (data) => {
@@ -88,11 +88,11 @@ const cards = [];
 
 function mountCard(){
     if (cards.filter(i => !i.destroyed).length >= 6){
-        say("#status1", "six is enough for a demo — destroy one first", "err");
+        say("#status1", "six is enough for a demo: destroy one first", "err");
         return;
     }
     cards.push(card.mount(grid, person()));
-    say("#status1", "mounted — " + liveCards().length + " live", "run");
+    say("#status1", "mounted: " + liveCards().length + " live", "run");
 }
 
 const liveCards = () => cards.filter(i => !i.destroyed);
@@ -112,7 +112,7 @@ $$.ss("#patchRandom").onclick = () => {
     const pick = live[Math.floor(Math.random() * live.length)];
     //update() merges: fields you do not name keep their current value.
     const changed = pick.update({ role: ["lead","staff","principal","fellow"][Math.floor(Math.random()*4)] });
-    say("#status1", "update() wrote " + (changed.length ? changed.join(", ") : "nothing — same value"), "run");
+    say("#status1", "update() wrote " + (changed.length ? changed.join(", ") : "nothing: same value"), "run");
 };
 
 $$.ss("#heroPatch").onclick = () => {
@@ -130,7 +130,7 @@ $$.ss("#destroyLast").onclick = () => {
     if (live.length === 0) return say("#status1", "nothing to destroy", "err");
     live[live.length - 1].destroy();
     refreshCount();
-    say("#status1", "destroyed — " + liveCards().length + " live", "run");
+    say("#status1", "destroyed: " + liveCards().length + " live", "run");
 };
 
 const clearCards = () => {
@@ -139,7 +139,7 @@ const clearCards = () => {
     card.destroyAll();
     cards.length = 0;
     refreshCount();
-    say("#status1", "destroyAll() — grid empty", "run");
+    say("#status1", "destroyAll(): grid empty", "run");
 };
 $$.ss("#destroyAll").onclick = clearCards;
 $$.ss("#heroClear").onclick  = clearCards;
@@ -149,7 +149,7 @@ mountCard(); mountCard(); mountCard();
 
 
 /* ===========================================================================
-   SECTION 2 — every binding, live
+   SECTION 2: every binding, live
 
    A second Component over the SAME template element. Two definitions can read one
    template because a <template> is only ever cloned out of, never consumed.
@@ -174,7 +174,7 @@ const soloData = {
 const soloInstance = solo.mount($$.ss("#oneStage"), soloData);
 
 /* Every control writes exactly one field. The pill reports update()'s return value,
-   which is the list of fields whose value actually moved — set a field to what it
+   which is the list of fields whose value actually moved: set a field to what it
    already holds and the list comes back empty, because no DOM write was needed. */
 function writeField(field, value){
     const changed = soloInstance.update({ [field]: value });
@@ -227,7 +227,7 @@ renderCode();
 
 
 /* ===========================================================================
-   SECTION 3 — keyed lists keep their nodes
+   SECTION 3: keyed lists keep their nodes
    ========================================================================= */
 
 const ROWS = [
@@ -259,7 +259,7 @@ syncRows();
 
 $$.ss("#sortScore").onclick = () => {
     rowData.sort((a, b) => b.score - a.score);
-    syncRows("sorted by score — surviving rows were moved, not rebuilt");
+    syncRows("sorted by score: surviving rows were moved, not rebuilt");
 };
 $$.ss("#sortName").onclick = () => {
     rowData.sort((a, b) => a.name.localeCompare(b.name));
@@ -267,17 +267,17 @@ $$.ss("#sortName").onclick = () => {
 };
 $$.ss("#bumpScores").onclick = () => {
     rowData = rowData.map(r => Object.assign({}, r, { score: Math.floor(Math.random() * 100) }));
-    syncRows("scores patched — one textContent write per changed cell");
+    syncRows("scores patched: one textContent write per changed cell");
 };
 $$.ss("#addRow").onclick = () => {
     const names = ["p99 latency","error rate","open sockets","disk pressure","gc pause"];
     rowData.push({ id: nextRowId++, name: names[Math.floor(Math.random()*names.length)], score: Math.floor(Math.random()*100), hot:false });
-    syncRows("row added — only the new key was built");
+    syncRows("row added: only the new key was built");
 };
 $$.ss("#dropRow").onclick = () => {
     if (rowData.length === 0) return say("#status3", "nothing to drop", "err");
     rowData = rowData.slice(1);
-    syncRows("row dropped — its instance was destroyed and its listeners unbound");
+    syncRows("row dropped: its instance was destroyed and its listeners unbound");
 };
 
 /* The counter-demonstration. Destroying the component and building a new one throws
@@ -287,12 +287,12 @@ $$.ss("#rebuildRows").onclick = () => {
     rowComp.destroy();
     $$.ss("#rowList").innerHTML = "";
     rowComp = buildRowComponent();
-    syncRows("rebuilt from scratch — every node is new, and your typing is gone");
+    syncRows("rebuilt from scratch: every node is new, and your typing is gone");
 };
 
 
 /* ===========================================================================
-   SECTION 4 — nesting, and letting go cleanly
+   SECTION 4: nesting, and letting go cleanly
    ========================================================================= */
 
 const logLines = [];
@@ -331,7 +331,7 @@ board.config.onMount = (instance) => {
     instance.tip = tip;
 };
 
-/* onDestroy is the mirror. Anything attached in onMount is released here — which is
+/* onDestroy is the mirror. Anything attached in onMount is released here, which is
    the reason every vUX component gained a destroy() before this module was written.
    Children mounted through instance.mount() need no handling: they are owned by the
    parent and torn down before this callback runs. */
@@ -373,7 +373,7 @@ $$.ss("#addChip").click();
 
 
 /* ===========================================================================
-   SECTION 5 — failure modes
+   SECTION 5: failure modes
 
    Each case really does misuse the API; the thrown Error is printed as it comes.
    ========================================================================= */
@@ -462,7 +462,7 @@ $$.sa("[data-err]").forEach(function(button){
         const name = button.getAttribute("data-err");
         try {
             errCases[name]();
-            $$.ss("#errOut").textContent = "No error was raised — that case is no longer a failure mode.";
+            $$.ss("#errOut").textContent = "No error was raised: that case is no longer a failure mode.";
         } catch (error) {
             $$.ss("#errOut").textContent = error.name + ": " + error.message;
         }

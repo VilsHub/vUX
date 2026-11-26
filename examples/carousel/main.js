@@ -1,5 +1,5 @@
 /*
- * vUX Carousel — runnable example.
+ * vUX Carousel: runnable example.
  *
  * Every carousel here follows the same three steps: new Carousel(container, viewport),
  * set .config, then initialize() and start(). initialize() builds the dots and wires the
@@ -120,7 +120,7 @@ ui.touch.addEventListener("change", () => {
 });
 
 $("#start").addEventListener("click", () => {
-    if (playState === "destroyed") { setStatus("err", "destroyed — press Rebuild"); return; }
+    if (playState === "destroyed") { setStatus("err", "destroyed: press Rebuild"); return; }
     playCarousel.start();      //idempotent: a second call while running is a no-op
     playState = "running";
     setStatus("run", "autoplaying (start() is a no-op when already running)");
@@ -133,7 +133,7 @@ $("#destroy").addEventListener("click", () => {
     //again because the page's CSS puts them all at top:0, left:auto.
     playCarousel.destroy();
     playState = "destroyed";
-    setStatus("err", "destroyed — dots, listeners, interval and inline styles removed");
+    setStatus("err", "destroyed: dots, listeners, interval and inline styles removed");
 });
 
 function rebuild() {
@@ -182,7 +182,7 @@ buildPlay();
 renderSnippet();
 
 /* ------------------------------------------------------------------ *
- * 3. Two on one page — independent state and scoped buttonStyle
+ * 3. Two on one page: independent state and scoped buttonStyle
  * ------------------------------------------------------------------ */
 
 const twinA = new Carousel($("#twinA"), viewportOf($("#twinA")));
@@ -225,20 +225,20 @@ gestCarousel.start();
 const gestStatus = $("#gestStatus"), gestText = $("#gestText");
 gestEl.addEventListener("mouseenter", () => {
     gestStatus.className = "status";
-    gestText.textContent = "pointer over the frame — autoplay paused";
+    gestText.textContent = "pointer over the frame: autoplay paused";
 });
 gestEl.addEventListener("mouseleave", () => {
     gestStatus.className = "status run";
-    gestText.textContent = "pointer outside — autoplaying";
+    gestText.textContent = "pointer outside: autoplaying";
 });
 const gestOut = document.createElement("span");
 watchActive(viewportOf(gestEl), gestOut, i => {
-    if (gestEl.matches(":hover")) gestText.textContent = "settled on slide " + i + " — autoplay paused while you point";
+    if (gestEl.matches(":hover")) gestText.textContent = "settled on slide " + i + ": autoplay paused while you point";
 });
 gestStatus.className = "status run";
 
 /* ------------------------------------------------------------------ *
- * 5. Validation — each of these throws synchronously
+ * 5. Validation: each of these throws synchronously
  * ------------------------------------------------------------------ */
 
 const BAD = {
@@ -266,7 +266,7 @@ $$$("[data-bad]").forEach(button => {
     button.addEventListener("click", () => {
         try {
             BAD[button.dataset.bad]();
-            $("#errOut").textContent = "No error thrown — that should not happen.";
+            $("#errOut").textContent = "No error thrown: that should not happen.";
         } catch (error) {
             $("#errOut").textContent = error.constructor.name + ": " + error.message;
         }

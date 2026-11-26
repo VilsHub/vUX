@@ -7,7 +7,7 @@ FOLLOWS: changelog/modal-scroll-lock
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected.
+vUX library (this repository): the only project affected.
 
 No module behaviour changed. vUX-modalDisplayer.js is untouched: the example now
 exercises capabilities the module already had but that nothing demonstrated. The one
@@ -36,7 +36,7 @@ Added alongside them:
   showed it working.
 - A second ModalDisplayer instance with its own trigger class, effect and tint. This
   is the only way to observe, in a browser, that the stack is shared across instances
-  and that one Escape pops exactly one layer — behaviour the guide asserts and
+  and that one Escape pops exactly one layer: behaviour the guide asserts and
   nothing demonstrated.
 - A live "Open layers" counter bound to `depth`, so stacking is displayed rather
   than inferred.
@@ -54,7 +54,7 @@ The first version of this change put a closeAll() button on the page. The automa
 run failed on it: Playwright timed out clicking it, reporting that the overlay
 intercepted pointer events.
 
-That is correct behaviour, not a defect — a modal blocks the page beneath it — but it
+That is correct behaviour, not a defect (a modal blocks the page beneath it) but it
 made the control useless exactly when it had a purpose, since closeAll() only matters
 while a stack is open. The button moved inside the two deepest modals, where the top
 layer makes it reachable, and the page text now explains why. A dead control became a
@@ -103,7 +103,7 @@ VERIFICATION
 The new suite drives the demo the way a user would: opening each modal from the page,
 building the three-deep chain by clicking through it, checking the depth readout,
 confirming the page behind is not clickable, running closeAll() from inside the top
-layer, stacking across the two instances, and exercising both overlay modes —
+layer, stacking across the two instances, and exercising both overlay modes:
 including that the modal itself is not blurred, that the overlay is left untinted in
 blur mode, and that the blur is held across a nested open and lifted only when the
 stack empties.

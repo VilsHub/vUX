@@ -1,0 +1,15 @@
+OLD_SECTION (line 6)
+CHANGE 1 [em dash] v4.0.0-beta: bullets appended under Added, Fixed and Changed
+NEW_SECTION (line 6)
+CHANGE 1, v4.0.0-beta: bullets appended under Added, Fixed and Changed
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 15)
+    - TimeLineList guide (doc/timeline-list.md) [em dash] the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
+    - Runnable TimeLineList example (examples/timelinelist/) [em dash] a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
+NEW_SECTION (line 15)
+    - TimeLineList guide (doc/timeline-list.md): the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
+    - Runnable TimeLineList example (examples/timelinelist/): a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

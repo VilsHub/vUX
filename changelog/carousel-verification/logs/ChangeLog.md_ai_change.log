@@ -3,18 +3,18 @@ FEATURE: carousel-verification
 DATE: 2026-10-02
 
 ================================================================================
-CHANGE 1 — v4.0.0-beta: bullets appended under Added, Fixed and Changed
+CHANGE 1, v4.0.0-beta: bullets appended under Added, Fixed and Changed
 ================================================================================
 
 OLD_SECTION
-    (no entries for this change; the two existing Carousel bullets under Fixed — the TouchHandler
-    import crash and the autoplay interval outliving the page — are left as they were)
+    (no entries for this change; the two existing Carousel bullets under Fixed: the TouchHandler
+    import crash and the autoplay interval outliving the page: are left as they were)
 
 NEW_SECTION
-    - Carousel config changes on a live carousel — delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
-    - Carousel guide (doc/carousel.md) — the required consumer CSS, every config property, the generated markup, and the error list
-    - Runnable Carousel example (examples/carousel/) — a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
-    - Carousel dots having no height, so they were invisible and unclickable by default — assets/css/carousel.css is now loaded by the module instead of never being linked
+    - Carousel config changes on a live carousel: delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+    - Carousel guide (doc/carousel.md): the required consumer CSS, every config property, the generated markup, and the error list
+    - Runnable Carousel example (examples/carousel/): a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+    - Carousel dots having no height, so they were invisible and unclickable by default: assets/css/carousel.css is now loaded by the module instead of never being linked
     - Carousel autoplay jumping back after a dot click or a swipe while marking a different slide active, so the slide on screen, the active slide and the active dot drifted apart
     - Carousel dot clicks on one carousel moving the active dot of another carousel on the same page
     - Carousel finding no slides, and building no dots, when its viewport had no id attribute

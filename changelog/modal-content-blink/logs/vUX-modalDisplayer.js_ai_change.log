@@ -4,7 +4,7 @@ DATE: 2026-10-08
 PRIOR STATE: as left by feature 'modal-slide-effect'
 
 ================================================================================
-CHANGE 1 — fillEffectBox() keeps the animated copy; new reclaimLiveCopy()
+CHANGE 1: fillEffectBox() keeps the animated copy; new reclaimLiveCopy()
 ================================================================================
 
 OLD_SECTION
@@ -56,7 +56,7 @@ live copy (split), and leaves the node where it is when the close starts during 
 unfinished drop or slide, because the live copy is still in that box.
 
 ================================================================================
-CHANGE 2 — completeOpen() moves the live copy instead of rebuilding it
+CHANGE 2: completeOpen() moves the live copy instead of rebuilding it
 ================================================================================
 
 OLD_SECTION
@@ -80,7 +80,7 @@ as the animation ended, and autofill came back a few frames later. The `none` an
 `split` effects have no live copy and keep the old path.
 
 ================================================================================
-CHANGE 3 — open effects mark their single copy as live
+CHANGE 3: open effects mark their single copy as live
 ================================================================================
 
 OLD_SECTION
@@ -100,7 +100,7 @@ These effects animate one whole copy, which becomes the displayed modal (Change 
 Split still passes nothing: its two halves are emptied as they land.
 
 ================================================================================
-CHANGE 4 — close effects replay with the displayed modal
+CHANGE 4: close effects replay with the displayed modal
 ================================================================================
 
 OLD_SECTION
@@ -121,7 +121,7 @@ the modal started to leave. The displayed node now goes back into the box. It st
 has the id, which is correct: the source gets its id back only in completeClose().
 
 ================================================================================
-CHANGE 5 — layer record gains liveCopy
+CHANGE 5: layer record gains liveCopy
 ================================================================================
 
 OLD_SECTION
@@ -137,7 +137,7 @@ REASON
 Holds the node handed between the animation box and the host.
 
 ================================================================================
-CHANGE 6 — measure the modal at its displayed size (follow-up report)
+CHANGE 6: measure the modal at its displayed size (follow-up report)
 ================================================================================
 
 Reported with modal-shrink-and-grow.mp4 after Changes 1-5: with flip (and drop),
@@ -202,7 +202,7 @@ layer.height. The probe keeps its id, so id-based styles count in the measuremen
 Two copies share the id only for this synchronous block.
 
 ================================================================================
-CHANGE 7 — split halves anchored to their outer edge (follow-up report)
+CHANGE 7: split halves anchored to their outer edge (follow-up report)
 ================================================================================
 
 Reported with modal-wrong-split.mp4 after Change 6: during split, the halves did
@@ -245,7 +245,7 @@ and the copy's width no longer depends on its box-sizing. The source's
 split-specific pixel width is no longer needed.
 
 ================================================================================
-CHANGE 8 — split halves are not autofillable (follow-up report)
+CHANGE 8: split halves are not autofillable (follow-up report)
 ================================================================================
 
 Reported after Change 7: the split halves still did not match. The left half's

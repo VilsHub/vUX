@@ -3,7 +3,7 @@ FEATURE: carousel-verification
 DATE: 2026-10-02
 
 ================================================================================
-CHANGE 1 — move(): use the frame's viewport
+CHANGE 1, move(): use the frame's viewport
 ================================================================================
 
 OLD_SECTION
@@ -15,7 +15,7 @@ NEW_SECTION
             viewPort.style.left = newValue + "px";
 
 ================================================================================
-CHANGE 2 — updateSliderPosition(): use the frame's viewport
+CHANGE 2, updateSliderPosition(): use the frame's viewport
 ================================================================================
 
 OLD_SECTION
@@ -104,7 +104,7 @@ consumer's element if one has id="viewport". Swiping a Carousel, which is on by 
 worked. Renamed to viewPort; no other change to TouchHandler.
 
 ================================================================================
-CHANGE 3 — link touchHandler.css; mark pan axis
+CHANGE 3: link touchHandler.css; mark pan axis
 ================================================================================
 
 OLD_SECTION

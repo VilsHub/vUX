@@ -3,7 +3,7 @@ FEATURE: list-scroller-verification
 DATE: 2026-10-05
 
 ================================================================================
-CHANGE 1 — ListScroller bullets under v4.0.0-beta Added, Fixed and Changed
+CHANGE 1: ListScroller bullets under v4.0.0-beta Added, Fixed and Changed
 ================================================================================
 
 OLD_SECTION
@@ -14,8 +14,8 @@ NEW_SECTION
 > - ListScroller config.scrollSpeed and config.paddingRight now work: scrollSpeed is the duration of one button scroll in milliseconds (0 jumps), and paddingRight leaves room after the last item inside the scroll range
 > - ListScroller buttons, inactiveButtonClassName, wrapperStyle, hasButtons and the paddings can be changed on a running scroller
 > - ListScroller buttons get aria-disabled matching their inactive state
-> - ListScroller guide (doc/list-scroller.md) — the container, list and button contract, every config property, the markup it produces, limits and the error list
-> - Runnable ListScroller example (examples/listscroller/) — a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
+> - ListScroller guide (doc/list-scroller.md): the container, list and button contract, every config property, the markup it produces, limits and the error list
+> - Runnable ListScroller example (examples/listscroller/): a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
 126a132,143
 > - ListScroller moving less than a full step, or not at all, after reaching the end of the row or after two quick presses; every press now starts from the real scroll position and two presses always move two steps
 > - ListScroller rows extending into empty space past the last item; the list is now as wide as its items instead of item count × scrollSize
@@ -40,7 +40,7 @@ REASON
 Release-facing record of this change, written from the consumer's side as CLAUDE.md requires. Appended, not rewritten; the timeline-list-verification bullets already in the working tree are untouched.
 
 ================================================================================
-CHANGE 2 — follow-up: datePicker one scroller per picker
+CHANGE 2, follow-up: datePicker one scroller per picker
 ================================================================================
 
 OLD_SECTION

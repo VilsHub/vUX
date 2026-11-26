@@ -1,5 +1,5 @@
 /*
- * vUX SketchPad — runnable example.
+ * vUX SketchPad: runnable example.
  *
  * Three pads share this page: the whiteboard in the hero (`pad`), a constrained pad laid
  * over an invitation card (`card`) and a stamp pad on paper (`paper`). They are the same

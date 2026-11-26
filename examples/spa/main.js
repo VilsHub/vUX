@@ -9,7 +9,7 @@ function demoLog(msg){
 }
 
 // Highlight the nav by the CURRENT URL. "User 8" sets data-add-to-history="false",
-// so it loads its content without moving the URL — and the highlight correctly
+// so it loads its content without moving the URL, and the highlight correctly
 // stays where it was, which is the opt-out doing exactly what it claims.
 function markNav(){
     document.querySelectorAll("nav a").forEach(function(link){
@@ -26,7 +26,7 @@ function openAtTop(){
 }
 
 // A real document load increments this; a SPA navigation never does. If the counter
-// stays put while the address bar above it changes, nothing was re-fetched — which is
+// stays put while the address bar above it changes, nothing was re-fetched, which is
 // the whole claim the component makes. Reloading the page bumps it, on purpose.
 function showLoadCount(){
     var loads = 1;
@@ -64,10 +64,10 @@ function renderCacheTable(){
         var stored = {};
         try { stored = JSON.parse(sessionStorage.getItem(key)) || {}; } catch (e) {}
         var names = Object.keys(stored);
-        return { key: key, count: names.length, holds: names.join(", ") || "—" };
+        return { key: key, count: names.length, holds: names.join(", ") || "-" };
     });
-    rows.push({ key: "spaCacheVersion", count: "", holds: sessionStorage.getItem("spaCacheVersion") || "—" });
-    rows.push({ key: "vuxSpaLoads", count: "", holds: sessionStorage.getItem("vuxSpaLoads") || "—" });
+    rows.push({ key: "spaCacheVersion", count: "", holds: sessionStorage.getItem("spaCacheVersion") || "-" });
+    rows.push({ key: "vuxSpaLoads", count: "", holds: sessionStorage.getItem("vuxSpaLoads") || "-" });
 
     var body = document.querySelector("#cacheTable tbody");
     body.innerHTML = "";
@@ -170,6 +170,21 @@ async function run(){
                 },
                 historyCallbacks: {}
             },
+            // a route whose fragment does not exist, to show config.errorCallback
+            broken: {
+                pattern: "/broken",
+                target: "/display/missing.html",
+                protected: false,
+                authURL: "",
+                skipInCacheBuilder: true,
+                path: "/broken",
+                group: "",
+                pageTitle: "Broken | vUX SPA example",
+                pageSections: {},
+                flush: [],
+                clickLoadCallbacks: {},
+                historyCallbacks: {}
+            },
             table: {
                 pattern: "/table",
                 target: "/display/table.html",
@@ -215,6 +230,13 @@ async function run(){
         markNav();
         openAtTop();
     };
+    spa.config.errorCallback = function(element, routeName, message){
+        // the content could not be loaded: what is on screen, the URL and the title stay as they
+        // were. A real app might fall back to a full page load of the link here (but never at boot,
+        // where element is null and the page already is a full load).
+        completeLoadProgress();
+        demoLog("[error] route '" + routeName + "': " + message.split("\n")[0] + " (the page stays where it was)");
+    };
     spa.config.exitCallback = function(routeName, params){
         // fallback for routes with no dedicated exitCallback
         demoLog("[exit] leaving route '" + routeName + "'");
@@ -248,7 +270,7 @@ async function run(){
         renderCacheTable();
     }
     document.querySelector("#verInput").value = build || "";
-    setReleaseStatus(build != null ? "booted on release " + build : "no /version.json — cacheVersion unset", build != null ? "run" : "err");
+    setReleaseStatus(build != null ? "booted on release " + build : "no /version.json, cacheVersion unset", build != null ? "run" : "err");
     showVersion();
 
     // Setting cacheVersion on a running engine is how an open tab picks up a release:
@@ -262,7 +284,7 @@ async function run(){
             return;
         }
         var changed = before !== spa.config.cacheVersion;
-        setReleaseStatus(source + ": " + spa.config.cacheVersion + (changed ? " — new release, cache emptied" : " — unchanged, cache kept"), "run");
+        setReleaseStatus(source + ": " + spa.config.cacheVersion + (changed ? ", new release, cache emptied" : ", unchanged, cache kept"), "run");
         demoLog("[release] " + source + " → cacheVersion " + spa.config.cacheVersion + (changed ? " (cache cleared)" : " (no change)"));
         showVersion();
     }
@@ -277,7 +299,7 @@ async function run(){
     });
     document.querySelector("#btnClear").addEventListener("click", function(){
         spa.clearCache();
-        setReleaseStatus("clearCache() — every route will be fetched again", "run");
+        setReleaseStatus("clearCache(): every route will be fetched again", "run");
         demoLog("[release] clearCache()");
         showVersion();
     });
@@ -364,14 +386,14 @@ async function run(){
         button.addEventListener("click", function(){
             try {
                 BAD[button.dataset.bad]();
-                document.querySelector("#errOut").textContent = "No error thrown — that should not happen.";
+                document.querySelector("#errOut").textContent = "No error thrown: that should not happen.";
             } catch (error) {
                 document.querySelector("#errOut").textContent = error.constructor.name + ": " + error.message;
             }
         });
     });
 
-    // ?autorun clicks through the links automatically — used for headless testing
+    // ?autorun clicks through the links automatically: used for headless testing
     if (location.pathname === "/" && new URLSearchParams(location.search).has("autorun")) {
         function auto(delay, label, selector){
             setTimeout(function(){

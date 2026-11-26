@@ -4,15 +4,15 @@ Feature: spa-logged-in
 =======================================================================
 Section 1
 OLD_SECTION
-- SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
-- Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `clearCache()`: empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/): boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
 
 ## Fixed
 
 NEW_SECTION
-- SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
-- Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
-- SPAEngine `loggedIn` property — the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+- SPAEngine `clearCache()`: empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/): boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property: the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
 
 ## Fixed
 

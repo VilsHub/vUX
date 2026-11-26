@@ -1,4 +1,4 @@
-Feature: spa-link-attributes (RETROACTIVE — commit 07bb39d, logged after the
+Feature: spa-link-attributes (RETROACTIVE: commit 07bb39d, logged after the
 changelog/ convention was introduced in 478c817)
 Target module: SPAEngine
 
@@ -11,4 +11,4 @@ Target module: SPAEngine
   attributes no longer leak into subsequent clicks.
 
 Affected projects: any consumer of vUX-spaEngine.js using per-link data attribute
-opt-outs — they now behave as documented.
+opt-outs: they now behave as documented.

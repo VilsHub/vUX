@@ -92,25 +92,25 @@
         <div class="carousel" id="heroCarousel">
             <div class="viewport" id="heroViewport">
                 <div class="slide s1">
-                    <p class="k">01 — autoplay</p>
+                    <p class="k">01: autoplay</p>
                     <p class="t">It moves on its own.</p>
                     <p class="d">Every <code>delay + speed</code> milliseconds the viewport slides one frame, and wraps at the end.</p>
                     <span class="big">01</span>
                 </div>
                 <div class="slide s2">
-                    <p class="k">02 — dots</p>
+                    <p class="k">02: dots</p>
                     <p class="t">Jump anywhere.</p>
                     <p class="d">One dot per slide is generated for you. Click one and autoplay carries on from there.</p>
                     <span class="big">02</span>
                 </div>
                 <div class="slide s3">
-                    <p class="k">03 — swipe</p>
+                    <p class="k">03: swipe</p>
                     <p class="t">Drag it sideways.</p>
                     <p class="d">A quarter of the frame's width is enough to commit; less springs back.</p>
                     <span class="big">03</span>
                 </div>
                 <div class="slide s4">
-                    <p class="k">04 — hover</p>
+                    <p class="k">04: hover</p>
                     <p class="t">Point to pause.</p>
                     <p class="d">The pointer over the frame holds the current slide until it leaves.</p>
                     <span class="big">04</span>
@@ -148,17 +148,17 @@
                             <option value="linear">linear</option>
                             <option value="ease">ease</option>
                             <option value="ease-in-out" selected>ease-in-out</option>
-                            <option value="cubic-bezier(.68,-0.55,.27,1.55)">cubic-bezier — overshoot</option>
-                            <option value="cubic-bezier(.16,1,.3,1)">cubic-bezier — expo out</option>
+                            <option value="cubic-bezier(.68,-0.55,.27,1.55)">cubic-bezier: overshoot</option>
+                            <option value="cubic-bezier(.16,1,.3,1)">cubic-bezier: expo out</option>
                         </select>
                     </div>
                     <div class="field">
-                        <label class="lbl" for="bsNormal">buttonStyle[0] — normal</label>
+                        <label class="lbl" for="bsNormal">buttonStyle[0]: normal</label>
                         <input type="text" class="bs-in" id="bsNormal" spellcheck="false"
                                value="width:10px;height:10px;background:rgba(255,255,255,.45)">
                     </div>
                     <div class="field">
-                        <label class="lbl" for="bsActive">buttonStyle[1] — active</label>
+                        <label class="lbl" for="bsActive">buttonStyle[1]: active</label>
                         <input type="text" class="bs-in" id="bsActive" spellcheck="false"
                                value="width:28px;border-radius:6px;background:#ffb454;box-shadow:0 0 12px #ffb454">
                     </div>
@@ -258,7 +258,7 @@
                         <div class="slide s4"><p class="k">end stop</p><p class="t">The last one holds.</p><span class="big">■</span></div>
                     </div>
                 </div>
-                <div class="status" id="gestStatus"><span class="dot"></span><span id="gestText">pointer outside — autoplaying</span></div>
+                <div class="status" id="gestStatus"><span class="dot"></span><span id="gestText">pointer outside: autoplaying</span></div>
             </div>
             <div class="card">
                 <h3 class="hint"><span class="arrow">←</span> How a swipe resolves</h3>
@@ -293,7 +293,7 @@
             <button data-bad="early">start() before initialize()</button>
             <button data-bad="dead">initialize() after destroy()</button>
         </div>
-        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
     </div>
 </section>
 
@@ -307,7 +307,7 @@
         <p>
             The instances are on <span class="kbd">window</span> as <span class="kbd">heroCarousel</span>,
             <span class="kbd">playCarousel</span>, <span class="kbd">twinA</span>, <span class="kbd">twinB</span> and
-            <span class="kbd">gestCarousel</span> — try <span class="kbd">playCarousel.config.speed = 120</span>.
+            <span class="kbd">gestCarousel</span>: try <span class="kbd">playCarousel.config.speed = 120</span>.
         </p>
     </div>
 </footer>

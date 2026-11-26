@@ -6,7 +6,7 @@ PRIOR STATE: as left by feature 'resizer-docs'
 REASON
 assignHandlers() registered a delegated click handler whose return value was discarded,
 an anonymous window resize listener, and a scroll listener on the container. destroy()
-now detaches all three — the resize handler having been named handleResize — and strips
+now detaches all three (the resize handler having been named handleResize) and strips
 the layout classes and the inline width/left the component wrote onto the list parent.
 
 ================================================================================

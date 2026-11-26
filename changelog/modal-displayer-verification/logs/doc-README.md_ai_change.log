@@ -3,7 +3,7 @@ FEATURE: modal-displayer-verification
 DATE: 2026-08-03
 
 ================================================================================
-CHANGE 1 — List the Modal Displayer guide; drop it from the "coming next" list
+CHANGE 1: List the Modal Displayer guide; drop it from the "coming next" list
 ================================================================================
 
 OLD_SECTION
@@ -24,15 +24,15 @@ removed from the list of modules still awaiting a guide so the two statements st
 consistent.
 
 ================================================================================
-CHANGE 2 — Link the runnable modal example
+CHANGE 2: Link the runnable modal example
 ================================================================================
 
 OLD_SECTION
-- [SPA example app](../examples/spa/README.md) — runnable example combining `SPAEngine` and `ProgressIndicator`, with a bundled dev server.
+- [SPA example app](../examples/spa/README.md): runnable example combining `SPAEngine` and `ProgressIndicator`, with a bundled dev server.
 
 NEW_SECTION
-- [SPA example app](../examples/spa/README.md) — runnable example combining `SPAEngine` and `ProgressIndicator`, with a bundled dev server.
-- [Modal example](../examples/modal/README.md) — runnable example exercising all four modal effects.
+- [SPA example app](../examples/spa/README.md): runnable example combining `SPAEngine` and `ProgressIndicator`, with a bundled dev server.
+- [Modal example](../examples/modal/README.md): runnable example exercising all four modal effects.
 
 REASON
 `examples/modal/` was added by this change, matching the existing `examples/spa/`

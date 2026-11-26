@@ -1,0 +1,25 @@
+Feature: spa-engine-history-fixes
+
+Affected projects:
+- Libraries/vUX: SPAEngine fixes found while building Apps/vux-docs on it. Back/Forward no longer throws
+  when the originating link is gone or had no id (falls back to historyCallbacks.default and the
+  default content node); an entry with no engine state that belongs to another page reloads it; the
+  title is set when the content is mounted; new config.errorCallback(element, routeName, message) for
+  failed link fetches and a failed boot load (no more unhandled rejection); the scroll position is
+  recorded again after the click callback. doc/spa-engine.md and ChangeLog.md updated.
+- Apps/vux-docs: uses config.errorCallback for a full-load fallback; history callbacks dropped.
+- Workspace .version: unchanged (Libraries/vUX=v4.1.0 already carries a minor bump; errorCallback is
+  an additive feature within it).
+
+Verified in headless Chrome with a raw-engine test page (no app workarounds): content-link chains
+with Back/Forward, a link with no id, a #section entry then Back from another page (reloads), a
+missing fragment (title kept, errorCallback called), a failed boot load (reported, no unhandled
+rejection, page visible), a click callback scroll restored on Forward.
+
+Follow-ups after features-validator (two PASS WITH FINDINGS rounds): link released before errorCallback;
+only the current navigation reported; boot failure reported once, outside the guarded chain;
+bootCallback and errorCallback exceptions not reported as load failures; a stateless same-page entry
+no longer cancels a due click callback; stale-route engine entries reload; another script's state is
+left alone; the click-callback timer covers the loadIntoNode=false branch and is cancelled by a newer
+navigation, an engine history entry or destroy(); SPA example Broken link (server 404 for a missing
+fragment). Verified on the raw-engine page (virtual time) and in real time for the superseded case.

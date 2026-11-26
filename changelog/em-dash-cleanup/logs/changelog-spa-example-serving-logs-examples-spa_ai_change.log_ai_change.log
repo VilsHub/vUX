@@ -1,0 +1,87 @@
+OLD_SECTION (line 11)
+The page had been served from the repository root with `python3 -m http.server 8000` [em dash] the
+command the other three examples use, and the one printed in their READMEs [em dash] and opened at
+NEW_SECTION (line 11)
+The page had been served from the repository root with `python3 -m http.server 8000`: the
+command the other three examples use, and the one printed in their READMEs, and opened at
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 29)
+CHANGE 1 [em dash] Link the stylesheet by a path that resolves under both servers
+NEW_SECTION (line 29)
+CHANGE 1: Link the stylesheet by a path that resolves under both servers
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 56)
+CHANGE 2 [em dash] Say so when the engine cannot load
+NEW_SECTION (line 56)
+CHANGE 2: Say so when the engine cannot load
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 60)
+(nothing [em dash] the page failed silently)
+NEW_SECTION (line 60)
+(nothing: the page failed silently)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 80)
+CHANGE 3 [em dash] Give the page a hero that demonstrates the component
+NEW_SECTION (line 80)
+CHANGE 3: Give the page a hero that demonstrates the component
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 105)
+A SPA's claim is invisible by nature [em dash] the interesting thing is what does NOT happen. The
+NEW_SECTION (line 105)
+A SPA's claim is invisible by nature: the interesting thing is what does NOT happen. The
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 114)
+CHANGE 4 [em dash] README leads with how this example differs
+NEW_SECTION (line 114)
+CHANGE 4: README leads with how this example differs
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 125)
+CHANGE 5 [em dash] Route fragments were not aligned with the rest of the page
+NEW_SECTION (line 125)
+CHANGE 5: Route fragments were not aligned with the rest of the page
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 164)
+An audit of the other three example pages found no equivalent case [em dash] every section,
+NEW_SECTION (line 164)
+An audit of the other three example pages found no equivalent case: every section,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 168)
+CHANGE 6 [em dash] Table header stuck 62px down inside its own scroll box
+NEW_SECTION (line 168)
+CHANGE 6: Table header stuck 62px down inside its own scroll box
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 176)
+        /* sticky resolves against .table-scroll, the scrolling ancestor [em dash] not the
+           viewport [em dash] so this is 0, not the height of the top bar */
+NEW_SECTION (line 176)
+        /* sticky resolves against .table-scroll, the scrolling ancestor, not the
+           viewport, so this is 0, not the height of the top bar */
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 191)
+The page itself was not opened in a browser [em dash] there is none in this environment.
+NEW_SECTION (line 191)
+The page itself was not opened in a browser: there is none in this environment.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

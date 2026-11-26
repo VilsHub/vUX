@@ -9,7 +9,7 @@ messages. Baseline before these changes: 21 passed, 27 failed. After: 48 passed,
 (constructor, initialize, onScroller, offScroller, destroy, and the eight config properties) is unchanged.
 
 ================================================================================
-CHANGE 1 — Constructor: list must be inside the container; new per-instance state
+CHANGE 1, Constructor: list must be inside the container; new per-instance state
 ================================================================================
 
 OLD_SECTION
@@ -38,7 +38,7 @@ REASON
 A list outside its container was accepted and laid out, but scrolling the container could never reveal it (verified: no throw). clickHandle (the delegated document listener) is gone with change 3. The new state holds the running animation, the ResizeObserver, and exactly which classes, wrapper properties and button cursors this instance changed, so destroy() can undo only those.
 
 ================================================================================
-CHANGE 2 — Animation and button state measured from the real position
+CHANGE 2: Animation and button state measured from the real position
 ================================================================================
 
 OLD_SECTION
@@ -167,7 +167,7 @@ REASON
 Presses went through $$.animate(), which keeps its own per-element 'startValue' and ignores the one passed in. At the end of the row the animation pushed that value past the real maximum with no scroll event to correct it, so the next left press first had to unwind the overshoot (verified: one left press from the end moved 0px; on the datePicker Prev did nothing after Next reached the end). A press during a running scroll started from the mid-flight value, so two quick presses moved 317px instead of 450. scrollStatus() read the same stale value, and before any animation it read startValue[undefined], so neither branch ran. The fixed 200ms duration ignored config.scrollSpeed. The new code tweens scrollLeft itself: from the real position (or the running scroll's target), clamped to scrollWidth - clientWidth, over scrollSpeed ms, with behavior 'instant' so a consumer's scroll-behavior:smooth cannot fight it. initialScroll(), which only existed to nudge the cursor, is dropped. State is set from scrollLeft vs the real maximum with 1px of slack for zoom rounding, and also sets aria-disabled. updateState() does nothing while parked (offScroller), which fixes buttons re-enabling on a manual scroll.
 
 ================================================================================
-CHANGE 3 — Listeners: on the buttons and container, with a ResizeObserver
+CHANGE 3, Listeners: on the buttons and container, with a ResizeObserver
 ================================================================================
 
 OLD_SECTION
@@ -229,7 +229,7 @@ REASON
 The delegated document listener only fired when e.target itself carried vListBt, so a click on an icon inside a button did nothing (verified). The window resize listener missed the container resizing on its own, items being added and the stylesheet arriving (verified: right button stayed active after the container grew past the row; appending an item did not widen the range because the width was fixed). Listeners now sit on the two buttons, and a ResizeObserver on the container and list (change 5) replaces the window listener.
 
 ================================================================================
-CHANGE 4 — Wrapper style, paddings and layout
+CHANGE 4: Wrapper style, paddings and layout
 ================================================================================
 
 OLD_SECTION
@@ -342,7 +342,7 @@ REASON
 setAttribute('style', wrapperStyle) wiped the container's own inline style (verified: outline lost), and destroy() never restored it. The list width was item count x scrollSize, unrelated to the real item widths, so the row ran on into empty space (verified: range 1100px for 800px of items). paddingRight was stored and never used (verified: 550px gap instead of 40). stylePlane() ran after an await, so onScroller() called straight after initialize() measured an unstyled list. Now the wrapper properties are merged and recorded one by one, the list is width:max-content with inline !important paddings (so the trailing padding is inside the scroll range), and the layout is applied synchronously; only the stylesheet link stays async.
 
 ================================================================================
-CHANGE 5 — initialize(), onScroller(), offScroller(), destroy()
+CHANGE 5: initialize(), onScroller(), offScroller(), destroy()
 ================================================================================
 
 OLD_SECTION
@@ -492,7 +492,7 @@ REASON
 The 'children < 0' check could never be true and named a nonexistent 'listType'; it is removed. offScroller() called toggleClass() on undefined buttons when hasButtons was false (verified TypeError). destroy() left the scroll, bar-hide and x classes on the container, the wrapper style, and vListBt classes and the not-allowed cursor on the buttons (verified). initialize() now marks both buttons inactive until onScroller(). destroy() also stops a running scroll and removes only the classes this instance added, so the datePicker's own vListBt classes on its buttons survive.
 
 ================================================================================
-CHANGE 6 — config setters
+CHANGE 6: config setters
 ================================================================================
 
 OLD_SECTION

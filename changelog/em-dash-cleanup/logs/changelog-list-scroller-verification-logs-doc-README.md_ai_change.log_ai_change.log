@@ -1,0 +1,29 @@
+OLD_SECTION (line 6)
+CHANGE 1 [em dash] guide row added; ListScroller removed from 'coming next'
+NEW_SECTION (line 6)
+CHANGE 1: guide row added; ListScroller removed from 'coming next'
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 24)
+CHANGE 2 [em dash] example link added to Other references
+NEW_SECTION (line 24)
+CHANGE 2: example link added to Other references
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 28)
+- [Component example](../examples/component/README.md) [em dash] …
+NEW_SECTION (line 28)
+- [Component example](../examples/component/README.md): …
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 31)
+- [ListScroller example](../examples/listscroller/README.md) [em dash] runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
+- [Component example](../examples/component/README.md) [em dash] …
+NEW_SECTION (line 31)
+- [ListScroller example](../examples/listscroller/README.md): runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
+- [Component example](../examples/component/README.md): …
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

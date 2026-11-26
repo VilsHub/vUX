@@ -1,0 +1,20 @@
+OLD_SECTION (line 9)
+| `clearCache()` | Empties everything the engine has cached [em dash] route contents, page contents, page sections and block sections [em dash] so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them, such as `userProperties`, is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+NEW_SECTION (line 9)
+| `clearCache()` | Empties everything the engine has cached (route contents, page contents, page sections and block sections) so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them, such as `userProperties`, is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 16)
+| `clearCache()` | Empties everything the engine has cached [em dash] route contents, page contents, page sections and block sections [em dash] so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+NEW_SECTION (line 16)
+| `clearCache()` | Empties everything the engine has cached (route contents, page contents, page sections and block sections) so every route is fetched from the server again on its next visit. Only the engine's own `sessionStorage` keys are touched; app state stored beside them is kept. Can be called before or after `initialize()`. See [New releases](#new-releases). |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 34)
+Setting `protected: true` on a route makes the engine check the session (`sessionStorage.userProperties.auth`) before loading it; unauthenticated users are redirected to the route's `authURL`. Note this is a client-side convenience only [em dash] the fragments themselves must still be protected on the server.
+NEW_SECTION (line 34)
+Setting `protected: true` on a route makes the engine check the session (`sessionStorage.userProperties.auth`) before loading it; unauthenticated users are redirected to the route's `authURL`. Note this is a client-side convenience only: the fragments themselves must still be protected on the server.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

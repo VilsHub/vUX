@@ -7,7 +7,7 @@ FOLLOWS: changelog/resizer-fixes
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected.
+vUX library (this repository): the only project affected.
 
   - examples/resizer/index.html   new, five sections on the shared design system
   - examples/resizer/main.js      new, commented as documentation
@@ -19,7 +19,7 @@ vUX library (this repository) — the only project affected.
 WHY
 --------------------------------------------------------------------------------
 
-CLAUDE.md requires a runnable example of every module. Resizer had none — it was one
+CLAUDE.md requires a runnable example of every module. Resizer had none: it was one
 of two repaired modules in that state, and the omission had a direct cost: the
 preceding resizer-fixes work could only be verified statically, because there was no
 page from which to drive a real drag or to confirm that resizer.css resolves at
@@ -45,7 +45,7 @@ demonstration. Section 03 exists for the left/top inversion, which is new behavi
 Section 02 exercises an option that was previously stored and used for nothing, with
 a handle shaped to exercise both of the binding defects (a sibling rather than a
 child; an icon inside it). Section 04 exists because destroy() is new. Two of the
-validation cases — an empty resizeHandlerProperties object and an unknown key — cover
+validation cases (an empty resizeHandlerProperties object and an unknown key) cover
 a bare TypeError and a silent no-op respectively.
 
 --------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ the page and explained in its README.
   2. Specificity and source order. resizer.css is injected during initialize(), so it
      lands after the page's own <style> block; a rule written as bare .resizeHandle
      ties and loses. Page rules are scoped to a .rz class. A rule generated from
-     config styles is later still, so config keeps the last word — which is what the
+     config styles is later still, so config keeps the last word, which is what the
      playground's colour picker relies on.
   3. Anchoring. The module writes a size, never a position. Without anchoring the box
      to the far side of its container, a left- or top-handled element still resizes
@@ -94,8 +94,8 @@ via config.myResizeHandler.
 VERIFICATION
 --------------------------------------------------------------------------------
 
-No browser is available in this environment — no chromium, no playwright, no
-puppeteer — so the page has NOT been opened, and no drag has been performed. What was
+No browser is available in this environment: no chromium, no playwright, no
+puppeteer, so the page has NOT been opened, and no drag has been performed. What was
 checked:
 
   - index.html tag balance: section, style, script, pre, aside, main, footer, header
@@ -123,5 +123,5 @@ FOLLOW-UP
 
 Resizer still has no guide under doc/. doc/README.md lists it among the modules whose
 guides are "coming next", and it is now the module with the most recently changed
-behaviour — the left/top inversion and destroy() are both undocumented outside these
+behaviour: the left/top inversion and destroy() are both undocumented outside these
 logs and the example's README.

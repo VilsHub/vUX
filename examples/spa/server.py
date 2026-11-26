@@ -38,8 +38,13 @@ class SPAFallbackHandler(http.server.SimpleHTTPRequestHandler):
 
     def send_head(self):
         path = self.translate_path(self.path)
-        # SPA fallback: unknown non-file paths serve index.html
-        if not os.path.exists(path) or (os.path.isdir(path) and not os.path.exists(os.path.join(path, "index.html"))):
+        # SPA fallback: unknown non-file paths serve index.html. A missing route fragment under
+        # /display/ is a real 404, so the engine reports it (config.errorCallback, "Broken link")
+        missing = not os.path.exists(path) or (os.path.isdir(path) and not os.path.exists(os.path.join(path, "index.html")))
+        if missing and self.path.startswith("/display/"):
+            self.send_error(404, "No such route fragment")
+            return None
+        if missing:
             self.path = "/index.html"
         return super().send_head()
 

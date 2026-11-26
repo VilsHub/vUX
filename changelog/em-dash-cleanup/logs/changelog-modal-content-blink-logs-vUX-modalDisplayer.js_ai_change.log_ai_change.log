@@ -1,0 +1,55 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] fillEffectBox() keeps the animated copy; new reclaimLiveCopy()
+NEW_SECTION (line 7)
+CHANGE 1: fillEffectBox() keeps the animated copy; new reclaimLiveCopy()
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 59)
+CHANGE 2 [em dash] completeOpen() moves the live copy instead of rebuilding it
+NEW_SECTION (line 59)
+CHANGE 2: completeOpen() moves the live copy instead of rebuilding it
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 83)
+CHANGE 3 [em dash] open effects mark their single copy as live
+NEW_SECTION (line 83)
+CHANGE 3: open effects mark their single copy as live
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 103)
+CHANGE 4 [em dash] close effects replay with the displayed modal
+NEW_SECTION (line 103)
+CHANGE 4: close effects replay with the displayed modal
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 124)
+CHANGE 5 [em dash] layer record gains liveCopy
+NEW_SECTION (line 124)
+CHANGE 5: layer record gains liveCopy
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 140)
+CHANGE 6 [em dash] measure the modal at its displayed size (follow-up report)
+NEW_SECTION (line 140)
+CHANGE 6: measure the modal at its displayed size (follow-up report)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 205)
+CHANGE 7 [em dash] split halves anchored to their outer edge (follow-up report)
+NEW_SECTION (line 205)
+CHANGE 7: split halves anchored to their outer edge (follow-up report)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 248)
+CHANGE 8 [em dash] split halves are not autofillable (follow-up report)
+NEW_SECTION (line 248)
+CHANGE 8: split halves are not autofillable (follow-up report)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

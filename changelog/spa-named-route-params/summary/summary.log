@@ -1,4 +1,4 @@
-Feature: spa-named-route-params (RETROACTIVE — commit e19f2cd, logged after the
+Feature: spa-named-route-params (RETROACTIVE: commit e19f2cd, logged after the
 changelog/ convention was introduced in 478c817)
 Target module: SPAEngine
 

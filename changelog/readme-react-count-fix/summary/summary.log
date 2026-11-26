@@ -1,0 +1,7 @@
+Feature: readme-react-count-fix
+
+Affected projects:
+- Libraries/vUX: README "vUX and React" summary now says 11 features are not required (the table has 11;
+  it said 14). ChangeLog.md v4.1.0 gains a Fixed heading with the bullet. Docs only.
+- Apps/vux-docs: the same sentence on /concepts/vux-and-react/ corrected.
+- Workspace .version: unchanged (v4.1.0 already carries a minor bump).

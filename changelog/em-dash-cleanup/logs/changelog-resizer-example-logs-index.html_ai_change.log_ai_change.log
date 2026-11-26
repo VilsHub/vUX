@@ -1,0 +1,20 @@
+OLD_SECTION (line 7)
+(no file [em dash] Resizer was the only repaired module with no page under examples/)
+NEW_SECTION (line 7)
+(no file: Resizer was the only repaired module with no page under examples/)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 25)
+    module could not do either [em dash] the drag arithmetic ignored the drag, and the module
+NEW_SECTION (line 25)
+    module could not do either: the drag arithmetic ignored the drag, and the module
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 50)
+     top-handled box still resizes but visibly grows the wrong way [em dash] which would read
+NEW_SECTION (line 50)
+     top-handled box still resizes but visibly grows the wrong way, which would read
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

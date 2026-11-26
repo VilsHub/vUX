@@ -7,7 +7,7 @@ One code change, found while writing the example: the two public methods disagre
 about what the target element means.
 
 ================================================================================
-CHANGE 1 — deleteText() erases the text writeText() typed
+CHANGE 1: deleteText() erases the text writeText() typed
 ================================================================================
 
 OLD_SECTION
@@ -33,7 +33,7 @@ REASON
 writeText(box, ...) types into a '.vAutoWriter' span it appends INSIDE box, and when
 config.showCursor is on it appends a '.vAutoWriterBlinker' span after that. deleteText(n,
 box) erased from box itself, so the last node it found was the blinker: the first call
-removed the caret, and only then did it start on the text — through the span wrapper.
+removed the caret, and only then did it start on the text: through the span wrapper.
 A caller naming the same element in both methods, which is the obvious reading of the
 API and what the example does, got the caret eaten instead of a character.
 

@@ -1,5 +1,5 @@
 /*
- * vUX FormComponents — runnable example, exercising all six builders.
+ * vUX FormComponents: runnable example, exercising all six builders.
  *
  * Each builder hides the native input and draws a widget in front of it. The colours
  * below are the example page's dark palette, passed in as config CSS strings: the
@@ -90,7 +90,7 @@ function mirrorDateState(name, targetId) {
     const native = $("input[name='" + name + "']");
     const target = $("#" + targetId);
     const show = () => {
-        target.textContent = "value: " + (native.getAttribute("value") || "—") +
+        target.textContent = "value: " + (native.getAttribute("value") || "-") +
                              "  |  complete: " + native.getAttribute("data-complete");
     };
     new MutationObserver(show).observe(native, { attributes: true, attributeFilter: ["value", "data-complete"] });
@@ -176,7 +176,7 @@ document.addEventListener("change", event => {
 });
 
 /* ------------------------------------------------------------------ *
- * Validation — every one of these throws
+ * Validation: every one of these throws
  * ------------------------------------------------------------------ */
 const BAD = {
     className:    () => { fc.select().config.className = 42; },
@@ -194,7 +194,7 @@ $$$("[data-bad]").forEach(button => {
     button.addEventListener("click", () => {
         try {
             BAD[button.dataset.bad]();
-            $("#errOut").textContent = "No error thrown — that should not happen.";
+            $("#errOut").textContent = "No error thrown: that should not happen.";
         } catch (error) {
             $("#errOut").textContent = error.constructor.name + ": " + error.message;
         }

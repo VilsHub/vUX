@@ -7,7 +7,7 @@ OLD_SECTION
 (new file)
 
 NEW_SECTION
-166 lines: tokens (palette, mono/sans stacks) and primitives — .wrap, .hero (+ .eyebrow,
+166 lines: tokens (palette, mono/sans stacks) and primitives: .wrap, .hero (+ .eyebrow,
 .hero-sub, .hero-cta, .hero-src), section/h2/.num/.lede/.note, .panel (+ .panel-h,
 .panel-b, .dots), form controls (.field, label.lbl, textarea, select, range, color,
 .row, .switch), buttons (.primary, .ghost, .tiny, .danger), .cards/.card, .status,
@@ -25,5 +25,5 @@ blocks, the SPA table and the form's axis-class layouts stay local because they 
 nothing anywhere else.
 
 Linked directly by each page rather than through the library's asset loader
-(vModel.core.functions.linkStyleSheet), because it belongs to the demos, not to vUX —
+(vModel.core.functions.linkStyleSheet), because it belongs to the demos, not to vUX:
 routing it through assetPath would imply the library ships it.

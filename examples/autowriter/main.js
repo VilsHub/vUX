@@ -1,5 +1,5 @@
 /*
- * vUX AutoWriter — runnable example.
+ * vUX AutoWriter: runnable example.
  *
  * Every writer on this page is a plain `new AutoWriter()`. There is no initialize()
  * call: unlike the trigger-driven components, AutoWriter is driven by method calls.
@@ -10,7 +10,7 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const $$$ = (sel, root = document) => root.querySelectorAll(sel);
 
 /* ------------------------------------------------------------------ *
- * 1. Hero — a headline, and a subject line that rewrites itself
+ * 1. Hero: a headline, and a subject line that rewrites itself
  * ------------------------------------------------------------------ */
 
 const heroWriter = new AutoWriter();
@@ -30,7 +30,7 @@ const AUDIENCE = ["hero sections.", "terminals.", "onboarding.", "404 pages.", "
 let audienceAt = 0;
 
 //Each cycle is ONE writeText call: type the word, hold, then backspace exactly what was
-//typed. Because the erase is part of the string it stays in step with the typing — a
+//typed. Because the erase is part of the string it stays in step with the typing: a
 //separate deleteText() call would be a second animation competing for the same node.
 function cycleAudience() {
     const word = AUDIENCE[audienceAt];
@@ -112,7 +112,7 @@ function run() {
     try {
         setStatus("run", "typing…");
         //writeText validates the whole string up front, so a bad directive throws HERE
-        playWriter.writeText(stage, ui.script.value, () => setStatus("", "done — callback fired"));
+        playWriter.writeText(stage, ui.script.value, () => setStatus("", "done: callback fired"));
     } catch (error) {
         setStatus("err", error.message);
     }
@@ -122,7 +122,7 @@ $("#run").addEventListener("click", run);
 
 $("#stop").addEventListener("click", () => {
     playWriter.stop();                       //cancels the run and clears its timers
-    setStatus("", "stopped — text left as it was, no callback");
+    setStatus("", "stopped: text left as it was, no callback");
 });
 
 $("#del").addEventListener("click", () => {
@@ -164,7 +164,7 @@ $$$("[data-preset]").forEach(button => {
 renderSnippet();
 
 /* ------------------------------------------------------------------ *
- * 3. Directive cards — each gets its own writer and its own target
+ * 3. Directive cards: each gets its own writer and its own target
  * ------------------------------------------------------------------ */
 
 const DEMOS = {
@@ -186,7 +186,7 @@ Object.keys(DEMOS).forEach(key => {
 });
 
 /* ------------------------------------------------------------------ *
- * 4. Collection mode — one call, three elements, typed in sequence
+ * 4. Collection mode: one call, three elements, typed in sequence
  * ------------------------------------------------------------------ */
 
 const seqWriter = new AutoWriter();
@@ -219,7 +219,7 @@ $("#seqRun").addEventListener("click", () => {
 });
 
 /* ------------------------------------------------------------------ *
- * 5. Validation — every one of these throws synchronously
+ * 5. Validation: every one of these throws synchronously
  * ------------------------------------------------------------------ */
 
 const BAD = {
@@ -234,7 +234,7 @@ $$$("[data-bad]").forEach(button => {
     button.addEventListener("click", () => {
         try {
             BAD[button.dataset.bad]();
-            $("#errOut").textContent = "No error thrown — that should not happen.";
+            $("#errOut").textContent = "No error thrown: that should not happen.";
         } catch (error) {
             $("#errOut").textContent = error.constructor.name + ": " + error.message;
         }

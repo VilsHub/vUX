@@ -7,14 +7,14 @@ OLD_SECTION
 (new files)
 
 NEW_SECTION
-examples/autowriter/index.html   376 lines — page and its stylesheet
-examples/autowriter/main.js      ~250 lines — six writers driving the page
+examples/autowriter/index.html   376 lines: page and its stylesheet
+examples/autowriter/main.js      ~250 lines: six writers driving the page
 examples/autowriter/README.md    how to run it, and what each section demonstrates
 
 REASON
 AutoWriter had no example. Unlike the other example pages in this repository, which are
 deliberately plain because they demonstrate structural behaviour (modal stacking, form
-control wiring), this component's entire output is a visual effect — a demo that does not
+control wiring), this component's entire output is a visual effect: a demo that does not
 look good does not demonstrate it. The page is therefore designed rather than merely
 functional: a dark editorial/terminal treatment, a hero whose headline types itself, and
 one accent colour per demo so several writers running at once stay legible.
@@ -23,7 +23,7 @@ Structure, each section demonstrating something the guide states:
 
   Hero          headline typed on load, ending in '~1200~' so the caret is left blinking;
                 a subject line that cycles words through one recursive writeText() call,
-                each cycle being "word + hold + backspace exactly the word's length" —
+                each cycle being "word + hold + backspace exactly the word's length":
                 the pattern the guide recommends over looping in code, because the erase
                 stays in step with the typing.
   Playground    the script in an editable textarea against live controls for every config
@@ -54,8 +54,8 @@ presets, the hero line, the five cycling words, the three directive demos and th
 collection-mode call all produce their intended output, and all five "bad input" calls
 throw. 30 assertions, all passing. One defect was found this way and fixed before
 shipping: the Boot log preset read "autoWriter.css~500~ok", which renders as
-"autoWriter.cssok" — corrected to "autoWriter.css...~500~ok".
+"autoWriter.cssok": corrected to "autoWriter.css...~500~ok".
 Every id and data-attribute selector in main.js was cross-checked against index.html (23
-ids, 4 presets, 5 error buttons, 3 directive demos — no misses), and every asset the page
+ids, 4 presets, 5 error buttons, 3 directive demos: no misses), and every asset the page
 requests was confirmed to return 200 over `python3 -m http.server` from the repository
 root.

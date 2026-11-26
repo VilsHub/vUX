@@ -3,7 +3,7 @@ FEATURE: list-scroller-verification
 DATE: 2026-10-05
 
 ================================================================================
-CHANGE 1 — list in normal flow, container width left to wrapperStyle, late items covered
+CHANGE 1: list in normal flow, container width left to wrapperStyle, late items covered
 ================================================================================
 
 OLD_SECTION

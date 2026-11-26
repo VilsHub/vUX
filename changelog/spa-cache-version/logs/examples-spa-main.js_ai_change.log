@@ -39,10 +39,10 @@ function renderCacheTable(){
         var stored = {};
         try { stored = JSON.parse(sessionStorage.getItem(key)) || {}; } catch (e) {}
         var names = Object.keys(stored);
-        return { key: key, count: names.length, holds: names.join(", ") || "—" };
+        return { key: key, count: names.length, holds: names.join(", ") || "-" };
     });
-    rows.push({ key: "spaCacheVersion", count: "", holds: sessionStorage.getItem("spaCacheVersion") || "—" });
-    rows.push({ key: "vuxSpaLoads", count: "", holds: sessionStorage.getItem("vuxSpaLoads") || "—" });
+    rows.push({ key: "spaCacheVersion", count: "", holds: sessionStorage.getItem("spaCacheVersion") || "-" });
+    rows.push({ key: "vuxSpaLoads", count: "", holds: sessionStorage.getItem("vuxSpaLoads") || "-" });
 
     var body = document.querySelector("#cacheTable tbody");
     body.innerHTML = "";
@@ -110,7 +110,7 @@ NEW_SECTION
         renderCacheTable();
     }
     document.querySelector("#verInput").value = build || "";
-    setReleaseStatus(build != null ? "booted on release " + build : "no /version.json — cacheVersion unset", build != null ? "run" : "err");
+    setReleaseStatus(build != null ? "booted on release " + build : "no /version.json, cacheVersion unset", build != null ? "run" : "err");
     showVersion();
 
     // Setting cacheVersion on a running engine is how an open tab picks up a release:
@@ -124,7 +124,7 @@ NEW_SECTION
             return;
         }
         var changed = before !== spa.config.cacheVersion;
-        setReleaseStatus(source + ": " + spa.config.cacheVersion + (changed ? " — new release, cache emptied" : " — unchanged, cache kept"), "run");
+        setReleaseStatus(source + ": " + spa.config.cacheVersion + (changed ? ", new release, cache emptied" : ": unchanged, cache kept"), "run");
         demoLog("[release] " + source + " → cacheVersion " + spa.config.cacheVersion + (changed ? " (cache cleared)" : " (no change)"));
         showVersion();
     }
@@ -139,7 +139,7 @@ NEW_SECTION
     });
     document.querySelector("#btnClear").addEventListener("click", function(){
         spa.clearCache();
-        setReleaseStatus("clearCache() — every route will be fetched again", "run");
+        setReleaseStatus("clearCache(): every route will be fetched again", "run");
         demoLog("[release] clearCache()");
         showVersion();
     });

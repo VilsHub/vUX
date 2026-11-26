@@ -129,8 +129,8 @@ Write-only, as across vUX. Properties marked *redraws* take effect immediately o
 | `radius` | number (px) \| CSS length | `6px` | Corner radius of blocks and bars. *Redraws.* |
 | `label` | string | `"Loading"` | Announced to screen readers through a `role="status"` element while the skeleton is up. `""` announces nothing. |
 | `reveal` | boolean | `true` | Fades the real content in when the skeleton lifts. |
-| `onShow` | function | — | Called with the skeleton when it is drawn, not when `show()` is called. Never called for a load that beat the delay. |
-| `onHide` | function | — | Called with the skeleton when it has been taken down. |
+| `onShow` | function | - | Called with the skeleton when it is drawn, not when `show()` is called. Never called for a load that beat the delay. |
+| `onHide` | function | - | Called with the skeleton when it has been taken down. |
 
 ## Timing
 

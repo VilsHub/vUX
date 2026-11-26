@@ -100,15 +100,15 @@
                             <option value="flip">flip</option>
                             <option value="box" selected>box</option>
                             <option value="drop">drop</option>
-                            <option value="slideLeft">slideLeft — docks right</option>
-                            <option value="slideRight">slideRight — docks left</option>
+                            <option value="slideLeft">slideLeft: docks right</option>
+                            <option value="slideRight">slideRight: docks left</option>
                         </select>
                     </div>
                     <div class="field">
                         <label class="lbl" for="overlayType">overlayBackgroundType</label>
                         <select id="overlayType">
-                            <option value="color">color — tint the overlay</option>
-                            <option value="blur">blur — blur the page behind</option>
+                            <option value="color">color: tint the overlay</option>
+                            <option value="blur">blur: blur the page behind</option>
                         </select>
                     </div>
                     <div class="field">
@@ -177,7 +177,7 @@
                     <button class="primary open-modal" data-form="loginModal">Start the stack</button>
                 </div>
                 <p class="note">
-                    A page-level button cannot dismiss a stack — the overlay blocks the page, which is the
+                    A page-level button cannot dismiss a stack: the overlay blocks the page, which is the
                     whole point of a modal. So <code>closeAll()</code> lives <em>inside</em> the deeper
                     dialogs, where it is actually reachable.
                 </p>
@@ -196,7 +196,7 @@
         <p class="lede">
             <code>config.modalWidthsAttribute</code> lets a single trigger override the responsive widths
             for the modal it opens, without leaking into the next one. And the stack is shared by
-            <strong>all</strong> instances, because the state it protects — the body freeze — belongs to the document.
+            <strong>all</strong> instances, because the state it protects (the body freeze) belongs to the document.
         </p>
         <div class="cards">
             <div class="card">
@@ -212,7 +212,7 @@
             <div class="card">
                 <div class="sym" style="color:#0f8b8d">⧉</div>
                 <h3>A second instance</h3>
-                <p>“Help”, inside Profile settings, is opened by a different <code>ModalDisplayer</code> with its own trigger class and effect — yet it layers correctly and one Esc still pops exactly one layer.</p>
+                <p>“Help”, inside Profile settings, is opened by a different <code>ModalDisplayer</code> with its own trigger class and effect, yet it layers correctly and one Esc still pops exactly one layer.</p>
                 <button class="tiny open-modal" data-form="profileModal">Open profile, then Help</button>
             </div>
             <div class="card">
@@ -244,7 +244,7 @@
             <button data-bad="processor">openProcessor = "log"</button>
             <button data-bad="className">className = 42</button>
         </div>
-        <div class="err-out" id="errOut">No error yet — press one of the buttons above.</div>
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
     </div>
 </section>
 
@@ -255,7 +255,7 @@
             Scroll down, then open a modal. The page is held with <code>overflow:hidden</code> rather than by
             taking the body out of flow, so it keeps both its scroll position and its layout.
         </p>
-        <div class="filler">Scroll to here, then press Esc-able open below — the page will not jump.</div>
+        <div class="filler">Scroll to here, then press Esc-able open below: the page will not jump.</div>
         <div class="row" style="margin-top:18px">
             <button class="primary open-modal" data-form="loginModal">Open from down here</button>
         </div>
@@ -271,7 +271,7 @@
         </p>
         <p>
             Both instances are on <span class="kbd">window</span> as <span class="kbd">demoModal</span> and
-            <span class="kbd">altModal</span> — try <span class="kbd">demoModal.depth</span> or
+            <span class="kbd">altModal</span>: try <span class="kbd">demoModal.depth</span> or
             <span class="kbd">demoModal.closeAll()</span>.
         </p>
     </div>
@@ -301,7 +301,7 @@
 <div id="nestedModal" class="demo-modal">
     <span class="layer">layer 2 · reset</span>
     <h2>Reset password</h2>
-    <p>Opened from inside the sign-in modal — the one underneath stays open and intact.</p>
+    <p>Opened from inside the sign-in modal: the one underneath stays open and intact.</p>
     <input type="email" placeholder="Email">
     <div class="actions">
         <button type="button" class="modal-close">Back</button>

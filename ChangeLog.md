@@ -6,9 +6,22 @@
 - `destroyed` read-only property on Component and DataView
 - Runnable Store example (examples/store/): a small shop whose badge, product grid, cart and totals follow one store, with a live state inspector, subscription, batching, re-entrancy and teardown demos, and every validation error on demand
 - Store guide (doc/store.md)
+- SPAEngine `config.errorCallback(element, routeName, message)`: told when a route's content cannot be loaded (a failed link fetch, or the entry route at boot), for example to fall back to a full page load; the link is released before it runs, so the callback can retry it; only the navigation still under way is reported (a superseded request is a console warning); and an exception in `bootCallback` or in the callback itself is not reported as a load failure
+- SPA example "Broken link": a route whose fragment is missing, showing `config.errorCallback`; the example's server answers 404 for a missing fragment instead of the app shell
 - README section "vUX and React": a table of React's features against vUX, marking each as available, partial, a gap, or not required in vUX
 
+## Fixed
+- SPAEngine Back and Forward no longer throw when the link that made the history entry is gone (it sat in content another route replaced) or had no id; the entry is restored as one with no originating link
+- SPAEngine Back or Forward onto a history entry it holds no content for, belonging to another page and carrying no state (a `#section` entry, or one made before the engine booted), loads that page instead of leaving the old content under the new address; an entry carrying another script's own state is left to that script
+- SPAEngine sets the page title when a link's content is mounted rather than on click, so a failed load no longer leaves the title of a page that never arrived
+- SPAEngine no longer turns a failed entry-route load at boot into an unhandled promise rejection; it is reported through `config.errorCallback` or the console
+- SPAEngine records the scroll position again after a link's click callback runs, so a callback that moves the page (to the top, or to a section) is what Back returns to
+- SPAEngine Back or Forward onto one of its own history entries whose route is no longer configured (written by an older release) loads the page from the server instead of changing only the address
+- SPAEngine cancels a link's pending click callback when a newer navigation, one of its own history entries or `destroy()` comes within its 200ms (the `loadIntoNode` off case included), and keeps it across a `#section` change made right after the navigation
+- README "vUX and React" summary counts 11 features as not required, matching its table (it said 14)
+
 ## Changed
+- The guides, example pages, README, ChangeLog and change logs no longer use em dashes; each one is rewritten as a colon, comma, parentheses or a hyphen for an empty value
 - README ends with a License section linking the MIT licence, and the licence's copyright line reads 2019-2026
 - README no longer lists "Features to be included in v3.1.0" (Accordion, 5 Star rating creator), a plan for a version that was never released
 - README "Demo" section shows a working Store and Component example and links the live example pages, replacing the old `GridBorderRectangle` snippet (an API renamed to `CShapes` in v4) and its externally hosted GIF
@@ -29,75 +42,75 @@
 - Slide utility
 - SPAEngine module for redering SPA (Single Page Application) with CSR (Client server rendering)
 - $$.getURLParams()
-- DataView module (vUX-dataView.js) — keyed data-to-DOM binding for hot-update views (targeted cell updates, node-moving sort/filter)
-- Modal stacking in ModalDisplayer — a trigger inside a displayed modal opens a new layer on top; one stack shared across instances; closeAll() to unwind it
+- DataView module (vUX-dataView.js): keyed data-to-DOM binding for hot-update views (targeted cell updates, node-moving sort/filter)
+- Modal stacking in ModalDisplayer: a trigger inside a displayed modal opens a new layer on top; one stack shared across instances; closeAll() to unwind it
 - SPAEngine named route params (;name and ;name:regex pattern segments), with route params/data passed to boot, click, history and fallback callbacks
 - SPAEngine route exit hook (routes.<name>.exitCallback, falling back to config.exitCallback) fired before a route's content is replaced
-- Documentation set under doc/ — index plus SPA engine, progress indicator, data view, modal displayer and form components guides
+- Documentation set under doc/: index plus SPA engine, progress indicator, data view, modal displayer and form components guides
 - Runnable examples: SPA app with bundled dev server (examples/spa/), modal demo exercising all four effects, stacking and both overlay modes (examples/modal/), form components demo exercising all six builders (examples/form/)
 - Live table page in the SPA example demonstrating DataView and the route exit hook
 - CLAUDE.md project instructions and the per-change logging convention under changelog/<feature>/
-- AutoWriter.stop() — cancels a run in progress and clears its timers
+- AutoWriter.stop(): cancels a run in progress and clears its timers
 - Auto writer guide (doc/auto-writer.md) and runnable example (examples/autowriter/) with a live playground over every config property
-- Example page design standard in CLAUDE.md — module examples are designed pages, not bare demos — and the requirement to record every change in ChangeLog.md
-- Shared example design system (examples/shared/example.css) — one palette and one set of primitives across every example page
+- Example page design standard in CLAUDE.md (module examples are designed pages, not bare demos) and the requirement to record every change in ChangeLog.md
+- Shared example design system (examples/shared/example.css): one palette and one set of primitives across every example page
 - Live config controls, a hero that leads with the working component, and a validation section printing real thrown errors, on the modal, form and SPA example pages
-- Resizer.destroy() — removes the module's listeners and any resize handlers it injected, and releases a drag in progress
-- Runnable Resizer example (examples/resizer/) — both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
-- Resizer guide (doc/resizer.md) — the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
-- destroy() on every component — AutoWriter, Carousel, DOMDrawer, FormValidator, ListScroller, ModalDisplayer, ProgressIndicator, SPAEngine, TimeLineList, ToolTip and TouchHandler, plus each of the six FormComponents widgets — detaching the listeners, timers and animations the component started and removing the DOM it injected, so a component can be torn down without leaving anything bound to the page
+- Resizer.destroy(): removes the module's listeners and any resize handlers it injected, and releases a drag in progress
+- Runnable Resizer example (examples/resizer/): both axes at once, a playground over every config property, a consumer-supplied drag handle, all four edges, teardown, and the validation errors
+- Resizer guide (doc/resizer.md): the handle contract, edge growth, bounds, styling and specificity, teardown, and the module's mouse-only and keyboard limits
+- destroy() on every component: AutoWriter, Carousel, DOMDrawer, FormValidator, ListScroller, ModalDisplayer, ProgressIndicator, SPAEngine, TimeLineList, ToolTip and TouchHandler, plus each of the six FormComponents widgets, detaching the listeners, timers and animations the component started and removing the DOM it injected, so a component can be torn down without leaving anything bound to the page
 - $$.attachEventHandler() now returns a handle whose detach() removes the delegated listener again; calls that ignore the return value are unaffected
-- destroy() on the object returned by CShapes().animatedRectangle() — stops the animation and clears the canvas, where stop() leaves the last frame painted
+- destroy() on the object returned by CShapes().animatedRectangle(): stops the animation and clears the canvas, where stop() leaves the last frame painted
 - ToolTip.destroy() restores the original title attribute on every element it took one from
-- Component module (vUX-component.js) — build your own reusable component from your own markup: a `<template>` marked with `data-v-*` bindings, cloned and managed by vUX, with `mount()`, `update()`, `destroy()` and keyed `sync()`
-- Component bindings: `data-v-field` (text), `data-v-bind` (attributes), `data-v-on` (events), `data-v-ref` (named nodes), `data-v-show` and `data-v-class` (truthiness toggles) — every value a plain field name, never an expression
+- Component module (vUX-component.js), build your own reusable component from your own markup: a `<template>` marked with `data-v-*` bindings, cloned and managed by vUX, with `mount()`, `update()`, `destroy()` and keyed `sync()`
+- Component bindings: `data-v-field` (text), `data-v-bind` (attributes), `data-v-on` (events), `data-v-ref` (named nodes), `data-v-show` and `data-v-class` (truthiness toggles): every value a plain field name, never an expression
 - Component nesting: a child mounted with `instance.mount()` is owned by its parent and destroyed with it, and `config.onMount`/`onUpdate`/`onDestroy` are where nested vUX components are attached and released
-- DataView rows now accept the full binding set — `data-v-bind`, `data-v-on`, `data-v-ref`, `data-v-show` and `data-v-class` work alongside `data-v-field` — with `config.handlers` and `config.formatters` to drive them
-- Component guide (doc/component.md) — the binding contract, both template forms, keyed lists, nesting, the custom-element recipe, and the full error list
-- Runnable Component example (examples/component/) — every binding under live control, keyed lists keeping their nodes through a sort, nesting with a ToolTip attached and released, and every validation error raised on demand
-- Carousel config changes on a live carousel — delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
-- Carousel guide (doc/carousel.md) — the required consumer CSS, every config property, the generated markup, and the error list
-- Runnable Carousel example (examples/carousel/) — a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
-- TimeLineList guide (doc/timeline-list.md) — the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
-- Runnable TimeLineList example (examples/timelinelist/) — a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
+- DataView rows now accept the full binding set: `data-v-bind`, `data-v-on`, `data-v-ref`, `data-v-show` and `data-v-class` work alongside `data-v-field`, with `config.handlers` and `config.formatters` to drive them
+- Component guide (doc/component.md): the binding contract, both template forms, keyed lists, nesting, the custom-element recipe, and the full error list
+- Runnable Component example (examples/component/): every binding under live control, keyed lists keeping their nodes through a sort, nesting with a ToolTip attached and released, and every validation error raised on demand
+- Carousel config changes on a live carousel: delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+- Carousel guide (doc/carousel.md): the required consumer CSS, every config property, the generated markup, and the error list
+- Runnable Carousel example (examples/carousel/): a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+- TimeLineList guide (doc/timeline-list.md): the attribute contract, the three specificity tiers, centring custom markers, the generated markup, limits, and the error list
+- Runnable TimeLineList example (examples/timelinelist/): a live playground over every data attribute, three differently-styled lists on one instance, refresh() for lists that arrive later, and the validation errors
 - ListScroller config.scrollSpeed and config.paddingRight now work: scrollSpeed is the duration of one button scroll in milliseconds (0 jumps), and paddingRight leaves room after the last item inside the scroll range
 - ListScroller buttons, inactiveButtonClassName, wrapperStyle, hasButtons and the paddings can be changed on a running scroller
 - ListScroller buttons get aria-disabled matching their inactive state
-- ListScroller guide (doc/list-scroller.md) — the container, list and button contract, every config property, the markup it produces, limits and the error list
-- Runnable ListScroller example (examples/listscroller/) — a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
-- Skeleton module (vUX-skeleton.js) — placeholder screens derived from the template you already wrote for the real content: fields become text bars, images media blocks, controls filled blocks, and your card, padding and grid are kept, so the skeleton has the layout of what replaces it
-- Skeleton `data-skeleton` attribute — `text:N`, `circle`, `circle:<size>`, `rect`, `rect:<w>/<h>`, `media`, `keep` and `skip` override what an element is inferred to be
-- Skeleton timing — `config.delay` keeps a fast load from flashing a skeleton at all, `config.minDuration` keeps a slow one from flickering off, and `hide()` returns a promise so you render once it is down; `during(promise)` wraps the whole flow
-- Skeleton mask mode — with no template, masks the container's existing content in place for a refresh, and puts the same nodes back afterwards
-- Skeleton guide (doc/skeleton.md) — the two modes, what becomes what, `data-skeleton`, timing, styling through custom properties, accessibility, limits and the error list
-- Runnable Skeleton example (examples/skeleton/) — a feed reloading at three speeds, a template beside its rendered card and derived skeleton, a playground over every config property, a with/without timing comparison, mask mode with a byte-for-byte check, and the validation errors
-- SketchPad module (vUX-sketchPad.js) — a canvas drawing surface, extracted from the Sketchpad whiteboard app: rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows, freehand pen, text, font icons and images, with selection, marquee, move, resize, duplicate, delete, undo/redo, wheel zoom and pan
-- SketchPad connectors — drag from a shape's border to another shape's to draw an arrow bound at both ends that re-routes when either shape moves or resizes; pressing Ctrl while drawing pins a joint, which curves the connector at that point
-- SketchPad scene as data — `elements` returns the scene as plain JSON and `load()` restores it (optionally as an undoable step); `exportCanvas()` renders it cropped to its content at any scale and background for PNG export or thumbnails
-- SketchPad constrained mode — `config.tools` limits the tools offered, `config.panZoom = false` fixes the view, `config.bounded` keeps every shape inside the surface and `config.maxElements` caps the scene, for a pad that marks out one region over an image
-- SketchPad stamps and icons — `createStamp()` turns SVG source into a stamp the stamp tool places, with black-only SVGs retinted by the fill colour; `icon` arms the icon tool with a glyph from any loaded font
+- ListScroller guide (doc/list-scroller.md): the container, list and button contract, every config property, the markup it produces, limits and the error list
+- Runnable ListScroller example (examples/listscroller/): a live playground over every config property, button state following swipes, resizes and new items, a buttonless row, and the validation errors
+- Skeleton module (vUX-skeleton.js): placeholder screens derived from the template you already wrote for the real content: fields become text bars, images media blocks, controls filled blocks, and your card, padding and grid are kept, so the skeleton has the layout of what replaces it
+- Skeleton `data-skeleton` attribute: `text:N`, `circle`, `circle:<size>`, `rect`, `rect:<w>/<h>`, `media`, `keep` and `skip` override what an element is inferred to be
+- Skeleton timing: `config.delay` keeps a fast load from flashing a skeleton at all, `config.minDuration` keeps a slow one from flickering off, and `hide()` returns a promise so you render once it is down; `during(promise)` wraps the whole flow
+- Skeleton mask mode: with no template, masks the container's existing content in place for a refresh, and puts the same nodes back afterwards
+- Skeleton guide (doc/skeleton.md): the two modes, what becomes what, `data-skeleton`, timing, styling through custom properties, accessibility, limits and the error list
+- Runnable Skeleton example (examples/skeleton/): a feed reloading at three speeds, a template beside its rendered card and derived skeleton, a playground over every config property, a with/without timing comparison, mask mode with a byte-for-byte check, and the validation errors
+- SketchPad module (vUX-sketchPad.js): a canvas drawing surface, extracted from the Sketchpad whiteboard app: rectangles, ellipses, diamonds, triangles, pentagons, hexagons, stars, lines, arrows, freehand pen, text, font icons and images, with selection, marquee, move, resize, duplicate, delete, undo/redo, wheel zoom and pan
+- SketchPad connectors: drag from a shape's border to another shape's to draw an arrow bound at both ends that re-routes when either shape moves or resizes; pressing Ctrl while drawing pins a joint, which curves the connector at that point
+- SketchPad scene as data: `elements` returns the scene as plain JSON and `load()` restores it (optionally as an undoable step); `exportCanvas()` renders it cropped to its content at any scale and background for PNG export or thumbnails
+- SketchPad constrained mode: `config.tools` limits the tools offered, `config.panZoom = false` fixes the view, `config.bounded` keeps every shape inside the surface and `config.maxElements` caps the scene, for a pad that marks out one region over an image
+- SketchPad stamps and icons: `createStamp()` turns SVG source into a stamp the stamp tool places, with black-only SVGs retinted by the fill colour; `icon` arms the icon tool with a glyph from any loaded font
 - SketchPad works with touch and pen as well as the mouse, and several pads can share a page: pointer events are the canvas's own and keyboard shortcuts go to the focused pad (or the whole document, with `config.keyboardScope`)
 - SketchPad guide (doc/sketch-pad.md) and runnable example (examples/sketchpad/)
-- FontSplash module (vUX-fontSplash.js) — a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
-- FontSplash waits for its font — `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
+- FontSplash module (vUX-fontSplash.js): a splash screen whose loader is a word set in your own font, filled with a gradient that flows through the letters while they fade in a wave; `animation` also offers `flow`, `breathe` and `none`
+- FontSplash waits for its font: `config.font` takes a family the page declares, or a face of its own from a URL, a CSS src list or an ArrayBuffer; the backdrop goes up at once and the word appears when the font is ready or `config.fontTimeout` runs out, with `fontStatus` reporting which
 - FontSplash covers the whole viewport with `new FontSplash()`, or a single element with `new FontSplash(el)`; the `vux-fs-cloak` class on `<html>` hides the page from its first paint until a full-screen splash is up
-- FontSplash progress mode — `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
-- FontSplash timing — `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
+- FontSplash progress mode: `setProgress(0…1)` fills the word with the gradient from the left over a flat track, and `setProgress(null)` returns to indeterminate
+- FontSplash timing: `config.delay` keeps a fast load from showing a splash at all, `config.minDuration` holds the word once it has appeared, `hide()` returns a promise that resolves after the `fade`, `lift` or `zoom` exit, and `during(promise)` wraps the whole flow
 - FontSplash guide (doc/font-splash.md) and runnable example (examples/fontsplash/)
-- SPAEngine `config.cacheVersion` — ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
-- SPAEngine `clearCache()` — empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
-- Release section in the SPA example (examples/spa/) — boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
-- SPAEngine `loggedIn` property — the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
+- SPAEngine `config.cacheVersion`, ties the engine's sessionStorage cache to a release: when the value changes (e.g. a build id read from a version.json), cached route content is emptied, at `initialize()` or at once on a running engine, so users stop seeing fragments from before a deploy
+- SPAEngine `clearCache()`: empties every route, page and section the engine has cached, leaving the rest of sessionStorage (such as auth state) alone
+- Release section in the SPA example (examples/spa/): boots from a version.json, sets a new cacheVersion or calls clearCache() on the live engine, and shows the engine's storage keys emptying
+- SPAEngine `loggedIn` property: the app tells the engine whether a user is signed in (set it before `initialize()` on every page load, `true` after sign-in, `false` on sign-out), and protected routes read it
 - Minified build: ./minify.sh writes a minified copy of the library (about 60% smaller JS) to dist/<version>/ with the same file layout, so a page switches to it by pointing data-library-root and its imports at that folder
-- Core utilities guide (doc/core.md) — `$$`, every `$$.sm()` manipulator, slide/flip/animate/filter in detail, delegated events, data, time and environment utilities, the global helpers and built-in extensions, the error list, and a table of the calls known to be broken in this release
-- Runnable core utilities example (examples/core/) — a gradient headline turned by `animate()`, a flip card, a selection board with every class and visibility method, slides, an easing lab, filters, overlays, delegated events, a live countdown, the built-in extensions evaluated on the page, and the validation errors and known defects triggered on demand
-- ModalDisplayer "drop" effect — the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
-- ModalDisplayer "slideLeft" and "slideRight" effects — the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right, docks right and leaves back out to the right; slideRight mirrors it on the left
-- MessageBox module (vUX-messageBox.js) — notification messages posted with `show()` or the typed shorthands `info()`, `success()`, `warning()` and `error()`; each stays for `config.duration` (0 keeps it until closed) and leaves on its own
-- MessageBox effects — `drop` (the default) falls from the top of the window and rises back out, `slideLeft`/`slideRight` slide in from an edge and leave through it, plus `fade` and `none`; the movement is the core slide utility's, and under reduced motion every effect becomes a fade
-- MessageBox alignment — `config.alignment` lands messages on the left, centre or right; messages stack without jumping, every instance on a page shares the same lanes, and on a narrow window all of them share the centre lane
+- Core utilities guide (doc/core.md): `$$`, every `$$.sm()` manipulator, slide/flip/animate/filter in detail, delegated events, data, time and environment utilities, the global helpers and built-in extensions, the error list, and a table of the calls known to be broken in this release
+- Runnable core utilities example (examples/core/): a gradient headline turned by `animate()`, a flip card, a selection board with every class and visibility method, slides, an easing lab, filters, overlays, delegated events, a live countdown, the built-in extensions evaluated on the page, and the validation errors and known defects triggered on demand
+- ModalDisplayer "drop" effect: the modal drops from above the viewport into place and rises back up on close; set `config.effect = "drop"`
+- ModalDisplayer "slideLeft" and "slideRight" effects: the modal slides in sideways and stays docked to an edge as a full height panel instead of centring: slideLeft enters from the right, docks right and leaves back out to the right; slideRight mirrors it on the left
+- MessageBox module (vUX-messageBox.js): notification messages posted with `show()` or the typed shorthands `info()`, `success()`, `warning()` and `error()`; each stays for `config.duration` (0 keeps it until closed) and leaves on its own
+- MessageBox effects: `drop` (the default) falls from the top of the window and rises back out, `slideLeft`/`slideRight` slide in from an edge and leave through it, plus `fade` and `none`; the movement is the core slide utility's, and under reduced motion every effect becomes a fade
+- MessageBox alignment: `config.alignment` lands messages on the left, centre or right; messages stack without jumping, every instance on a page shares the same lanes, and on a narrow window all of them share the centre lane
 - MessageBox timer pauses while the pointer is over a message or focus is inside it, with a countdown bar that holds with it; plus a close button, close-on-click, `maxVisible`, light and dark themes, and `onShow`/`onClose` callbacks that report why a message closed
-- MessageBox handles — `show()` returns a handle whose `close()` removes the message when your code decides, and content may be an element carrying your own controls
+- MessageBox handles: `show()` returns a handle whose `close()` removes the message when your code decides, and content may be an element carrying your own controls
 - MessageBox guide (doc/message-box.md) and runnable example (examples/messagebox/)
 - Marquee module (vUX-marquee.js): an endless scrolling strip from a container whose items are written once; it clones them until any width is covered, measures one loop to the pixel so the seam never shows, and rebuilds on resize or when `refresh()` adopts new items
 - Marquee config: `speed` in pixels per second, `direction` (`left` or `right`, reversing in place), `gap`, `fade` for a masked edge fade, `pauseOnHover` (keyboard focus counts too) and `respectReducedMotion`; every setting applies to a running strip without restarting its loop
@@ -159,18 +172,18 @@
 - checkbox size error message naming the radio property; README FormComponents import example pointing at vUX-formValidator.js
 - AutoWriter '~n~' delay directive throwing and halting typing under the default configuration (it dereferenced a caret node that only exists when showCursor is on)
 - AutoWriter freezing and then crashing the tab on an unterminated '~' or '*' directive (unbounded scanners); directives are now validated when writeText() is called, not when they are reached
-- AutoWriter instances unusable twice — a second writeText() ignored its arguments, wrote the literal string "undefined" and retyped the previous string into the previous element
-- AutoWriter collection mode unreachable — writeText() validated argument 1 as an element before consulting the type test, so every NodeList was rejected and the whole "multiple" path had never run
+- AutoWriter instances unusable twice: a second writeText() ignored its arguments, wrote the literal string "undefined" and retyped the previous string into the previous element
+- AutoWriter collection mode unreachable: writeText() validated argument 1 as an element before consulting the type test, so every NodeList was rejected and the whole "multiple" path had never run
 - AutoWriter deleteText() erasing n+1 units, accepting a non-integer count and then erasing for ever, and (on a cursor-enabled target) removing the caret instead of the text
 - AutoWriter erasing by popping innerHTML characters, which shredded tags a byte at a time; typing and erasing now work on DOM nodes
 - AutoWriter inline '*n*' racing its own erasing, a trailing directive writing the literal string "undefined", and '~n~' miscounting a delay written with leading zeros
 - AutoWriter partial config.cursorStyle blanking the members it did not name; callback-less runs relying on setTimeout(null); blink and erase timers leaking on teardown
-- Resizer resizing nothing at all — a mousedown on a handle threw before any state was set (two misspelled variable names), so the component never responded to a drag
+- Resizer resizing nothing at all: a mousedown on a handle threw before any state was set (two misspelled variable names), so the component never responded to a drag
 - Resizer sizing the element to the pointer's distance from the viewport edge rather than to how far the pointer had travelled: the element snapped to the cursor on the first move, ignored where inside the handle it was grabbed, and was skewed by its own position on the page
 - Resizer handles on the left or top edge shrinking the element when dragged outward; both axes now grow in the direction the handle faces
 - Resizer config.callBack throwing on assignment, and breaking every drag even when left unset (the callback variable was never declared)
-- Resizer config.myResizeHandler being validated and stored but never used — a consumer-supplied handle now actually drives the resize, and needs no vUX marker classes when direction is 'x' or 'y'
-- Resizer handles having no size, position or cursor — assets/css/resizer.css is now loaded by the module instead of never being linked
+- Resizer config.myResizeHandler being validated and stored but never used: a consumer-supplied handle now actually drives the resize, and needs no vUX marker classes when direction is 'x' or 'y'
+- Resizer handles having no size, position or cursor: assets/css/resizer.css is now loaded by the module instead of never being linked
 - Resizer x and y handle styles overwriting one another, an empty y style blanking a configured x style, and resizeHandlerProperties.styles.both being accepted but ignored
 - Resizer clearing the drag highlight from the first handle in the document rather than the one being dragged, and tracking it with toggle() so it drifted out of step over successive drags
 - Resizer silently ignoring unknown or miscased resizeHandlerProperties keys, never enforcing its key-count limit, throwing a bare TypeError on an empty object, and naming 'position' in every error raised while validating 'styles'
@@ -182,12 +195,12 @@
 - Carousel's autoplay interval continuing to run after the carousel was removed from the page
 - ProgressIndicator's crawl interval continuing to write to a progress bar that had been removed
 - DataView.destroy() leaving the view marked as initialized, so re-initializing a destroyed view silently did nothing instead of reporting that it had been destroyed
-- Carousel dots having no height, so they were invisible and unclickable by default — assets/css/carousel.css is now loaded by the module instead of never being linked
+- Carousel dots having no height, so they were invisible and unclickable by default: assets/css/carousel.css is now loaded by the module instead of never being linked
 - Carousel autoplay jumping back after a dot click or a swipe while marking a different slide active, so the slide on screen, the active slide and the active dot drifted apart
 - Carousel dot clicks on one carousel moving the active dot of another carousel on the same page
 - Carousel finding no slides, and building no dots, when its viewport had no id attribute
 - Carousel swipe and drag throwing on every gesture, because TouchHandler moved an undefined `viewport` instead of the frame's viewport
-- Carousel swipes being taken over by page scrolling on phones, and the grab cursor never showing — TouchHandler now links assets/css/touchHandler.css, which also sets touch-action on the swipe area
+- Carousel swipes being taken over by page scrolling on phones, and the grab cursor never showing: TouchHandler now links assets/css/touchHandler.css, which also sets touch-action on the swipe area
 - Carousel autoplay stopping for good when config.speed was 0, or when the carousel was hidden partway through a slide
 - Carousel pressing or hovering over a slide in motion marking it finished early, which let autoplay start the next slide from the wrong place
 - Carousel config.buttonStyle applying only to the first carousel on a page, and being overridden by the default dot colours
@@ -316,7 +329,7 @@
 - loadProgressIndicator Removed, as IO.dowload() send download status, to be used by user for their needs
 - imageManipulator module removed, now handled by $$.sm.filter()
 - validator.config.progressIndicatorStyle
-- DOMDrawer module (vUX-domDrawer.js and assets/css/domDrawer.css) — replaced by SketchPad, whose rect tool with `config.tools = ["select", "rect"]`, `config.maxElements = 1` and `config.bounded` does what DOMDrawer did, plus move, resize, delete, undo and touch input
+- DOMDrawer module (vUX-domDrawer.js and assets/css/domDrawer.css): replaced by SketchPad, whose rect tool with `config.tools = ["select", "rect"]`, `config.maxElements = 1` and `config.bounded` does what DOMDrawer did, plus move, resize, delete, undo and touch input
 
 ## Changed
 - DataView is now built on the shared template-instancing engine (src/componentEngine.js) that backs the Component module; its API, behaviour and error messages are unchanged
@@ -326,7 +339,7 @@
 - All four example pages redesigned onto the shared system; the SPA dev server additionally maps /shared/ to examples/shared/
 - SPA example now states what to run when it is served without its dev server, instead of rendering as a blank unstyled page; its stylesheet resolves under both a repository-root server and its own
 - SPA example route content aligning with the rest of the page (injected fragments bypassed the page's width constraint), and its table header pinning to the top of its own scroll box
-- Modal scroll lock mechanism from position:fixed to body overflow:hidden — the page keeps its layout and scroll position; user scrolling is blocked but programmatic scrollTo() is not
+- Modal scroll lock mechanism from position:fixed to body overflow:hidden: the page keeps its layout and scroll position; user scrolling is blocked but programmatic scrollTo() is not
 - modalDisplayerObj overlayType property changed to overlayBackgroundType
 - Size of custom element changed to using specified attribute value
 - modalDisplayer workflow changed

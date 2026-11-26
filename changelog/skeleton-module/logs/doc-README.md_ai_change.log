@@ -11,4 +11,4 @@ OLD_SECTION
 
 NEW_SECTION
 | [Skeleton](skeleton.md) | `vUX-skeleton.js` | Placeholder screens derived from your own template, with timing that never flashes on a fast load or flickers on a slow one |
-- [Skeleton example](../examples/skeleton/README.md) — runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
+- [Skeleton example](../examples/skeleton/README.md), runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.

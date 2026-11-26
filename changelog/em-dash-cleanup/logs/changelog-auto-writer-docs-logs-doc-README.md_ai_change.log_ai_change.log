@@ -1,0 +1,29 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] List the new guide, and stop listing it as pending
+NEW_SECTION (line 7)
+CHANGE 1: List the new guide, and stop listing it as pending
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 26)
+CHANGE 2 [em dash] List the new example
+NEW_SECTION (line 26)
+CHANGE 2: List the new example
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 30)
+- [Form example](../examples/form/README.md) [em dash] runnable example exercising all six form component builders.
+NEW_SECTION (line 30)
+- [Form example](../examples/form/README.md): runnable example exercising all six form component builders.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 33)
+- [Form example](../examples/form/README.md) [em dash] runnable example exercising all six form component builders.
+- [AutoWriter example](../examples/autowriter/README.md) [em dash] runnable example of the typewriter effect, its directives and its validation.
+NEW_SECTION (line 33)
+- [Form example](../examples/form/README.md): runnable example exercising all six form component builders.
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

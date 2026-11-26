@@ -11,7 +11,7 @@ autoBuild() and after destroy(), a second autoBuild() builds newly added lists, 
 class and stylesheet names changed (see ChangeLog 'Changed').
 
 ================================================================================
-CHANGE 1 — instance numbering and new state
+CHANGE 1: instance numbering and new state
 ================================================================================
 
 OLD_SECTION
@@ -38,7 +38,7 @@ first list's styles (verified). instanceId and the ever-growing listCount make e
 and lets destroy() remove the sheet without a lookup by name.
 
 ================================================================================
-CHANGE 2 — autoBuild(): links the stylesheet, binds once, builds only unbuilt lists
+CHANGE 2, autoBuild(): links the stylesheet, binds once, builds only unbuilt lists
 ================================================================================
 
 OLD_SECTION
@@ -76,7 +76,7 @@ of the "Setup incomplete" message is fixed. assignTimeLineEventHanler() existed 
 listener and is inlined.
 
 ================================================================================
-CHANGE 3 — destroy() removes its own stylesheet by reference
+CHANGE 3: destroy() removes its own stylesheet by reference
 ================================================================================
 
 OLD_SECTION
@@ -92,7 +92,7 @@ The name-based lookup used the CURRENT className. If className had been reassign
 build, the sheet stayed behind. It could also find another instance's sheet for the same class.
 
 ================================================================================
-CHANGE 4 — refresh(): guarded, escaped, and builds styles for what it activates
+CHANGE 4, refresh(): guarded, escaped, and builds styles for what it activates
 ================================================================================
 
 OLD_SECTION
@@ -139,7 +139,7 @@ Both now throw. With className unset it threw a raw SyntaxError ('.:not(.activat
 !built guard now pre-empts. The page-wide query was also run even when a parent was given.
 
 ================================================================================
-CHANGE 5 — wrapList(): no selector, this instance's lists only
+CHANGE 5, wrapList(): no selector, this instance's lists only
 ================================================================================
 
 OLD_SECTION
@@ -185,7 +185,7 @@ instance toggled other instances' lists against its own attribute name. A non-nu
 now clears .wrap instead of leaving a stale state.
 
 ================================================================================
-CHANGE 6 — buildLists() / listStyles() replace timeLineStyleSheet()
+CHANGE 6: buildLists() / listStyles() replace timeLineStyleSheet()
 ================================================================================
 
 OLD_SECTION
@@ -258,7 +258,7 @@ while staying below the three-class wrap rules (see timeLineList.css), so the st
 control of label position, as it did in the original.
 
 ================================================================================
-CHANGE 7 — config setters
+CHANGE 7: config setters
 ================================================================================
 
 OLD_SECTION

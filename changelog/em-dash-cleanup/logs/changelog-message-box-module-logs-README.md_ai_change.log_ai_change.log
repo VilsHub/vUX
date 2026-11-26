@@ -1,0 +1,13 @@
+OLD_SECTION (line 10)
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface [em dash] ...
+NEW_SECTION (line 10)
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface: ...
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 13)
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface [em dash] ...
+NEW_SECTION (line 13)
+- SketchPad module (`vUX-sketchPad.js`), a canvas drawing surface: ...
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

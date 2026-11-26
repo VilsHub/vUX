@@ -1,0 +1,48 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Document the shared stylesheet
+NEW_SECTION (line 7)
+CHANGE 1: Document the shared stylesheet
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 11)
+Every module gets a runnable example under `examples/<module>/` [em dash] `index.html`, `main.js`, `README.md` [em dash] served from the repository root with `data-id="vUX"` and `data-library-root="../../"`.
+NEW_SECTION (line 11)
+Every module gets a runnable example under `examples/<module>/`: `index.html`, `main.js`, `README.md`: served from the repository root with `data-id="vUX"` and `data-library-root="../../"`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+Every module gets a runnable example under `examples/<module>/` [em dash] [...unchanged...]
+NEW_SECTION (line 14)
+Every module gets a runnable example under `examples/<module>/`: [...unchanged...]
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 16)
+The shared design system lives in `examples/shared/example.css`: tokens (palette, type, spacing) and primitives (`.wrap`, `.hero`, `.panel`, `.card`, `.status`, `.log`, `.err-out`, buttons, form controls). **Link it and build on it** [em dash] a page's own `<style>` block is for what is specific to that demo, not for restating the palette. Extend the shared file when a primitive is genuinely reusable; a page that needs a different look than the others needs a good reason.
+NEW_SECTION (line 16)
+The shared design system lives in `examples/shared/example.css`: tokens (palette, type, spacing) and primitives (`.wrap`, `.hero`, `.panel`, `.card`, `.status`, `.log`, `.err-out`, buttons, form controls). **Link it and build on it**: a page's own `<style>` block is for what is specific to that demo, not for restating the palette. Extend the shared file when a primitive is genuinely reusable; a page that needs a different look than the others needs a good reason.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 24)
+CHANGE 2 [em dash] Retire the note about older, plainer pages
+NEW_SECTION (line 24)
+CHANGE 2: Retire the note about older, plainer pages
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 28)
+Existing pages vary: `examples/autowriter/` is the reference for this standard. The older `examples/modal/`, `examples/form/` and `examples/spa/` are deliberately plainer, because they demonstrate structural behaviour rather than a visual effect [em dash] bring them up to this standard when next touched, but do not treat their current state as the pattern to copy.
+NEW_SECTION (line 28)
+Existing pages vary: `examples/autowriter/` is the reference for this standard. The older `examples/modal/`, `examples/form/` and `examples/spa/` are deliberately plainer, because they demonstrate structural behaviour rather than a visual effect: bring them up to this standard when next touched, but do not treat their current state as the pattern to copy.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 37)
+different styling problems [em dash] which is more useful to the next author than a ranking.
+NEW_SECTION (line 37)
+different styling problems, which is more useful to the next author than a ranking.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

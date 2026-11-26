@@ -6,7 +6,7 @@ changelog/form-components-docs/ for the findings).
 
 Crashes fixed:
 - datePicker: static imports added for FormValidator and ListScroller (previously
-  unresolved globals — default-range pickers crashed on open, datetime-local pickers
+  unresolved globals: default-range pickers crashed on open, datetime-local pickers
   crashed on build).
 - datePicker daysToolTip: tooTipHandler/toolTipHandler typo normalized; refresh guarded
   until the dynamic ToolTip import resolves.

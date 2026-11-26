@@ -1,0 +1,13 @@
+OLD_SECTION (line 1)
+RETROACTIVE LOG [em dash] commit 65fdc2f, recorded after the fact (the changelog/ convention
+NEW_SECTION (line 1)
+RETROACTIVE LOG: commit 65fdc2f, recorded after the fact (the changelog/ convention
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 7)
+(none [em dash] file did not exist)
+NEW_SECTION (line 7)
+(none: file did not exist)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

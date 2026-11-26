@@ -8,7 +8,7 @@ Backfill. Three features had landed without reaching this file: 'auto-writer-fix
 the existing v4.0.0-beta headings.
 
 ================================================================================
-CHANGE 1 — Added
+CHANGE 1: Added
 ================================================================================
 
 OLD_SECTION
@@ -16,9 +16,9 @@ OLD_SECTION
 
 NEW_SECTION
 - CLAUDE.md project instructions and the per-change logging convention under changelog/<feature>/
-- AutoWriter.stop() — cancels a run in progress and clears its timers
+- AutoWriter.stop(): cancels a run in progress and clears its timers
 - Auto writer guide (doc/auto-writer.md) and runnable example (examples/autowriter/) with a live playground over every config property
-- Example page design standard in CLAUDE.md — module examples are designed pages, not bare demos — and the requirement to record every change in ChangeLog.md
+- Example page design standard in CLAUDE.md (module examples are designed pages, not bare demos) and the requirement to record every change in ChangeLog.md
 
 REASON
 stop() is the one genuinely new method. The guide and example are listed as their own
@@ -29,7 +29,7 @@ convention changes, which affect anyone working in the repository even though th
 no shipped code.
 
 ================================================================================
-CHANGE 2 — Fixed
+CHANGE 2: Fixed
 ================================================================================
 
 OLD_SECTION
@@ -39,8 +39,8 @@ NEW_SECTION
 - checkbox size error message naming the radio property; README FormComponents import example pointing at vUX-formValidator.js
 - AutoWriter '~n~' delay directive throwing and halting typing under the default configuration (it dereferenced a caret node that only exists when showCursor is on)
 - AutoWriter freezing and then crashing the tab on an unterminated '~' or '*' directive (unbounded scanners); directives are now validated when writeText() is called, not when they are reached
-- AutoWriter instances unusable twice — a second writeText() ignored its arguments, wrote the literal string "undefined" and retyped the previous string into the previous element
-- AutoWriter collection mode unreachable — writeText() validated argument 1 as an element before consulting the type test, so every NodeList was rejected and the whole "multiple" path had never run
+- AutoWriter instances unusable twice: a second writeText() ignored its arguments, wrote the literal string "undefined" and retyped the previous string into the previous element
+- AutoWriter collection mode unreachable: writeText() validated argument 1 as an element before consulting the type test, so every NodeList was rejected and the whole "multiple" path had never run
 - AutoWriter deleteText() erasing n+1 units, accepting a non-integer count and then erasing for ever, and (on a cursor-enabled target) removing the caret instead of the text
 - AutoWriter erasing by popping innerHTML characters, which shredded tags a byte at a time; typing and erasing now work on DOM nodes
 - AutoWriter inline '*n*' racing its own erasing, a trailing directive writing the literal string "undefined", and '~n~' miscounting a delay written with leading zeros
@@ -54,16 +54,16 @@ observable failure rather than as the internal cause, so a reader can recognise 
 they had rather than having to follow the implementation.
 
 ================================================================================
-CHANGE 3 — Changed
+CHANGE 3: Changed
 ================================================================================
 
 OLD_SECTION
-- Modal scroll lock mechanism from position:fixed to body overflow:hidden — [...]
+- Modal scroll lock mechanism from position:fixed to body overflow:hidden: [...]
 
 NEW_SECTION
 - AutoWriter '|' now inserts a real <br> element, erasable as a single unit, instead of a parsed "<br/>" string
 - AutoWriter deleteText() now erases from the '.vAutoWriter' span when the target holds one, so the same element can be given to writeText() and deleteText()
-- Modal scroll lock mechanism from position:fixed to body overflow:hidden — [...]
+- Modal scroll lock mechanism from position:fixed to body overflow:hidden: [...]
 
 REASON
 Two behavioural differences that are corrections but could still surprise someone

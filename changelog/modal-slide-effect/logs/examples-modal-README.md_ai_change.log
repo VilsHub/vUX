@@ -4,7 +4,7 @@ DATE: 2026-10-08
 PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
 
 ================================================================================
-CHANGE 1 — demonstrated effects
+CHANGE 1: demonstrated effects
 ================================================================================
 
 OLD_SECTION
@@ -17,7 +17,7 @@ REASON
 Count and list updated.
 
 ================================================================================
-CHANGE 2 — seven effects
+CHANGE 2: seven effects
 ================================================================================
 
 OLD_SECTION
@@ -30,7 +30,7 @@ REASON
 List updated.
 
 ================================================================================
-CHANGE 3 — rename
+CHANGE 3: rename
 ================================================================================
 
 OLD_SECTION

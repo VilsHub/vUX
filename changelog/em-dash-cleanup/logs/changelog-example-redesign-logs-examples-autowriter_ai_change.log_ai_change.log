@@ -1,0 +1,20 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Move the design system out to the shared stylesheet
+NEW_SECTION (line 7)
+CHANGE 1: Move the design system out to the shared stylesheet
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 22)
+    /* the caret, the reserved line-heights, .play, .stage, .mini, .seq* [em dash] page only */
+NEW_SECTION (line 22)
+    /* the caret, the reserved line-heights, .play, .stage, .mini, .seq*: page only */
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 28)
+218, and the remaining rules are only what is specific to this demo [em dash] the caret sizing,
+NEW_SECTION (line 28)
+218, and the remaining rules are only what is specific to this demo: the caret sizing,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

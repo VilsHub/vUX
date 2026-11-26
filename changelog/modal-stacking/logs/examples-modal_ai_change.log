@@ -4,7 +4,7 @@ DATE: 2026-08-03
 PRIOR STATE: as left by feature 'modal-displayer-verification'
 
 ================================================================================
-CHANGE 1 — index.html: nested triggers and a second modal
+CHANGE 1, index.html: nested triggers and a second modal
 ================================================================================
 
 OLD_SECTION
@@ -31,7 +31,7 @@ NEW_SECTION
 
         <div id="nestedModal" class="demo-modal">
             <h2>Nested: reset password</h2>
-            <p>Opened from inside the sign-in modal — the modal underneath stays open.</p>
+            <p>Opened from inside the sign-in modal: the modal underneath stays open.</p>
             <input type="email" placeholder="Email">
             <button type="button" class="modal-close">Back</button>
         </div>
@@ -52,7 +52,7 @@ No CSS was needed for the second modal; it reuses the .demo-modal class, which
 confirms that a stacked layer needs no special styling from the consumer.
 
 ================================================================================
-CHANGE 2 — README.md: stacking and the new API members
+CHANGE 2, README.md: stacking and the new API members
 ================================================================================
 
 OLD_SECTION
@@ -63,12 +63,12 @@ The instance is exposed as `window.demoModal`, so you can try `demoModal.close()
 
 NEW_SECTION
 - Trigger-driven opening (`config.className` + `config.formIdAttribute`).
-- **Stacking** — "Forgot password?" inside the sign-in modal opens a second layer over it; `Escape` pops one layer at a time. "Open myself" shows that a modal cannot be stacked on itself.
+- **Stacking**: "Forgot password?" inside the sign-in modal opens a second layer over it; `Escape` pops one layer at a time. "Open myself" shows that a modal cannot be stacked on itself.
 - Closing by close button, `Escape`, and overlay click.
 ...
 The instance is exposed as `window.demoModal`, so you can try `demoModal.close()`, `demoModal.closeAll()`, `demoModal.depth`, `demoModal.mainForm` and `demoModal.displayForm` from the browser console.
 
 REASON
 Describes what the two new buttons demonstrate, and adds the members introduced by
-this change to the list of things worth trying from the console — depth in particular
+this change to the list of things worth trying from the console: depth in particular
 is the quickest way to see the stack behaving.

@@ -1,0 +1,34 @@
+OLD_SECTION (line 59)
+            <code>writeText()</code> call [em dash] the pauses and the backspacing are in the string, not in your code.
+NEW_SECTION (line 59)
+            <code>writeText()</code> call: the pauses and the backspacing are in the string, not in your code.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 170)
+            <strong>in sequence</strong> [em dash] each starts when the last finishes. The callback runs once, at the end.
+NEW_SECTION (line 170)
+            <strong>in sequence</strong>: each starts when the last finishes. The callback runs once, at the end.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 188)
+            Directives are checked when <code>writeText()</code> is called, not when they are reached [em dash] so a typo
+NEW_SECTION (line 188)
+            Directives are checked when <code>writeText()</code> is called, not when they are reached, so a typo
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 198)
+        <div class="err-out" id="errOut">No error yet [em dash] press one of the buttons above.</div>
+NEW_SECTION (line 198)
+        <div class="err-out" id="errOut">No error yet: press one of the buttons above.</div>
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 212)
+            <span class="kbd">seqWriter</span> [em dash] try <span class="kbd">playWriter.stop()</span> from the console.
+NEW_SECTION (line 212)
+            <span class="kbd">seqWriter</span>: try <span class="kbd">playWriter.stop()</span> from the console.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

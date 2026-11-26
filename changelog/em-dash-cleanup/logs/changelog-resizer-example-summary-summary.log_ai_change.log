@@ -1,0 +1,43 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] the only project affected.
+NEW_SECTION (line 10)
+vUX library (this repository): the only project affected.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 22)
+CLAUDE.md requires a runnable example of every module. Resizer had none [em dash] it was one
+NEW_SECTION (line 22)
+CLAUDE.md requires a runnable example of every module. Resizer had none: it was one
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 48)
+validation cases [em dash] an empty resizeHandlerProperties object and an unknown key [em dash] cover
+NEW_SECTION (line 48)
+validation cases (an empty resizeHandlerProperties object and an unknown key) cover
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 76)
+     config styles is later still, so config keeps the last word [em dash] which is what the
+NEW_SECTION (line 76)
+     config styles is later still, so config keeps the last word, which is what the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 97)
+No browser is available in this environment [em dash] no chromium, no playwright, no
+puppeteer [em dash] so the page has NOT been opened, and no drag has been performed. What was
+NEW_SECTION (line 97)
+No browser is available in this environment: no chromium, no playwright, no
+puppeteer, so the page has NOT been opened, and no drag has been performed. What was
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 126)
+behaviour [em dash] the left/top inversion and destroy() are both undocumented outside these
+NEW_SECTION (line 126)
+behaviour: the left/top inversion and destroy() are both undocumented outside these
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -7,7 +7,7 @@ ORIGIN: verification of vUX-autoWriter.js, which had not been revised since 2021
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected.
+vUX library (this repository): the only project affected.
 
   - vUX-autoWriter.js   the AutoWriter constructor, rewritten internally
 
@@ -72,7 +72,7 @@ Unchanged, and one addition:
                                   always intended but never permitted
   deleteText(n, textBox, fn)      same signature; now erases exactly n
   config.*                        same five properties, same meanings
-  stop()                          NEW — cancels a run in progress and clears its timers
+  stop()                          NEW: cancels a run in progress and clears its timers
 
 Behavioural differences a consumer could notice, all of them corrections:
 

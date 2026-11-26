@@ -1,0 +1,41 @@
+OLD_SECTION (line 1)
+RETROACTIVE LOG [em dash] commits 3b78f40, c15c888, 2a8dc3c and b65702e, recorded after the
+NEW_SECTION (line 1)
+RETROACTIVE LOG: commits 3b78f40, c15c888, 2a8dc3c and b65702e, recorded after the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 8)
+(none [em dash] the doc/ directory did not exist)
+NEW_SECTION (line 8)
+(none: the doc/ directory did not exist)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 11)
+Commit 3b78f40 [em dash] doc/README.md (documentation index: library loading contract,
+NEW_SECTION (line 11)
+Commit 3b78f40, doc/README.md (documentation index: library loading contract,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 15)
+Commit c15c888 [em dash] doc/spa-engine.md expanded with the constructor, methods and config
+NEW_SECTION (line 15)
+Commit c15c888: doc/spa-engine.md expanded with the constructor, methods and config
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 21)
+Commit 2a8dc3c [em dash] doc/progress-indicator.md added (linear/circular/grid indicators,
+NEW_SECTION (line 21)
+Commit 2a8dc3c: doc/progress-indicator.md added (linear/circular/grid indicators,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 24)
+Commit b65702e [em dash] doc/spa-engine.md gains the "Why no virtual DOM?" design rationale
+NEW_SECTION (line 24)
+Commit b65702e: doc/spa-engine.md gains the "Why no virtual DOM?" design rationale
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

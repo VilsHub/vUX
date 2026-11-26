@@ -1,6 +1,6 @@
 # Progress Indicator
 
-`ProgressIndicator` (`vUX-progressIndicator.js`) renders a loading indicator inside a "progress space" element while work is in flight — a linear bar across the space, a circular spinner overlay, or an animated grid border. Its stylesheet (`assets/css/progressIndicator.css`) is linked automatically on `initialize()`.
+`ProgressIndicator` (`vUX-progressIndicator.js`) renders a loading indicator inside a "progress space" element while work is in flight: a linear bar across the space, a circular spinner overlay, or an animated grid border. Its stylesheet (`assets/css/progressIndicator.css`) is linked automatically on `initialize()`.
 
 [← Back to documentation index](README.md)
 
@@ -20,7 +20,7 @@ progress.showProgress();   // when the request starts
 progress.hideProgress();   // when the request completes
 ```
 
-The progress space is any element the indicator renders into. The injected `.vProgressItem` is absolutely positioned (`top:0`, `z-index:102`) within it, so give the space element its own positioning — e.g. a viewport-wide bar strip:
+The progress space is any element the indicator renders into. The injected `.vProgressItem` is absolutely positioned (`top:0`, `z-index:102`) within it, so give the space element its own positioning: e.g. a viewport-wide bar strip:
 
 ```html
 <div id="progressSpace" style="position:fixed; top:0; left:0; width:100%; height:3px; z-index:200;"></div>
@@ -51,9 +51,9 @@ new ProgressIndicator(defaultProgressSpace)
 | Property | Required | Description |
 |---|---|---|
 | `config.progressType` | no | `"linear"` (default), `"circular"`, `"grid"`, or `"custom"`. Choosing `grid` lazy-imports `vUX-cShapes.js` for the canvas animation. |
-| `config.progressStyle` | no | Per-type styling — see below. |
+| `config.progressStyle` | no | Per-type styling: see below. |
 | `config.dataAttributeNames` | no | Renames the one supported data attribute: `progressSpaceId`. On a trigger element, `data-<progressSpaceId>` can name the ID of the space to render into, or `"self"` to render into the trigger itself. |
-| `config.progressSpeed` | no | Reserved — accepted but not currently consumed (the linear sweep duration is fixed in CSS). |
+| `config.progressSpeed` | no | Reserved: accepted but not currently consumed (the linear sweep duration is fixed in CSS). |
 
 ### `progressStyle.linear`
 
@@ -62,7 +62,7 @@ new ProgressIndicator(defaultProgressSpace)
 | `trackColor` | `"#ccc"` | CSS color of the track. |
 | `progressColor` | `"purple"` | CSS color of the moving bar. |
 | `location` | `"top"` | `"top"`, `"center"`, `"bottom"`, or a custom offset string (e.g. `"top:44px"`). |
-| `style` | `3` | `1` — repeating left-to-right sweep; `2` — alternating sweep; `3` — request-style bar that fills to 57%, slows toward 85%, then crawls until `hideProgress()` completes it. Use `3` for real network activity, `1`/`2` for indeterminate waits. |
+| `style` | `3` | `1`: repeating left-to-right sweep; `2`: alternating sweep; `3`: request-style bar that fills to 57%, slows toward 85%, then crawls until `hideProgress()` completes it. Use `3` for real network activity, `1`/`2` for indeterminate waits. |
 
 ### `progressStyle.circular`
 
@@ -82,7 +82,7 @@ new ProgressIndicator(defaultProgressSpace)
 
 ## Pairing with the SPA engine
 
-`SPAEngine`'s callbacks map directly onto the show/complete cycle. `preClickCallback` fires only when a route is actually fetched from the server, so cached navigations never flash a bar — but for the same reason the completion callbacks must guard against completing a bar that was never shown:
+`SPAEngine`'s callbacks map directly onto the show/complete cycle. `preClickCallback` fires only when a route is actually fetched from the server, so cached navigations never flash a bar, but for the same reason the completion callbacks must guard against completing a bar that was never shown:
 
 ```js
 spa.config.preClickCallback = function(element){

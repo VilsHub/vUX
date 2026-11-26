@@ -1,0 +1,66 @@
+NOTE: this file also carries the spa-engine-history-fixes changes, logged in that feature's folder; only the hunks that removed em dashes are listed here.
+
+OLD_SECTION (line 12)
+// so it loads its content without moving the URL [em dash] and the highlight correctly
+NEW_SECTION (line 12)
+// so it loads its content without moving the URL, and the highlight correctly
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 29)
+// stays put while the address bar above it changes, nothing was re-fetched [em dash] which is
+NEW_SECTION (line 29)
+// stays put while the address bar above it changes, nothing was re-fetched, which is
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 67)
+        return { key: key, count: names.length, holds: names.join(", ") || "[em dash]" };
+NEW_SECTION (line 67)
+        return { key: key, count: names.length, holds: names.join(", ") || "-" };
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 69)
+    rows.push({ key: "spaCacheVersion", count: "", holds: sessionStorage.getItem("spaCacheVersion") || "[em dash]" });
+    rows.push({ key: "vuxSpaLoads", count: "", holds: sessionStorage.getItem("vuxSpaLoads") || "[em dash]" });
+NEW_SECTION (line 69)
+    rows.push({ key: "spaCacheVersion", count: "", holds: sessionStorage.getItem("spaCacheVersion") || "-" });
+    rows.push({ key: "vuxSpaLoads", count: "", holds: sessionStorage.getItem("vuxSpaLoads") || "-" });
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 273)
+    setReleaseStatus(build != null ? "booted on release " + build : "no /version.json [em dash] cacheVersion unset", build != null ? "run" : "err");
+NEW_SECTION (line 273)
+    setReleaseStatus(build != null ? "booted on release " + build : "no /version.json, cacheVersion unset", build != null ? "run" : "err");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 287)
+        setReleaseStatus(source + ": " + spa.config.cacheVersion + (changed ? " [em dash] new release, cache emptied" : " [em dash] unchanged, cache kept"), "run");
+NEW_SECTION (line 287)
+        setReleaseStatus(source + ": " + spa.config.cacheVersion + (changed ? ", new release, cache emptied" : ", unchanged, cache kept"), "run");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 302)
+        setReleaseStatus("clearCache() [em dash] every route will be fetched again", "run");
+NEW_SECTION (line 302)
+        setReleaseStatus("clearCache(): every route will be fetched again", "run");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 389)
+                document.querySelector("#errOut").textContent = "No error thrown [em dash] that should not happen.";
+NEW_SECTION (line 389)
+                document.querySelector("#errOut").textContent = "No error thrown: that should not happen.";
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 396)
+    // ?autorun clicks through the links automatically [em dash] used for headless testing
+NEW_SECTION (line 396)
+    // ?autorun clicks through the links automatically: used for headless testing
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

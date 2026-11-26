@@ -7,9 +7,9 @@ FOLLOWS: changelog/changelog-requirement
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — examples and conventions only. No library source changed.
+vUX library (this repository): examples and conventions only. No library source changed.
 
-  - examples/shared/example.css   new — tokens and primitives for all example pages
+  - examples/shared/example.css   new: tokens and primitives for all example pages
   - examples/modal/               redesigned; five sections, live config, error demos
   - examples/form/                redesigned; widget palette driven from page tokens
   - examples/spa/                 redesigned; sticky nav, styled route content, /shared/ mapping
@@ -39,12 +39,12 @@ bad calls and prints what was thrown.
 Each page also had one structural problem the redesign had to solve, and each is now
 documented rather than left to be rediscovered:
 
-  - modal — content is moved into an overlay outside the page wrapper, so it is styled
+  - modal: content is moved into an overlay outside the page wrapper, so it is styled
     standalone; and #page must not wrap it, or the blur mode blurs the dialog too.
-  - form — the component generates the widgets' stylesheets from config strings, so
+  - form: the component generates the widgets' stylesheets from config strings, so
     re-theming means re-theming those strings. main.js now interpolates one palette
     object into them, so widget colours and page CSS cannot drift apart.
-  - spa — route fragments are injected at runtime and carry no classes, so they are
+  - spa: route fragments are injected at runtime and carry no classes, so they are
     styled through the boundary element and stay portable content.
 
 --------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ Unchanged. No library file was touched.
 NOT DONE
 --------------------------------------------------------------------------------
 
-  - The pages were not opened in a browser — there is none in this environment — so
+  - The pages were not opened in a browser (there is none in this environment) so
     every visual result across all four is unconfirmed. Everything verifiable without
     rendering was verified.
   - src/helpers.js validateInteger() still returns a boolean instead of throwing.
@@ -71,7 +71,7 @@ VERIFICATION
 --------------------------------------------------------------------------------
 
 Every error demo on all three pages was checked against the real validators from
-src/helpers.js using the exact values each button passes — 14 for modal, 15 for form
+src/helpers.js using the exact values each button passes: 14 for modal, 15 for form
 (including the values the pages themselves use, to confirm the live configuration is
 valid), 5 for spa. All passing.
 

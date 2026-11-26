@@ -1,0 +1,28 @@
+OLD_SECTION (line 6)
+CHANGE 1 [em dash] v4.0.0-beta: bullets appended under Added, Fixed and Changed
+NEW_SECTION (line 6)
+CHANGE 1, v4.0.0-beta: bullets appended under Added, Fixed and Changed
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 10)
+    (no entries for this change; the two existing Carousel bullets under Fixed [em dash] the TouchHandler
+    import crash and the autoplay interval outliving the page [em dash] are left as they were)
+NEW_SECTION (line 10)
+    (no entries for this change; the two existing Carousel bullets under Fixed: the TouchHandler
+    import crash and the autoplay interval outliving the page: are left as they were)
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 14)
+    - Carousel config changes on a live carousel [em dash] delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+    - Carousel guide (doc/carousel.md) [em dash] the required consumer CSS, every config property, the generated markup, and the error list
+    - Runnable Carousel example (examples/carousel/) [em dash] a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+    - Carousel dots having no height, so they were invisible and unclickable by default [em dash] assets/css/carousel.css is now loaded by the module instead of never being linked
+NEW_SECTION (line 14)
+    - Carousel config changes on a live carousel: delay, speed, slideEffect, buttonStyle and touchResponse now take effect after initialize() and start() instead of only before them
+    - Carousel guide (doc/carousel.md): the required consumer CSS, every config property, the generated markup, and the error list
+    - Runnable Carousel example (examples/carousel/): a live playground over every config property, two carousels with independent dot styles, swipe and hover pause, and the validation errors
+    - Carousel dots having no height, so they were invisible and unclickable by default: assets/css/carousel.css is now loaded by the module instead of never being linked
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

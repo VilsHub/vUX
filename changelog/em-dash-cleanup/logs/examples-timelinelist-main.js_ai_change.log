@@ -1,0 +1,27 @@
+OLD_SECTION (line 2)
+ * vUX TimeLineList [em dash] runnable example.
+NEW_SECTION (line 2)
+ * vUX TimeLineList: runnable example.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 118)
+        setStatus("run", "built [em dash] styles read from the list's attributes");
+NEW_SECTION (line 118)
+        setStatus("run", "built: styles read from the list's attributes");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 189)
+    setStatus("", "destroyed [em dash] the list is back to plain markup; Rebuild makes a new instance");
+NEW_SECTION (line 189)
+    setStatus("", "destroyed: the list is back to plain markup; Rebuild makes a new instance");
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 254)
+ * 4. Bad input [em dash] every button throws on purpose
+NEW_SECTION (line 254)
+ * 4. Bad input: every button throws on purpose
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

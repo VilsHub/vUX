@@ -1,0 +1,66 @@
+OLD_SECTION (line 3)
+`Component` (`vUX-component.js`) is bring-your-own-component: you write the markup, mark it with `data-v-*` bindings, and vUX clones, binds, wires and tears down instances of it. It is the module for the reusable pieces of *your* interface [em dash] a user card, a board row, a notification [em dash] as opposed to the ready-made widgets the rest of the library provides.
+NEW_SECTION (line 3)
+`Component` (`vUX-component.js`) is bring-your-own-component: you write the markup, mark it with `data-v-*` bindings, and vUX clones, binds, wires and tears down instances of it. It is the module for the reusable pieces of *your* interface (a user card, a board row, a notification) as opposed to the ready-made widgets the rest of the library provides.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 5)
+It is deliberately **not** a framework. There is no observation, no scheduler, no virtual tree and no diffing. A binding is read when an instance is built and again when you call `update()`, and nothing happens in between. What you get is the tedious part [em dash] cloning, field and attribute binding, event wiring, keyed list reconciliation and teardown [em dash] over markup that stays yours.
+NEW_SECTION (line 5)
+It is deliberately **not** a framework. There is no observation, no scheduler, no virtual tree and no diffing. A binding is read when an instance is built and again when you call `update()`, and nothing happens in between. What you get is the tedious part (cloning, field and attribute binding, event wiring, keyed list reconciliation and teardown) over markup that stays yours.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 13)
+It is also not Web Components. Instances are ordinary elements in the light DOM, carrying your classes, styled by your stylesheet and reachable with `document.querySelector`. Nothing is scoped away from you. If you want a custom element, wrap this in one [em dash] see [Using it inside a custom element](#using-it-inside-a-custom-element).
+NEW_SECTION (line 13)
+It is also not Web Components. Instances are ordinary elements in the light DOM, carrying your classes, styled by your stylesheet and reachable with `document.querySelector`. Nothing is scoped away from you. If you want a custom element, wrap this in one: see [Using it inside a custom element](#using-it-inside-a-custom-element).
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 86)
+`new Component(element)` [em dash] throws if `element` is not an element.
+NEW_SECTION (line 86)
+`new Component(element)`: throws if `element` is not an element.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 99)
+Write-only, as everywhere in vUX [em dash] reading a config property gives `undefined`.
+NEW_SECTION (line 99)
+Write-only, as everywhere in vUX: reading a config property gives `undefined`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 106)
+| `onMount` | function | `(instance)` [em dash] after insertion |
+| `onUpdate` | function | `(instance, changedFields)` [em dash] after a patch that changed something |
+| `onDestroy` | function | `(instance)` [em dash] before removal, after children are destroyed |
+NEW_SECTION (line 106)
+| `onMount` | function | `(instance)`, after insertion |
+| `onUpdate` | function | `(instance, changedFields)`, after a patch that changed something |
+| `onDestroy` | function | `(instance)`, before removal, after children are destroyed |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 146)
+Moving rather than rebuilding is the point: anything the browser owns inside a surviving row [em dash] typed text, focus, text selection, scroll position, a playing `<video>` [em dash] survives the reorder. Rebuilding the list would discard all of it.
+NEW_SECTION (line 146)
+Moving rather than rebuilding is the point: anything the browser owns inside a surviving row (typed text, focus, text selection, scroll position, a playing `<video>`) survives the reorder. Rebuilding the list would discard all of it.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 180)
+vUX does not ship custom elements, and does not need to [em dash] six lines of yours are enough, and this way the tag, its name and its lifecycle stay under your control:
+NEW_SECTION (line 180)
+vUX does not ship custom elements, and does not need to: six lines of yours are enough, and this way the tag, its name and its lifecycle stay under your control:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 220)
+[`examples/component/`](../examples/component/README.md) [em dash] a runnable page covering every binding with live controls, the keyed-list node-identity demonstration, nesting with a `ToolTip` attached and released through the lifecycle callbacks, and every error above raised on demand.
+NEW_SECTION (line 220)
+[`examples/component/`](../examples/component/README.md): a runnable page covering every binding with live controls, the keyed-list node-identity demonstration, nesting with a `ToolTip` attached and released through the lifecycle callbacks, and every error above raised on demand.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

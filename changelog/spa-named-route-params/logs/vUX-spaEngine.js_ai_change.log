@@ -1,10 +1,10 @@
-RETROACTIVE LOG — commit e19f2cd, recorded after the fact (the changelog/ convention
+RETROACTIVE LOG: commit e19f2cd, recorded after the fact (the changelog/ convention
 was introduced later, in commit 478c817).
 
 File: vUX-spaEngine.js
 
 =======================================================================
-Section 1 — getDynamicData(): pattern segment capture
+Section 1, getDynamicData(): pattern segment capture
 OLD_SECTION
 if (segmentIsData(patternSegments[x])){
     state.data[x+1] = routeSegments[x];
@@ -38,7 +38,7 @@ Route params were only captured positionally (data[2] = "7"). ";name" and
 the legacy ":regex" form staying positional for compatibility.
 
 =======================================================================
-Section 2 — callbacks receive route data
+Section 2: callbacks receive route data
 OLD_SECTION
 usedHistoryCallback(element, routeName, callbackKey)
 usedloadCallBack(element, routeName, callbackKey)          (three call sites)
@@ -55,7 +55,7 @@ the last argument to bootCallback, clickLoadCallbacks, historyCallbacks and the
 clickLoadCallback fallback.
 
 =======================================================================
-Section 3 — saveState(): history URL
+Section 3, saveState(): history URL
 OLD_SECTION
 let path = routeConfigs.routes[routeName].path;
 

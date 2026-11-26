@@ -1,0 +1,60 @@
+OLD_SECTION (line 28)
+| [SPA Engine [em dash] setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+NEW_SECTION (line 28)
+| [SPA Engine, setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 58)
+- [SPA example app](../examples/spa/README.md) [em dash] runnable example combining `SPAEngine` and `ProgressIndicator`. **Run it with its own `python3 server.py`**, not from the repository root: a SPA needs a history fallback.
+- [Modal example](../examples/modal/README.md) [em dash] runnable example exercising all seven modal effects.
+- [Form example](../examples/form/README.md) [em dash] runnable example exercising all six form component builders.
+- [AutoWriter example](../examples/autowriter/README.md) [em dash] runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md) [em dash] runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [Carousel example](../examples/carousel/README.md) [em dash] runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+- [TimeLineList example](../examples/timelinelist/README.md) [em dash] runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
+NEW_SECTION (line 58)
+- [SPA example app](../examples/spa/README.md): runnable example combining `SPAEngine` and `ProgressIndicator`. **Run it with its own `python3 server.py`**, not from the repository root: a SPA needs a history fallback.
+- [Modal example](../examples/modal/README.md): runnable example exercising all seven modal effects.
+- [Form example](../examples/form/README.md): runnable example exercising all six form component builders.
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md): runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [Carousel example](../examples/carousel/README.md): runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+- [TimeLineList example](../examples/timelinelist/README.md): runnable example with a live playground over every data attribute, per-list styling, `refresh()` for late lists and the validation errors.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 68)
+- [ListScroller example](../examples/listscroller/README.md) [em dash] runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
+- [Skeleton example](../examples/skeleton/README.md) [em dash] runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
+- [FontSplash example](../examples/fontsplash/README.md) [em dash] runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
+- [Component example](../examples/component/README.md) [em dash] runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
+- [SketchPad example](../examples/sketchpad/README.md) [em dash] runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
+NEW_SECTION (line 68)
+- [ListScroller example](../examples/listscroller/README.md): runnable example with a live playground over every config property, button state following swipes, resizes and new items, a buttonless row and the validation errors.
+- [Skeleton example](../examples/skeleton/README.md), runnable example of a skeleton derived from a template: a feed reloading at three speeds, a playground over every config property, the timing comparison, mask mode and the validation errors.
+- [FontSplash example](../examples/fontsplash/README.md), runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
+- [Component example](../examples/component/README.md), runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
+- [SketchPad example](../examples/sketchpad/README.md): runnable example of a whiteboard with every config property under live control, the scene as editable JSON, PNG export, a constrained one-box pad over a card, SVG stamps and the validation errors.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 74)
+- [MessageBox example](../examples/messagebox/README.md) [em dash] runnable example opening with a dropped-in message: the typed shorthands, a playground over every config property with an `onShow`/`onClose` log, every effect at each alignment, a sticky message closed through its handle, element content with Undo, and the validation errors.
+NEW_SECTION (line 74)
+- [MessageBox example](../examples/messagebox/README.md), runnable example opening with a dropped-in message: the typed shorthands, a playground over every config property with an `onShow`/`onClose` log, every effect at each alignment, a sticky message closed through its handle, element content with Undo, and the validation errors.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 76)
+- [Core example](../examples/core/README.md) [em dash] runnable example of every core utility: a selection board, slides, a flip card, an easing lab, filters, overlays, delegated events, a countdown, the built-in extensions evaluated live, the validation errors, and the calls repaired in this release.
+- [README](../README.md) [em dash] installation and the public feature list per release.
+- [ChangeLog](../ChangeLog.md) [em dash] API renames and changes between releases.
+- `window.vUxModules` [em dash] type this in the browser console to print the importable module list at runtime.
+NEW_SECTION (line 76)
+- [Core example](../examples/core/README.md), runnable example of every core utility: a selection board, slides, a flip card, an easing lab, filters, overlays, delegated events, a countdown, the built-in extensions evaluated live, the validation errors, and the calls repaired in this release.
+- [README](../README.md): installation and the public feature list per release.
+- [ChangeLog](../ChangeLog.md): API renames and changes between releases.
+- `window.vUxModules`: type this in the browser console to print the importable module list at runtime.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

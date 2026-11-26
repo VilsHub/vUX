@@ -8,8 +8,8 @@ with serif text, default buttons and an empty content area, while the other thre
 pages looked as intended.
 
 DIAGNOSIS
-The page had been served from the repository root with `python3 -m http.server 8000` — the
-command the other three examples use, and the one printed in their READMEs — and opened at
+The page had been served from the repository root with `python3 -m http.server 8000`: the
+command the other three examples use, and the one printed in their READMEs, and opened at
 /examples/spa/. Under that server every root-absolute path in the page 404s. Confirmed by
 request:
 
@@ -26,7 +26,7 @@ This is a defect in the example, not merely a wrong command: the page gave no in
 of what was wrong. It rendered as a broken page rather than as a page that could say why.
 
 ================================================================================
-CHANGE 1 — Link the stylesheet by a path that resolves under both servers
+CHANGE 1: Link the stylesheet by a path that resolves under both servers
 ================================================================================
 
 OLD_SECTION
@@ -53,11 +53,11 @@ path can serve both, because '/user/7' must resolve main.js from a different dep
 '/', which is exactly what root-absolute paths are for.
 
 ================================================================================
-CHANGE 2 — Say so when the engine cannot load
+CHANGE 2: Say so when the engine cannot load
 ================================================================================
 
 OLD_SECTION
-(nothing — the page failed silently)
+(nothing: the page failed silently)
 
 NEW_SECTION
 <div id="bootNotice" class="boot-notice"> [...] This example needs its own dev server.
@@ -77,7 +77,7 @@ page now explains itself precisely when it cannot work, and says nothing when it
 needs no detection logic, because main.js executing IS the detection.
 
 ================================================================================
-CHANGE 3 — Give the page a hero that demonstrates the component
+CHANGE 3: Give the page a hero that demonstrates the component
 ================================================================================
 
 OLD_SECTION
@@ -102,7 +102,7 @@ Independent of the serving bug, this page was the one that least met "lead with 
 component": it opened with a nav bar and an empty content area, where the other three open
 with the component visibly working.
 
-A SPA's claim is invisible by nature — the interesting thing is what does NOT happen. The
+A SPA's claim is invisible by nature: the interesting thing is what does NOT happen. The
 mock address bar makes it visible: the pathname updates live from markNav(), beside a
 counter of real document loads held in sessionStorage. Navigating changes the path while
 the counter stays put, which is the claim, demonstrated rather than asserted. Reloading
@@ -111,7 +111,7 @@ sessionStorage access is wrapped, since it throws outright in some privacy modes
 counter then reads "n/a" and nothing else is affected.
 
 ================================================================================
-CHANGE 4 — README leads with how this example differs
+CHANGE 4: README leads with how this example differs
 ================================================================================
 
 REASON
@@ -122,7 +122,7 @@ root-absolute path). Previously the correct command was present but unremarkable
 reader moving between examples had no reason to expect a different one.
 
 ================================================================================
-CHANGE 5 — Route fragments were not aligned with the rest of the page
+CHANGE 5: Route fragments were not aligned with the rest of the page
 ================================================================================
 
 Reported by the user with a screenshot: injected route content sat flush against the
@@ -161,11 +161,11 @@ min-height drops from 340px to 180px at the same time. Its purpose is to stop th
 collapsing between routes; 340px was enough to leave a visible void under a two-line
 fragment, which is what made the misalignment so conspicuous in the first place.
 
-An audit of the other three example pages found no equivalent case — every section,
+An audit of the other three example pages found no equivalent case: every section,
 header and footer in them routes its content through .wrap.
 
 ================================================================================
-CHANGE 6 — Table header stuck 62px down inside its own scroll box
+CHANGE 6: Table header stuck 62px down inside its own scroll box
 ================================================================================
 
 OLD_SECTION
@@ -173,8 +173,8 @@ OLD_SECTION
 
 NEW_SECTION
     #stockTable th{ [...]
-        /* sticky resolves against .table-scroll, the scrolling ancestor — not the
-           viewport — so this is 0, not the height of the top bar */
+        /* sticky resolves against .table-scroll, the scrolling ancestor, not the
+           viewport, so this is 0, not the height of the top bar */
         position:sticky; top:0; z-index:2; }
 
 REASON
@@ -188,4 +188,4 @@ Both servers run. Under the repo-root server /examples/shared/example.css return
 under the dev server /shared/example.css returns 200 and the boot notice is present in the
 served HTML. Browser-equivalent URL resolution of the relative stylesheet path checked at
 five base URLs covering both layouts and all route depths. main.js re-checked for syntax.
-The page itself was not opened in a browser — there is none in this environment.
+The page itself was not opened in a browser: there is none in this environment.

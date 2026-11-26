@@ -1,4 +1,4 @@
-Feature: progress-indicator-fixes (RETROACTIVE — commit d489425, logged after the
+Feature: progress-indicator-fixes (RETROACTIVE: commit d489425, logged after the
 changelog/ convention was introduced in 478c817)
 Target module: ProgressIndicator
 

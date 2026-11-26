@@ -1,7 +1,7 @@
 File: vUX-formComponents.js
 
 =======================================================================
-Section 1 — datePicker: scroll button creation
+Section 1, datePicker: scroll button creation
 OLD_SECTION
 var previousButtonElement = $$.ce("BUTTON", {class:"linactive vPrev", id:"vPrev", type:"button"});
 ...
@@ -19,7 +19,7 @@ decade-series prev/next buttons were dead. The initial inactive look now uses th
 shared sInactive class that ListScroller actually toggles (see Section 2).
 
 =======================================================================
-Section 2 — datePicker: toggleListScroller() configuration
+Section 2, datePicker: toggleListScroller() configuration
 OLD_SECTION
 listControllerObj.config.buttons = [LeftBt, RightBt];
 listControllerObj.config.inactiveButtonsClassName = ["off"];
@@ -37,14 +37,14 @@ listControllerObj.config.paddingRight = 0;
 
 REASON
 Discovered by driving the new example: opening any date picker with a decade-series
-view threw "Setup error: Buttons class for inactive state not specified" — which also
+view threw "Setup error: Buttons class for inactive state not specified", which also
 aborted showDateBox before setSuperActive, breaking the open picker's z-index raise.
 ListScroller's property is inactiveButtonClassName (singular, string); the plural
 array assignments silently did nothing, and config.effects / config.spaceError do not
 exist on ListScroller at all (removed).
 
 =======================================================================
-Section 3 — all six builders: generated stylesheet selector specificity
+Section 3, all six builders: generated stylesheet selector specificity
 OLD_SECTION
 Generated rules were emitted as ".v<className> ..." (select/radio/checkbox/
 slideSwitch/file) and ".vDateIcon..." / ".vDatePicker .vSelected" (datePicker), e.g.:
@@ -69,5 +69,5 @@ declares. Confirmed live in the example: selectedRadioStyle's blue rendered blac
 (static .selected::before background-color won), the checkbox checkedCheckboxStyle
 content glyph never appeared (static content:'' won), and the file inputButton
 background lost to the static gradient. Raising the generated selectors' specificity
-by one class makes explicitly-configured styles override defaults — the documented
-contract — without reordering any stylesheets.
+by one class makes explicitly-configured styles override defaults: the documented
+contract: without reordering any stylesheets.

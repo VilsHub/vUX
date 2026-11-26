@@ -1,0 +1,46 @@
+OLD_SECTION (line 50)
+- Give each link an `id` [em dash] the engine uses it to re-associate history entries with the link on back/forward navigation.
+NEW_SECTION (line 50)
+- Give each link an `id`: the engine uses it to re-associate history entries with the link on back/forward navigation, to find the link's history callback and content node. A link without an id, or one that is no longer in the page (it sat in content another route has replaced), is restored as an entry with no originating link: the route's `historyCallbacks.default` runs and the default content node is used.
+REASON
+Documents config.errorCallback (only the current navigation, retrying, no reload at boot, exceptions not reported), links that are gone or have no id, when the title changes, the second scroll recording, and entries the engine cannot restore (stateless, stale route, another script's state).
+
+OLD_SECTION (line 142)
+| `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback` [em dash] see [Callbacks](#callbacks). |
+| `config.preClickCallback` | no | Function called just before a link's content is fetched from the server [em dash] e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
+NEW_SECTION (line 142)
+| `config.exitCallback` | no | Fallback teardown function called before a route's content is replaced, for routes without their own `exitCallback`: see [Callbacks](#callbacks). |
+| `config.preClickCallback` | no | Function called just before a link's content is fetched from the server: e.g. to show a loading indicator. Not called when the content is served from the sessionStorage cache. |
+| `config.errorCallback` | no | Function called when a route's content cannot be loaded: a link's fetch fails (an error status, offline, aborted) or the entry route's content fails at boot. Only the navigation still under way is reported; a request that a newer click or Back/Forward has superseded is noted in the console as a warning. Without it the failure is logged to the console. A typical use is a full page load of the link as a fallback; at boot (`element` is `null`) the page is already a full load, so do not reload the same URL there (it would loop). See [Callbacks](#callbacks). |
+REASON
+Documents config.errorCallback (only the current navigation, retrying, no reload at boot, exceptions not reported), links that are gone or have no id, when the title changes, the second scroll recording, and entries the engine cannot restore (stateless, stale route, another script's state).
+
+OLD_SECTION (line 200)
+| `config.preClickCallback` | `(element)` | Immediately before a link's content is fetched from the server [em dash] e.g. to show a loading indicator. Skipped when the content is served from cache. |
+NEW_SECTION (line 200)
+| `config.preClickCallback` | `(element)` | Immediately before a link's content is fetched from the server: e.g. to show a loading indicator. Skipped when the content is served from cache. |
+| `config.errorCallback` | `(element, routeName, message)` | When a route's content cannot be loaded. `element` is the clicked link, or `null` for the entry route at boot. The content on screen, the address and the page title are left as they were, and the link is released first, so the callback can retry it. Superseded requests are not reported. An exception thrown by `bootCallback`, or by this callback itself, is not a load failure and is not reported here. |
+REASON
+Documents config.errorCallback (only the current navigation, retrying, no reload at boot, exceptions not reported), links that are gone or have no id, when the title changes, the second scroll recording, and entries the engine cannot restore (stateless, stale route, another script's state).
+
+OLD_SECTION (line 203)
+Content-mounting callbacks fire ~200ms after the fragment is inserted.
+NEW_SECTION (line 203)
+Content-mounting callbacks fire ~200ms after the fragment is inserted. The page title changes when the new content is mounted, not when the link is clicked, so a load that fails leaves the title of the page still on screen.
+REASON
+Documents config.errorCallback (only the current navigation, retrying, no reload at boot, exceptions not reported), links that are gone or have no id, when the title changes, the second scroll recording, and entries the engine cannot restore (stateless, stale route, another script's state).
+
+OLD_SECTION (line 269)
+- **Link navigation.** Each SPA link click pushes one entry with the requested URL (see `addToHistory` to opt a link out). The engine does not scroll on a link navigation: where the new route opens (the top, or a `#section`) is the app's choice, made in its click callback or when it renders the route.
+NEW_SECTION (line 269)
+- **Link navigation.** Each SPA link click pushes one entry with the requested URL (see `addToHistory` to opt a link out). The engine does not scroll on a link navigation: where the new route opens (the top, or a `#section`) is the app's choice, made in its click callback or when it renders the route. The position is recorded when the entry is pushed and again after the click callback runs, so a callback that moves the page is remembered too.
+- **Entries with no state.** The browser makes such entries itself, for a `#section` link, and pages can make them before the engine boots. Back or Forward onto one that belongs to the page on screen changes nothing on screen; with `restoreScroll` on the browser does not restore its position either (scroll restoration is manual), so the app places the scroll if it needs to. A click callback still due from the navigation before is not cancelled by such an entry, so changing `location.hash` right after a navigation is safe. Onto one of another page, the content on screen would no longer match the address, so the engine loads that page from the server (a reload). An engine entry naming a route that is no longer configured (written by an older release) is loaded from the server the same way. An entry carrying another script's state (its own `pushState`) is left to that script.
+REASON
+Documents config.errorCallback (only the current navigation, retrying, no reload at boot, exceptions not reported), links that are gone or have no id, when the title changes, the second scroll recording, and entries the engine cannot restore (stateless, stale route, another script's state).
+
+OLD_SECTION (line 298)
+At `initialize()` the engine compares it with the version it recorded the last time it filled the cache (the `spaCacheVersion` key). If they differ [em dash] or no version was recorded [em dash] the cache is emptied before the entry route mounts. If they match, the cache is kept.
+NEW_SECTION (line 298)
+At `initialize()` the engine compares it with the version it recorded the last time it filled the cache (the `spaCacheVersion` key). If they differ (or no version was recorded) the cache is emptied before the entry route mounts. If they match, the cache is kept.
+REASON
+Documents config.errorCallback (only the current navigation, retrying, no reload at boot, exceptions not reported), links that are gone or have no id, when the title changes, the second scroll recording, and entries the engine cannot restore (stateless, stale route, another script's state).

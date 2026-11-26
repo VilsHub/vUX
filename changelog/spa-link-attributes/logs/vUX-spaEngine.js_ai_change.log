@@ -1,10 +1,10 @@
-RETROACTIVE LOG — commit 07bb39d, recorded after the fact (the changelog/ convention
+RETROACTIVE LOG: commit 07bb39d, recorded after the fact (the changelog/ convention
 was introduced later, in commit 478c817).
 
 File: vUX-spaEngine.js
 
 =======================================================================
-Section 1 — boolean data attribute parsing
+Section 1: boolean data attribute parsing
 OLD_SECTION
 loadIntoNode = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.loadIntoNode)]);
 addToHistory = Boolean(element.dataset[hyphenatedToCamel(dataAttributes.addToHistory)]);
@@ -21,11 +21,11 @@ cache = cache == null ? true : parseBooleanAttribute(cache);
 
 REASON
 Boolean(string) is true for every non-empty string, so data-*="false" and "0" were
-read as true — the cache/addToHistory/loadIntoNode attributes could never be turned
+read as true: the cache/addToHistory/loadIntoNode attributes could never be turned
 off from markup.
 
 =======================================================================
-Section 2 — saveState(): honor the opt-out
+Section 2, saveState(): honor the opt-out
 OLD_SECTION
 function saveState(contents, elementId){
 
@@ -39,11 +39,11 @@ function saveState(contents, elementId){
     var routeName   = routeProperties.name;
 
 REASON
-The addToHistory flag was read but never enforced — every navigation pushed history
+The addToHistory flag was read but never enforced: every navigation pushed history
 regardless of the attribute.
 
 =======================================================================
-Section 3 — getLinkContent(): per-link flag reset
+Section 3, getLinkContent(): per-link flag reset
 OLD_SECTION
 async function getLinkContent(element){
 

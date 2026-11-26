@@ -1,6 +1,6 @@
 # Data View
 
-`DataView` (`vUX-dataView.js`) is keyed data-to-DOM binding for the parts of a page that receive frequent, fine-grained updates — data tables, dashboards, tickers, feeds. It keeps a JSON model in memory and maps every row to its DOM node by key, so updates translate into targeted DOM operations: a cell change is one `textContent` write, a sort is a sequence of node moves. Nothing is rebuilt and nothing is diffed — the mutation API already knows what changed, so the cost is `O(changes)`, not `O(view)`.
+`DataView` (`vUX-dataView.js`) is keyed data-to-DOM binding for the parts of a page that receive frequent, fine-grained updates: data tables, dashboards, tickers, feeds. It keeps a JSON model in memory and maps every row to its DOM node by key, so updates translate into targeted DOM operations: a cell change is one `textContent` write, a sort is a sequence of node moves. Nothing is rebuilt and nothing is diffed: the mutation API already knows what changed, so the cost is `O(changes)`, not `O(view)`.
 
 This is the "island of interactivity" pattern: the [SPA engine](spa-engine.md) stays the macro-layer swapping whole views per navigation (where full `innerHTML` replacement is the browser's fast path), and a `DataView` owns micro-updates inside the one section that actually has the hot-update workload.
 
@@ -8,7 +8,7 @@ This is the "island of interactivity" pattern: the [SPA engine](spa-engine.md) s
 
 ## Template contract
 
-The container passed to the constructor must hold one element marked `data-v-row` — the row template. Elements inside it marked `data-v-field="<fieldName>"` render that field of each row object. On `initialize()` the template is detached from the DOM and cloned once per row.
+The container passed to the constructor must hold one element marked `data-v-row`: the row template. Elements inside it marked `data-v-field="<fieldName>"` render that field of each row object. On `initialize()` the template is detached from the DOM and cloned once per row.
 
 ```html
 <table id="stockTable">
@@ -25,7 +25,7 @@ The container passed to the constructor must hold one element marked `data-v-row
 </table>
 ```
 
-Field values are written with `textContent`, so row data is rendered as text — markup in data cannot inject HTML.
+Field values are written with `textContent`, so row data is rendered as text: markup in data cannot inject HTML.
 
 ## Quick start
 
@@ -55,7 +55,7 @@ new DataView(container)
 
 | Argument | Type | Description |
 |---|---|---|
-| `container` | Element | The element holding the `data-v-row` template. Rows are rendered where the template stood (its parent — e.g. the `<tbody>` above). |
+| `container` | Element | The element holding the `data-v-row` template. Rows are rendered where the template stood (its parent: e.g. the `<tbody>` above). |
 
 ## Methods
 
@@ -64,12 +64,12 @@ new DataView(container)
 | `initialize()` | Detaches the row template and renders any data already set via `config.data`. Call once, after config. |
 | `setData(array)` | Keyed reconcile against the current model: new keys build rows, existing keys patch only changed fields, missing keys remove their rows, and the DOM order follows the array order (existing nodes are *moved*, not rebuilt). |
 | `updateRow(key, fields)` | Patches one row: updates the model and writes only the cells whose value actually changed. Throws if the key is unknown. |
-| `sort(compareFn)` | Sorts the model with a standard compare function and reorders the DOM by moving the existing nodes — focus, selection and input state inside rows survive. |
-| `filter(predicate)` | Shows only rows the predicate accepts, by toggling `display` — nodes stay alive and keep their state. Pass `null` to clear. The active filter is re-applied after `setData()`. |
+| `sort(compareFn)` | Sorts the model with a standard compare function and reorders the DOM by moving the existing nodes: focus, selection and input state inside rows survive. |
+| `filter(predicate)` | Shows only rows the predicate accepts, by toggling `display`: nodes stay alive and keep their state. Pass `null` to clear. The active filter is re-applied after `setData()`. |
 | `getData()` | Returns a shallow copy of the current model array. |
-| `destroy()` | Removes all managed rows and releases the model and key→node map. Call when the view's page is exited (see below). A destroyed view cannot be re-initialized — create a new instance. |
+| `destroy()` | Removes all managed rows and releases the model and key→node map. Call when the view's page is exited (see below). A destroyed view cannot be re-initialized: create a new instance. |
 
-Mutate through the API (`updateRow`/`setData`), not by writing to row objects directly — direct writes change the model without updating the bound cells.
+Mutate through the API (`updateRow`/`setData`), not by writing to row objects directly: direct writes change the model without updating the bound cells.
 
 ## Config properties
 
@@ -80,7 +80,7 @@ Mutate through the API (`updateRow`/`setData`), not by writing to row objects di
 
 ## Pairing with the SPA engine
 
-A `DataView` holds a model, a key→node map, and often app-side timers feeding it. When the SPA engine replaces the page, that state must be released — this is exactly what the engine's [`exitCallback`](spa-engine.md#callbacks) is for:
+A `DataView` holds a model, a key→node map, and often app-side timers feeding it. When the SPA engine replaces the page, that state must be released: this is exactly what the engine's [`exitCallback`](spa-engine.md#callbacks) is for:
 
 ```js
 routes: {
@@ -97,7 +97,7 @@ routes: {
 }
 ```
 
-A runnable version of this — 500 rows with sort, filter, a 50-cells-per-100ms ticker, and a benchmark button — is the "Live table" page of the [SPA example app](../examples/spa/README.md).
+A runnable version of this (500 rows with sort, filter, a 50-cells-per-100ms ticker, and a benchmark button) is the "Live table" page of the [SPA example app](../examples/spa/README.md).
 
 ## Performance notes
 

@@ -1,0 +1,27 @@
+OLD_SECTION (line 1)
+RETROACTIVE LOG [em dash] commit e19f2cd, recorded after the fact (the changelog/ convention
+NEW_SECTION (line 1)
+RETROACTIVE LOG: commit e19f2cd, recorded after the fact (the changelog/ convention
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 7)
+Section 1 [em dash] getDynamicData(): pattern segment capture
+NEW_SECTION (line 7)
+Section 1, getDynamicData(): pattern segment capture
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 41)
+Section 2 [em dash] callbacks receive route data
+NEW_SECTION (line 41)
+Section 2: callbacks receive route data
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 58)
+Section 3 [em dash] saveState(): history URL
+NEW_SECTION (line 58)
+Section 3, saveState(): history URL
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

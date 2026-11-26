@@ -1,0 +1,48 @@
+OLD_SECTION (line 7)
+index.html [em dash] 158 lines: sans-serif body, <fieldset>/<legend> groups, grey #f0f0f0 log,
+NEW_SECTION (line 7)
+index.html, 158 lines: sans-serif body, <fieldset>/<legend> groups, grey #f0f0f0 log,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 9)
+main.js    [em dash] 74 lines: two instances, an effect <select>, an overlay-type <select>,
+NEW_SECTION (line 9)
+main.js, 74 lines: two instances, an effect <select>, an overlay-type <select>,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 13)
+index.html [em dash] 362 lines: shared design system plus a hero, five numbered sections
+NEW_SECTION (line 13)
+index.html, 362 lines: shared design system plus a hero, five numbered sections
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 16)
+main.js    [em dash] 176 lines: the same two instances, plus live config for effect,
+NEW_SECTION (line 16)
+main.js, 176 lines: the same two instances, plus live config for effect,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 22)
+kept [em dash] the three-layer stack, the second instance sharing one stack, closeAll() from
+NEW_SECTION (line 22)
+kept: the three-layer stack, the second instance sharing one stack, closeAll() from
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 24)
+open/close processors, the depth counter and the scroll-position proof [em dash] and the gaps the
+NEW_SECTION (line 24)
+open/close processors, the depth counter and the scroll-position proof, and the gaps the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 42)
+trigger click, and an uninitialised instance has no click listener attached [em dash] so the
+NEW_SECTION (line 42)
+trigger click, and an uninitialised instance has no click listener attached, so the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

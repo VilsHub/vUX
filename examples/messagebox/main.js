@@ -1,5 +1,5 @@
 /*
- * vUX MessageBox — runnable example.
+ * vUX MessageBox: runnable example.
  *
  * One instance drives the playground and the effect cards; a second, with its
  * own fixed settings, posts the hero and task messages. Both share the same
@@ -11,7 +11,7 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const $$$ = (sel, root = document) => root.querySelectorAll(sel);
 
 /* ------------------------------------------------------------------ *
- * 1. Hero — the four typed shorthands
+ * 1. Hero: the four typed shorthands
  * ------------------------------------------------------------------ */
 
 const hero = new MessageBox();
@@ -143,7 +143,7 @@ $("#text").addEventListener("input", render);
 render();
 
 /* ------------------------------------------------------------------ *
- * 3. Effect cards — per-call options override config for one message
+ * 3. Effect cards: per-call options override config for one message
  * ------------------------------------------------------------------ */
 
 const EFFECT_TEXT = {
@@ -208,7 +208,7 @@ $("#del").addEventListener("click", () => {
 function fakeRequest(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 /* ------------------------------------------------------------------ *
- * 5. Validation — every rejection is a synchronous throw
+ * 5. Validation: every rejection is a synchronous throw
  * ------------------------------------------------------------------ */
 
 const BAD = {

@@ -1,0 +1,64 @@
+OLD_SECTION (line 3)
+`DataView` (`vUX-dataView.js`) is keyed data-to-DOM binding for the parts of a page that receive frequent, fine-grained updates [em dash] data tables, dashboards, tickers, feeds. It keeps a JSON model in memory and maps every row to its DOM node by key, so updates translate into targeted DOM operations: a cell change is one `textContent` write, a sort is a sequence of node moves. Nothing is rebuilt and nothing is diffed [em dash] the mutation API already knows what changed, so the cost is `O(changes)`, not `O(view)`.
+NEW_SECTION (line 3)
+`DataView` (`vUX-dataView.js`) is keyed data-to-DOM binding for the parts of a page that receive frequent, fine-grained updates: data tables, dashboards, tickers, feeds. It keeps a JSON model in memory and maps every row to its DOM node by key, so updates translate into targeted DOM operations: a cell change is one `textContent` write, a sort is a sequence of node moves. Nothing is rebuilt and nothing is diffed: the mutation API already knows what changed, so the cost is `O(changes)`, not `O(view)`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 11)
+The container passed to the constructor must hold one element marked `data-v-row` [em dash] the row template. Elements inside it marked `data-v-field="<fieldName>"` render that field of each row object. On `initialize()` the template is detached from the DOM and cloned once per row.
+NEW_SECTION (line 11)
+The container passed to the constructor must hold one element marked `data-v-row`: the row template. Elements inside it marked `data-v-field="<fieldName>"` render that field of each row object. On `initialize()` the template is detached from the DOM and cloned once per row.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 28)
+Field values are written with `textContent`, so row data is rendered as text [em dash] markup in data cannot inject HTML.
+NEW_SECTION (line 28)
+Field values are written with `textContent`, so row data is rendered as text: markup in data cannot inject HTML.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 58)
+| `container` | Element | The element holding the `data-v-row` template. Rows are rendered where the template stood (its parent [em dash] e.g. the `<tbody>` above). |
+NEW_SECTION (line 58)
+| `container` | Element | The element holding the `data-v-row` template. Rows are rendered where the template stood (its parent: e.g. the `<tbody>` above). |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 67)
+| `sort(compareFn)` | Sorts the model with a standard compare function and reorders the DOM by moving the existing nodes [em dash] focus, selection and input state inside rows survive. |
+| `filter(predicate)` | Shows only rows the predicate accepts, by toggling `display` [em dash] nodes stay alive and keep their state. Pass `null` to clear. The active filter is re-applied after `setData()`. |
+NEW_SECTION (line 67)
+| `sort(compareFn)` | Sorts the model with a standard compare function and reorders the DOM by moving the existing nodes: focus, selection and input state inside rows survive. |
+| `filter(predicate)` | Shows only rows the predicate accepts, by toggling `display`: nodes stay alive and keep their state. Pass `null` to clear. The active filter is re-applied after `setData()`. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 70)
+| `destroy()` | Removes all managed rows and releases the model and key→node map. Call when the view's page is exited (see below). A destroyed view cannot be re-initialized [em dash] create a new instance. |
+NEW_SECTION (line 70)
+| `destroy()` | Removes all managed rows and releases the model and key→node map. Call when the view's page is exited (see below). A destroyed view cannot be re-initialized: create a new instance. |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 72)
+Mutate through the API (`updateRow`/`setData`), not by writing to row objects directly [em dash] direct writes change the model without updating the bound cells.
+NEW_SECTION (line 72)
+Mutate through the API (`updateRow`/`setData`), not by writing to row objects directly: direct writes change the model without updating the bound cells.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 83)
+A `DataView` holds a model, a key→node map, and often app-side timers feeding it. When the SPA engine replaces the page, that state must be released [em dash] this is exactly what the engine's [`exitCallback`](spa-engine.md#callbacks) is for:
+NEW_SECTION (line 83)
+A `DataView` holds a model, a key→node map, and often app-side timers feeding it. When the SPA engine replaces the page, that state must be released: this is exactly what the engine's [`exitCallback`](spa-engine.md#callbacks) is for:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 100)
+A runnable version of this [em dash] 500 rows with sort, filter, a 50-cells-per-100ms ticker, and a benchmark button [em dash] is the "Live table" page of the [SPA example app](../examples/spa/README.md).
+NEW_SECTION (line 100)
+A runnable version of this (500 rows with sort, filter, a 50-cells-per-100ms ticker, and a benchmark button) is the "Live table" page of the [SPA example app](../examples/spa/README.md).
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

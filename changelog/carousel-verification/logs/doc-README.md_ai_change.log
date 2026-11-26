@@ -3,7 +3,7 @@ FEATURE: carousel-verification
 DATE: 2026-10-02
 
 ================================================================================
-CHANGE 1 — guide table
+CHANGE 1: guide table
 ================================================================================
 
 OLD_SECTION
@@ -17,7 +17,7 @@ REASON
 Lists the new Carousel guide.
 
 ================================================================================
-CHANGE 2 — remaining-guides sentence
+CHANGE 2: remaining-guides sentence
 ================================================================================
 
 OLD_SECTION
@@ -30,15 +30,15 @@ REASON
 Carousel now has a guide.
 
 ================================================================================
-CHANGE 3 — other references
+CHANGE 3: other references
 ================================================================================
 
 OLD_SECTION
-    - [Component example](../examples/component/README.md) — ...
+    - [Component example](../examples/component/README.md): ...
 
 NEW_SECTION
-    - [Carousel example](../examples/carousel/README.md) — runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
-    - [Component example](../examples/component/README.md) — ...
+    - [Carousel example](../examples/carousel/README.md): runnable example with a live playground over every config property, per-instance dot styles, swipe and the validation errors.
+    - [Component example](../examples/component/README.md): ...
 
 REASON
 Links the new runnable example, alongside the other module examples.

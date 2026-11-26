@@ -1,0 +1,60 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Require the root ChangeLog.md to be updated for every change
+NEW_SECTION (line 7)
+CHANGE 1: Require the root ChangeLog.md to be updated for every change
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 13)
+1. **Per-file diffs** [em dash] [...]
+2. **Modified file list** [em dash] [...]
+3. **Summary** [em dash] write a summary of the affected projects to `./changelog/<feature-Name>/summary/summary.log`.
+NEW_SECTION (line 13)
+1. **Per-file diffs**: [...]
+2. **Modified file list**: [...]
+3. **Summary**: write a summary of the affected projects to `./changelog/<feature-Name>/summary/summary.log`.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+Every change must be recorded in **four** places [em dash] the three per-feature logs under `./changelog/<feature-Name>/`, plus the release changelog at the repository root:
+NEW_SECTION (line 18)
+Every change must be recorded in **four** places: the three per-feature logs under `./changelog/<feature-Name>/`, plus the release changelog at the repository root:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 20)
+1. **Per-file diffs** [em dash] [...]
+2. **Modified file list** [em dash] [...]
+3. **Summary** [em dash] write a summary of the affected projects to `./changelog/<feature-Name>/summary/summary.log`.
+4. **`ChangeLog.md`** [em dash] always update the root `ChangeLog.md` as well. This is the release-facing record and the one a consumer reads; the `changelog/<feature-Name>/` logs are the internal working record and do **not** substitute for it. Add a bullet under the current version's `## Added`, `## Fixed`, `## Removed` or `## Changed` heading (adding the heading if that version lacks it), written from the consumer's point of view: what they can now do, or what used to be wrong and is no longer. Keep the existing style [em dash] one bullet per distinct change, present tense, no dates and no file paths except where the file *is* the deliverable (a new guide or example). Append new bullets rather than rewriting existing ones; a separate bullet is correct even when an earlier one covers the same area, which is how the SPA and modal entries already read.
+NEW_SECTION (line 20)
+1. **Per-file diffs**: [...]
+2. **Modified file list**: [...]
+3. **Summary**: write a summary of the affected projects to `./changelog/<feature-Name>/summary/summary.log`.
+4. **`ChangeLog.md`**: always update the root `ChangeLog.md` as well. This is the release-facing record and the one a consumer reads; the `changelog/<feature-Name>/` logs are the internal working record and do **not** substitute for it. Add a bullet under the current version's `## Added`, `## Fixed`, `## Removed` or `## Changed` heading (adding the heading if that version lacks it), written from the consumer's point of view: what they can now do, or what used to be wrong and is no longer. Keep the existing style: one bullet per distinct change, present tense, no dates and no file paths except where the file *is* the deliverable (a new guide or example). Append new bullets rather than rewriting existing ones; a separate bullet is correct even when an earlier one covers the same area, which is how the SPA and modal entries already read.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 34)
+only under "## Reference", described as the record of API renames between releases [em dash] i.e.
+NEW_SECTION (line 34)
+only under "## Reference", described as the record of API renames between releases: i.e.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 40)
+the two records are distinguished by audience [em dash] ChangeLog.md is consumer-facing and the
+per-feature logs are internal [em dash] so neither is mistaken for a substitute for the other.
+NEW_SECTION (line 40)
+the two records are distinguished by audience: ChangeLog.md is consumer-facing and the
+per-feature logs are internal, so neither is mistaken for a substitute for the other.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 49)
+drawn from the file as it stands [em dash] the SPA and modal areas already carry several
+NEW_SECTION (line 49)
+drawn from the file as it stands: the SPA and modal areas already carry several
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

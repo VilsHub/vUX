@@ -1,0 +1,34 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] the only project affected. No public API changed;
+NEW_SECTION (line 10)
+vUX library (this repository): the only project affected. No public API changed;
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 53)
+scrollbar too [em dash] so this is not a regression, it is what is left after removing the
+NEW_SECTION (line 53)
+scrollbar too, so this is not a regression, it is what is left after removing the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 60)
+`overflow: hidden` blocks user scrolling [em dash] wheel, touch, keyboard [em dash] but does not
+NEW_SECTION (line 60)
+`overflow: hidden` blocks user scrolling (wheel, touch, keyboard) but does not
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 85)
+scrolling is genuinely blocked [em dash] with one modal open, and with two layers stacked.
+NEW_SECTION (line 85)
+scrolling is genuinely blocked: with one modal open, and with two layers stacked.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 95)
+the artifact being measured [em dash] the first measurement reported a 0.0px shift for
+NEW_SECTION (line 95)
+the artifact being measured: the first measurement reported a 0.0px shift for
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

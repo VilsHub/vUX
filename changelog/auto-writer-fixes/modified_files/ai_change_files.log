@@ -6,7 +6,7 @@ AutoWriter
     vUX-autoWriter.js
 
 Notes:
-  assets/css/autoWriter.css was reviewed and left unchanged — the class names it
+  assets/css/autoWriter.css was reviewed and left unchanged: the class names it
   defines (.vAutoWriter, .vAutoWriterBlinker, .vAutoWriterBlinker.hide) are exactly
   those the rewritten module emits, and the blinker's border-left is still set inline
   from config.cursorStyle over the stylesheet's default.

@@ -1,6 +1,6 @@
 # Auto Writer
 
-`AutoWriter` types text into an element one character at a time, at a randomised human-looking speed. A small directive syntax embedded in the string adds line breaks, pauses and backspacing, so a whole sequence — type, wait, delete, retype — is expressed as a single string rather than as a chain of callbacks.
+`AutoWriter` types text into an element one character at a time, at a randomised human-looking speed. A small directive syntax embedded in the string adds line breaks, pauses and backspacing, so a whole sequence (type, wait, delete, retype) is expressed as a single string rather than as a chain of callbacks.
 
 Module: `vUX-autoWriter.js` · Stylesheet: `assets/css/autoWriter.css` (linked automatically) · Runnable example: [`examples/autowriter/`](../examples/autowriter/)
 
@@ -10,7 +10,7 @@ Module: `vUX-autoWriter.js` · Stylesheet: `assets/css/autoWriter.css` (linked a
 
 **There is no `initialize()`.** The component is driven by method calls, not by markup it scans for, so there is nothing to activate. Construct it, configure it, and call `writeText()`.
 
-**It owns the inside of the element you give it.** On each run it appends a `<span class="vAutoWriter">` to your target (reusing one if it is already there) and types into that span, not into the target directly. When `config.showCursor` is on, a second `<span class="vAutoWriterBlinker">` follows it as the caret. Your target element should therefore be an empty container — anything already inside it sits alongside the typed text, and the span is emptied at the start of every run.
+**It owns the inside of the element you give it.** On each run it appends a `<span class="vAutoWriter">` to your target (reusing one if it is already there) and types into that span, not into the target directly. When `config.showCursor` is on, a second `<span class="vAutoWriterBlinker">` follows it as the caret. Your target element should therefore be an empty container: anything already inside it sits alongside the typed text, and the span is emptied at the start of every run.
 
 Timing is per character: each tick waits a fresh random interval between `config.typingSpeed[0]` and `config.typingSpeed[1]` milliseconds, which is what stops the output reading like a machine.
 
@@ -68,7 +68,7 @@ The count in `*n*` and `~n~` must be digits only. There is no escape sequence: a
 
 ## Typing into several elements
 
-Pass a collection of elements and a matching array of strings, and they are typed **in sequence** — the second element starts once the first has finished. The callback runs once, after the last one.
+Pass a collection of elements and a matching array of strings, and they are typed **in sequence**: the second element starts once the first has finished. The callback runs once, after the last one.
 
 ```js
 const cards = document.querySelectorAll(".card h3");
@@ -78,7 +78,7 @@ writer.writeText(cards, ["First.", "Second.", "Third."], () => console.log("all 
 
 The collection may be a `NodeList` (from `querySelectorAll`), an `HTMLCollection` (from `getElementsByClassName`), or a plain array of elements. The text array must hold one string per element; a mismatch throws.
 
-Both the collection and the array are copied when the run starts, so mutating either afterwards — or a live `HTMLCollection` changing under you as the DOM moves — cannot derail the sequence.
+Both the collection and the array are copied when the run starts, so mutating either afterwards (or a live `HTMLCollection` changing under you as the DOM moves) cannot derail the sequence.
 
 ## Erasing
 
@@ -87,13 +87,13 @@ writer.deleteText(5, box);                       // remove 5 units
 writer.deleteText(5, box, () => console.log()); // …then run a callback
 ```
 
-`deleteText()` erases from the end, at typing speed, and is independent of `writeText()` — you can use it on any element, whether or not this component wrote its contents.
+`deleteText()` erases from the end, at typing speed, and is independent of `writeText()`: you can use it on any element, whether or not this component wrote its contents.
 
 When the target holds a `.vAutoWriter` span, the erasing happens inside that span. This means you pass the *same* element to `writeText()` and `deleteText()` and it does the obvious thing; without it, the first thing removed from a cursor-enabled target would be the caret. For an element the component never wrote to, erasing works on that element directly.
 
 `n` must be a non-negative integer; a fractional or non-numeric count throws. `deleteText(0, …)` removes nothing and runs its callback.
 
-For erasing *during* a run, prefer the `*n*` directive — it is sequenced with the typing, whereas a `deleteText()` call fired at the same time is a second animation competing for the same node.
+For erasing *during* a run, prefer the `*n*` directive: it is sequenced with the typing, whereas a `deleteText()` call fired at the same time is a second animation competing for the same node.
 
 ## Cursor
 
@@ -107,9 +107,9 @@ The caret is a `<span class="vAutoWriterBlinker">` drawn as a left border, so `c
 
 Its behaviour through a run is deliberate and worth stating, because it is not quite the usual convention:
 
-- **while typing** — shown, steady
-- **during a `~n~` pause** — blinking, every `cursorBlinkDelay` ms
-- **when the run finishes** — hidden
+- **while typing**: shown, steady
+- **during a `~n~` pause**: blinking, every `cursorBlinkDelay` ms
+- **when the run finishes**: hidden
 
 So the caret marks *work in progress*, and blinking specifically signals a deliberate pause rather than a stall. If you want a caret left blinking on screen after the text lands, end the string with a long `~n~` pause.
 
@@ -127,11 +127,11 @@ All settings are **write-only** properties on `.config`; each validates its valu
 | `cursorBlinkDelay` | number | `300` | Milliseconds between caret toggles during a `~n~` pause |
 | `callBackDelay` | number | `0` | Milliseconds to wait after finishing before running the callback |
 
-Being write-only, `.config` properties cannot be read back — `writer.config.typingSpeed` is `undefined`. Keep your own copy if you need one. (This is the convention across vUX components.)
+Being write-only, `.config` properties cannot be read back: `writer.config.typingSpeed` is `undefined`. Keep your own copy if you need one. (This is the convention across vUX components.)
 
 ## Controlling a run
 
-One instance runs one animation at a time. Calling `writeText()` while a run is in progress cancels it and starts the new one, and the target span is cleared at the start of every run — so an instance is freely reusable, and repeated calls do not accumulate text.
+One instance runs one animation at a time. Calling `writeText()` while a run is in progress cancels it and starts the new one, and the target span is cleared at the start of every run, so an instance is freely reusable, and repeated calls do not accumulate text.
 
 `stop()` cancels a run in progress and clears its timers:
 
@@ -139,7 +139,7 @@ One instance runs one animation at a time. Calling `writeText()` while a run is 
 writer.stop();
 ```
 
-Call it whenever the element being typed into is about to disappear — an SPA route change, a closing modal, a component teardown. Nothing else cancels the pending timers, and a run whose target has been removed from the document keeps typing into a detached node until it completes.
+Call it whenever the element being typed into is about to disappear: an SPA route change, a closing modal, a component teardown. Nothing else cancels the pending timers, and a run whose target has been removed from the document keeps typing into a detached node until it completes.
 
 `stop()` does not run the callback, and does not clear text already typed. That includes a callback whose run has already finished but is still waiting out `callBackDelay`: `stop()` cancels it. `destroy()` does the same, and also removes the spans the writer added, so a callback that would have called a destroyed writer never runs. Starting a new `writeText()` or `deleteText()` leaves an earlier run's pending callback alone.
 
@@ -170,7 +170,7 @@ The trailing pause leaves the caret blinking after the text lands.
 
 **A phrase that cycles**
 
-Rebuild the string each time rather than looping in code — the erase is part of the sequence, so the timing stays right:
+Rebuild the string each time rather than looping in code: the erase is part of the sequence, so the timing stays right:
 
 ```js
 const roles = ["designers.", "engineers.", "everyone."];
@@ -197,7 +197,7 @@ Both lines are typed by the same instance, because the second run only starts on
 
 ## Notes and limits
 
-- The component types into the DOM as text nodes. It does not parse HTML in your string — `<b>bold</b>` is typed out as those literal characters. The one exception is `|`, which inserts a real `<br>`.
+- The component types into the DOM as text nodes. It does not parse HTML in your string: `<b>bold</b>` is typed out as those literal characters. The one exception is `|`, which inserts a real `<br>`.
 - There is no pause/resume, and no way to read progress. `stop()` is the only control over a run once started.
 - Two instances typing into the *same* element will fight over it; give each its own target.
 - Because the typed content is text nodes inside a span the component manages, do not hold references to nodes inside the target across runs.

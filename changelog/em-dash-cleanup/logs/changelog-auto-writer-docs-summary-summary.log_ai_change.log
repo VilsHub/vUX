@@ -1,0 +1,27 @@
+OLD_SECTION (line 10)
+vUX library (this repository) [em dash] the only project affected.
+NEW_SECTION (line 10)
+vUX library (this repository): the only project affected.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 37)
+built to show it [em dash] a typed hero, a live playground over every config property, isolated
+NEW_SECTION (line 37)
+built to show it: a typed hero, a live playground over every config property, isolated
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 42)
+element to both [em dash] the obvious reading, and what the example does [em dash] removed the caret
+NEW_SECTION (line 42)
+element to both (the obvious reading, and what the example does) removed the caret
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 73)
+in a browser [em dash] there is none in this environment [em dash] so its visual result is unconfirmed.
+NEW_SECTION (line 73)
+in a browser (there is none in this environment) so its visual result is unconfirmed.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

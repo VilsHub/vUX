@@ -1,0 +1,48 @@
+OLD_SECTION (line 33)
+| [SPA Engine [em dash] setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+NEW_SECTION (line 33)
+| [SPA Engine, setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 39)
+| [SPA Engine [em dash] setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+NEW_SECTION (line 39)
+| [SPA Engine, setup & routing](spa-engine.md) | `vUX-spaEngine.js` | Build a single-page application: routes, dynamic route parameters, sections, caching, history |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 68)
+- [AutoWriter example](../examples/autowriter/README.md) [em dash] runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md) [em dash] runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [README](../README.md) [em dash] installation and the public feature list per release.
+- [ChangeLog](../ChangeLog.md) [em dash] API renames and changes between releases.
+NEW_SECTION (line 68)
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md): runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [README](../README.md): installation and the public feature list per release.
+- [ChangeLog](../ChangeLog.md): API renames and changes between releases.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 74)
+- [AutoWriter example](../examples/autowriter/README.md) [em dash] runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md) [em dash] runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [Component example](../examples/component/README.md) [em dash] runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
+- [README](../README.md) [em dash] installation and the public feature list per release.
+- [ChangeLog](../ChangeLog.md) [em dash] API renames and changes between releases.
+NEW_SECTION (line 74)
+- [AutoWriter example](../examples/autowriter/README.md): runnable example of the typewriter effect, its directives and its validation.
+- [Resizer example](../examples/resizer/README.md): runnable example covering both axes, all four edges, a consumer-supplied handle and teardown.
+- [Component example](../examples/component/README.md), runnable example of building your own component: every binding under live control, keyed lists keeping their nodes, nesting and teardown.
+- [README](../README.md): installation and the public feature list per release.
+- [ChangeLog](../ChangeLog.md): API renames and changes between releases.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 91)
+- Component module (`vUX-component.js`), for building your own reusable components from your own markup [em dash] template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
+NEW_SECTION (line 91)
+- Component module (`vUX-component.js`), for building your own reusable components from your own markup: template instancing, field/attribute/event/class bindings, keyed lists, nesting and teardown
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

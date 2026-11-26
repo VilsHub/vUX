@@ -1,8 +1,8 @@
 # Component
 
-`Component` (`vUX-component.js`) is bring-your-own-component: you write the markup, mark it with `data-v-*` bindings, and vUX clones, binds, wires and tears down instances of it. It is the module for the reusable pieces of *your* interface — a user card, a board row, a notification — as opposed to the ready-made widgets the rest of the library provides.
+`Component` (`vUX-component.js`) is bring-your-own-component: you write the markup, mark it with `data-v-*` bindings, and vUX clones, binds, wires and tears down instances of it. It is the module for the reusable pieces of *your* interface (a user card, a board row, a notification) as opposed to the ready-made widgets the rest of the library provides.
 
-It is deliberately **not** a framework. There is no observation, no scheduler, no virtual tree and no diffing. A binding is read when an instance is built and again when you call `update()`, and nothing happens in between. What you get is the tedious part — cloning, field and attribute binding, event wiring, keyed list reconciliation and teardown — over markup that stays yours.
+It is deliberately **not** a framework. There is no observation, no scheduler, no virtual tree and no diffing. A binding is read when an instance is built and again when you call `update()`, and nothing happens in between. What you get is the tedious part (cloning, field and attribute binding, event wiring, keyed list reconciliation and teardown) over markup that stays yours.
 
 [← Back to documentation index](README.md)
 
@@ -10,7 +10,7 @@ It is deliberately **not** a framework. There is no observation, no scheduler, n
 
 If you are looking for reactive state, computed properties, a component that re-renders when a variable changes, or an expression language in your markup, this module does not do those things and will not grow them. For data several components share, use [Store](store.md): it holds the data and calls `update()` and `sync()` for you through explicit subscriptions, without changing anything described here. The line is drawn deliberately: every binding value is a plain field name, so there is never a string in your HTML that only vUX knows how to evaluate.
 
-It is also not Web Components. Instances are ordinary elements in the light DOM, carrying your classes, styled by your stylesheet and reachable with `document.querySelector`. Nothing is scoped away from you. If you want a custom element, wrap this in one — see [Using it inside a custom element](#using-it-inside-a-custom-element).
+It is also not Web Components. Instances are ordinary elements in the light DOM, carrying your classes, styled by your stylesheet and reachable with `document.querySelector`. Nothing is scoped away from you. If you want a custom element, wrap this in one: see [Using it inside a custom element](#using-it-inside-a-custom-element).
 
 ## Template contract
 
@@ -83,7 +83,7 @@ ada.destroy();                        // unbinds, removes the node, cascades to 
 
 ## Component
 
-`new Component(element)` — throws if `element` is not an element.
+`new Component(element)`: throws if `element` is not an element.
 
 | Member | Signature | Notes |
 |---|---|---|
@@ -96,16 +96,16 @@ ada.destroy();                        // unbinds, removes the node, cascades to 
 
 ### `.config`
 
-Write-only, as everywhere in vUX — reading a config property gives `undefined`.
+Write-only, as everywhere in vUX: reading a config property gives `undefined`.
 
 | Property | Type | Purpose |
 |---|---|---|
 | `key` | string | the unique field identifying an item; `sync()` only |
 | `handlers` | object | `{name: fn}`, targets of `data-v-on`; called `(data, node, event, component)` |
 | `formatters` | object | `{field: fn}`, display transform; called `(value, data)` |
-| `onMount` | function | `(instance)` — after insertion |
-| `onUpdate` | function | `(instance, changedFields)` — after a patch that changed something |
-| `onDestroy` | function | `(instance)` — before removal, after children are destroyed |
+| `onMount` | function | `(instance)`, after insertion |
+| `onUpdate` | function | `(instance, changedFields)`, after a patch that changed something |
+| `onDestroy` | function | `(instance)`, before removal, after children are destroyed |
 
 A handler receives the instance's **current** data, not a snapshot from build time.
 
@@ -143,7 +143,7 @@ rows.sort(byScore);
 row.sync($$.ss("#list"), rows);       // same nodes, reordered
 ```
 
-Moving rather than rebuilding is the point: anything the browser owns inside a surviving row — typed text, focus, text selection, scroll position, a playing `<video>` — survives the reorder. Rebuilding the list would discard all of it.
+Moving rather than rebuilding is the point: anything the browser owns inside a surviving row (typed text, focus, text selection, scroll position, a playing `<video>`) survives the reorder. Rebuilding the list would discard all of it.
 
 One `Component` syncs one container. The reconcile owns every child of the container it manages, so pointing a component at a second container throws rather than letting two lists silently delete each other's rows. Use a second `Component` over the same template.
 
@@ -177,7 +177,7 @@ Every vUX component has a `destroy()` as of v4.0.0, which is what makes this rel
 
 ## Using it inside a custom element
 
-vUX does not ship custom elements, and does not need to — six lines of yours are enough, and this way the tag, its name and its lifecycle stay under your control:
+vUX does not ship custom elements, and does not need to: six lines of yours are enough, and this way the tag, its name and its lifecycle stay under your control:
 
 ```js
 class UserCard extends HTMLElement {
@@ -217,4 +217,4 @@ componentObj.mount() called on a destroyed Component
 
 ## Example
 
-[`examples/component/`](../examples/component/README.md) — a runnable page covering every binding with live controls, the keyed-list node-identity demonstration, nesting with a `ToolTip` attached and released through the lifecycle callbacks, and every error above raised on demand.
+[`examples/component/`](../examples/component/README.md): a runnable page covering every binding with live controls, the keyed-list node-identity demonstration, nesting with a `ToolTip` attached and released through the lifecycle callbacks, and every error above raised on demand.

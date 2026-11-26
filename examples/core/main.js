@@ -1,5 +1,5 @@
 /*
- * vUX core utilities — runnable example.
+ * vUX core utilities: runnable example.
  *
  * There is no component to construct here. Importing the core (directly, or through any
  * vUX-*.js module) is what does the work: it puts $$ on window, promotes every helper in
@@ -15,13 +15,13 @@ const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(
 const show = v => v === undefined ? "undefined" : JSON.stringify(v);
 
 /* ------------------------------------------------------------------ *
- * Hero — fill() + animate() on the headline, counters, a flip card
+ * Hero: fill() + animate() on the headline, counters, a flip card
  * ------------------------------------------------------------------ */
 
 const heroTitle = $("#heroTitle");
 
 //fill() sets background-image and, because an <h1> is a text element, adds .xFill from
-//core.css (background-clip: text) — so the gradient paints the glyphs, not the box.
+//core.css (background-clip: text), so the gradient paints the glyphs, not the box.
 //animate() then turns the angle: the draw function is called with each tweened value.
 function paintTitle(el, angle) {
     $$.sm(el).fill(`linear-gradient(${angle}deg, #5ccfe6 0%, #d7e0ec 40%, #ffb454 75%, #c8a2ff 100%)`);
@@ -107,8 +107,8 @@ const OPS = {
     savV:   s => { const l = $$.sav(s, "visible"); return [`$$.sav("${s}", "visible")`, `Array(${l.length})`, l]; },
     savH:   s => { const l = $$.sav(s, "hidden"); return [`$$.sav("${s}", "hidden")`, `Array(${l.length})`, l]; },
     //with a selector, hide/unHide/class act on every match
-    hide:   s => { $$.sm(s).hide(); return [`$$.sm("${s}").hide()`, "undefined — display:none on every match", null]; },
-    unHide: s => { $$.sm(s).unHide("flex"); return [`$$.sm("${s}").unHide("flex")`, "undefined — display:flex on every match", $$.sa(s)]; },
+    hide:   s => { $$.sm(s).hide(); return [`$$.sm("${s}").hide()`, "undefined: display:none on every match", null]; },
+    unHide: s => { $$.sm(s).unHide("flex"); return [`$$.sm("${s}").unHide("flex")`, "undefined: display:flex on every match", $$.sa(s)]; },
     add:    s => { $$.sm(s).class.add("lit"); return [`$$.sm("${s}").class.add("lit")`, "undefined", $$.sa(s)]; },
     remove: s => { $$.sm(s).class.remove("lit"); return [`$$.sm("${s}").class.remove("lit")`, "undefined", $$.sa(s)]; },
     //swap toggles between the two: whichever one an element has is replaced by the other
@@ -138,10 +138,10 @@ $all("[data-sel]").forEach(b => b.addEventListener("click", () => { selInput.val
 //makeActive: the parent scopes which elements lose the class. Without it, every element
 //in the document carrying "active" would be cleared, including ones in other widgets.
 const TAB_TEXT = [
-    "$$.ss, $$.sa, $$.sav and $$.sm — the board above.",
-    "slide, flip.card, animate and filter — section 02.",
-    "$$.attachEventHandler — one listener on window, filtered by class — section 04.",
-    "getTimeSegments, ScreenBreakPoint, IO.get, randomString — section 05."
+    "$$.ss, $$.sa, $$.sav and $$.sm: the board above.",
+    "slide, flip.card, animate and filter: section 02.",
+    "$$.attachEventHandler (one listener on window, filtered by class): section 04.",
+    "getTimeSegments, ScreenBreakPoint, IO.get, randomString: section 05."
 ];
 const tabs = $("#tabs");
 function activate(btn) {
@@ -152,7 +152,7 @@ $all("#tabs button").forEach(b => b.addEventListener("click", () => activate(b))
 activate($("#tabs button"));
 
 /* ------------------------------------------------------------------ *
- * 02 Motion — slides
+ * 02 Motion: slides
  * ------------------------------------------------------------------ */
 
 const slSpeed = $("#slSpeed"), slTiming = $("#slTiming");
@@ -205,7 +205,7 @@ $all("#accordion .acc").forEach(acc => {
 });
 
 /* ------------------------------------------------------------------ *
- * 02 Motion — animate() easing lab
+ * 02 Motion: animate() easing lab
  * ------------------------------------------------------------------ */
 
 const easeSel = $("#easeSel");
@@ -259,7 +259,7 @@ $("#ballFwd").addEventListener("click", () => { if (ballAt === "home") moveBall(
 $("#ballBack").addEventListener("click", () => { if (ballAt === "end") moveBall(-1); });
 
 /* ------------------------------------------------------------------ *
- * 02 Motion — filter()
+ * 02 Motion: filter()
  * ------------------------------------------------------------------ */
 
 const poster = $("#poster"), fOut = $("#fOut");
@@ -336,11 +336,11 @@ for (let i = 1; i <= 30; i++) {
 $$.sm(scroller).scroll.y(true);
 $("#scrollLock").addEventListener("click", () => {
     $$.sm(scroller).scroll.lock("y");
-    scrollStatus.className = "status err"; scrollStatus.lastChild.textContent = "locked — overflow-y: hidden";
+    scrollStatus.className = "status err"; scrollStatus.lastChild.textContent = "locked, overflow-y: hidden";
 });
 $("#scrollUnlock").addEventListener("click", () => {
     $$.sm(scroller).scroll.unlock("y");
-    scrollStatus.className = "status run"; scrollStatus.lastChild.textContent = "unlocked — overflow-y: auto";
+    scrollStatus.className = "status run"; scrollStatus.lastChild.textContent = "unlocked, overflow-y: auto";
 });
 
 /* ------------------------------------------------------------------ *
@@ -362,7 +362,7 @@ addTag("core", "pinned");
 addTag("<b>bold</b> inside");
 
 //"tag, pinned": the target must have `tag` and must not have `pinned`.
-//Only e.target is tested — a click on a child of a .tag is a click on the child.
+//Only e.target is tested: a click on a child of a .tag is a click on the child.
 const removeHandler = { handle: null };
 function attachRemove() {
     removeHandler.handle = $$.attachEventHandler("click", "tag, pinned", e => {
@@ -378,7 +378,7 @@ $$.attachEventHandler("click", ["pinned"], (e, cls) => {
     log(`click on .${cls} → excluded by "tag, pinned", caught by ["pinned"]`);
 });
 
-//"event:prop=value" — the handler only runs when e.key is "Enter"
+//"event:prop=value": the handler only runs when e.key is "Enter"
 $$.attachEventHandler("keyup:key=Enter", "tag-input", e => {
     const v = tagInput.value.trim();
     if (!v) return;
@@ -401,7 +401,7 @@ $("#evDetach").addEventListener("click", e => {
         log("attachEventHandler again → tag clicks remove tags");
     }
 });
-log("ready — click a tag, or type one and press Enter");
+log("ready: click a tag, or type one and press Enter");
 
 /* ------------------------------------------------------------------ *
  * 05 Data, time and the environment
@@ -468,7 +468,7 @@ $("#ioGo").addEventListener("click", () => {
     $("#ioBar").style.width = "0";
     $("#ioOut").textContent = "fetching…";
     //fn runs once per response; `data` is keyed by the url's index in the array.
-    //There is no error callback — a url that fails never reports, and status never ends true.
+    //There is no error callback: a url that fails never reports, and status never ends true.
     $$.IO.get(urls, (data, state) => {
         $("#ioBar").style.width = state.progress + "%";
         $("#ioOut").textContent = Object.keys(data).map(i => `${urls[i]}  ${data[i].length} bytes`).join("\n") +
@@ -485,7 +485,7 @@ $("#ioGo").addEventListener("click", () => {
 })();
 
 /* ------------------------------------------------------------------ *
- * 06 Built-in extensions and global helpers — evaluated live
+ * 06 Built-in extensions and global helpers: evaluated live
  * ------------------------------------------------------------------ */
 
 const EXT = [
@@ -582,7 +582,7 @@ $("#freeze").addEventListener("click", () => {
     const t0 = performance.now();
     //a busy-wait loop: nothing paints, no input is handled, timers and animations stall
     $$.delay(1500, () => {
-        $("#freezeOut").textContent = `callback ran after ${Math.round(performance.now() - t0)}ms, synchronously — use setTimeout instead`;
+        $("#freezeOut").textContent = `callback ran after ${Math.round(performance.now() - t0)}ms, synchronously: use setTimeout instead`;
     });
 });
 

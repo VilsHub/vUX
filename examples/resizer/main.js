@@ -1,9 +1,9 @@
 /*
- * vUX Resizer — runnable example.
+ * vUX Resizer: runnable example.
  *
  * Three things about this component shape the whole page:
  *
- *   1. `config` is read once, by initialize(). There is no live reconfiguration —
+ *   1. `config` is read once, by initialize(). There is no live reconfiguration:
  *      to change a setting you destroy() the instance and build a new one. The
  *      playground below does exactly that on every control change.
  *   2. The module writes a *size* onto the target and nothing else. Where the
@@ -12,7 +12,7 @@
  *   3. Handles are identified by class name, globally. Styles pushed through
  *      config.resizeHandlerProperties.styles generate rules against
  *      `.resizeHandle.x` / `.resizeHandle.y`, so they reach every Resizer on the
- *      page — this file styles most boxes from the page's own CSS instead, and
+ *      page: this file styles most boxes from the page's own CSS instead, and
  *      uses the config route only in the playground, where seeing it work is
  *      the point.
  */
@@ -21,7 +21,7 @@ import { Resizer } from "../../vUX-resizer.js";
 const $ = (sel, root = document) => root.querySelector(sel);
 
 /* ------------------------------------------------------------------ *
- * 1. Hero — both axes, clamped
+ * 1. Hero: both axes, clamped
  * ------------------------------------------------------------------ */
 
 const heroBox = $("#heroBox");
@@ -30,7 +30,7 @@ const heroDim = $("#heroDim");
 const heroResizer = new Resizer("#heroBox");
 
 //`parent` is the element the handles get appended to. It is the target itself here,
-//which is the usual arrangement — the module gives it position:relative if it has
+//which is the usual arrangement: the module gives it position:relative if it has
 //no positioning of its own, so the absolutely-positioned handles land on its edges.
 heroResizer.config.resizeHandlerProperties = {
     parent: heroBox,
@@ -45,7 +45,7 @@ heroResizer.config.thresholdValues = {
     minHeight: 120, maxHeight: 520
 };
 
-//The callback receives the Resizer, not the event — read the size off the instance.
+//The callback receives the Resizer, not the event: read the size off the instance.
 heroResizer.config.callBack = function (r) {
     heroDim.innerHTML = r.resizedWidth + " &times; " + r.resizedHeight;
 };
@@ -57,7 +57,7 @@ heroResizer.initialize();
 heroDim.innerHTML = heroBox.offsetWidth + " &times; " + heroBox.offsetHeight;
 
 /* ------------------------------------------------------------------ *
- * 2. Playground — every config property, rebuilt on each change
+ * 2. Playground: every config property, rebuilt on each change
  * ------------------------------------------------------------------ */
 
 const playBox = $("#playBox");
@@ -211,13 +211,13 @@ const splitPill = $("#splitPill");
 
 const splitResizer = new Resizer("#splitSide");
 
-//The class name of your own element — "grip" or ".grip", both are accepted. It has to
+//The class name of your own element: "grip" or ".grip", both are accepted. It has to
 //be a class rather than an id, because the module matches with classList and closest().
 splitResizer.config.myResizeHandler = "grip";
 
 //Still worth setting: `direction` is what lets the module resolve the axis for a
 //handle that carries no `x`/`y` marker class, and `position` supplies the edge that
-//decides which way a drag grows the element. No `parent` — nothing is being built.
+//decides which way a drag grows the element. No `parent`: nothing is being built.
 splitResizer.config.resizeHandlerProperties = {
     direction: "x",
     position: { x: "right" }
@@ -285,8 +285,8 @@ $("#lifeInit").addEventListener("click", function () {
     lifeResizer.initialize();
     const after = lifeBox.querySelectorAll(".resizeHandle").length;
     logLife(before === after
-        ? "initialize() — already live, no-op (handles still " + after + ")"
-        : "initialize() — handles " + before + " -> " + after);
+        ? "initialize(): already live, no-op (handles still " + after + ")"
+        : "initialize(): handles " + before + " -> " + after);
 });
 
 $("#lifeDestroy").addEventListener("click", function () {
@@ -294,12 +294,12 @@ $("#lifeDestroy").addEventListener("click", function () {
     lifeResizer.destroy();
     const after = lifeBox.querySelectorAll(".resizeHandle").length;
     logLife(before === after
-        ? "destroy() — nothing live, no-op (handles still " + after + ")"
-        : "destroy() — handles " + before + " -> " + after);
+        ? "destroy(): nothing live, no-op (handles still " + after + ")"
+        : "destroy(): handles " + before + " -> " + after);
 });
 
 lifeResizer.initialize();
-logLife("initialize() — handles 0 -> " + lifeBox.querySelectorAll(".resizeHandle").length);
+logLife("initialize(): handles 0 -> " + lifeBox.querySelectorAll(".resizeHandle").length);
 
 /* ------------------------------------------------------------------ *
  * 6. Validation
@@ -335,7 +335,7 @@ document.querySelectorAll("[data-err]").forEach(function (btn) {
         const key = btn.getAttribute("data-err");
         try {
             cases[key]();
-            errOut.textContent = "No error thrown — that is itself a bug.\n\n" + btn.textContent;
+            errOut.textContent = "No error thrown: that is itself a bug.\n\n" + btn.textContent;
         } catch (e) {
             errOut.textContent = btn.textContent.trim() + "\n\n" + e.name + ": " + e.message;
         }

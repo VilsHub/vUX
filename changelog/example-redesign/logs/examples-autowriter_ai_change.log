@@ -4,7 +4,7 @@ DATE: 2026-08-26
 PRIOR STATE: as left by feature 'auto-writer-docs'
 
 ================================================================================
-CHANGE 1 — Move the design system out to the shared stylesheet
+CHANGE 1: Move the design system out to the shared stylesheet
 ================================================================================
 
 OLD_SECTION
@@ -19,13 +19,13 @@ OLD_SECTION
 NEW_SECTION
 <link rel="stylesheet" href="../shared/example.css">
 <style>
-    /* the caret, the reserved line-heights, .play, .stage, .mini, .seq* — page only */
+    /* the caret, the reserved line-heights, .play, .stage, .mini, .seq*: page only */
 </style>
 
 REASON
 This page was written before the shared stylesheet existed, so it carried the whole design
 system inline. Extracting it leaves one source of truth: the file drops from 376 lines to
-218, and the remaining rules are only what is specific to this demo — the caret sizing,
+218, and the remaining rules are only what is specific to this demo: the caret sizing,
 the min-heights that stop the page shifting as text arrives, the playground grid, the
 output stage, the directive mini-stages and the sequence cards.
 

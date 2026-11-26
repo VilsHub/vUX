@@ -1,0 +1,36 @@
+OLD_SECTION (line 10)
+examples/autowriter/index.html   376 lines [em dash] page and its stylesheet
+examples/autowriter/main.js      ~250 lines [em dash] six writers driving the page
+NEW_SECTION (line 10)
+examples/autowriter/index.html   376 lines: page and its stylesheet
+examples/autowriter/main.js      ~250 lines: six writers driving the page
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 17)
+control wiring), this component's entire output is a visual effect [em dash] a demo that does not
+NEW_SECTION (line 17)
+control wiring), this component's entire output is a visual effect: a demo that does not
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 26)
+                each cycle being "word + hold + backspace exactly the word's length" [em dash]
+NEW_SECTION (line 26)
+                each cycle being "word + hold + backspace exactly the word's length":
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 57)
+"autoWriter.cssok" [em dash] corrected to "autoWriter.css...~500~ok".
+NEW_SECTION (line 57)
+"autoWriter.cssok": corrected to "autoWriter.css...~500~ok".
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 59)
+ids, 4 presets, 5 error buttons, 3 directive demos [em dash] no misses), and every asset the page
+NEW_SECTION (line 59)
+ids, 4 presets, 5 error buttons, 3 directive demos: no misses), and every asset the page
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

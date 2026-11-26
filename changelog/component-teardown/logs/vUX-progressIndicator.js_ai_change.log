@@ -6,7 +6,7 @@ PRIOR STATE: as left by feature 'resizer-docs'
 REASON
 addEvents() bound 'online', 'offline' and 'transitionend' to window as anonymous
 closures. All three were unremovable, and the tinyIncrement() setInterval was only ever
-cleared by hideProgress() — an indicator torn down mid-progress kept the interval
+cleared by hideProgress(): an indicator torn down mid-progress kept the interval
 running and kept writing to an element that had been removed. The three handlers are now
 named, every element a progress block is built into is recorded, and destroy() clears the
 interval, stops the grid animation, detaches the listeners and removes the injected

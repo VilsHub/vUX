@@ -9,7 +9,7 @@ Two levels of listener here. The per-instance trigger listener was an anonymous 
 It is now the named handleTriggerClick.
 
 The four document-level handlers (Escape, effect transitions, resize, away/close clicks)
-are deliberately shared by every instance — binding them per instance would pop one layer
+are deliberately shared by every instance: binding them per instance would pop one layer
 per instance for a single Escape press. They were attached once and never detached, so
 they stayed bound even after every displayer on the page had been torn down. Initialized
 instances are now counted, and the last one to be destroyed detaches them.

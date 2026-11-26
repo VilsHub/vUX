@@ -1,5 +1,5 @@
 /* ============================================================================
-   vUX Skeleton example — placeholders shaped like the real thing.
+   vUX Skeleton example: placeholders shaped like the real thing.
 
    Importing any vUX-*.js module boots the whole core, so $$ and the validateX
    helpers are globals by the time this file's body runs. Component is imported
@@ -25,7 +25,7 @@ const TITLES = [
 ];
 const AUTHORS = ["Ada Okafor", "Tomás Reyes", "Mei Lin", "Sven Adler", "Priya Nair", "Jonah Weiss"];
 const COMMENTS = [
-    "This matches what we saw last quarter — the fix was almost identical.",
+    "This matches what we saw last quarter: the fix was almost identical.",
     "Could you share the dashboard query? I'd like to try it on ours.",
     "Great write-up. The part about clock drift saved me an afternoon.",
     "We tried dual writes and hit ordering issues; how did you handle those?",
@@ -82,7 +82,7 @@ const postTpl = $$.ss("#postTpl");
 const rowTpl  = $$.ss("#rowTpl");
 
 /* ===========================================================================
-   HERO — a feed that loads
+   HERO: a feed that loads
    ========================================================================= */
 
 const feed = $$.ss("#feed");
@@ -116,8 +116,8 @@ async function loadFeed(){
 
     const total = Math.round(performance.now() - started);
     say("#heroStatus", shown
-        ? "loaded in " + total + "ms — skeleton shown"
-        : "loaded in " + total + "ms — under the 120ms delay, so no skeleton at all");
+        ? "loaded in " + total + "ms: skeleton shown"
+        : "loaded in " + total + "ms: under the 120ms delay, so no skeleton at all");
 }
 
 $$.ss("#heroReload").addEventListener("click", loadFeed);
@@ -128,7 +128,7 @@ $$.sa("#heroLatency button").forEach(b => b.addEventListener("click", () => {
 }));
 
 /* ===========================================================================
-   SECTION 1 — derived from your template
+   SECTION 1: derived from your template
    ========================================================================= */
 
 /* The source is printed from the template's own innerHTML, so what you read is
@@ -157,7 +157,7 @@ ghostOne.initialize();
 ghostOne.show();
 
 /* ===========================================================================
-   SECTION 2 — playground
+   SECTION 2: playground
    ========================================================================= */
 
 const playOut = $$.ss("#playOut");
@@ -269,7 +269,7 @@ play.initialize();
 applyPlay();
 
 /* ===========================================================================
-   SECTION 3 — timing
+   SECTION 3: timing
    ========================================================================= */
 
 function lane(id, delay, minDuration){
@@ -306,7 +306,7 @@ function lane(id, delay, minDuration){
         if (on == null){
             skBar.style.width = "0";
             verdict.className = "verdict good";
-            verdict.textContent = "never shown — the data beat the delay";
+            verdict.textContent = "never shown: the data beat the delay";
         }else{
             const dur = Math.round(off - on);
             skBar.style.left = (on / span * 100) + "%";
@@ -314,7 +314,7 @@ function lane(id, delay, minDuration){
             skBar.classList.toggle("flash", dur < 150);
             verdict.className = "verdict " + (dur < 150 ? "bad" : "good");
             verdict.textContent = dur < 150
-                ? "flashed for " + dur + "ms — a blink the eye reads as a glitch"
+                ? "flashed for " + dur + "ms: a blink the eye reads as a glitch"
                 : "on screen " + dur + "ms" + (off > ms + 5 ? ", held " + Math.round(off - ms) + "ms past the data" : "");
         }
     };
@@ -329,7 +329,7 @@ $$.sa("section .row button[data-ms]").forEach(b => b.addEventListener("click", (
 }));
 
 /* ===========================================================================
-   SECTION 4 — mask mode
+   SECTION 4: mask mode
    ========================================================================= */
 
 const maskTarget = $$.ss("#maskTarget");
@@ -368,7 +368,7 @@ $$.ss("#mRefresh").addEventListener("click", async () => {
 });
 
 /* ===========================================================================
-   SECTION 5 — validation
+   SECTION 5: validation
    ========================================================================= */
 
 const scratch = document.createElement("div");

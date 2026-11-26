@@ -1,0 +1,41 @@
+OLD_SECTION (examples/spa/server.py, send_head)
+        # SPA fallback: unknown non-file paths serve index.html
+        if not os.path.exists(path) or (os.path.isdir(path) and not os.path.exists(os.path.join(path, "index.html"))):
+            self.path = "/index.html"
+NEW_SECTION
+        # SPA fallback: unknown non-file paths serve index.html. A missing route fragment under
+        # /display/ is a real 404, so the engine reports it (config.errorCallback, "Broken link")
+        missing = not os.path.exists(path) or (os.path.isdir(path) and not os.path.exists(os.path.join(path, "index.html")))
+        if missing and self.path.startswith("/display/"):
+            self.send_error(404, "No such route fragment")
+            return None
+        if missing:
+            self.path = "/index.html"
+REASON
+A missing fragment used to come back as the app shell with status 200, so a failed route load could not be shown. Fragments are not client-side routes and should 404.
+
+OLD_SECTION (examples/spa/index.html, top bar nav)
+            <a href="/table" id="tableLink" class="spa-link" data-click-callback="showTable">Live table</a>
+NEW_SECTION
+            <a href="/table" id="tableLink" class="spa-link" data-click-callback="showTable">Live table</a>
+            <a href="/broken" id="brokenLink" class="spa-link">Broken link</a>
+REASON
+A link to a route whose fragment does not exist, to demonstrate config.errorCallback (the example guide asks for every config property and the failure modes).
+
+OLD_SECTION (examples/spa/main.js, routes and config)
+(no "broken" route, no errorCallback)
+NEW_SECTION
+            broken: { pattern: "/broken", target: "/display/missing.html", ... }
+    spa.config.errorCallback = function(element, routeName, message){
+        completeLoadProgress();
+        demoLog("[error] route '" + routeName + "': " + message.split("\n")[0] + " (the page stays where it was)");
+    };
+REASON
+Shows the new callback: the progress bar is completed and the failure logged, while the content, URL and title stay as they were.
+
+OLD_SECTION (examples/spa/README.md, feature list)
+(no load error bullet)
+NEW_SECTION
+- **Load errors**: the "Broken link" route points at a fragment that does not exist ...
+REASON
+Documents the new demonstration.

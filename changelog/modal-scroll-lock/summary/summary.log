@@ -7,7 +7,7 @@ FOLLOWS: changelog/modal-stacking
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected. No public API changed;
+vUX library (this repository): the only project affected. No public API changed;
 this is an internal change of mechanism with one observable behavioural difference
 (see below). Consumer code needs no modification.
 
@@ -50,14 +50,14 @@ previous approach and is now fixed.
 
 The remaining 15px is the width of the scrollbar being removed. It is unavoidable
 for any scroll lock that hides the scrollbar, and the old mechanism removed the
-scrollbar too — so this is not a regression, it is what is left after removing the
+scrollbar too, so this is not a regression, it is what is left after removing the
 much larger one.
 
 --------------------------------------------------------------------------------
 BEHAVIOUR CHANGE
 --------------------------------------------------------------------------------
 
-`overflow: hidden` blocks user scrolling — wheel, touch, keyboard — but does not
+`overflow: hidden` blocks user scrolling (wheel, touch, keyboard) but does not
 block programmatic scrolling. Consumer code calling scrollTo() can still move the
 page behind an open modal. The previous mechanism blocked that too, as a side
 effect of the document collapsing to viewport height.
@@ -82,7 +82,7 @@ Driven in headless Chromium against examples/modal served over HTTP.
 
 The main suite's freeze assertions were switched from body position to body
 overflow, and two checks were added that dispatch real wheel events to confirm user
-scrolling is genuinely blocked — with one modal open, and with two layers stacked.
+scrolling is genuinely blocked: with one modal open, and with two layers stacked.
 
 The scroll-lock suite covers what this change put most at risk: a tall modal still
 scrolls inside its own overlay on a real wheel event while the page behind stays
@@ -92,7 +92,7 @@ top residue is left on the body by the old mechanism.
 
 Scrollbar shift was measured separately with Chromium's --hide-scrollbars flag
 disabled, since Playwright suppresses scrollbars by default and would have hidden
-the artifact being measured — the first measurement reported a 0.0px shift for
+the artifact being measured: the first measurement reported a 0.0px shift for
 exactly that reason and was not trustworthy.
 
 --------------------------------------------------------------------------------

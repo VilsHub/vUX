@@ -25,12 +25,12 @@ Then open <http://localhost:8000/examples/autowriter/index.html>.
 
 ## What it demonstrates
 
-- **The directive syntax carries the choreography.** The "Rewrite" preset types a sentence, pauses, backspaces fourteen characters and finishes differently — as one string, with no callback chain. Nothing on the page re-renders; characters are appended as text nodes.
+- **The directive syntax carries the choreography.** The "Rewrite" preset types a sentence, pauses, backspaces fourteen characters and finishes differently: as one string, with no callback chain. Nothing on the page re-renders; characters are appended as text nodes.
 - **No `initialize()`.** Unlike the trigger-driven vUX components, `AutoWriter` is driven by method calls, so there is nothing to activate. Every writer here is `new AutoWriter()` and then straight to `writeText()`.
 - **Randomised per-character timing.** The two speed sliders are the min and max of the range a fresh delay is drawn from on every keystroke; drag them together to see how mechanical equal bounds look.
 - **Cursor states.** The caret is steady while typing, blinks only during a `~n~` pause, and hides when the run ends. Watch the hero line: it holds a blinking caret because its string ends in `~1200~`.
 - **`stop()`** cancels mid-run and leaves the text where it stood, without firing the callback.
-- **`deleteText()` targets the same element you typed into.** The button erases five units from the playground stage — the caret is not one of them.
+- **`deleteText()` targets the same element you typed into.** The button erases five units from the playground stage: the caret is not one of them.
 - **Sequencing across elements.** "Run sequence" hands one `NodeList` and one array to a single call; each card starts when the last finishes and the callback fires once, at the end.
 - **Directives are validated up front.** The buttons in the last section throw synchronously, from the `writeText()`/`deleteText()` call itself, so a typo surfaces in your own `try`/`catch` rather than inside a timer seconds later.
 
@@ -48,4 +48,4 @@ Then open <http://localhost:8000/examples/autowriter/index.html>.
 
 The writers are exposed on `window` as `playWriter`, `heroWriter` and `seqWriter`. Try `playWriter.stop()` mid-run, or `playWriter.deleteText(3, document.getElementById("playStage"))`.
 
-Note that `.config` properties are **write-only** across vUX — `playWriter.config.typingSpeed` reads back as `undefined`. The page keeps its own copy of what it set, which is why the "Equivalent code" panel can show the current settings.
+Note that `.config` properties are **write-only** across vUX: `playWriter.config.typingSpeed` reads back as `undefined`. The page keeps its own copy of what it set, which is why the "Equivalent code" panel can show the current settings.

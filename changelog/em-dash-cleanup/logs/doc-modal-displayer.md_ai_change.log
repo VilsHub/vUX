@@ -1,0 +1,92 @@
+OLD_SECTION (line 9)
+The component is **declarative and trigger-driven**. You do not call an "open" method [em dash] you mark up triggers, and a single delegated click listener on `document` opens the right modal:
+NEW_SECTION (line 9)
+The component is **declarative and trigger-driven**. You do not call an "open" method: you mark up triggers, and a single delegated click listener on `document` opens the right modal:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 17)
+The page is held with `overflow` rather than by taking the body out of flow, so the document never moves: the scroll position is preserved because nothing scrolled, not because it was saved and reapplied. Two consequences worth knowing [em dash] the page behind keeps its normal layout while a modal is up, and `overflow: hidden` blocks *user* scrolling (wheel, touch, keyboard) but not programmatic `scrollTo()`, so your own code can still move the page behind a modal if it chooses to.
+NEW_SECTION (line 17)
+The page is held with `overflow` rather than by taking the body out of flow, so the document never moves: the scroll position is preserved because nothing scrolled, not because it was saved and reapplied. Two consequences worth knowing: the page behind keeps its normal layout while a modal is up, and `overflow: hidden` blocks *user* scrolling (wheel, touch, keyboard) but not programmatic `scrollTo()`, so your own code can still move the page behind a modal if it chooses to.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 19)
+Because the content element is moved into the overlay and restored afterwards, **do not hold long-lived references to nodes inside the modal content across open/close cycles** [em dash] read them through `displayForm` while the modal is open instead.
+NEW_SECTION (line 19)
+Because the content element is moved into the overlay and restored afterwards, **do not hold long-lived references to nodes inside the modal content across open/close cycles**: read them through `displayForm` while the modal is open instead.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 35)
+**Layers close last-in-first-out, and that is the point of a modal stack rather than a restriction on it.** A modal takes exclusive control of interaction: while it is up, everything beneath it is unreachable by definition. So a covered layer has no way to be acted on, and closing one out of order would leave the dialog it spawned floating above nothing. `Escape`, an overlay click and a close button therefore all pop **only the topmost layer**, and there is deliberately no API that takes a specific layer. `closeAll()` unwinds the whole stack when you need to dismiss everything at once [em dash] on a route change or logout, for example.
+NEW_SECTION (line 35)
+**Layers close last-in-first-out, and that is the point of a modal stack rather than a restriction on it.** A modal takes exclusive control of interaction: while it is up, everything beneath it is unreachable by definition. So a covered layer has no way to be acted on, and closing one out of order would leave the dialog it spawned floating above nothing. `Escape`, an overlay click and a close button therefore all pop **only the topmost layer**, and there is deliberately no API that takes a specific layer. `closeAll()` unwinds the whole stack when you need to dismiss everything at once: on a route change or logout, for example.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 68)
+modal.initialize();                            // required [em dash] nothing works before this
+NEW_SECTION (line 68)
+modal.initialize();                            // required: nothing works before this
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 79)
+| `className` | string | [em dash] (**required**) | Class marking trigger elements |
+| `formIdAttribute` | string | [em dash] (**required**) | Attribute on a trigger holding the modal content's `id` |
+NEW_SECTION (line 79)
+| `className` | string | - (**required**) | Class marking trigger elements |
+| `formIdAttribute` | string | - (**required**) | Attribute on a trigger holding the modal content's `id` |
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 116)
+- **`pageContainer` must wrap your page content but not the modal content**, or the dialog blurs along with the page. Keep your modal markup outside it [em dash] the overlay itself is appended to `<body>`, so it is never affected.
+NEW_SECTION (line 116)
+- **`pageContainer` must wrap your page content but not the modal content**, or the dialog blurs along with the page. Keep your modal markup outside it: the overlay itself is appended to `<body>`, so it is never affected.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 119)
+With stacking, the blur is held for as long as any open layer wants it and is lifted only when no remaining layer targets that container [em dash] so opening and closing a nested modal never flickers the blur off and on.
+NEW_SECTION (line 119)
+With stacking, the blur is held for as long as any open layer wants it and is lifted only when no remaining layer targets that container, so opening and closing a nested modal never flickers the blur off and on.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 144)
+There is no public `show()` method [em dash] opening is driven by trigger clicks.
+NEW_SECTION (line 144)
+There is no public `show()` method: opening is driven by trigger clicks.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 158)
+The animated effects complete when their animation ends (`split`, `flip` and `box` on `transitionend`, `drop`, `slideLeft` and `slideRight` on the core slide's callback), so `openProcessor` fires after the animation. `flip` reads the modal's `background-color` for its backing panel [em dash] give your modal content an explicit background or the flip shows through.
+NEW_SECTION (line 158)
+The animated effects complete when their animation ends (`split`, `flip` and `box` on `transitionend`, `drop`, `slideLeft` and `slideRight` on the core slide's callback), so `openProcessor` fires after the animation. `flip` reads the modal's `background-color` for its backing panel: give your modal content an explicit background or the flip shows through.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 164)
+When the content is within 100px of the viewport height or taller, the modal is pinned 50px from the top and the **overlay itself** scrolls (`.vModal.xScroll { overflow-y: auto }`) [em dash] the page body stays frozen. Otherwise the modal is centred vertically.
+NEW_SECTION (line 164)
+When the content is within 100px of the viewport height or taller, the modal is pinned 50px from the top and the **overlay itself** scrolls (`.vModal.xScroll { overflow-y: auto }`): the page body stays frozen. Otherwise the modal is centred vertically.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 173)
+- While a modal is open, `document.getElementById(<modal id>)` returns the **displayed copy**, not the hidden original [em dash] the copy carries the id so that consumer code operating on the visible dialog keeps working.
+NEW_SECTION (line 173)
+- While a modal is open, `document.getElementById(<modal id>)` returns the **displayed copy**, not the hidden original: the copy carries the id so that consumer code operating on the visible dialog keeps working.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 193)
+See [`examples/modal/`](../examples/modal/) [em dash] seven modals covering all seven effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+NEW_SECTION (line 193)
+See [`examples/modal/`](../examples/modal/): seven modals covering all seven effects, a three-deep stack, both overlay background modes, two instances sharing one stack, per-trigger widths, a tall scrolling modal and open/close callbacks. Serve the repository root over HTTP and open `/examples/modal/index.html`:
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

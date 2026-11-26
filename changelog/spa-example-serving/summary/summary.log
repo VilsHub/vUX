@@ -7,7 +7,7 @@ FOLLOWS: changelog/example-redesign
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — one example page and the docs index.
+vUX library (this repository): one example page and the docs index.
 
   - examples/spa/index.html   relative stylesheet, boot notice, hero with a live URL bar
   - examples/spa/main.js      notice removal, pathname display, document-load counter
@@ -18,7 +18,7 @@ vUX library (this repository) — one example page and the docs index.
 WHAT WAS WRONG
 --------------------------------------------------------------------------------
 
-Served from the repository root — the command the other three examples use — every
+Served from the repository root (the command the other three examples use) every
 root-absolute path in the SPA page 404s, including main.js itself. The page rendered
 white, serif and empty, with only its inline <style> applying.
 
@@ -34,7 +34,7 @@ repository-root server and the example's own dev server at every route depth, so
 misconfigured page is at least legible.
 
 A notice sits in the markup by default and is removed by main.js. Since main.js can only
-run when the page was served correctly, its execution is the detection — the page explains
+run when the page was served correctly, its execution is the detection: the page explains
 itself exactly when it cannot work, and is silent when it can.
 
 Separately, the page gained the hero it was missing. A SPA's claim is that nothing is
@@ -48,5 +48,5 @@ VERIFICATION
 
 Both servers run and every affected URL checked. Browser-equivalent resolution of the
 relative stylesheet path confirmed at five base URLs spanning both layouts and all route
-depths. Not opened in a browser — there is none in this environment — so the visual
+depths. Not opened in a browser (there is none in this environment) so the visual
 result remains unconfirmed.

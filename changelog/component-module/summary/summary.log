@@ -1,6 +1,6 @@
 FEATURE: component-module
 DATE: 2026-09-17
-SCOPE: add vUX-component.js — a consumer's own reusable component — on a shared
+SCOPE: add vUX-component.js (a consumer's own reusable component) on a shared
        template-instancing engine, and move DataView onto the same engine
 FOLLOWS: changelog/component-teardown
 
@@ -8,7 +8,7 @@ FOLLOWS: changelog/component-teardown
 AFFECTED PROJECTS
 --------------------------------------------------------------------------------
 
-vUX library (this repository) — the only project affected. No build step, no
+vUX library (this repository): the only project affected. No build step, no
 dependency graph; changes take effect on the next page load.
 
 Consumer-visible surface:
@@ -53,7 +53,7 @@ The scope is fixed and stated in the guide so it does not get re-argued: instanc
 field/attribute/event/class/show bindings, refs, keyed lists, nesting and teardown.
 No reactivity, no observables, no computed properties, no diffing, no scheduler, no
 data-v-if, no data-v-for. Every binding value is a plain field name, never an
-expression — which is the actual line between a binding layer and a template
+expression, which is the actual line between a binding layer and a template
 language, and it is enforced by there being no evaluator in the code at all.
 
 --------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ data-v-class do too, with config.handlers and config.formatters added to drive t
 
 One latent bug surfaced and was fixed: DataView.destroy() never cleared
 'initialized', which made its own 'This DataView has been destroyed' guard
-unreachable — re-initializing a destroyed view silently did nothing.
+unreachable: re-initializing a destroyed view silently did nothing.
 
 --------------------------------------------------------------------------------
 VERIFICATION
@@ -101,7 +101,7 @@ Every file syntax checked. Beyond that, three suites were run against a real DOM
     before initialize, every pre-existing error string, and destroy/re-initialize.
 
   - The example page itself, 32 assertions: loaded into a DOM, its main.js run, then
-    every control on the page driven and the result checked — including that all
+    every control on the page driven and the result checked: including that all
     eleven failure-mode buttons raise a real Error.
 
 All pass. The guide's error list was captured from the running module rather than

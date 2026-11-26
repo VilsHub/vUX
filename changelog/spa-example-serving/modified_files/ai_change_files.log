@@ -1,7 +1,7 @@
 FEATURE: spa-example-serving
 DATE: 2026-08-26
 
-Examples — SPAEngine
+Examples: SPAEngine
   Modified:
     examples/spa/index.html
     examples/spa/main.js
@@ -12,5 +12,5 @@ Documentation
     doc/README.md
 
 Notes:
-  examples/spa/server.py unchanged — it was already correct; the fault was that the page
+  examples/spa/server.py unchanged: it was already correct; the fault was that the page
   gave no sign when it was served by something else.

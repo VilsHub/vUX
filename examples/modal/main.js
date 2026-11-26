@@ -1,5 +1,5 @@
 /*
- * vUX ModalDisplayer — runnable example.
+ * vUX ModalDisplayer: runnable example.
  *
  * The component is declarative: you never call an "open" method. A single delegated
  * click listener on `document` watches for config.className and reads the modal's id
@@ -93,7 +93,7 @@ function applyConfig() {
         instance.config.overlayStyle = overlay;
         instance.config.exitOnAway = ui.exit.checked;
         //blur filters config.pageContainer instead of tinting the overlay. #page wraps
-        //the page content only — the modal markup sits outside it, so the dialog stays sharp.
+        //the page content only: the modal markup sits outside it, so the dialog stays sharp.
         if (ui.overlayType.value === "blur") instance.config.pageContainer = $("#page");
     });
 
@@ -124,7 +124,7 @@ function renderSnippet(overlay) {
 <span class="p">modal</span>.config.screenBreakPoints     = [${ui.bpLarge.value}, ${ui.bpMedium.value}];${
 ui.overlayType.value === "blur" ? `\n<span class="p">modal</span>.config.pageContainer         = document.getElementById(<span class="s">"page"</span>);` : ""}
 
-<span class="p">modal</span>.initialize();  <span class="c">// required — nothing works before this</span>`;
+<span class="p">modal</span>.initialize();  <span class="c">// required: nothing works before this</span>`;
 }
 
 Object.values(ui).forEach(control => control.addEventListener("input", applyConfig));
@@ -142,7 +142,7 @@ document.addEventListener("click", event => {
 });
 
 /* ------------------------------------------------------------------ *
- * Validation — every one of these throws
+ * Validation: every one of these throws
  * ------------------------------------------------------------------ */
 
 const BAD = {
@@ -162,7 +162,7 @@ $$$("[data-bad]").forEach(button => {
     button.addEventListener("click", () => {
         try {
             BAD[button.dataset.bad]();
-            $("#errOut").textContent = "No error thrown — that should not happen.";
+            $("#errOut").textContent = "No error thrown: that should not happen.";
         } catch (error) {
             $("#errOut").textContent = error.constructor.name + ": " + error.message;
         }

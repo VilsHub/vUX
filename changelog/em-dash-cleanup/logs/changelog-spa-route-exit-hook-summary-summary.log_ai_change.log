@@ -1,0 +1,15 @@
+OLD_SECTION (line 1)
+Feature: spa-route-exit-hook (RETROACTIVE [em dash] commit 3b8bb7b, logged after the
+NEW_SECTION (line 1)
+Feature: spa-route-exit-hook (RETROACTIVE: commit 3b8bb7b, logged after the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 6)
+  fires just before a route's mounted content is replaced [em dash] on click navigation,
+  history transitions and boot [em dash] receiving (routeName, params) of the outgoing
+NEW_SECTION (line 6)
+  fires just before a route's mounted content is replaced: on click navigation,
+  history transitions and boot: receiving (routeName, params) of the outgoing
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

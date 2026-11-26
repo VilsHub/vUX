@@ -3,7 +3,7 @@ FEATURE: modal-displayer-verification
 DATE: 2026-08-03
 
 ================================================================================
-CHANGE 1 — Define the .xScroll overlay rule
+CHANGE 1: Define the .xScroll overlay rule
 ================================================================================
 
 OLD_SECTION
@@ -45,7 +45,7 @@ scrolling. The overlay is `position: fixed; height: 100vh` with default
 `overflow: visible`. A modal taller than the viewport therefore overflowed the
 overlay with no scroll container anywhere: the body could not scroll because it was
 frozen, and the overlay would not scroll because it had no overflow rule. Everything
-past the first viewport-height of a tall modal was unreachable — the user could not
+past the first viewport-height of a tall modal was unreachable: the user could not
 scroll to a submit button at the bottom of a long form.
 
 Defining `.xScroll` with `overflow-y: auto` makes the overlay the scroll container,

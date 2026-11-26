@@ -1,0 +1,42 @@
+NOTE: this file also carries the spa-engine-history-fixes changes, logged in that feature's folder; only the hunks that removed em dashes are listed here.
+
+OLD_SECTION (line 5)
+- **Routing** [em dash] a static default route (`/`) and a dynamic route `/user/;id:[0-9]+` with a named, regex-validated parameter delivered to the callbacks (`params.id`).
+- **Progress indication** [em dash] a linear style-3 bar across the top of the viewport, shown by `spa.config.preClickCallback` when a fragment is fetched from the server and completed by the load callbacks. Cached navigations show no bar.
+- **Per-link data attributes** [em dash] the "User 8" link uses `data-cache="false"` (re-fetch every time) and `data-add-to-history="false"` (URL and history untouched).
+- **Live table island** [em dash] the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Route teardown** [em dash] leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+
+- **Shipping a new release** [em dash] section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+NEW_SECTION (line 5)
+- **Routing**: a static default route (`/`) and a dynamic route `/user/;id:[0-9]+` with a named, regex-validated parameter delivered to the callbacks (`params.id`).
+- **Progress indication**: a linear style-3 bar across the top of the viewport, shown by `spa.config.preClickCallback` when a fragment is fetched from the server and completed by the load callbacks. Cached navigations show no bar.
+- **Per-link data attributes**: the "User 8" link uses `data-cache="false"` (re-fetch every time) and `data-add-to-history="false"` (URL and history untouched).
+- **Live table island**: the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Load errors**: the "Broken link" route points at a fragment that does not exist (`server.py` answers 404 for a missing `/display/` file instead of the app shell). `spa.config.errorCallback` logs it as `[error]`; the content on screen, the URL and the page title stay as they were.
+- **Route teardown**: leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+
+- **Shipping a new release**: section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 18)
+The nav highlight is driven by `location.pathname`, which makes the "User 8" opt-out visible: because it sets `data-add-to-history="false"`, its content loads while the URL [em dash] and so the highlight [em dash] stays where it was.
+NEW_SECTION (line 18)
+The nav highlight is driven by `location.pathname`, which makes the "User 8" opt-out visible: because it sets `data-add-to-history="false"`, its content loads while the URL (and so the highlight) stays where it was.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 35)
+- **A history fallback.** A deep link like `/user/7` is a *client-side* route [em dash] there is no such file.
+NEW_SECTION (line 35)
+- **A history fallback.** A deep link like `/user/7` is a *client-side* route: there is no such file.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 53)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary` [em dash] the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+NEW_SECTION (line 53)
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary`: the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

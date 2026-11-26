@@ -1,10 +1,10 @@
-RETROACTIVE LOG — commit 65fdc2f, recorded after the fact (the changelog/ convention
+RETROACTIVE LOG: commit 65fdc2f, recorded after the fact (the changelog/ convention
 was introduced later, in commit 478c817).
 
 File: vUX-dataView.js (NEW FILE)
 
 OLD_SECTION
-(none — file did not exist)
+(none: file did not exist)
 
 NEW_SECTION
 New DataView module: keyed data-to-DOM binding for hot-update views. DataView keeps a

@@ -4,7 +4,7 @@ DATE: 2026-10-08
 PRIOR STATE: as left by feature 'modal-scroll-lock' and later teardown work
 
 ================================================================================
-CHANGE 1 — openEffects gains "slide"
+CHANGE 1: openEffects gains "slide"
 ================================================================================
 
 OLD_SECTION
@@ -64,7 +64,7 @@ REASON
 Adds the slide-in open effect. The motion is done by the core slide utility, $$.sm(el).slide.toBottom() in position mode (top: offscreen -> 0), not by a hand-written transition. Completion comes from the utility's callback, so the slider is not a vEffectBox and the shared transitionend handler ignores it. A layer that started closing during the slide does not complete its open, so the close animation keeps the boxes and openProcessor does not fire for a modal that never finished opening.
 
 ================================================================================
-CHANGE 2 — closeEffects gains "slide"
+CHANGE 2: closeEffects gains "slide"
 ================================================================================
 
 OLD_SECTION
@@ -93,7 +93,7 @@ REASON
 The matching close: $$.sm(el).slide.toTop() moves the copy back above the viewport and its callback runs completeClose().
 
 ================================================================================
-CHANGE 3 — slide helpers
+CHANGE 3: slide helpers
 ================================================================================
 
 OLD_SECTION
@@ -116,7 +116,7 @@ REASON
 slideOffset() puts the start a viewport plus the modal height above its resting place, so tall modals pinned at 50px also start out of view. slideConfigs() builds a fresh object each call, because the core slide writes its defaults into the object it receives. config.effect accepts "slide" automatically, since it validates against the openEffects keys.
 
 ================================================================================
-CHANGE 4 — slideLeft / slideRight effects (docked)
+CHANGE 4: slideLeft / slideRight effects (docked)
 ================================================================================
 
 OLD_SECTION
@@ -205,7 +205,7 @@ REASON
 Requested follow-up: sideways slides must not end centred. slideLeft travels in from the right edge and stays docked right; slideRight travels in from the left edge and stays docked left. Both use the core slide in position mode with positionProperty set to the docked edge, so toLeft/toRight move right/left from -panelWidth to 0 and back. The effects container clips the off-edge part so the overlay never scrolls sideways. The stretch to full height lives on an inner flex column (vDockFill) because the core slide forces display:block on the element it moves.
 
 ================================================================================
-CHANGE 5 — completeOpen fills a docked panel
+CHANGE 5: completeOpen fills a docked panel
 ================================================================================
 
 OLD_SECTION
@@ -238,7 +238,7 @@ REASON
 A docked modal is a full height panel: the host becomes a min-height:100vh column and the modal grows to fill it, rather than being fixed at the measured height.
 
 ================================================================================
-CHANGE 6 — openLayer records the dock side and places the space
+CHANGE 6: openLayer records the dock side and places the space
 ================================================================================
 
 OLD_SECTION
@@ -260,7 +260,7 @@ REASON
 Docked layers skip the centring/tall-modal positioning and are pinned to their edge at top 0 by dockLayer().
 
 ================================================================================
-CHANGE 7 — "slide" renamed to "drop"
+CHANGE 7: "slide" renamed to "drop"
 ================================================================================
 
 OLD_SECTION
@@ -277,7 +277,7 @@ REASON
 Requested rename: the top-down effect is "drop", leaving "slide" to the sideways slideLeft/slideRight. config.effect = "slide" now throws the usual invalid-effect error. The shared mover class vSlideForm is unchanged.
 
 ================================================================================
-CHANGE 8 — exits run to completion
+CHANGE 8: exits run to completion
 ================================================================================
 
 OLD_SECTION
@@ -293,7 +293,7 @@ REASON
 Reported: slideLeft was not visibly exiting back out the way it came. Frame sampling showed the steep ease-in left the panel nearly still (48px in 267ms) and the core slide's timed callback removed it at 400ms while it was still about half on screen, so it vanished instead of sliding out. A steady accelerate curve plus a target a quarter past the edge now takes it fully off screen before removal: slideLeft by ~340ms (moving right), slideRight by ~345ms (moving left), drop by ~260ms (moving up).
 
 ================================================================================
-CHANGE 9 — sideways exits continue through the far edge
+CHANGE 9: sideways exits continue through the far edge
 ================================================================================
 
 OLD_SECTION
@@ -311,7 +311,7 @@ REASON
 Clarified requirement: slideLeft must leave by continuing left (across the screen and out of the left edge), not by reversing back to the right; slideRight mirrors it. The container stops clipping on close so the panel can cross the viewport; the overlay already hides horizontal overflow. Travel is the viewport width (plus the 25% timer margin) measured from the docked edge, over 500ms. Verified: slideLeft right edge past x=0 and slideRight left edge past x=1200 by ~450ms, no horizontal page scroll.
 
 ================================================================================
-CHANGE 10 — exits reverse again; both sides move by "left"
+CHANGE 10: exits reverse again; both sides move by "left"
 ================================================================================
 
 OLD_SECTION

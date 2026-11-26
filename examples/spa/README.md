@@ -2,19 +2,20 @@
 
 A minimal single-page application built with `SPAEngine` and `ProgressIndicator`. It demonstrates:
 
-- **Routing** — a static default route (`/`) and a dynamic route `/user/;id:[0-9]+` with a named, regex-validated parameter delivered to the callbacks (`params.id`).
-- **Progress indication** — a linear style-3 bar across the top of the viewport, shown by `spa.config.preClickCallback` when a fragment is fetched from the server and completed by the load callbacks. Cached navigations show no bar.
-- **Per-link data attributes** — the "User 8" link uses `data-cache="false"` (re-fetch every time) and `data-add-to-history="false"` (URL and history untouched).
-- **Live table island** — the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
-- **Route teardown** — leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
+- **Routing**: a static default route (`/`) and a dynamic route `/user/;id:[0-9]+` with a named, regex-validated parameter delivered to the callbacks (`params.id`).
+- **Progress indication**: a linear style-3 bar across the top of the viewport, shown by `spa.config.preClickCallback` when a fragment is fetched from the server and completed by the load callbacks. Cached navigations show no bar.
+- **Per-link data attributes**: the "User 8" link uses `data-cache="false"` (re-fetch every time) and `data-add-to-history="false"` (URL and history untouched).
+- **Live table island**: the "/table" route mounts a `DataView` (`vUX-dataView.js`) with 500 keyed rows: sort and filter without rebuilding, a ticker updating 50 cells every 100ms, and a benchmark button comparing 200 targeted updates against a full 500-row rebuild.
+- **Load errors**: the "Broken link" route points at a fragment that does not exist (`server.py` answers 404 for a missing `/display/` file instead of the app shell). `spa.config.errorCallback` logs it as `[error]`; the content on screen, the URL and the page title stay as they were.
+- **Route teardown**: leaving the table route fires the route's `exitCallback`, which stops the ticker and destroys the view; all other routes fall back to the global `config.exitCallback`.
 
-- **Shipping a new release** — section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
+- **Shipping a new release**: section 02 reads `/version.json` before `initialize()` and passes its `build` to `config.cacheVersion`, so a cache built under another release is emptied at boot. Its controls set a new version on the running engine, re-read `version.json`, or call `clearCache()`, beside a live view of the engine's `sessionStorage` keys. Clicking User 7 before and after shows the difference: the progress bar appears only when the fragment is fetched.
 - **Scroll restoration**: section 03 shows what `config.restoreScroll` keeps: a live table of `window.scrollY`, the `scrollY` the engine saved in the current history entry, `history.length` and the last restore (saved position against where the page landed, also logged as `[scroll]`). **Open User 7 from here** leaves from the current position; Back, Forward or a reload then bring it back. The `config.restoreScroll` checkbox reloads the page with `?restoreScroll=0` (the setting is applied at `initialize()`) to compare against the engine leaving scroll alone. The example's click callbacks open each new route at the top (`openAtTop()`), because the engine itself never scrolls on a link click.
 - **Validation**: the buttons in section 04 build throwaway engines to show how `initialize()` refuses an incomplete setup, how `dataAttributeNames`/`classes` reject unknown keys, and how `cacheVersion` rejects an empty value.
 
 Everything a callback receives is printed to the diagnostics panel at the bottom of the page.
 
-The nav highlight is driven by `location.pathname`, which makes the "User 8" opt-out visible: because it sets `data-add-to-history="false"`, its content loads while the URL — and so the highlight — stays where it was.
+The nav highlight is driven by `location.pathname`, which makes the "User 8" opt-out visible: because it sets `data-add-to-history="false"`, its content loads while the URL (and so the highlight) stays where it was.
 
 ## Run
 
@@ -31,7 +32,7 @@ automatically (used for headless testing).
 
 Two things a plain static server cannot provide, and a real SPA deployment must:
 
-- **A history fallback.** A deep link like `/user/7` is a *client-side* route — there is no such file.
+- **A history fallback.** A deep link like `/user/7` is a *client-side* route: there is no such file.
   The server has to serve `index.html` for it and let the engine resolve the route. Without this,
   refreshing or bookmarking any route 404s.
 - **The library at the declared path.** `data-library-root="/lib/vUX/"` is root-absolute, so `/lib/vUX/`
@@ -49,6 +50,6 @@ The bundled server provides what any real vUX SPA deployment needs: a history fa
 
 ## Styling
 
-The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary` — the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
+The page uses the shared example design system at [`../shared/example.css`](../shared/example.css). Route fragments in `display/` are plain HTML carrying no classes of their own, so they are styled through `#contentBoundary`: the element they are loaded into. That keeps a fragment portable: it is content, not a styled component.
 
 See the [SPA Engine guide](../../doc/spa-engine.md) and the [Progress Indicator guide](../../doc/progress-indicator.md) for the full API.

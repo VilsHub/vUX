@@ -1,5 +1,5 @@
 /*
- * vUX ListScroller — runnable example.
+ * vUX ListScroller: runnable example.
  *
  * Every scroller here follows the same steps: new ListScroller(container, list), set .config,
  * initialize(), then onScroller(). The container is the viewport, the list is the row, and the

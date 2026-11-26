@@ -1,0 +1,34 @@
+OLD_SECTION (line 3)
+SCOPE: add vUX-component.js [em dash] a consumer's own reusable component [em dash] on a shared
+NEW_SECTION (line 3)
+SCOPE: add vUX-component.js (a consumer's own reusable component) on a shared
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 11)
+vUX library (this repository) [em dash] the only project affected. No build step, no
+NEW_SECTION (line 11)
+vUX library (this repository): the only project affected. No build step, no
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 56)
+expression [em dash] which is the actual line between a binding layer and a template
+NEW_SECTION (line 56)
+expression, which is the actual line between a binding layer and a template
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 83)
+unreachable [em dash] re-initializing a destroyed view silently did nothing.
+NEW_SECTION (line 83)
+unreachable: re-initializing a destroyed view silently did nothing.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 104)
+    every control on the page driven and the result checked [em dash] including that all
+NEW_SECTION (line 104)
+    every control on the page driven and the result checked: including that all
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

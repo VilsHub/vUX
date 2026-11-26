@@ -1,0 +1,6 @@
+OLD_SECTION (line 14)
+- [FontSplash example](../examples/fontsplash/README.md) [em dash] runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
+NEW_SECTION (line 14)
+- [FontSplash example](../examples/fontsplash/README.md), runnable example that opens with a full-screen splash: a wordmark hero, a playground over every config property, progress mode, four kinds of font, every animation and exit, the page-splash recipe and the validation errors.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

@@ -1,0 +1,47 @@
+OLD_SECTION (line 3)
+A runnable demo of `vUX-resizer.js` [em dash] a drag handle on any element, on either axis,
+NEW_SECTION (line 3)
+A runnable demo of `vUX-resizer.js`: a drag handle on any element, on either axis,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 30)
+- **`config` is read once, by `initialize()`.** There is no live reconfiguration. Every control in the playground rebuilds the instance [em dash] `destroy()`, `new Resizer(...)`, configure, `initialize()` [em dash] which is the intended pattern and the reason `destroy()` exists.
+NEW_SECTION (line 30)
+- **`config` is read once, by `initialize()`.** There is no live reconfiguration. Every control in the playground rebuilds the instance: `destroy()`, `new Resizer(...)`, configure, `initialize()`, which is the intended pattern and the reason `destroy()` exists.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 45)
+structural [em dash] `position:absolute`, a 2px cross-axis thickness, a 100% main-axis span, the
+four edge anchors and the `col-resize`/`row-resize` cursors [em dash] but no resting appearance,
+NEW_SECTION (line 45)
+structural: `position:absolute`, a 2px cross-axis thickness, a 100% main-axis span, the
+four edge anchors and the `col-resize`/`row-resize` cursors, but no resting appearance,
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 57)
+written as `.resizeHandle` ties with it on specificity and loses. Scope yours [em dash] `.rz
+.resizeHandle` [em dash] and it wins. The same applies to the library's default green
+NEW_SECTION (line 57)
+written as `.resizeHandle` ties with it on specificity and loses. Scope yours: `.rz
+.resizeHandle`, and it wins. The same applies to the library's default green
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 66)
+injected later still, so pushing a style through `config` beats that and stays in control
+[em dash] which is what the playground's colour picker is doing.
+NEW_SECTION (line 66)
+injected later still, so pushing a style through `config` beats that and stays in control,
+which is what the playground's colour picker is doing.
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 97)
+`.config` properties are **write-only** across vUX [em dash] `playResizer.config.direction` reads
+NEW_SECTION (line 97)
+`.config` properties are **write-only** across vUX: `playResizer.config.direction` reads
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.

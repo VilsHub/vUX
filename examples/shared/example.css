@@ -1,5 +1,5 @@
 /* ============================================================================
-   vUX example pages — shared design system.
+   vUX example pages: shared design system.
    Tokens and primitives only. Anything specific to one demo stays in that
    page's own <style> block.
    Linked directly by each example, not through the library's asset loader:

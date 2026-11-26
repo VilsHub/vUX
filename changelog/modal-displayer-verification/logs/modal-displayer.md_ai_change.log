@@ -3,14 +3,14 @@ FEATURE: modal-displayer-verification
 DATE: 2026-08-03
 
 ================================================================================
-CHANGE 1 — New file
+CHANGE 1: New file
 ================================================================================
 
 OLD_SECTION
 (file did not exist)
 
 NEW_SECTION
-(new usage guide — see doc/modal-displayer.md for the full text)
+(new usage guide: see doc/modal-displayer.md for the full text)
 
 Sections: How it works · Quick start · Configuration (full property table,
 responsive widths, blur overlay) · API (initialize, close, mainForm, displayForm) ·
@@ -18,7 +18,7 @@ Effects · Tall modals · Requirements and gotchas · Complete example.
 
 REASON
 `ModalDisplayer` had no documentation. Its behaviour is not discoverable from the
-source: it is the only vUX module with no public `show()` method — modals are opened
+source: it is the only vUX module with no public `show()` method: modals are opened
 exclusively by delegated clicks on elements carrying `config.className`, which is
 impossible to guess from the constructor's surface. Every `config` property is also
 declared write-only via `Object.defineProperties`, so a consumer cannot read back
@@ -43,7 +43,7 @@ OLD_SECTION
 (files did not exist)
 
 NEW_SECTION
-(new runnable example — a demo page, its wiring module, and a README)
+(new runnable example: a demo page, its wiring module, and a README)
 
 REASON
 Added to serve two purposes. As documentation it mirrors `examples/spa/`, giving a

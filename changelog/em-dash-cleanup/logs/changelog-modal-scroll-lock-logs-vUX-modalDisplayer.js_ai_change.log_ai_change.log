@@ -1,0 +1,41 @@
+OLD_SECTION (line 7)
+CHANGE 1 [em dash] Hold the page with overflow:hidden instead of position:fixed
+NEW_SECTION (line 7)
+CHANGE 1: Hold the page with overflow:hidden instead of position:fixed
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 66)
+modal went from 1217px to 528.5px [em dash] a 688px reflow of the entire page every time a
+NEW_SECTION (line 66)
+modal went from 1217px to 528.5px: a 688px reflow of the entire page every time a
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 74)
+scrollTo() it back on close [em dash] and, because a consumer page with
+NEW_SECTION (line 74)
+scrollTo() it back on close, and, because a consumer page with
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 80)
+and reapplied [em dash] which is strictly more robust, since there is no window in which the
+NEW_SECTION (line 80)
+and reapplied, which is strictly more robust, since there is no window in which the
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 88)
+but does not block programmatic scrolling [em dash] `scrollTo()` from consumer code will
+NEW_SECTION (line 88)
+but does not block programmatic scrolling: `scrollTo()` from consumer code will
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
+
+OLD_SECTION (line 99)
+CHANGE 2 [em dash] Correct a now-stale ordering comment
+NEW_SECTION (line 99)
+CHANGE 2: Correct a now-stale ordering comment
+REASON
+Em dash cleanup (workspace rule: no em dashes in any project). Each U+2014 is rewritten by context: a colon for an explanation or list, a comma before a conjunction (and, but, which...) or when the clause already has a colon, parentheses for a paired aside, a hyphen for an empty value (table cells, placeholders). Sentences the first pass garbled were corrected by hand after two features-validator reviews. No wording or behaviour change otherwise.
