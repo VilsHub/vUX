@@ -1,0 +1,32 @@
+OLD_SECTION (line 22)
+    `<script type= "module" src="js/main.js" data-id="vUX" data-library-root="http://library.vilshub.net/lib/vUX/4.0.0/"></script>`
+NEW_SECTION (line 22)
+    `<script type= "module" src="js/main.js" data-id="vUX" data-library-root="http://library.vilshub.net/lib/vUX/4.1.0/"></script>`
+REASON
+v4.1.0 feature list with the Store module, and CDN URLs moved to 4.1.0.
+
+OLD_SECTION (line 29)
+    `import {FormComponents} from "http://library.vilshub.net/lib/vUX/4.0.0/vUX-formComponents.js"`
+NEW_SECTION (line 29)
+    `import {FormComponents} from "http://library.vilshub.net/lib/vUX/4.1.0/vUX-formComponents.js"`
+REASON
+v4.1.0 feature list with the Store module, and CDN URLs moved to 4.1.0.
+
+OLD_SECTION (line 31)
+    `import {ListScroller} from "http://library.vilshub.net/lib/vUX/4.0.0/vUX-listScroller.js"`
+NEW_SECTION (line 31)
+    `import {ListScroller} from "http://library.vilshub.net/lib/vUX/4.1.0/vUX-listScroller.js"`
+REASON
+v4.1.0 feature list with the Store module, and CDN URLs moved to 4.1.0.
+
+OLD_SECTION (line 45)
+
+NEW_SECTION (line 45)
+Version **v4.1.0** has the following features added:
+- Store module (`vUX-store.js`), shared state for the parts of a page that show the same data: declared fields, computed fields, field-level subscriptions, `batch()`, and `bind()` / `bindList()` that keep a Component instance, a keyed Component list or a DataView in step with the store
+
+See the [Store guide](doc/store.md) and the [ChangeLog](ChangeLog.md).
+
+
+REASON
+v4.1.0 feature list with the Store module, and CDN URLs moved to 4.1.0.

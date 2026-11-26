@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -11,7 +11,7 @@
  *
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 
 /***************************TimeLine List*****************************/
 var timeLineCount = 0; //numbers each instance so its per-list classes and stylesheet never collide with another's

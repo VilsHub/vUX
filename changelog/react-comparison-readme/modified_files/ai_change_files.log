@@ -1,0 +1,7 @@
+FEATURE: react-comparison-readme
+DATE: 2026-11-26
+
+<Documentation>
+  Modified:
+    README.md                   (new "vUX and React" section before "Demo")
+    ChangeLog.md                (v4.1.0 Added bullet)

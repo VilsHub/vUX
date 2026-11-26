@@ -1,0 +1,17 @@
+OLD_SECTION
+(none: new file)
+NEW_SECTION
+(whole file, 166 lines; see doc/store.md)
+REASON
+New usage guide for the Store module.
+
+FOLLOW-UP
+OLD_SECTION
+batch() row; "What a subscriber is given" (subscribers only); persistence pattern stored the whole
+state, computed fields included.
+NEW_SECTION
+batch() row says a field set back is not announced; the same-state rule covers bindings too;
+persistence pattern merges saved values over declared defaults and stores only declared fields;
+'__proto__' error listed.
+REASON
+Docs follow the validator fixes; the old persistence pattern broke a store with computed fields on reload.

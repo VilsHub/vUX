@@ -1,4 +1,19 @@
 # Changelog
+## v4.1.0
+## Added
+- Store module (`vUX-store.js`): shared state for the parts of a page that show the same data. Fields are declared in the initial state (a typo in `set()` throws), `config.computed` adds fields worked out from the others, `subscribe(fn, fields)` calls back only when a watched field changed, `batch()` announces several changes once, and `set()` returns the names of the fields that changed
+- `store.bind()` keeps a Component instance or a DataView in step with a store, and `store.bindList()` a keyed Component list; each applies at once, then on every change to the fields it watches, and drops itself when its target is destroyed
+- `destroyed` read-only property on Component and DataView
+- Runnable Store example (examples/store/): a small shop whose badge, product grid, cart and totals follow one store, with a live state inspector, subscription, batching, re-entrancy and teardown demos, and every validation error on demand
+- Store guide (doc/store.md)
+- README section "vUX and React": a table of React's features against vUX, marking each as available, partial, a gap, or not required in vUX
+
+## Changed
+- README no longer lists "Features to be included in v3.1.0" (Accordion, 5 Star rating creator), a plan for a version that was never released
+- README "Demo" section shows a working Store and Component example and links the live example pages, replacing the old `GridBorderRectangle` snippet (an API renamed to `CShapes` in v4) and its externally hosted GIF
+- README "Documentation" section now lists every module with its guide and example page, how to run the examples, and where the release notes are, instead of saying documentation is coming soon
+- The core file is now `src/vUX-core-4.1.0.js`; a page that imports `src/vUX-core-4.0.0.js` directly must switch to the new name (or import `vUX-core.js`, which follows the version)
+
 ## v4.0.0
 ## Added
 - domDrawer module

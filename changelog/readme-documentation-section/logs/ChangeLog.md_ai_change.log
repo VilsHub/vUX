@@ -1,0 +1,6 @@
+OLD_SECTION (## v4.1.0 / ## Changed, first bullet)
+(none)
+NEW_SECTION
+- README "Documentation" section now lists every module with its guide and example page, how to run the examples, and where the release notes are, instead of saying documentation is coming soon
+REASON
+Release-facing record of the README change.

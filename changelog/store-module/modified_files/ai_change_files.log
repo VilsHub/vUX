@@ -1,0 +1,51 @@
+FEATURE: store-module
+DATE: 2026-11-26
+
+<Store (new module)>
+  Added:
+    vUX-store.js
+
+<Component, DataView>
+  Modified:
+    vUX-component.js            (read-only 'destroyed' property)
+    vUX-dataView.js             (read-only 'destroyed' property)
+
+<Core>
+  Renamed:
+    src/vUX-core-4.0.0.js -> src/vUX-core-4.1.0.js
+  Modified:
+    src/helpers.js              (store.js added to the module registry; v4.1.0 header)
+    src/componentEngine.js      (v4.1.0 header)
+    vUX-core.js                 (import of the renamed core)
+
+<Every module (version bump only: header + core import)>
+  Modified:
+    vUX-autoWriter.js vUX-carousel.js vUX-cShapes.js vUX-fontSplash.js vUX-formComponents.js
+    vUX-formValidator.js vUX-listScroller.js vUX-marquee.js vUX-messageBox.js vUX-modalDisplayer.js
+    vUX-progressIndicator.js vUX-prompt.js vUX-resizer.js vUX-skeleton.js vUX-sketchPad.js
+    vUX-spaEngine.js vUX-timeLineList.js vUX-toolTip.js vUX-touchHandler.js
+
+<Documentation>
+  Added:
+    doc/store.md
+  Modified:
+    doc/README.md               (Store row, v4.1.0)
+    doc/component.md            (points at Store for shared data)
+    doc/core.md                 (core filename)
+    README.md                   (v4.1.0 features, CDN URLs)
+    ChangeLog.md                (v4.1.0 section)
+    CLAUDE.md                   (v4.1.0, core filename, constructor list)
+
+<Example>
+  Added:
+    examples/store/index.html
+    examples/store/main.js
+    examples/store/README.md
+  Modified (eyebrow version label v4.1.0):
+    examples/{autowriter,carousel,component,core,cshapes,form,formvalidator,listscroller,
+              messagebox,modal,prompt,resizer,sketchpad,spa,timelinelist,tooltip}/index.html
+
+<Workspace>
+  Modified:
+    ../../.version              (Libraries/vUX=v4.1.0)
+    ../../.claude/projects/vUX/potentialUtilities.md   (#11 plain object check, proposed)

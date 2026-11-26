@@ -1,0 +1,6 @@
+OLD_SECTION (## v4.1.0 / ## Changed, first bullet)
+(none)
+NEW_SECTION
+- README "Demo" section shows a working Store and Component example and links the live example pages, replacing the old `GridBorderRectangle` snippet (an API renamed to `CShapes` in v4) and its externally hosted GIF
+REASON
+Release-facing record of the README change.

@@ -1,0 +1,13 @@
+OLD_SECTION (line 3)
+vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0). There is no build step and no package manager; modules are imported directly by the browser.
+NEW_SECTION (line 3)
+vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.1.0). There is no build step and no package manager; modules are imported directly by the browser.
+REASON
+Store guide row in the usage-guide table; library version v4.1.0.
+
+OLD_SECTION (line 33)
+
+NEW_SECTION (line 33)
+| [Store](store.md) | `vUX-store.js` | Shared state for the parts of a page that show the same data: declared and computed fields, field-level subscriptions, batching, and bindings that keep Components and DataViews in step |
+REASON
+Store guide row in the usage-guide table; library version v4.1.0.

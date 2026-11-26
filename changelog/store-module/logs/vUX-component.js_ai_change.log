@@ -1,0 +1,22 @@
+OLD_SECTION (line 2)
+ * vUX JavaScript library v4.0.0
+NEW_SECTION (line 2)
+ * vUX JavaScript library v4.1.0
+REASON
+Adds a read-only 'destroyed' property, so Store.bindList() can tell a Component destroyed elsewhere and drop its binding instead of throwing on the next change. Also the v4.1.0 header/import from the version bump.
+
+OLD_SECTION (line 19)
+import "./src/vUX-core-4.0.0.js";
+NEW_SECTION (line 19)
+import "./src/vUX-core-4.1.0.js";
+REASON
+Adds a read-only 'destroyed' property, so Store.bindList() can tell a Component destroyed elsewhere and drop its binding instead of throwing on the next change. Also the v4.1.0 header/import from the version bump.
+
+OLD_SECTION (line 263)
+        config: { writable: false }
+NEW_SECTION (line 263)
+        config: { writable: false },
+        //Read by Store.bindList(), so a list torn down elsewhere drops its binding instead of throwing
+        destroyed: { get: function(){ return destroyed; } }
+REASON
+Adds a read-only 'destroyed' property, so Store.bindList() can tell a Component destroyed elsewhere and drop its binding instead of throwing on the next change. Also the v4.1.0 header/import from the version bump.

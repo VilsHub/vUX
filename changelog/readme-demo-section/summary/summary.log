@@ -1,0 +1,7 @@
+Feature: readme-demo-section
+
+Affected projects:
+- Libraries/vUX: README "Demo" section rewritten: a Store + Component cart-badge snippet (verified in
+  headless Chrome) and links to six example pages, replacing the stale GridBorderRectangle demo and
+  its imgur GIF. ChangeLog.md v4.1.0 Changed bullet. Docs only.
+- Workspace .version: unchanged (v4.1.0 already carries a minor bump; docs are a patch).

@@ -1,0 +1,21 @@
+OLD_SECTION
+(none: new file)
+NEW_SECTION
+(whole file, 367 lines; see vUX-store.js)
+REASON
+New module: Store, shared state with declared and computed fields, field-level subscriptions, batch(), reset(), bind()/bindList() for Component instances, keyed Component lists and DataViews, and destroy().
+
+FOLLOW-UP (features-validator, PASS WITH FINDINGS)
+OLD_SECTION
+connect(): first apply() ran outside a round; bound apply() read snapshot() live; batch announced
+fields set and set back; computed functions shared one state copy; '__proto__' in the initial
+state went through Object.assign's prototype setter; unused 'var self'.
+NEW_SECTION
+connect() runs the first apply as a round (notifying = true, pending flushed after), so a set()
+from a target's onUpdate is queued instead of re-entering update()/sync(); flush() hands bindings
+the round's state like plain subscribers; batch() records each field's value before the batch first
+changed it and drops names that ended where they started; each computed function gets its own
+copy; the constructor refuses an own '__proto__' key; commit() walks Object.keys; 'self' removed.
+REASON
+Validator findings (1 Medium logic, 4 Low, 1 stale). Verified with 8 added headless-Chrome checks
+(46 total, all passing) and a re-run of the example drive with no page errors.

@@ -1,0 +1,8 @@
+Feature: readme-documentation-section
+
+Affected projects:
+- Libraries/vUX: README "Documentation" section rewritten: a table of all 23 modules with file, guide
+  and example links (DataView, ProgressIndicator and TouchHandler have no example; TouchHandler has no
+  guide yet), how to serve the examples (SPA needs its own server), and a pointer to ChangeLog.md.
+  ChangeLog.md v4.1.0 Changed bullet. Docs only.
+- Workspace .version: unchanged (v4.1.0 already carries a minor bump; docs are a patch).

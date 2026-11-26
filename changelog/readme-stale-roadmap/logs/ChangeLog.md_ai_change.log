@@ -1,0 +1,6 @@
+OLD_SECTION (## v4.1.0 / ## Changed, first bullet)
+(none)
+NEW_SECTION
+- README no longer lists "Features to be included in v3.1.0" (Accordion, 5 Star rating creator), a plan for a version that was never released
+REASON
+Release-facing record of the README change.

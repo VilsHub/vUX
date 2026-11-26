@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -12,7 +12,7 @@
  */
 // Import vUX core
 import { validateArray, validateObjectLiteral, validateString } from "./src/helpers.js";
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 import { FormValidator } from "./vUX-formValidator.js";
 import { ListScroller } from "./vUX-listScroller.js";
 

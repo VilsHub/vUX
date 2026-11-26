@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -15,7 +15,7 @@ import {
     validateElement, validateNumber, validateString, validateBoolean, validateFunction,
     validateObjectLiteral, matchString
 } from "./src/helpers.js";
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 
 /***************************Skeleton*****************************/
 export function Skeleton(container) {

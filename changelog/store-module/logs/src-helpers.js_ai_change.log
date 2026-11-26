@@ -1,0 +1,13 @@
+OLD_SECTION (line 2)
+ * vUX JavaScript library v4.0.0
+NEW_SECTION (line 2)
+ * vUX JavaScript library v4.1.0
+REASON
+store.js added to the module registry (vModel.core.data.modules), and the v4.1.0 header from the version bump.
+
+OLD_SECTION (line 54)
+
+NEW_SECTION (line 54)
+                "store.js",
+REASON
+store.js added to the module registry (vModel.core.data.modules), and the v4.1.0 header from the version bump.

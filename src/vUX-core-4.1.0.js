@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX Store example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- the shop: every piece below follows the same store ---------- */
+    .shop{
+        background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+        display:grid; grid-template-columns:minmax(0,1fr) 340px;
+    }
+    .shop-bar{
+        grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; gap:14px;
+        padding:14px 20px; border-bottom:1px solid var(--line); background:var(--panel-2); flex-wrap:wrap;
+    }
+    .brand{font-weight:700; letter-spacing:-.01em; font-size:1.05rem}
+    .brand span{color:var(--amber)}
+    .bar-r{display:flex; align-items:center; gap:12px}
+    .cur{display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+    .cur button{border:none; border-radius:0; background:transparent; padding:6px 12px; font-family:var(--mono); font-size:.78rem}
+    .cur button.on{background:var(--amber); color:#20160a}
+
+    .badge{
+        display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:.8rem;
+        border:1px solid var(--line); border-radius:999px; padding:5px 12px; color:var(--muted);
+        transition:border-color .2s, color .2s;
+    }
+    .badge b{
+        min-width:22px; height:22px; border-radius:11px; display:inline-grid; place-items:center;
+        background:var(--panel); color:var(--fg); font-size:.78rem; padding:0 6px;
+    }
+    .badge.hot{border-color:var(--amber); color:var(--amber)}
+    .badge.hot b{background:var(--amber); color:#20160a}
+    .badge.bump{animation:bump .35s ease-out}
+    @keyframes bump{40%{transform:scale(1.12)}}
+
+    .shop-main{padding:20px; border-right:1px solid var(--line); min-width:0}
+    .products{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:14px; list-style:none; margin:0; padding:0}
+    .p-card{
+        background:var(--ink); border:1px solid var(--line); border-radius:12px; padding:12px;
+        display:flex; flex-direction:column; gap:8px; position:relative; transition:border-color .2s;
+    }
+    .p-card.inCart{border-color:#4a3a22}
+    .p-swatch{height:84px; border-radius:8px; display:grid; place-items:center; font-size:1.9rem; font-weight:800; color:rgba(0,0,0,.42)}
+    .p-name{font-weight:600; font-size:.94rem}
+    .p-price{font-family:var(--mono); font-size:.82rem; color:var(--amber)}
+    .p-qty{
+        position:absolute; top:18px; right:18px; font-family:var(--mono); font-size:.7rem;
+        background:var(--amber); color:#20160a; border-radius:999px; padding:2px 8px; font-weight:700;
+    }
+    .p-actions{display:flex; gap:6px; margin-top:auto}
+    .p-actions button{flex:1}
+
+    .shop-side{padding:20px; display:flex; flex-direction:column; gap:16px; min-width:0}
+    .side-h{font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim)}
+    .cart{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; min-height:60px}
+    .cart:empty::after{content:"the cart is empty: add something"; color:var(--dim); font-size:.84rem}
+    .c-row{
+        display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:10px; align-items:center;
+        background:var(--ink); border:1px solid var(--line); border-radius:9px; padding:8px 10px;
+    }
+    .c-name{font-size:.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .c-step{display:flex; align-items:center; gap:4px}
+    .c-step button{padding:2px 9px; font-size:.8rem}
+    .c-step span{font-family:var(--mono); font-size:.8rem; min-width:20px; text-align:center}
+    .c-line{font-family:var(--mono); font-size:.8rem; color:var(--muted); text-align:right; min-width:74px}
+
+    .totals{border-top:1px dashed var(--line); padding-top:14px; display:grid; gap:6px; font-size:.88rem}
+    .totals div{display:flex; justify-content:space-between}
+    .totals span:last-child{font-family:var(--mono)}
+    .totals .free{color:var(--green)}
+    .totals .grand{font-weight:700; font-size:1rem; padding-top:6px; border-top:1px solid var(--line); margin-top:4px}
+    .totals .grand span:last-child{color:var(--amber)}
+    .hint{font-size:.78rem; color:var(--dim)}
+
+    /* ---------- inspector ---------- */
+    .inspect{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px; margin-top:18px}
+    .state-view{
+        background:var(--ink); border-radius:0 0 12px 12px; margin:0; padding:14px 16px;
+        font-family:var(--mono); font-size:.78rem; line-height:1.7; color:var(--muted);
+        height:230px; overflow:auto; white-space:pre;
+    }
+    .state-view .flash{color:var(--amber)}
+    .inspect .log{height:230px; border:none; border-radius:0 0 12px 12px}
+
+    /* ---------- section widgets ---------- */
+    .two{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px}
+    .subs{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
+    .sub{
+        background:var(--ink); border:1px solid var(--line); border-radius:10px; padding:12px;
+        transition:border-color .25s, box-shadow .25s;
+    }
+    .sub.ping{border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan) inset}
+    .sub h3{font-family:var(--mono); font-size:.8rem; margin-bottom:8px}
+    .sub .w{display:flex; flex-wrap:wrap; gap:6px 12px; font-size:.8rem}
+    .sub .heard{font-family:var(--mono); font-size:.74rem; color:var(--dim); margin-top:8px; min-height:1.4em}
+    .sub.ping .heard{color:var(--cyan)}
+    .counter{font-family:var(--mono); font-size:2.4rem; font-weight:700; color:var(--amber); line-height:1}
+    .counter small{font-size:.8rem; color:var(--dim); font-weight:400; margin-left:8px}
+    .tiny-card{
+        background:var(--ink); border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+        display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:52px;
+    }
+    .tiny-card b{font-family:var(--mono); color:var(--amber)}
+    .slot:empty::after{content:"(no widget mounted)"; color:var(--dim); font-size:.84rem}
+    .err-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px}
+    .err-grid button{text-align:left}
+
+    @media (max-width:880px){
+        .shop{grid-template-columns:1fr}
+        .shop-main{border-right:none; border-bottom:1px solid var(--line)}
+        .inspect{grid-template-columns:1fr}
+    }
+</style>
+</head>
+<body>
+
+<!-- ==========================================================================
+     TEMPLATES
+     Ordinary Component templates. None of them knows a store exists: each binds
+     plain field names, and main.js decides which store fields feed which binding.
+     ========================================================================== -->
+
+<template id="badgeTpl">
+    <span class="badge" data-v-class="hot:hasItems"><span>cart</span><b data-v-field="count"></b></span>
+</template>
+
+<template id="productTpl">
+    <li class="p-card" data-v-class="inCart:inCart">
+        <div class="p-swatch" data-v-bind="style:swatch" data-v-field="initial"></div>
+        <span class="p-qty" data-v-show="inCart" data-v-field="qtyLabel"></span>
+        <div class="p-name" data-v-field="name"></div>
+        <div class="p-price" data-v-field="priceLabel"></div>
+        <div class="p-actions">
+            <button class="tiny primary" data-v-on="click:add">Add</button>
+            <button class="tiny" data-v-show="inCart" data-v-on="click:dec">Less</button>
+        </div>
+    </li>
+</template>
+
+<template id="cartRowTpl">
+    <li class="c-row">
+        <span class="c-name" data-v-field="name"></span>
+        <span class="c-step">
+            <button class="tiny" data-v-on="click:dec" aria-label="one less">-</button>
+            <span data-v-field="qty"></span>
+            <button class="tiny" data-v-on="click:inc" aria-label="one more">+</button>
+        </span>
+        <span class="c-line" data-v-field="lineLabel"></span>
+    </li>
+</template>
+
+<template id="totalsTpl">
+    <div class="totals">
+        <div><span>Items</span><span data-v-field="count"></span></div>
+        <div><span>Subtotal</span><span data-v-field="subtotal"></span></div>
+        <div data-v-class="free:freeShipping"><span>Shipping</span><span data-v-field="shipping"></span></div>
+        <div class="grand"><span>Total</span><span data-v-field="total"></span></div>
+        <p class="hint" data-v-field="hint"></p>
+    </div>
+</template>
+
+<template id="widgetTpl">
+    <div class="tiny-card"><span>bound widget</span><b data-v-field="label"></b></div>
+</template>
+
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> Store <b>/</b> v4.1.0</p>
+        <h1>One store.<br>Every view in step.</h1>
+        <p class="hero-sub">
+            The badge, the product cards, the cart and the totals below are four separate
+            components. None of them calls another. They all follow one <b>Store</b>, and a
+            single <b>set()</b> moves every one that cares.
+        </p>
+        <div class="hero-cta">
+            <button class="primary" id="heroAdd">Add a random product</button>
+            <button class="ghost" id="heroCur">Switch currency</button>
+            <button class="ghost danger" id="heroReset">reset()</button>
+        </div>
+        <div class="hero-src">
+            <span class="d">const</span> cart = <span class="d">new</span> Store({ items: [], currency: <span class="d">"NGN"</span> })
+            &nbsp;·&nbsp; cart.bind(instance, select) &nbsp;·&nbsp; cart.set({ ... })
+        </div>
+    </div>
+</header>
+
+
+<!-- ============================ 00 · the shop ============================ -->
+<section>
+    <div class="wrap">
+        <div class="shop">
+            <div class="shop-bar">
+                <span class="brand">kiln<span>.</span>store</span>
+                <div class="bar-r">
+                    <div class="cur" id="curSwitch">
+                        <button data-cur="NGN">NGN</button>
+                        <button data-cur="USD">USD</button>
+                        <button data-cur="EUR">EUR</button>
+                    </div>
+                    <span id="badgeSlot"></span>
+                </div>
+            </div>
+            <div class="shop-main">
+                <ul class="products" id="products"></ul>
+            </div>
+            <aside class="shop-side">
+                <span class="side-h">your cart</span>
+                <ul class="cart" id="cart"></ul>
+                <div id="totalsSlot"></div>
+            </aside>
+        </div>
+
+        <div class="inspect">
+            <div class="panel">
+                <div class="panel-h"><span>store.get()</span><span class="pill" id="setPill">no set() yet</span></div>
+                <pre class="state-view" id="stateView"></pre>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>subscribe(fn): every change</span><button class="tiny ghost" id="clearLog">clear</button></div>
+                <pre class="log" id="changeLog"></pre>
+            </div>
+        </div>
+        <p class="note">
+            Watch the pill: <code>set()</code> returns the fields that actually changed, computed ones
+            included. Pick the currency that is already selected and it returns nothing, so nobody is told.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================ 01 · subscriptions ============================ -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Who hears what</h2>
+        <p class="lede">
+            A subscriber names the fields it follows. A change reaches it only when one of those
+            fields moved, and <code>changed</code> lists only those. Tick the boxes to change what
+            each one watches (it re-subscribes), then fire the buttons.
+        </p>
+        <div class="panel">
+            <div class="panel-h"><span>a separate store: { a, b, c } + computed sum</span><span class="pill" id="subPill">ready</span></div>
+            <div class="panel-b">
+                <div class="subs" id="subs"></div>
+                <div class="row" style="margin-top:16px">
+                    <button id="setA">set({ a: a + 1 })</button>
+                    <button id="setB">set({ b: b + 1 })</button>
+                    <button id="setC">set({ c: "x" | "y" })</button>
+                    <button id="setAB">set({ a, b })</button>
+                    <button class="ghost" id="setSame">set({ a: same })</button>
+                </div>
+            </div>
+        </div>
+        <p class="note">
+            The fourth subscriber watches <code>sum</code>, a computed field. It hears <code>a</code> and
+            <code>b</code> changes through it, never <code>c</code>.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================ 02 · batch ============================ -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>batch(): many sets, one announcement</h2>
+        <p class="lede">
+            Ten separate <code>set()</code> calls tell subscribers ten times. Inside <code>batch()</code>
+            the store changes at once (a <code>get()</code> inside sees every step), but subscribers are
+            told once, with every field that moved.
+        </p>
+        <div class="two">
+            <div class="panel">
+                <div class="panel-h"><span>ten separate set() calls</span></div>
+                <div class="panel-b">
+                    <div class="counter" id="loose">0<small>notifications</small></div>
+                    <div class="row" style="margin-top:16px"><button id="runLoose">Run</button></div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>the same ten, inside batch()</span></div>
+                <div class="panel-b">
+                    <div class="counter" id="tight">0<small>notifications</small></div>
+                    <div class="row" style="margin-top:16px"><button class="primary" id="runTight">Run</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================ 03 · re-entrancy ============================ -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>A subscriber that sets the store</h2>
+        <p class="lede">
+            Subscriber <b>A</b> converts <code>celsius</code> into <code>fahrenheit</code> with its own
+            <code>set()</code>. That change is queued, not announced mid-round, so <b>B</b> still hears
+            the first change with the state A was given. A second round then announces
+            <code>fahrenheit</code>. The last button wires a subscriber that never settles, and the store
+            stops it after 100 rounds.
+        </p>
+        <div class="panel">
+            <div class="panel-h"><span>rounds</span><span class="pill" id="tempPill">celsius 20 · fahrenheit 68</span></div>
+            <div class="panel-b">
+                <div class="row" style="margin-bottom:14px">
+                    <button id="warm">set({ celsius: +5 })</button>
+                    <button id="cool">set({ celsius: -5 })</button>
+                    <button class="danger" id="runaway">wire a runaway subscriber</button>
+                </div>
+                <pre class="log" id="roundLog"></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================ 04 · teardown ============================ -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Bindings and teardown</h2>
+        <p class="lede">
+            <code>bind()</code> runs its <code>select</code> once at once, then on each change to the
+            fields it watches. Destroy the widget and its binding drops on the next change instead of
+            throwing. The log counts every <code>select</code> run, so you can see it stop.
+        </p>
+        <div class="two">
+            <div class="panel">
+                <div class="panel-h"><span>the widget</span><span class="pill" id="bindPill">unbound</span></div>
+                <div class="panel-b">
+                    <div class="slot" id="widgetSlot"></div>
+                    <div class="row" style="margin-top:16px">
+                        <button class="primary" id="wMount">mount + bind()</button>
+                        <button id="wTick">set({ tick: +1 })</button>
+                        <button id="wOther">set({ other: +1 })</button>
+                        <button class="danger" id="wDestroy">instance.destroy()</button>
+                        <button class="ghost" id="wUnbind">unbind()</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>select() runs</span><button class="tiny ghost" id="wClear">clear</button></div>
+                <div class="panel-b"><pre class="log" id="bindLog"></pre></div>
+            </div>
+        </div>
+        <p class="note">
+            <code>set({ other })</code> changes a field the binding does not watch, so <code>select</code>
+            does not run at all. That is what the <code>fields</code> argument buys.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================ 05 · errors ============================ -->
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>What it refuses to do</h2>
+        <p class="lede">
+            Every button below really misuses the API. The text is the <code>Error</code> exactly as
+            thrown, and none of these calls changes the store.
+        </p>
+        <div class="err-grid" id="errGrid">
+            <button data-case="ctorArray">new Store([])</button>
+            <button data-case="notInit">get() before initialize()</button>
+            <button data-case="typo">set({ itms: [] })</button>
+            <button data-case="setComputed">set({ total: 0 })</button>
+            <button data-case="badUpdater">set(s =&gt; 42)</button>
+            <button data-case="emptyFields">subscribe(fn, [])</button>
+            <button data-case="watchTypo">subscribe(fn, ["totl"])</button>
+            <button data-case="computedLate">config.computed after initialize()</button>
+            <button data-case="computedClash">computed named like a field</button>
+            <button data-case="bindWrong">bind(component, ...)</button>
+            <button data-case="bindDead">bind(destroyed instance)</button>
+            <button data-case="badSelect">bind(instance, s =&gt; "text")</button>
+            <button data-case="destroyed">set() on a destroyed store</button>
+        </div>
+        <pre class="err-out" id="errOut">pick a case</pre>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <a href="../../doc/store.md">Store guide</a>
+        <a href="README.md">About this page</a>
+        <a href="../component/index.html">Component example</a>
+        <p>vUX v4.1.0 · this page loads the library from <code>../../</code> and nothing from the network.</p>
+    </div>
+</footer>
+
+</body>
+</html>

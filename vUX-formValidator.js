@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -11,7 +11,7 @@
  *
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 
 /************************Form validator**************************/
 var formValidatorCount = 0;   //gives every instance its own id, used to scope its styles and field ids

@@ -1,0 +1,6 @@
+OLD_SECTION (line 153)
+        <p class="eyebrow">vUX <b>/</b> SPAEngine <b>/</b> v4.0.0</p>
+NEW_SECTION (line 153)
+        <p class="eyebrow">vUX <b>/</b> SPAEngine <b>/</b> v4.1.0</p>
+REASON
+Version bump for the Store module (a new module is a minor change, v4.0.0 -> v4.1.0): the core file is renamed src/vUX-core-4.1.0.js and every reference to the current version (imports, file headers, docs, example eyebrows) follows it.

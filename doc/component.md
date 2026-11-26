@@ -8,7 +8,7 @@ It is deliberately **not** a framework. There is no observation, no scheduler, n
 
 ## What it is not
 
-If you are looking for reactive state, computed properties, a component that re-renders when a variable changes, or an expression language in your markup, this module does not do those things and will not grow them. Reach for Vue or Lit. The line is drawn deliberately: every binding value is a plain field name, so there is never a string in your HTML that only vUX knows how to evaluate.
+If you are looking for reactive state, computed properties, a component that re-renders when a variable changes, or an expression language in your markup, this module does not do those things and will not grow them. For data several components share, use [Store](store.md): it holds the data and calls `update()` and `sync()` for you through explicit subscriptions, without changing anything described here. The line is drawn deliberately: every binding value is a plain field name, so there is never a string in your HTML that only vUX knows how to evaluate.
 
 It is also not Web Components. Instances are ordinary elements in the light DOM, carrying your classes, styled by your stylesheet and reachable with `document.querySelector`. Nothing is scoped away from you. If you want a custom element, wrap this in one — see [Using it inside a custom element](#using-it-inside-a-custom-element).
 

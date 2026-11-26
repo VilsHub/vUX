@@ -1,0 +1,53 @@
+OLD_SECTION (before "## Demo")
+(none)
+NEW_SECTION (before "## Demo")
+## vUX and React
+
+How the features of React map onto vUX. **Status** reads:
+
+- **Yes**: vUX has it.
+- **Partial**: vUX covers part of it, with more manual steps.
+- **Gap**: vUX lacks it.
+- **Not required**: the feature solves a problem vUX does not have, because vUX does not re-render or compile.
+
+| Feature | React | vUX | Status |
+|---|---|---|---|
+| Components | Function components | `Component` from your own HTML `<template>` | Yes |
+| Templates | JSX (needs a build step) | Real HTML with `data-v-*` attributes | Not required: templates are plain HTML and there is no build step |
+| Virtual DOM | Re-renders a tree in memory, then compares it with the last one | No tree. Each binding's old and new value are compared and only changed nodes are written | Not required: bindings are tracked directly, so there is nothing to compare |
+| Showing data | `{value}` in JSX | `data-v-field`, `data-v-bind` (attributes) | Yes |
+| Conditionals | `cond && <X/>`, ternaries | `data-v-show`, `data-v-class` (based on a true/false field, `!` negates it) | Partial: shows or hides, but cannot add or remove elements. Branching logic goes in formatters or `onUpdate` |
+| Lists and keys | `.map()` + `key` | `component.sync()` + `config.key`, `DataView` | Yes |
+| Events | `onClick={fn}` (React's own event objects) | `data-v-on="click:handler"` (native events) | Yes |
+| Props (data from a parent) | Passed down; the child re-renders when they change | `mount(container, data)`, then `instance.update()` | Partial: data is given once. A parent change does not update the child automatically; use `update()` or a Store binding |
+| Children / slots | `children`, nesting | `instance.mount(child, ...)` into a `data-v-ref` node, owned by the parent | Partial: nesting yes, but no slot syntax |
+| Local state (`useState`) | A setter triggers a re-render | `instance.update(fields)` | Yes: an explicit call does the job of the setter |
+| `useReducer` | Actions plus a reducer function | `store.set(s => ...)`, or one helper function that does all the writes | Not required: the updater form of `set()` covers it |
+| Shared state (Context, Redux, Zustand) | Context, or a separate library | `Store` with `subscribe()`, `bind()`, `bindList()` | Yes (v4.1.0) |
+| Computed values (`useMemo`) | Remembered between renders | `config.computed` (Store), `config.formatters` (Component) | Yes |
+| `useCallback`, `React.memo` | Stop child components re-rendering needlessly | Nothing re-renders, so there is nothing to stop | Not required |
+| Side effects (`useEffect`) | Runs after render, with dependencies and cleanup | `onMount`, `onUpdate(changed)`, `onDestroy`, `store.subscribe(fn, fields)` | Yes: the `fields` list does the job of the dependency array |
+| Refs (`useRef`) | Reach a DOM node | `data-v-ref` + `instance.ref(name)` | Yes |
+| Custom hooks | Reusable stateful logic | Plain functions + Store | Not required: there are no render rules, so any function can hold logic |
+| Two-way form binding | Controlled inputs (`value` + `onChange`) | A handler calls `update()` / `set()` by hand | Partial: a few manual lines. FormComponents and FormValidator cover widgets and validation |
+| Fragments | `<>...</>` to return several root elements | One root element per template | Not required: wrap the content in an element |
+| Portals | Render outside the parent's DOM | `mount()` takes any container. ModalDisplayer and Prompt render to the body or the top layer | Not required |
+| Error boundaries | Show a fallback when a child component throws | None. Errors throw at the call, and a Store rethrows the first subscriber error | Gap: one broken part cannot be fenced off with a fallback |
+| Lazy loading (`React.lazy`) | Load components when needed | Native `import()`; vUX modules already load each other this way | Not required |
+| Suspense / loading screens | Fallback while data or code loads | `Skeleton`, `ProgressIndicator`, `FontSplash` | Partial: covers loading screens, but not as a general "wait for this" wrapper |
+| Concurrent rendering, transitions | Splits up and prioritises renders | Updates are small and synchronous | Not required: there are no long renders to split up |
+| Server rendering, hydration | Next.js, server components | Runs in the browser only | Not required for vUX's purpose: SEO pages can serve static HTML that vUX enhances |
+| Routing | Separate library (React Router) | `SPAEngine`: routes, route parameters, caching, scroll restore | Yes: built in |
+| Lifecycle teardown | Unmount + effect cleanup | `destroy()` on every module; nested children are destroyed with their parent | Yes |
+| Ready-made widgets | None (third-party libraries) | Modal, Prompt, MessageBox, Carousel, ToolTip, Marquee, SketchPad, Resizer and more | Yes: vUX has more here |
+| Form validation | Third-party libraries | `FormValidator` | Yes |
+| Styling | Not built in (CSS Modules, styled-components and others) | Your own stylesheet; modules link their own CSS | Yes |
+| Dev tools | React DevTools (component tree, state) | `vUxModules` in the console only | Gap: no inspector for components or stores |
+| TypeScript types | Official types | None | Gap: no `.d.ts` files, so no editor autocomplete or type checking |
+| Testing tools | React Testing Library, Jest | None (no test runner by design) | Gap: tests are run in a browser by hand |
+| Build tooling | Needed (JSX, bundling) | None; `./minify.sh` is optional | Not required: vUX runs unbuilt |
+
+In short: 14 features are **not required**, because React needs them only for re-rendering and compiling. Five are **partial**: conditionals, props, children/slots, two-way form binding and Suspense. Four are **gaps**: error boundaries, dev tools, TypeScript types and testing tools. None of the gaps blocks building an app.
+
+REASON
+Readers coming from React asked how vUX compares; the table maps each React feature to its vUX equivalent and marks what vUX does not need.

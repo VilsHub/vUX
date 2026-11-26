@@ -1,6 +1,6 @@
 # vUX Documentation
 
-vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.0.0). There is no build step and no package manager; modules are imported directly by the browser.
+vUX is a dependency-free, vanilla ES6 UI/UX component library (v4.1.0). There is no build step and no package manager; modules are imported directly by the browser.
 
 Every component follows the same lifecycle:
 
@@ -30,6 +30,7 @@ A consuming page declares a single module script and tells vUX where the library
 | [Skeleton](skeleton.md) | `vUX-skeleton.js` | Placeholder screens derived from your own template, with timing that never flashes on a fast load or flickers on a slow one |
 | [FontSplash](font-splash.md) | `vUX-fontSplash.js` | A splash screen whose loader is a word in your font: gradient fill, fading letters, font loading handled, full-screen or over one element, with a progress mode |
 | [Component](component.md) | `vUX-component.js` | Your own reusable component from your own markup: template instancing, bindings, keyed lists, nesting and teardown |
+| [Store](store.md) | `vUX-store.js` | Shared state for the parts of a page that show the same data: declared and computed fields, field-level subscriptions, batching, and bindings that keep Components and DataViews in step |
 | [Data View](data-view.md) | `vUX-dataView.js` | Keyed data-to-DOM binding for tables/dashboards with frequent fine-grained updates |
 | [MessageBox](message-box.md) | `vUX-messageBox.js` | Notification messages that drop in from the top or slide in from an edge, aligned left, centre or right, with a display time that pauses while read |
 | [Prompt](prompt.md) | `vUX-prompt.js` | Promise-based alert, confirm and input dialogs: themable, top-layer, destructive-action styling, sync or async input validation |

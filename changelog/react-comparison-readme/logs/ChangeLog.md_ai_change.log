@@ -1,0 +1,6 @@
+OLD_SECTION (## v4.1.0 / ## Added, after "- Store guide (doc/store.md)")
+(none)
+NEW_SECTION
+- README section "vUX and React": a table of React's features against vUX, marking each as available, partial, a gap, or not required in vUX
+REASON
+Release-facing record of the new README section.

@@ -1,0 +1,7 @@
+FEATURE: readme-documentation-section
+DATE: 2026-11-26
+
+<Documentation>
+  Modified:
+    README.md                   (## Documentation rewritten)
+    ChangeLog.md                (v4.1.0 Changed bullet)

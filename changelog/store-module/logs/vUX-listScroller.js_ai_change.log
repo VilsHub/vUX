@@ -1,0 +1,13 @@
+OLD_SECTION (line 2)
+ * vUX JavaScript library v4.0.0
+NEW_SECTION (line 2)
+ * vUX JavaScript library v4.1.0
+REASON
+Version bump for the Store module (a new module is a minor change, v4.0.0 -> v4.1.0): the core file is renamed src/vUX-core-4.1.0.js and every reference to the current version (imports, file headers, docs, example eyebrows) follows it.
+
+OLD_SECTION (line 14)
+import "./src/vUX-core-4.0.0.js";
+NEW_SECTION (line 14)
+import "./src/vUX-core-4.1.0.js";
+REASON
+Version bump for the Store module (a new module is a minor change, v4.0.0 -> v4.1.0): the core file is renamed src/vUX-core-4.1.0.js and every reference to the current version (imports, file headers, docs, example eyebrows) follows it.

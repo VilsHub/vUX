@@ -8,11 +8,11 @@ The vUX core is the part of the library every module stands on. It isn't a compo
 - **`ScreenBreakPoint`**, a breakpoint getter, and the `vUxModules` console getter
 - **a few patches to built-ins**: `String`, `Array`, `Storage`, `Date` and `RegExp`
 
-Module: `vUX-core.js` (a shim over `src/vUX-core-4.0.0.js`) · Stylesheet: `assets/css/core.css` (linked automatically) · Runnable example: [`examples/core/`](../examples/core/)
+Module: `vUX-core.js` (a shim over `src/vUX-core-4.1.0.js`) · Stylesheet: `assets/css/core.css` (linked automatically) · Runnable example: [`examples/core/`](../examples/core/)
 
 ## How it works
 
-**Any vUX import loads the core.** Every `vUX-*.js` module starts with `import "./src/vUX-core-4.0.0.js"`, so `$$` is available as soon as one of them has loaded. To use the utilities without a component, import the shim:
+**Any vUX import loads the core.** Every `vUX-*.js` module starts with `import "./src/vUX-core-4.1.0.js"`, so `$$` is available as soon as one of them has loaded. To use the utilities without a component, import the shim:
 
 ```html
 <script type="module" src="main.js" data-id="vUX" data-library-root="/lib/vUX/"></script>

@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -16,7 +16,7 @@ import {
     resolveTemplate, buildInstance, patchBindings, destroyInstance, reconcileList,
     validateHandlers, validateFormatters, validateKeyName
 } from "./src/componentEngine.js";
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 
 /***************************Component*****************************/
 export function Component(template) {
@@ -260,7 +260,9 @@ export function Component(template) {
         instances: { writable: false },
         destroyAll: { writable: false },
         destroy: { writable: false },
-        config: { writable: false }
+        config: { writable: false },
+        //Read by Store.bindList(), so a list torn down elsewhere drops its binding instead of throwing
+        destroyed: { get: function(){ return destroyed; } }
     })
 
     Object.defineProperties(this.config, {

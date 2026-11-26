@@ -1,0 +1,50 @@
+OLD_SECTION (## Documentation, end of file)
+## Documentation ##
+
+The documentation for this library will be provided soon, you may **Watch**, this repo for further updates.
+NEW_SECTION
+## Documentation
+
+Every module has a usage guide in [`doc/`](doc/README.md), and almost every one has a runnable example page in [`examples/`](examples/). Start with the [documentation index](doc/README.md): it explains how a page loads vUX and the lifecycle every component shares (import, `new`, `.config`, `.initialize()`).
+
+| Module | File | Guide | Example |
+|---|---|---|---|
+| Core utilities (`$$`, helpers) | `vUX-core.js` | [core.md](doc/core.md) | [examples/core](examples/core/) |
+| SPA Engine | `vUX-spaEngine.js` | [spa-engine.md](doc/spa-engine.md) | [examples/spa](examples/spa/) |
+| Component | `vUX-component.js` | [component.md](doc/component.md) | [examples/component](examples/component/) |
+| Store | `vUX-store.js` | [store.md](doc/store.md) | [examples/store](examples/store/) |
+| Data View | `vUX-dataView.js` | [data-view.md](doc/data-view.md) | |
+| Progress Indicator | `vUX-progressIndicator.js` | [progress-indicator.md](doc/progress-indicator.md) | |
+| Skeleton | `vUX-skeleton.js` | [skeleton.md](doc/skeleton.md) | [examples/skeleton](examples/skeleton/) |
+| FontSplash | `vUX-fontSplash.js` | [font-splash.md](doc/font-splash.md) | [examples/fontsplash](examples/fontsplash/) |
+| MessageBox | `vUX-messageBox.js` | [message-box.md](doc/message-box.md) | [examples/messagebox](examples/messagebox/) |
+| Prompt | `vUX-prompt.js` | [prompt.md](doc/prompt.md) | [examples/prompt](examples/prompt/) |
+| Modal Displayer | `vUX-modalDisplayer.js` | [modal-displayer.md](doc/modal-displayer.md) | [examples/modal](examples/modal/) |
+| Form Components | `vUX-formComponents.js` | [form-components.md](doc/form-components.md) | [examples/form](examples/form/) |
+| FormValidator | `vUX-formValidator.js` | [form-validator.md](doc/form-validator.md) | [examples/formvalidator](examples/formvalidator/) |
+| Auto Writer | `vUX-autoWriter.js` | [auto-writer.md](doc/auto-writer.md) | [examples/autowriter](examples/autowriter/) |
+| Resizer | `vUX-resizer.js` | [resizer.md](doc/resizer.md) | [examples/resizer](examples/resizer/) |
+| Carousel | `vUX-carousel.js` | [carousel.md](doc/carousel.md) | [examples/carousel](examples/carousel/) |
+| TimeLineList | `vUX-timeLineList.js` | [timeline-list.md](doc/timeline-list.md) | [examples/timelinelist](examples/timelinelist/) |
+| Marquee | `vUX-marquee.js` | [marquee.md](doc/marquee.md) | [examples/marquee](examples/marquee/) |
+| ListScroller | `vUX-listScroller.js` | [list-scroller.md](doc/list-scroller.md) | [examples/listscroller](examples/listscroller/) |
+| SketchPad | `vUX-sketchPad.js` | [sketch-pad.md](doc/sketch-pad.md) | [examples/sketchpad](examples/sketchpad/) |
+| ToolTip | `vUX-toolTip.js` | [tool-tip.md](doc/tool-tip.md) | [examples/tooltip](examples/tooltip/) |
+| CShapes | `vUX-cShapes.js` | [c-shapes.md](doc/c-shapes.md) | [examples/cshapes](examples/cshapes/) |
+| TouchHandler | `vUX-touchHandler.js` | coming next | |
+
+### Running the examples
+
+Serve the repository root (not an example folder) over HTTP, so each page's `data-library-root="../../"` resolves:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000/examples/<name>/index.html`. Each example folder has a `README.md` describing its sections. The SPA example needs its own dev server; its README says how to start it.
+
+### Release notes
+
+[`ChangeLog.md`](ChangeLog.md) lists every addition, fix, removal and rename per release. Check it before relying on an API name from an older version: many constructors and properties were renamed between v2 and v4.
+REASON
+The section still said documentation was coming soon, although every module but TouchHandler now has a guide in doc/ and most have an example page. It now links them all and says how to run the examples.

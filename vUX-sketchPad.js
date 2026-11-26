@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -12,7 +12,7 @@
  */
 // Import vUX core
 import { validateElement, validateString, validateBoolean, validateFunction, validateObjectLiteral, validateArray } from "./src/helpers.js";
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 
 /***************************SketchPad*****************************/
 export function SketchPad(host) {

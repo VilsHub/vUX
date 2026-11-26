@@ -1,0 +1,85 @@
+OLD_SECTION (## Demo)
+## Demo
+
+**Animated rectangular border drawer**
+
+    //////// grid border rectangle  ///////////
+      //gets canvas element
+    	var TargetCanvas = document.getElementById("canvas");
+
+
+    	var gridBorderRectangleObj = new GridBorderRectangle();
+      var fgbr = gridBorderRectangleObj.fixedRectangle();
+      var agbr = gridBorderRectangleObj.animatedRectangle();
+
+    	fgbr.config.lineColor = "red";
+    	fgbr.config.segment = [5, 4];
+    	fgbr.draw(TargetCanvas);
+
+      agbr.config.easing = "swingEaseIn";
+      agbr.config.duration = 800;
+      agbr.config.segment = [5, 4];
+      agbr.config.lineColor = "red";
+
+    	setTimeout(function(){
+    		agbr.draw(TargetCanvas);
+    	}, 2000);
+    ////////////////////////////
+
+**OUTPUT**
+
+![animated grid border](https://imgur.com/WVwgVVi.gif)
+
+
+**More demo coming soon.....**
+
+NEW_SECTION
+## Demo
+
+**A cart badge that follows shared state**
+
+A `Component` drawn from your own markup, bound to a `Store`. The button changes the store, and the badge updates itself:
+
+```html
+<script type="module" src="main.js" data-id="vUX" data-library-root="/lib/vUX/"></script>
+
+<template id="badgeTpl">
+    <span class="badge" data-v-class="hot:hasItems">cart <b data-v-field="count"></b></span>
+</template>
+<span id="badge"></span>
+<button id="add">Add to cart</button>
+```
+
+```js
+import { Store } from "/lib/vUX/vUX-store.js";
+import { Component } from "/lib/vUX/vUX-component.js";
+
+const cart = new Store({ items: [] });
+cart.config.computed = { count: (s) => s.items.length };
+cart.initialize();
+
+const badge = new Component($$.ss("#badgeTpl"));
+badge.initialize();
+const instance = badge.mount($$.ss("#badge"), { count: 0, hasItems: false });
+
+//redraws the badge whenever the count changes, and only then
+cart.bind(instance, (s) => ({ count: s.count, hasItems: s.count > 0 }), ["count"]);
+
+$$.ss("#add").onclick = () => cart.set((s) => ({ items: [...s.items, { id: Date.now() }] }));
+```
+
+**See the modules running**
+
+Every example page is a live playground: controls for each `config` property, the equivalent code, and a section that triggers the module's validation errors on purpose. A few to start with:
+
+- [Store](examples/store/): a small shop whose badge, product grid, cart and totals all follow one store, with a live state inspector
+- [Component](examples/component/): one template mounted as many live instances, keyed lists that keep your typing through a sort, and nesting
+- [SketchPad](examples/sketchpad/): a full drawing surface with shapes, connectors, ink, text, undo and export
+- [CShapes](examples/cshapes/): the dashed border, the marching-ants border and the animated progress ring (this replaces the old `GridBorderRectangle` demo)
+- [Modal Displayer](examples/modal/) and [Prompt](examples/prompt/): dialogs with open and close effects, stacking and promise-based answers
+- [SPA Engine](examples/spa/): routing, sections, caching and scroll restore in a single page
+
+The [Documentation](#documentation) section lists every example and how to run them locally.
+
+REASON
+The demo used GridBorderRectangle(), renamed to CShapes() in v4, so it no longer ran; it linked an externally hosted GIF and ended with 'More demo coming soon'. It now shows a current Store + Component snippet (checked in headless Chrome: the badge goes 0 -> 2 and gets the 'hot' class) and links the example pages.

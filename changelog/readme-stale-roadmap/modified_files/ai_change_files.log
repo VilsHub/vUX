@@ -1,0 +1,7 @@
+FEATURE: readme-stale-roadmap
+DATE: 2026-11-26
+
+<Documentation>
+  Modified:
+    README.md                   (stale v3.1.0 plan removed)
+    ChangeLog.md                (v4.1.0 Changed bullet)

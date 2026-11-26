@@ -1,0 +1,6 @@
+Feature: readme-stale-roadmap
+
+Affected projects:
+- Libraries/vUX: README drops the "Features to be included in v3.1.0" list (Accordion, 5 Star rating
+  creator); v3.1.0 was never released. ChangeLog.md v4.1.0 Changed bullet. Docs only.
+- Workspace .version: unchanged (v4.1.0 already carries a minor bump).

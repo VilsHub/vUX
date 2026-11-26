@@ -1,0 +1,8 @@
+Feature: react-comparison-readme
+
+Affected projects:
+- Libraries/vUX: README gains a "vUX and React" section, a 34-row table of React features against vUX
+  with a status per row (Yes / Partial / Gap / Not required) and a one-paragraph summary. ChangeLog.md
+  v4.1.0 Added bullet. Docs only, no code change.
+- Workspace .version: unchanged (Libraries/vUX=v4.1.0 already carries a minor bump over v4.0.0; a
+  docs change is a patch and does not outrank it).

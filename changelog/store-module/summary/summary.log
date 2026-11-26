@@ -1,0 +1,30 @@
+Feature: store-module
+
+Affected projects:
+- Libraries/vUX: new Store module (vUX-store.js), shared state for the parts of a page that show
+  the same data. A store holds one flat object of declared fields (set() refuses unknown names),
+  optional computed fields (config.computed, fixed at initialize()), field-level subscriptions
+  (subscribe(fn, fields) -> unsubscribe), batch() for one announcement over several sets, reset(),
+  and bind()/bindList() that drive Component instances, DataViews and keyed Component lists. Changes
+  are compared with Object.is and announced synchronously; a subscriber's own set() is queued for a
+  second round so every subscriber in a round sees the same state; 100 rounds is the loop limit; a
+  failing subscriber does not stop the others and the first error is rethrown.
+  Component and DataView gain a read-only 'destroyed' property so a binding on a destroyed target
+  drops itself. Guide doc/store.md, example examples/store/, module registry entry.
+  Version bump v4.0.0 -> v4.1.0 (minor: new module): core file renamed src/vUX-core-4.1.0.js and
+  every import, header, doc and example label follows. dist/4.1.0/ is not built yet (./minify.sh,
+  at release time).
+- Workspace .version: Libraries/vUX=v4.1.0 (minor over the last tag v4.0.0).
+
+Consumer impact: additive. Pages that import src/vUX-core-4.0.0.js directly must use
+src/vUX-core-4.1.0.js (none in Apps/ do; they import component modules through lib/vUX).
+
+Verified: a headless-Chrome test page ran 38 checks on the module (notification rules, batch,
+re-entrancy, loop guard, computed atomicity, reset, bind/bindList/DataView, teardown, errors), all
+passing; the example page was driven end to end with no page errors and screenshotted at 1280px
+and 390px.
+
+Validation: features-validator verdict PASS WITH FINDINGS (no Critical/High). All findings fixed:
+first bind apply runs as a round, bindings get the round's state, batch drops set-back fields,
+computed functions get their own copy, '__proto__' refused, persistence doc pattern corrected,
+stale variable removed, isPlainObject proposed as a core utility (potentialUtilities.md #11).

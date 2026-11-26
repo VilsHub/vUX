@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -15,7 +15,7 @@ import { validateElement, validateFunction, validateObjectLiteral, validateStrin
 import {
     resolveTemplate, patchBindings, destroyInstance, reconcileList
 } from "./src/componentEngine.js";
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 
 /***************************Data View*****************************/
 export function DataView(container) {
@@ -162,7 +162,9 @@ export function DataView(container) {
         filter: { writable: false },
         getData: { writable: false },
         destroy: { writable: false },
-        config: { writable: false }
+        config: { writable: false },
+        //Read by Store.bind(), so a view torn down elsewhere drops its binding instead of throwing
+        destroyed: { get: function(){ return destroyed; } }
     })
 
     Object.defineProperties(this.config, {

@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -11,7 +11,7 @@
  *
  */
 // Import vUX core
-import "./src/vUX-core-4.0.0.js";
+import "./src/vUX-core-4.1.0.js";
 
 /***************************Tool tip*****************************/
 //Instances on the same class share one tip box and one set of listeners. This counts them, so

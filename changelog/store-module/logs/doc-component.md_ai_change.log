@@ -1,0 +1,6 @@
+OLD_SECTION (line 11)
+If you are looking for reactive state, computed properties, a component that re-renders when a variable changes, or an expression language in your markup, this module does not do those things and will not grow them. Reach for Vue or Lit. The line is drawn deliberately: every binding value is a plain field name, so there is never a string in your HTML that only vUX knows how to evaluate.
+NEW_SECTION (line 11)
+If you are looking for reactive state, computed properties, a component that re-renders when a variable changes, or an expression language in your markup, this module does not do those things and will not grow them. For data several components share, use [Store](store.md): it holds the data and calls `update()` and `sync()` for you through explicit subscriptions, without changing anything described here. The line is drawn deliberately: every binding value is a plain field name, so there is never a string in your HTML that only vUX knows how to evaluate.
+REASON
+The 'What it is not' section now points at Store for data several components share, since that need is now met without changing Component.

@@ -1,5 +1,5 @@
 /*
- * vUX JavaScript library v4.0.0
+ * vUX JavaScript library v4.1.0
  * https://github.com/VilsHub/vUX
  *
  *
@@ -51,6 +51,7 @@ window.vModel = {
                 "skeleton.js",
                 "sketchPad.js",
                 "spaEngine.js",
+                "store.js",
                 "timeLineList.js",
                 "toolTip.js",
                 "touchHandler.js"
