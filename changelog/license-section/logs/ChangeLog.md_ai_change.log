@@ -1,0 +1,6 @@
+OLD_SECTION (## v4.1.0 / ## Changed, first bullet)
+(none)
+NEW_SECTION
+- README ends with a License section linking the MIT licence, and the licence's copyright line reads 2019-2026
+REASON
+Release-facing record of the README and LICENSE change.

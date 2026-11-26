@@ -227,3 +227,7 @@ Then open `http://localhost:8000/examples/<name>/index.html`. Each example folde
 ### Release notes
 
 [`ChangeLog.md`](ChangeLog.md) lists every addition, fix, removal and rename per release. Check it before relying on an API name from an older version: many constructors and properties were renamed between v2 and v4.
+
+## License
+
+vUX is released under the [MIT License](LICENSE). You may use, copy, modify and distribute it, in open source or commercial projects, as long as the copyright and licence notice stay with the code. It comes with no warranty.

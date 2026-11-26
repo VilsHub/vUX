@@ -9,6 +9,7 @@
 - README section "vUX and React": a table of React's features against vUX, marking each as available, partial, a gap, or not required in vUX
 
 ## Changed
+- README ends with a License section linking the MIT licence, and the licence's copyright line reads 2019-2026
 - README no longer lists "Features to be included in v3.1.0" (Accordion, 5 Star rating creator), a plan for a version that was never released
 - README "Demo" section shows a working Store and Component example and links the live example pages, replacing the old `GridBorderRectangle` snippet (an API renamed to `CShapes` in v4) and its externally hosted GIF
 - README "Documentation" section now lists every module with its guide and example page, how to run the examples, and where the release notes are, instead of saying documentation is coming soon

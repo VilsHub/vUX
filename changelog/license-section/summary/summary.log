@@ -1,0 +1,6 @@
+Feature: license-section
+
+Affected projects:
+- Libraries/vUX: LICENSE copyright line now 2019-2026 (terms unchanged, MIT); README gains a closing
+  License section linking LICENSE. ChangeLog.md v4.1.0 Changed bullet. Docs only.
+- Workspace .version: unchanged (v4.1.0 already carries a minor bump; v4.1.0 not tagged yet).

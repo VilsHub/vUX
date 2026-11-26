@@ -1,0 +1,8 @@
+FEATURE: license-section
+DATE: 2026-11-26
+
+<Documentation>
+  Modified:
+    LICENSE                     (copyright years 2019-2026)
+    README.md                   (## License section)
+    ChangeLog.md                (v4.1.0 Changed bullet)
