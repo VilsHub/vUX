@@ -1,0 +1,10 @@
+<vUX>
+vUX-progressIndicator.js
+assets/css/progressIndicator.css
+ChangeLog.md
+README.md
+doc/README.md
+doc/progress-indicator.md
+examples/progressindicator/index.html (new)
+examples/progressindicator/main.js (new)
+examples/progressindicator/README.md (new)

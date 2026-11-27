@@ -1,0 +1,274 @@
+OLD_SECTION (line 23)
+    let smallIncrement  = null;
+NEW_SECTION (line 23)
+    let crawlTimers     = new Map(); //style 3 bar -> its crawl interval, one per bar so bars in different spaces never stop each other
+    let hideTimers      = new Map(); //style 3 bar -> the fallback timer that hides it after the fill to 100%
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 64)
+        let targetSpace = getProgressSpaceElement(element).querySelector(".vProgressItem");
+NEW_SECTION (line 65)
+        let targetSpace = ownBlock(getProgressSpaceElement(element));
+        if (targetSpace == null) return; //nothing was shown in this space yet, so there is nothing to hide
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 67)
+            if(progressStyle.linear.style == 3){
+                clearInterval(smallIncrement);
+                let progress = targetSpace.querySelector(".progress");
+NEW_SECTION (line 69)
+            let progress = targetSpace.querySelector(".progress");
+            if(progressStyle.linear.style == 3 && progress != null && !targetSpace.classList.contains("done")){
+                stopCrawl(progress);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 73)
+                progress.style.width = "100%" 
+NEW_SECTION (line 75)
+                progress.style.width = "100%";
+                //the bar fills to 100% first and handleTransitionEnd() hides it once the fill ends; the
+                //timer is the fallback for a fill that fires no transitionend (already at 100%, for one)
+                clearTimeout(hideTimers.get(progress));
+                hideTimers.set(progress, setTimeout(function(){
+                    hideTimers.delete(progress);
+                    if (progress.classList.contains("completed")){
+                        progress.classList.remove("completed");
+                        targetSpace.classList.add("done");
+                    }
+                }, 400));
+            }else{
+                targetSpace.classList.add("done");
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 75)
+            targetSpace.classList.add("done");
+NEW_SECTION (line 88)
+
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 77)
+            if(targetSpace != null) targetSpace.classList.add("done");
+            if(progressType == "grid") gbr.stop();
+NEW_SECTION (line 90)
+            targetSpace.classList.add("done");
+            if(progressType == "grid" && gbr != null) gbr.stop(); //gbr is set once the cShapes import resolves
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 97)
+        clearInterval(smallIncrement);
+        smallIncrement = null;
+NEW_SECTION (line 110)
+        crawlTimers.forEach(function(id){ clearInterval(id); });
+        crawlTimers.clear();
+        hideTimers.forEach(function(id){ clearTimeout(id); });
+        hideTimers.clear();
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 109)
+            let block = managedSpaces[x].querySelector(".vProgressItem");
+NEW_SECTION (line 124)
+            let block = ownBlock(managedSpaces[x]);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 145)
+        setTemplate(targetSpace).then(animationController);
+NEW_SECTION (line 160)
+        setTemplate(targetSpace).then(function(){ animationController(targetSpace); });
+    }
+
+    //True when the element belongs to a block this instance built: the block's parent is one of its
+    //spaces. The transitionend listener is on window, so without this check every instance on the page
+    //would drive every other one's bar, including a bar in a space nested inside one of its own.
+    function ownsElement(element){
+        let block = element.closest(".vProgressItem");
+        return block != null && managedSpaces.indexOf(block.parentNode) != -1;
+    }
+
+    //The space's own progress block: a direct child only, so a space nested inside it (with another
+    //instance's block) is never mistaken for this one's.
+    function ownBlock(space){
+        for (let x = 0; x < space.children.length; x++){
+            if (space.children[x].classList.contains("vProgressItem")) return space.children[x];
+        }
+        return null;
+    }
+
+    function stopCrawl(bar){
+        clearInterval(crawlTimers.get(bar));
+        crawlTimers.delete(bar);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 156)
+        network = true;
+NEW_SECTION (line 193)
+        network = "online";
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 160)
+        network = false;
+NEW_SECTION (line 197)
+        network = "offline";
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 164)
+        if(e.target.classList.contains("style3")){
+NEW_SECTION (line 201)
+        if(e.target.classList.contains("style3") && ownsElement(e.target)){
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 166)
+                if(!e.target.classList.contains("completed")) slowMo();
+NEW_SECTION (line 203)
+                if(!e.target.classList.contains("completed")){
+                    slowMo(e.target);
+                    return; //the slow phase starts its own transition; the next transitionend continues
+                }
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 170)
+                tinyIncrement();
+NEW_SECTION (line 210)
+                tinyIncrement(e.target);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 183)
+    function animationController(){
+NEW_SECTION (line 223)
+    function animationController(space){
+        //every query is scoped to the space being shown, so a second indicator on the page is never
+        //the one that moves
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 185)
+            let element = $$.ss(".vProgressItem .style3");
+NEW_SECTION (line 227)
+            let element = ownBlock(space).querySelector(".style3");
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 188)
+            let TargetCanvas = $$.ss(".vProgressItem canvas");
+NEW_SECTION (line 230)
+            let TargetCanvas = ownBlock(space).querySelector("canvas");
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 190)
+
+NEW_SECTION (line 233)
+                //hidden (or destroyed) before the import resolved: drawing now would loop on a hidden canvas
+                let block = ownBlock(space);
+                if (block == null || block.classList.contains("done")) return;
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 195)
+                gbr.config.segment = [12, 5];
+                gbr.config.lineColor = "red";
+NEW_SECTION (line 240)
+                gbr.config.segment = [12, progressStyle.grid.gridGab];
+                gbr.config.lineColor = progressStyle.grid.gridColor;
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 208)
+    function slowMo(){
+        let element = $$.ss(".vProgressItem .style3");
+NEW_SECTION (line 253)
+    function slowMo(element){
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 215)
+    function tinyIncrement(){
+        let element = $$.ss(".vProgressItem .style3");
+NEW_SECTION (line 259)
+    function tinyIncrement(element){
+        stopCrawl(element); //a re-shown bar never runs two timers
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 220)
+        smallIncrement = setInterval(() => {
+NEW_SECTION (line 264)
+        crawlTimers.set(element, setInterval(() => {
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 229)
+        }, 1000);
+NEW_SECTION (line 273)
+        }, 1000));
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 269)
+        let exist = spaceEle.querySelector(".vProgressItem"); 
+NEW_SECTION (line 313)
+        let exist = ownBlock(spaceEle);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 308)
+            spaceEle.innerHTML   += template;
+NEW_SECTION (line 352)
+            //insertAdjacentHTML, not innerHTML +=: re-parsing the space would replace its own content
+            //(buttons, inputs) with copies that have lost their listeners and state
+            spaceEle.insertAdjacentHTML("beforeend", template);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 318)
+
+NEW_SECTION (line 365)
+                stopCrawl(progress);
+                clearTimeout(hideTimers.get(progress)); //a pending hide from the last cycle must not cut this one short
+                hideTimers.delete(progress);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 320)
+                progress.style.transitionDuration = ".8s";
+NEW_SECTION (line 369)
+                //jump to 0% with no transition (a bar re-shown mid-fill would otherwise shrink back from
+                //near 100%), flush, then restore the fill duration so the move to 57% animates
+                progress.style.transitionDuration = "0s";
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 322)
+                void exist.offsetWidth; //flush styles so the upcoming width change animates from 0%
+NEW_SECTION (line 373)
+                void exist.offsetWidth;
+                progress.style.transitionDuration = ".8s";
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 380)
+                                    if(targetInnerPropValue > 3 || targetInnerPropValue < 0) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be either 1, 2 or 3`);
+NEW_SECTION (line 432)
+                                    if([1, 2, 3].indexOf(targetInnerPropValue) == -1) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be either 1, 2 or 3`);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.
+
+OLD_SECTION (line 382)
+                                    if(targetInnerPropValue < 0) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be greater than 0`);
+NEW_SECTION (line 434)
+                                    if(targetInnerPropValue <= 0) throw new Error(`'config.progressStyle' object property '${targetProgressType}' config key '${targetInnerProps[y]}' value must be greater than 0`);
+REASON
+Several instances on one page (nested spaces included): blocks found as direct children of their space (ownBlock), transitionend ignored for bars whose block is not in this instance's spaces, a crawl timer and a hide fallback timer per bar (Maps). Block appended with insertAdjacentHTML so the space's own content keeps its listeners. Style 3 slow phase no longer skipped, fill to 100% before hiding, re-show jumps to 0% with no transition. hideProgress() a no-op with nothing shown, grid stop guarded until cShapes loads, and a grid hidden before cShapes loads is never drawn. Online/offline compared with the right values, grid colour and gap read from progressStyle.grid, linear style limited to 1-3 and gridGab above 0.

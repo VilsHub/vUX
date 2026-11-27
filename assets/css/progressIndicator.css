@@ -172,10 +172,15 @@
     line-height: 50px;
 }
 
+/* after .circular (display:grid), so a finished circular indicator is hidden too */
+.vProgressItem.circular.done{
+    display: none;
+}
 /* Circular progress ends */
 
 .vProgressItem.grid{
     height: 100%;
+    pointer-events: none; /* a border only: the content inside the space stays usable */
 }
 
 .vProgressItem.grid canvas{

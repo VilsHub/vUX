@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vUX ProgressIndicator example</title>
+<script type="module" src="main.js" data-id="vUX" data-library-root="../../"></script>
+<link rel="stylesheet" href="../shared/example.css">
+<style>
+    /* ---------- the hero browser ----------
+       The progress space is the 3px strip under the address bar (#heroSpace). A linear indicator
+       is absolutely positioned inside its space, so the strip is position:relative. */
+    .browser{margin-top:44px; overflow:hidden}
+    .browser .bar{
+        display:flex; align-items:center; gap:14px; padding:12px 16px;
+        border-bottom:1px solid var(--line); background:var(--panel-2);
+    }
+    .url{
+        flex:1; min-width:0; font-family:var(--mono); font-size:.82rem; color:var(--muted);
+        background:var(--ink); border:1px solid var(--line); border-radius:999px; padding:6px 14px;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .url b{color:var(--fg); font-weight:500}
+    #heroSpace{position:relative; height:4px}
+    /* One step more specific than the library's ".vProgressItem .track": progressIndicator.css is
+       linked after this block, and the hero bar is drawn 4px tall instead of 3px. */
+    .browser .vProgressItem .track{height:4px}
+    .page{padding:clamp(22px,4vw,40px); min-height:260px; transition:opacity .25s}
+    .page.loading{opacity:.38}
+    .page h3{font-size:clamp(1.3rem,3vw,1.8rem); letter-spacing:-.02em; margin:0 0 6px}
+    .page .meta{font-family:var(--mono); font-size:.76rem; color:var(--dim); margin-bottom:22px}
+    .lines{display:grid; gap:10px; max-width:640px}
+    .lines i{display:block; height:10px; border-radius:5px; background:var(--panel-2)}
+    .lines i:nth-child(2){width:92%} .lines i:nth-child(3){width:78%} .lines i:nth-child(4){width:85%} .lines i:nth-child(5){width:54%}
+    .tiles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:26px; max-width:640px}
+    .tiles i{display:block; height:72px; border-radius:10px; background:linear-gradient(135deg,var(--panel-2),#18233a)}
+    .phase{display:flex; gap:8px; flex-wrap:wrap; margin-top:18px}
+    .phase .pill{transition:border-color .2s,color .2s}
+
+    /* ---------- playground stage ---------- */
+    .play{display:grid; grid-template-columns:minmax(0,340px) minmax(0,1fr); gap:22px; align-items:start}
+    /* the stage is the progress space: linear needs it positioned, circular and grid set it themselves */
+    .stage{position:relative; min-height:300px; padding:22px 20px; overflow:hidden}
+    .inv{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:14px; align-items:center; padding:12px 0; border-bottom:1px solid var(--line)}
+    .inv:last-child{border-bottom:0}
+    .inv .av{width:34px; height:34px; border-radius:9px; display:grid; place-items:center; font-family:var(--mono); font-size:.78rem; font-weight:700; color:var(--ink)}
+    .inv .nm{font-size:.92rem} .inv .sub{font-size:.76rem; color:var(--dim); font-family:var(--mono)}
+    .inv .amt{font-family:var(--mono); font-size:.86rem}
+    .stage-h{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+    .stage-h b{font-size:1.05rem}
+    .stage-h span{font-family:var(--mono); font-size:.72rem; color:var(--dim)}
+    .seg{display:flex; gap:6px; flex-wrap:wrap}
+    .seg button{font-family:var(--mono); font-size:.78rem; padding:6px 11px}
+    .seg button[aria-pressed=true]{border-color:var(--amber); color:var(--amber)}
+    .colors{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+    .group[hidden]{display:none}
+    textarea.css{min-height:72px; font-size:.76rem}
+
+    /* ---------- three cards ---------- */
+    .trio{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+    .trio .card{position:relative; overflow:hidden; min-height:230px}
+    .trio .card h3{display:flex; align-items:center; gap:8px}
+    .trio .tag{font-family:var(--mono); font-size:.7rem; color:var(--amber); letter-spacing:.1em}
+    .preview{
+        height:96px; border-radius:9px; margin-bottom:16px;
+        background:radial-gradient(circle at 25% 30%,rgba(92,207,230,.5),transparent 55%),radial-gradient(circle at 80% 70%,rgba(200,162,255,.45),transparent 50%),#141c2a;
+    }
+    /* config.progressStyle.circular.icon is ONE rule for the whole page (".vProgressItem .spinner::before"),
+       so this card scopes its own spinner with a more specific selector instead of using icon */
+    #cardCircular .vProgressItem .spinner::before{
+        border:4px solid rgba(255,255,255,.14); border-top-color:var(--cyan); border-radius:50%; box-sizing:border-box;
+    }
+
+    /* ---------- spaces ---------- */
+    .spaces{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px}
+    .space-panel{position:relative; overflow:hidden}
+    .strip{position:relative; height:3px}
+    .space-panel .panel-b{min-height:120px; color:var(--muted); font-size:.9rem}
+    /* the "self" button is its own progress space, so it must be positioned for a linear bar */
+    #selfBtn{position:relative; overflow:hidden}
+
+    /* ---------- lifecycle ---------- */
+    .life{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px}
+    #lifeSpace{position:relative; min-height:120px}
+
+    @media (max-width:860px){
+        .play,.trio,.spaces,.life{grid-template-columns:minmax(0,1fr)}
+        /* on a phone the stage comes first, so the indicator is in view before the controls */
+        .play > div:last-child{order:-1}
+    }
+    @media (max-width:520px){
+        .tiles{grid-template-columns:1fr 1fr}
+        .tiles i:nth-child(3){display:none}
+        .browser .bar .dots{display:none}
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <p class="eyebrow">vUX <b>/</b> ProgressIndicator <b>/</b> v4.1.0</p>
+        <h1>Every wait, accounted for.</h1>
+        <p class="hero-sub">
+            A request-style bar: it jumps to <b>57%</b>, slows toward <b>85%</b>, crawls while the server
+            thinks, and snaps to the end the moment <code>hideProgress()</code> is called. Watch it load
+            the pages below, or drive it yourself.
+        </p>
+
+        <div class="panel browser">
+            <div class="bar">
+                <span class="dots"><i></i><i></i><i></i></span>
+                <span class="url" id="heroUrl">docs.example.com/<b>start</b></span>
+            </div>
+            <div id="heroSpace"></div>
+            <div class="page" id="heroPage">
+                <h3 id="heroTitle">Getting started</h3>
+                <div class="meta" id="heroMeta">loaded in 0.0s</div>
+                <div class="lines"><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="tiles"><i></i><i></i><i></i></div>
+            </div>
+            <div class="status" id="heroStatus"><span class="dot"></span><span id="heroStatusText">idle</span></div>
+        </div>
+
+        <div class="phase" id="heroPhase">
+            <span class="pill" data-phase="fill">fill to 57%</span>
+            <span class="pill" data-phase="slow">slow to 85%</span>
+            <span class="pill" data-phase="crawl">crawl</span>
+            <span class="pill" data-phase="complete">complete</span>
+        </div>
+
+        <div class="hero-cta">
+            <button class="primary" id="heroGo">Navigate</button>
+            <button id="heroSlow">Slow request (14s)</button>
+            <button class="ghost" id="heroDone">hideProgress() now</button>
+            <button class="ghost" id="heroAuto">Pause the loop</button>
+        </div>
+
+        <div class="hero-src">progress.showProgress(); <span class="d">await</span> fetch(url); progress.hideProgress();</div>
+    </div>
+</header>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">01</span>Playground</h2>
+        <p class="lede">
+            Pick a type and style it. The indicator renders into the invoice card. Its markup is built on
+            the first <code>showProgress()</code> and reused after that, so every change here builds a
+            fresh instance (<code>destroy()</code>, <code>new</code>, <code>initialize()</code>) and shows it again.
+        </p>
+
+        <div class="play">
+            <div>
+                <div class="panel">
+                    <div class="panel-h"><span>config.progressType</span></div>
+                    <div class="panel-b">
+                        <div class="seg" id="typeSeg">
+                            <button data-type="linear" aria-pressed="true">linear</button>
+                            <button data-type="circular" aria-pressed="false">circular</button>
+                            <button data-type="grid" aria-pressed="false">grid</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel group" id="grpLinear" style="margin-top:18px">
+                    <div class="panel-h"><span>progressStyle.linear</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl">style</label>
+                            <div class="seg" id="styleSeg">
+                                <button data-style="1" aria-pressed="false">1 sweep</button>
+                                <button data-style="2" aria-pressed="false">2 alternate</button>
+                                <button data-style="3" aria-pressed="true">3 request</button>
+                            </div>
+                        </div>
+                        <div class="colors field">
+                            <div><label class="lbl" for="lnColor">progressColor</label><input type="color" id="lnColor" value="#ffb454"></div>
+                            <div><label class="lbl" for="lnTrack">trackColor</label><input type="color" id="lnTrack" value="#1f2a3a"></div>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="lnLoc">location</label>
+                            <select id="lnLoc">
+                                <option value="top">top</option>
+                                <option value="center">center</option>
+                                <option value="bottom">bottom</option>
+                                <option value="custom">custom offset</option>
+                            </select>
+                        </div>
+                        <div class="field" id="lnCustomWrap" hidden>
+                            <label class="lbl" for="lnCustom">custom location (inline CSS)</label>
+                            <input type="text" id="lnCustom" value="top:52px">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel group" id="grpCircular" style="margin-top:18px" hidden>
+                    <div class="panel-h"><span>progressStyle.circular</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl">icon preset</label>
+                            <div class="seg" id="iconSeg">
+                                <button data-icon="ring" aria-pressed="true">ring</button>
+                                <button data-icon="twin" aria-pressed="false">twin arcs</button>
+                                <button data-icon="orbit" aria-pressed="false">orbit</button>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="ciIcon">icon (CSS for .spinner::before)</label>
+                            <textarea class="css" id="ciIcon"></textarea>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="ciOverlay">overlay (inline CSS)</label>
+                            <textarea class="css" id="ciOverlay">background:rgba(8,11,17,.72); backdrop-filter:blur(2px);</textarea>
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="ciLabel">labelContent (HTML)</label>
+                            <input type="text" id="ciLabel" value="Fetching invoices">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="ciLabelStyle">labelStyle (inline CSS)</label>
+                            <input type="text" id="ciLabelStyle" value="font-family:monospace; font-size:12px; color:#7b8ba3; letter-spacing:.08em; margin-top:100px">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel group" id="grpGrid" style="margin-top:18px" hidden>
+                    <div class="panel-h"><span>progressStyle.grid</span></div>
+                    <div class="panel-b">
+                        <div class="field">
+                            <label class="lbl" for="grColor">gridColor</label>
+                            <input type="color" id="grColor" value="#5ccfe6">
+                        </div>
+                        <div class="field">
+                            <label class="lbl" for="grGab">gridGab <span class="val" id="grGabVal">6</span></label>
+                            <input type="range" id="grGab" min="1" max="24" value="6">
+                        </div>
+                        <p class="note">The grid type lazy-imports <code>vUX-cShapes.js</code> and draws a marching border on a canvas over the space.</p>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>config.progressSpeed</span></div>
+                    <div class="panel-b">
+                        <p class="note" style="margin:0">Reserved: accepted, but not read. The linear sweep runs 1.8s, set in <code>progressIndicator.css</code>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-h">
+                        <span class="dots"><i></i><i></i><i></i></span>
+                        <span>progress space</span>
+                    </div>
+                    <div class="stage" id="stage">
+                        <div class="stage-h"><b>Invoices</b><span>November</span></div>
+                        <div class="inv"><span class="av" style="background:var(--amber)">AC</span><span><span class="nm">Acme Supplies</span><br><span class="sub">INV-2041</span></span><span class="amt">$1,280.00</span></div>
+                        <div class="inv"><span class="av" style="background:var(--cyan)">NS</span><span><span class="nm">Northside Studio</span><br><span class="sub">INV-2042</span></span><span class="amt">$640.50</span></div>
+                        <div class="inv"><span class="av" style="background:var(--green)">LP</span><span><span class="nm">Lumen Print</span><br><span class="sub">INV-2043</span></span><span class="amt">$92.10</span></div>
+                        <div class="inv"><span class="av" style="background:var(--violet)">OR</span><span><span class="nm">Orbit Records</span><br><span class="sub">INV-2044</span></span><span class="amt">$2,015.00</span></div>
+                    </div>
+                    <div class="status" id="pgStatus">
+                        <span class="dot"></span><span id="pgStatusText">hidden</span>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:14px">
+                    <button class="primary tiny" id="pgShow">showProgress()</button>
+                    <button class="tiny" id="pgHide">hideProgress()</button>
+                    <button class="tiny ghost" id="pgSim">Simulate a 3s request</button>
+                </div>
+
+                <div class="panel" style="margin-top:18px">
+                    <div class="panel-h"><span>Equivalent code</span></div>
+                    <pre class="snip" id="snippet"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">02</span>Three ways to wait</h2>
+        <p class="lede">
+            Three instances, each with its own default space. A bar for a save, a spinner over the
+            thing being fetched, and a marching border around something syncing in the background.
+        </p>
+        <div class="trio">
+            <div class="card" id="cardLinear">
+                <h3><span class="tag">LINEAR 3</span>Save changes</h3>
+                <p>The bar sits on the card's top edge while the save is in flight, then completes.</p>
+                <div class="row"><button class="tiny primary" id="saveBtn">Save</button><span class="pill" id="saveState">saved</span></div>
+            </div>
+            <div class="card" id="cardCircular">
+                <div class="preview"></div>
+                <h3><span class="tag">CIRCULAR</span>Load preview</h3>
+                <p>The overlay covers the card, so it cannot be clicked twice.</p>
+                <div class="row"><button class="tiny primary" id="previewBtn">Refresh preview</button></div>
+            </div>
+            <div class="card" id="cardGrid">
+                <h3><span class="tag">GRID</span>Background sync</h3>
+                <p>A border that keeps moving while the card stays usable.</p>
+                <div class="row"><button class="tiny primary" id="syncBtn">Start sync</button><button class="tiny ghost" id="syncStop">Stop</button></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">03</span>Where it renders</h2>
+        <p class="lede">
+            Pass the trigger to <code>showProgress(element)</code> and the space is resolved in order: the
+            element's <code>data-progress-space</code> attribute (renamed through
+            <code>config.dataAttributeNames</code>), then the element itself, then the constructor's default
+            space. All three buttons call the same instance.
+        </p>
+        <div class="row" style="margin-bottom:18px">
+            <button id="toDefault">No attribute: default space</button>
+            <button id="selfBtn" data-progress-space="self">data-progress-space="self"</button>
+            <button id="toPanel" data-progress-space="panelB">data-progress-space="panelB"</button>
+        </div>
+        <div class="spaces">
+            <div class="panel space-panel">
+                <div class="strip" id="panelA"></div>
+                <div class="panel-h"><span>Panel A: the default space</span></div>
+                <div class="panel-b">new ProgressIndicator(panelA)</div>
+            </div>
+            <div class="panel space-panel" id="panelB">
+                <div class="panel-h"><span>Panel B: id="panelB"</span></div>
+                <div class="panel-b">Named by the third button's data attribute.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">04</span>Lifecycle</h2>
+        <p class="lede">
+            <code>destroy()</code> stops the crawl timer and the grid animation, removes the window
+            listeners and every block the instance injected. A destroyed instance cannot be initialized
+            again: create a new one.
+        </p>
+        <div class="life">
+            <div class="panel">
+                <div class="panel-h"><span>lifeProgress</span><span class="pill on" id="lifeState">initialized</span></div>
+                <div id="lifeSpace"><div class="panel-b" style="color:var(--muted)">A space with a style 2 bar.</div></div>
+                <div class="status"><span class="row">
+                    <button class="tiny" id="lifeShow">showProgress()</button>
+                    <button class="tiny danger" id="lifeDestroy">destroy()</button>
+                    <button class="tiny" id="lifeNew">new + initialize()</button>
+                </span></div>
+            </div>
+            <div class="panel">
+                <div class="panel-h"><span>What the page holds</span></div>
+                <pre class="log" id="lifeLog"></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="wrap">
+        <h2><span class="num">05</span>Bad input throws</h2>
+        <p class="lede">
+            Each button makes a call the module rejects and prints the <code>Error</code> it throws. They
+            run on a scratch instance, so the rest of the page keeps working.
+        </p>
+        <div class="row">
+            <button data-bad="ctor">new ProgressIndicator("#space")</button>
+            <button data-bad="early">showProgress() before initialize()</button>
+            <button data-bad="noSpace">showProgress() with no space</button>
+            <button data-bad="type">progressType = "bar"</button>
+            <button data-bad="group">progressStyle = {spinner}</button>
+            <button data-bad="key">linear: {height}</button>
+            <button data-bad="style">linear: {style: 4}</button>
+            <button data-bad="color">linear: {progressColor: 5}</button>
+            <button data-bad="gab">grid: {gridGab: 0}</button>
+            <button data-bad="attr">dataAttributeNames = {spaceId}</button>
+            <button data-bad="missing">data-progress-space="nope"</button>
+            <button data-bad="reinit">initialize() after destroy()</button>
+        </div>
+        <div class="err-out" id="errOut">No error yet. Press one of the buttons above.</div>
+    </div>
+</section>
+
+<footer>
+    <div class="wrap">
+        <p>
+            <a href="../../doc/progress-indicator.md">Guide</a>
+            <a href="./README.md">This example</a>
+            <a href="../../doc/README.md">All vUX docs</a>
+        </p>
+        <p>
+            The instances are on <span class="kbd">window</span> as
+            <span class="kbd">heroProgress</span>, <span class="kbd">playProgress</span>,
+            <span class="kbd">spaceProgress</span> and <span class="kbd">lifeProgress</span>.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

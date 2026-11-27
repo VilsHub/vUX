@@ -1,0 +1,6 @@
+OLD_SECTION
+(new file)
+NEW_SECTION
+(the whole file, see it)
+REASON
+ProgressIndicator had no runnable example page, so docs.vilshub.net had none to host (CLAUDE.md: every module gets an example under examples/<module>/).

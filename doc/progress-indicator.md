@@ -2,7 +2,7 @@
 
 `ProgressIndicator` (`vUX-progressIndicator.js`) renders a loading indicator inside a "progress space" element while work is in flight: a linear bar across the space, a circular spinner overlay, or an animated grid border. Its stylesheet (`assets/css/progressIndicator.css`) is linked automatically on `initialize()`.
 
-[← Back to documentation index](README.md)
+[← Back to documentation index](README.md) · [Runnable example](../examples/progressindicator/README.md)
 
 ## Quick start
 
@@ -44,7 +44,10 @@ new ProgressIndicator(defaultProgressSpace)
 |---|---|
 | `initialize()` | Links the component stylesheet and registers its listeners. Call once, after all `config` properties are set, and before the first `showProgress()`. |
 | `showProgress(element?)` | Shows the indicator. The target space is resolved in priority order: the element's `progressSpaceId` data attribute (`"self"` or the ID of another element) → the passed `element` itself → the constructor's default space. Throws if called with no element and no default space. |
-| `hideProgress(element?)` | Completes and hides the indicator in the same resolved space. For `linear` style 3, the bar snaps to 100% and the crawl timer is stopped. |
+| `hideProgress(element?)` | Completes and hides the indicator in the same resolved space. For `linear` style 3, the crawl timer is stopped and the bar fills to 100% before it hides. Does nothing when no indicator was shown in that space yet. |
+| `destroy()` | Stops the crawl timer and the grid animation, detaches the window listeners and removes every indicator this instance injected. Calling it twice does nothing. A destroyed instance cannot be initialized again: create a new one. |
+
+Each instance drives only the indicators it rendered, so several instances (a page bar, a spinner over a card, even one space inside another) can run on one page at once, and one instance can show style 3 bars in several spaces through the data attribute. The indicator is added after the space's own content, which keeps working while it shows. A space's markup is built on the first `showProgress()` in it and reused afterwards: config changed later does not reach a space that already holds an indicator, so `destroy()` and create a new instance to restyle it. `progressStyle.circular.icon` is one page-wide rule (`.vProgressItem .spinner::before`); to give two circular instances different spinners, leave `icon` out and style each with a selector scoped to its space.
 
 ## Config properties
 
@@ -77,7 +80,7 @@ new ProgressIndicator(defaultProgressSpace)
 
 | Key | Default | Description |
 |---|---|---|
-| `gridGab` | `5` | Gap of the animated border segments. |
+| `gridGab` | `5` | Gap of the animated border segments, in pixels; must be above 0. |
 | `gridColor` | `"red"` | Border color. |
 
 ## Pairing with the SPA engine

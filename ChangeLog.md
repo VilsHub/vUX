@@ -9,6 +9,7 @@
 - SPAEngine `config.errorCallback(element, routeName, message)`: told when a route's content cannot be loaded (a failed link fetch, or the entry route at boot), for example to fall back to a full page load; the link is released before it runs, so the callback can retry it; only the navigation still under way is reported (a superseded request is a console warning); and an exception in `bootCallback` or in the callback itself is not reported as a load failure
 - SPA example "Broken link": a route whose fragment is missing, showing `config.errorCallback`; the example's server answers 404 for a missing fragment instead of the app shell
 - README section "vUX and React": a table of React's features against vUX, marking each as available, partial, a gap, or not required in vUX
+- Runnable ProgressIndicator example (examples/progressindicator/): a request bar loading pages on a loop with its fill, slow, crawl and complete phases shown, a playground over every progress type and style key, one instance per card for a save, a preview and a sync, the space resolution through the data attribute, teardown and every validation error on demand
 
 ## Fixed
 - SPAEngine Back and Forward no longer throw when the link that made the history entry is gone (it sat in content another route replaced) or had no id; the entry is restored as one with no originating link
@@ -19,6 +20,18 @@
 - SPAEngine Back or Forward onto one of its own history entries whose route is no longer configured (written by an older release) loads the page from the server instead of changing only the address
 - SPAEngine cancels a link's pending click callback when a newer navigation, one of its own history entries or `destroy()` comes within its 200ms (the `loadIntoNode` off case included), and keeps it across a `#section` change made right after the navigation
 - README "vUX and React" summary counts 11 features as not required, matching its table (it said 14)
+- ProgressIndicator runs several instances on one page, nested spaces included: each one drives only the bars and grid it rendered, where a style 3 bar or a grid used to animate the first indicator in the document, and every instance pushed every other instance's style 3 bar on
+- ProgressIndicator style 3 crawls each bar on its own timer, so one instance showing bars in two spaces keeps both moving, and hiding one leaves the other running
+- ProgressIndicator keeps the space's own content working: showing an indicator in a space that holds buttons or inputs no longer replaces them with copies that have lost their listeners and state
+- ProgressIndicator circular indicator hides on `hideProgress()`; its overlay used to stay on screen and block the content under it
+- ProgressIndicator style 3 restarts from 0% when shown again right after `hideProgress()`, instead of shrinking back from near 100%
+- ProgressIndicator `hideProgress()` on a grid shown in the same tick no longer throws, and the grid does not start animating on its hidden canvas afterwards
+- ProgressIndicator style 3 goes through its slow phase to 85% before it crawls, instead of skipping straight to the crawl, and fills to 100% before it hides instead of vanishing at once
+- ProgressIndicator style 3 resumes crawling after the browser goes offline and back online
+- ProgressIndicator `progressStyle.grid.gridColor` and `gridGab` are applied; the grid border was always red with a gap of 5
+- ProgressIndicator `hideProgress()` does nothing when no indicator was shown in the space yet, instead of throwing a TypeError
+- ProgressIndicator rejects a linear `style` other than 1, 2 or 3 and a `gridGab` of 0, which used to pass validation and break later
+- ProgressIndicator grid border no longer blocks clicks on the content inside its space
 
 ## Changed
 - The guides, example pages, README, ChangeLog and change logs no longer use em dashes; each one is rewritten as a colon, comma, parentheses or a hyphen for an empty value
@@ -27,6 +40,7 @@
 - README "Demo" section shows a working Store and Component example and links the live example pages, replacing the old `GridBorderRectangle` snippet (an API renamed to `CShapes` in v4) and its externally hosted GIF
 - README "Documentation" section now lists every module with its guide and example page, how to run the examples, and where the release notes are, instead of saying documentation is coming soon
 - The core file is now `src/vUX-core-4.1.0.js`; a page that imports `src/vUX-core-4.0.0.js` directly must switch to the new name (or import `vUX-core.js`, which follows the version)
+- Progress Indicator guide documents `destroy()`, running several instances on one page, and why a space keeps the markup built by its first `showProgress()`
 
 ## v4.0.0
 ## Added

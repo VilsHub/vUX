@@ -1,0 +1,49 @@
+FEATURE: progress-indicator-example
+DATE: 2026-11-28
+SCOPE: add the missing ProgressIndicator example page, and fix the module bugs the page exposed
+
+--------------------------------------------------------------------------------
+AFFECTED PROJECTS
+--------------------------------------------------------------------------------
+
+vUX library: new examples/progressindicator/, fixes in vUX-progressIndicator.js and
+progressIndicator.css, guide and README updates.
+
+Consumers of vUX-progressIndicator.js (all through the lib/vUX symlink):
+  - Apps/vilshub.net  one style 3 bar for SPA navigation: shows/hides as before; the bar now
+                      fills to 100% for about 0.2s before it hides.
+  - examples/spa      same pairing, same visible change.
+  - Apps/vGet         retired, not re-checked.
+  - Apps/vux-docs     hosts examples/; a nav entry for the new example is added there.
+
+Public API unchanged (constructor, initialize, showProgress, hideProgress, destroy, config).
+Validation is stricter in two places: linear style must be 1, 2 or 3 (0 used to pass) and
+gridGab must be above 0 (0 used to pass, then threw inside the cShapes import).
+
+--------------------------------------------------------------------------------
+VERIFICATION METHOD
+--------------------------------------------------------------------------------
+
+Served the repository root with python3 -m http.server and drove the page in headless Chrome
+(playwright-core): style 3 phases (57%, slow to 85%, crawl after ~11s, complete then done),
+four instances running at once without driving each other, all three playground types, the
+three space resolutions, the twelve bad-input errors, destroy and re-create, and a 390px
+viewport with no horizontal scroll. No console errors other than the missing favicon.
+
+After features-validator round 1 (FAIL: section 02 cards dead after one use, because
+setTemplate() rebuilt the space with innerHTML +=), a second script (pi-test2.mjs) checks
+three rounds of every card, nested spaces, one instance with two style 3 spaces crawling and
+hidden independently, a re-show 80ms after hide restarting from 0%, and grid show+hide in one
+tick. It also exposed the circular overlay never hiding (CSS order), now fixed.
+
+--------------------------------------------------------------------------------
+KNOWN, NOT FIXED
+--------------------------------------------------------------------------------
+
+  - progressType "custom" is accepted but has no template: showProgress() inserts the text
+    "undefined". The example does not offer it.
+  - config.progressSpeed is accepted and ignored (documented as reserved).
+  - progressStyle.circular.icon is one page-wide rule; scoped CSS is the documented workaround.
+
+features-validator: round 1 FAIL (fixed), round 2 PASS WITH FINDINGS; its one Low (grid drawn
+after a same-tick hide) fixed afterwards and checked with pi-test3.mjs.

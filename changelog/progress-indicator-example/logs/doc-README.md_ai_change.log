@@ -1,0 +1,6 @@
+OLD_SECTION (line 74)
+
+NEW_SECTION (line 75)
+- [ProgressIndicator example](../examples/progressindicator/README.md): runnable example opening with a request bar loading pages on a loop, a playground over every progress type and style key, one instance per card for a save, a preview and a sync, the space resolution through the data attribute, teardown and the validation errors.
+REASON
+List the new ProgressIndicator example with the other runnable examples.

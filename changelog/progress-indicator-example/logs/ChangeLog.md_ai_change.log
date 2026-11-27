@@ -1,0 +1,31 @@
+OLD_SECTION (line 11)
+
+NEW_SECTION (line 12)
+- Runnable ProgressIndicator example (examples/progressindicator/): a request bar loading pages on a loop with its fill, slow, crawl and complete phases shown, a playground over every progress type and style key, one instance per card for a save, a preview and a sync, the space resolution through the data attribute, teardown and every validation error on demand
+REASON
+Release-facing record of the change (CLAUDE.md change logging rule 4).
+
+OLD_SECTION (line 21)
+
+NEW_SECTION (line 23)
+- ProgressIndicator runs several instances on one page, nested spaces included: each one drives only the bars and grid it rendered, where a style 3 bar or a grid used to animate the first indicator in the document, and every instance pushed every other instance's style 3 bar on
+- ProgressIndicator style 3 crawls each bar on its own timer, so one instance showing bars in two spaces keeps both moving, and hiding one leaves the other running
+- ProgressIndicator keeps the space's own content working: showing an indicator in a space that holds buttons or inputs no longer replaces them with copies that have lost their listeners and state
+- ProgressIndicator circular indicator hides on `hideProgress()`; its overlay used to stay on screen and block the content under it
+- ProgressIndicator style 3 restarts from 0% when shown again right after `hideProgress()`, instead of shrinking back from near 100%
+- ProgressIndicator `hideProgress()` on a grid shown in the same tick no longer throws, and the grid does not start animating on its hidden canvas afterwards
+- ProgressIndicator style 3 goes through its slow phase to 85% before it crawls, instead of skipping straight to the crawl, and fills to 100% before it hides instead of vanishing at once
+- ProgressIndicator style 3 resumes crawling after the browser goes offline and back online
+- ProgressIndicator `progressStyle.grid.gridColor` and `gridGab` are applied; the grid border was always red with a gap of 5
+- ProgressIndicator `hideProgress()` does nothing when no indicator was shown in the space yet, instead of throwing a TypeError
+- ProgressIndicator rejects a linear `style` other than 1, 2 or 3 and a `gridGab` of 0, which used to pass validation and break later
+- ProgressIndicator grid border no longer blocks clicks on the content inside its space
+REASON
+Release-facing record of the change (CLAUDE.md change logging rule 4).
+
+OLD_SECTION (line 29)
+
+NEW_SECTION (line 43)
+- Progress Indicator guide documents `destroy()`, running several instances on one page, and why a space keeps the markup built by its first `showProgress()`
+REASON
+Release-facing record of the change (CLAUDE.md change logging rule 4).

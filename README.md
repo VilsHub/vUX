@@ -195,7 +195,7 @@ Every module has a usage guide in [`doc/`](doc/README.md), and almost every one 
 | Component | `vUX-component.js` | [component.md](doc/component.md) | [examples/component](examples/component/) |
 | Store | `vUX-store.js` | [store.md](doc/store.md) | [examples/store](examples/store/) |
 | Data View | `vUX-dataView.js` | [data-view.md](doc/data-view.md) | |
-| Progress Indicator | `vUX-progressIndicator.js` | [progress-indicator.md](doc/progress-indicator.md) | |
+| Progress Indicator | `vUX-progressIndicator.js` | [progress-indicator.md](doc/progress-indicator.md) | [examples/progressindicator](examples/progressindicator/) |
 | Skeleton | `vUX-skeleton.js` | [skeleton.md](doc/skeleton.md) | [examples/skeleton](examples/skeleton/) |
 | FontSplash | `vUX-fontSplash.js` | [font-splash.md](doc/font-splash.md) | [examples/fontsplash](examples/fontsplash/) |
 | MessageBox | `vUX-messageBox.js` | [message-box.md](doc/message-box.md) | [examples/messagebox](examples/messagebox/) |

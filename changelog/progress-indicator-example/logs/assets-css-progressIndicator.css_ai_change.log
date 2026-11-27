@@ -1,0 +1,16 @@
+OLD_SECTION (line 174)
+
+NEW_SECTION (line 175)
+/* after .circular (display:grid), so a finished circular indicator is hidden too */
+.vProgressItem.circular.done{
+    display: none;
+}
+REASON
+Grid indicator click-through (pointer-events:none) so content in its space stays usable; .vProgressItem.circular.done hidden, because .circular's display:grid came later than .done's display:none at equal specificity and the overlay never went away.
+
+OLD_SECTION (line 178)
+
+NEW_SECTION (line 183)
+    pointer-events: none; /* a border only: the content inside the space stays usable */
+REASON
+Grid indicator click-through (pointer-events:none) so content in its space stays usable; .vProgressItem.circular.done hidden, because .circular's display:grid came later than .done's display:none at equal specificity and the overlay never went away.

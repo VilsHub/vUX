@@ -1,0 +1,6 @@
+OLD_SECTION (line 198)
+| Progress Indicator | `vUX-progressIndicator.js` | [progress-indicator.md](doc/progress-indicator.md) | |
+NEW_SECTION (line 198)
+| Progress Indicator | `vUX-progressIndicator.js` | [progress-indicator.md](doc/progress-indicator.md) | [examples/progressindicator](examples/progressindicator/) |
+REASON
+Documentation table: Progress Indicator now has an example page.
